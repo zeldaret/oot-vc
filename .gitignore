@@ -1,0 +1,16 @@
+# Compiler binaries
+mwcc_compiler/
+
+# Tool binaries
+tools/elf2dol
+
+# Build artifacts
+build/
+*.o
+*.obj
+*.elf
+*.map
+*.app
+
+# IDE artifacts
+.vscode/
