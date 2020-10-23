@@ -8,10 +8,13 @@ TARGET_COL := wii
 
 TARGET := 00000001
 
-BUILD_DIR := build/
+BUILD_DIR := build
 
-SRC_DIRS := $(shell find src/ -type f -name '*.c')
-ASM_DIRS := $(shell find asm/ -type f -name '*.s')
+SRC_DIRS := $(shell find src -type d)
+ASM_DIRS := $(shell find asm -type d -not -path "asm/non_matchings*") $(shell find data -type d)
+
+C_FILES       := $(foreach dir,$(SRC_DIRS), $(wildcard $(dir)/*.c))
+S_FILES       := $(foreach dir,$(ASM_DIRS), $(wildcard $(dir)/*.s))
 
 # Inputs
 LDSCRIPT := $(BUILD_DIR)/ldscript.lcf
@@ -21,14 +24,14 @@ DOL     := $(BUILD_DIR)/00000001.app
 ELF     := $(DOL:.app=.elf)
 MAP     := $(BUILD_DIR)/00000001.map
 
-# Object files in link order
-include obj_files.mk
+O_FILES := $(addprefix $(BUILD_DIR)/,$(S_FILES:.s=.o) $(C_FILES:.c=.o))
+
+GLOBAL_ASM_C_FILES != grep -rl 'GLOBAL_ASM(' $(C_FILES)
+GLOBAL_ASM_O_FILES = $(addprefix $(BUILD_DIR)/,$(GLOBAL_ASM_C_FILES:.c=.o))
 
 #-------------------------------------------------------------------------------
 # Tools
 #-------------------------------------------------------------------------------
-
-MWCC_VERSION := 3.0
 
 # Programs
 ifeq ($(WINDOWS),1)
@@ -40,23 +43,19 @@ endif
 AS      := $(DEVKITPPC)/bin/powerpc-eabi-as
 OBJCOPY := $(DEVKITPPC)/bin/powerpc-eabi-objcopy
 CPP     := cpp -P
-CC      := $(WINE) tools/mwcc_compiler/$(MWCC_VERSION)/mwcceppc.exe
-LD      := $(WINE) tools/mwcc_compiler/$(MWCC_VERSION)/mwldeppc.exe
+CC      := $(WINE) tools/mwcc_compiler/3.0/mwcceppc.exe
+CC_2.7	:= $(WINE) tools/mwcc_compiler/2.7/mwcceppc.exe
+LD      := $(WINE) tools/mwcc_compiler/3.0/mwldeppc.exe
 ELF2DOL := tools/elf2dol
 SHA1SUM := sha1sum
 PYTHON  := python3
 
-POSTPROC := tools/postprocess.py
-
-# Options
-INCLUDES := -I include -I include/dolphin -I src -I src/msl -I src/msl/ppc_eabi -I src/runtime
+ASM_PROCESSOR_DIR := tools/asm_processor
+ASM_PROCESSOR := $(ASM_PROCESSOR_DIR)/compile.sh
 
 ASFLAGS := -mgekko -I include
 LDFLAGS := -map $(MAP) -fp hard -nodefaults -w off
-CFLAGS  := -Cpp_exceptions off -proc gekko -fp hard -O4,p -nodefaults -msgstyle gcc $(INCLUDES)
-
-# for postprocess.py
-PROCFLAGS := -fprologue-fixup=old_stack
+CFLAGS  := -Cpp_exceptions off -proc gekko -fp hard -O4,p -nodefaults -msgstyle gcc -i include
 
 # elf2dol needs to know these in order to calculate sbss correctly.
 SDATA_PDHR := 9
@@ -95,13 +94,15 @@ tools:
 
 $(ELF): $(O_FILES) $(LDSCRIPT)
 	$(LD) $(LDFLAGS) -o $@ -lcf $(LDSCRIPT) $(O_FILES)
-# The Metrowerks linker doesn't generate physical addresses in the ELF program headers. This fixes it somehow.
-#	$(OBJCOPY) $@ $@
+
+$(BUILD_DIR)/src/MetroTRK/%.o : CC := $(CC_2.7)
+
+$(GLOBAL_ASM_O_FILES) : BUILD_C := $(ASM_PROCESSOR) "$(CC) $(CFLAGS) $(OPT_FLAGS)" "$(AS) $(ASFLAGS)"
+
+BUILD_C ?= $(CC) $(CFLAGS) $(OPT_FLAGS) -c -o
 
 $(BUILD_DIR)/%.o: %.s
 	$(AS) $(ASFLAGS) -o $@ $<
 
 $(BUILD_DIR)/%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-# TODO: See if this is necessary after actually adding some C code
-#   $(PYTHON) $(POSTPROC) $(PROCFLAGS) $@
+	$(BUILD_C) $@ $<

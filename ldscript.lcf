@@ -2,22 +2,79 @@ MEMORY {
     text : origin = 0x80004000
 }
 SECTIONS {
-    GROUP:{
-        .init ALIGN(0x20):{}
-        extab_ ALIGN(0x20):{}
-        extabindex_ ALIGN(0x20):{}
-        .text ALIGN(0x20):{}
-        .ctors ALIGN(0x20):{}
-        .dtors ALIGN(0x20):{}
-        .rodata ALIGN(0x20):{}
-        .data ALIGN(0x20):{}
-        .bss ALIGN(0x20):{}
-        .sdata ALIGN(0x20):{}
-        .sbss ALIGN(0x20):{}
-        .sdata2 ALIGN(0x20):{}
-        .sbss2 ALIGN(0x20):{}
-        .stack ALIGN(0x100):{}
-    } > text
+    . = 0x80004000;
+    .init : {
+        init0.o(.text)
+        __start.o(.text)
+        __init_registers.o(.text)
+        __init_data.o(.text)
+        __init_hardware.o(.text)
+        __flush_cache.o(.text)
+        memcpy.o(.text)
+        __fill_mem.o(.text)
+        memset.o(.text)
+        TRK_mem.o(.text)
+        __exception.o(.init)
+        init1.o(.text)
+        initdata.o(.rodata)
+        *(.init)
+    }
+
+    extab_ : { *(extab_) }
+    extabindex_ : { *(extabindex_) }
+    
+    .text : { 
+        code_80007020.o(.text)
+        xlHeap.o(.text)
+        code_80082074.o(.text)
+        *(.text) 
+    }
+
+    .ctors : {
+        ctors.o(.ctors)
+        *(.ctors)
+    }
+
+    .dtors : {
+        dtors.o(.dtors)
+        *(.dtors)
+    }
+
+    .rodata : {
+        rodata.o(.rodata)
+        *(.rodata)
+    }
+
+    .data : {
+        data.o(.data)
+        *(.data)
+    }
+
+    .bss  : {
+        bss.o(.bss)
+        *(.bss)
+    }
+
+    .sdata : {
+        sdata.o(.sdata)
+        *(.sdata)
+    }
+
+    .sbss : {
+        sbss.o(.sbss)
+        *(.sbss)
+    }
+
+    .sdata2 : {
+        sdata2.o(.sdata2)
+        *(.sdata2)
+    }
+
+    .sbss2 : {
+        sbss2.o(.sbss2)
+        *(.sbss2)
+    }
+
     _stack_addr = (_f_sbss2 + SIZEOF(.sbss2) + 65536 + 0x7) & ~0x7;
     _stack_end = _f_sbss2 + SIZEOF(.sbss2);
     _db_stack_addr = (_stack_addr + 0x2000);
