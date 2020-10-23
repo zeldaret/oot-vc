@@ -4,6 +4,6 @@
 #include "types.h"
 
 s32 xlHeapTake(void **ptr, size_t size);
-void xlHeapFree(void *ptr);
+s32 xlHeapFree(void **ptr);
 
 #endif
