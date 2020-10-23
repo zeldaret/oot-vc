@@ -17,7 +17,8 @@ It builds the following DOL:
 ### Instructions
 
 1. Obtain the original 00000001.app executable packaged in the WAD and place it in the base working directory.
-2. Obtain a copy of the MWCC for embedded PowerPC and place it in the `tools/mwcc_compiler/3.0/` folder.
+2. Obtain a copy of the MWCC for embedded PowerPC version 3.0 and place it in the `tools/mwcc_compiler/3.0/` folder.
+3. Obtain a copy of the MWCC for embedded PowerPC version 2.7 and place it in the `tools/mwcc_compiler/2.7/` folder
 (NOTE: This compiler's executables [mwcceppc.exe mwasmeppc.exe and mwldeppc.exe] can be installed with Codewarrior 3.0 for Gamecube, but no license or crack is provided with this project. Please obtain access to the compiler on your own.)
 3. Run make setup and make
 
