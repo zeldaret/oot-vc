@@ -4,7 +4,7 @@
 
 .balign 0x20
 
-glabel lbl_8016A6E0
+glabel _ctors
 	.4byte func_80153618
 	.4byte func_800867D0
 	.4byte func_801101C8
@@ -15,11 +15,11 @@ glabel lbl_8016A6E0
 	.4byte func_80124594
 	.4byte func_801257C0
 	.4byte func_8012B4C0
-	.4byte 0x8012BBC4
+	.4byte func_8012BBC4
 	.4byte func_80138688
-	.4byte 0x80138B14
+	.4byte func_80138B14
 	.4byte func_8013A678
-	.4byte 0x8013AB80
+	.4byte func_8013AB80
 	.4byte func_8013C134
 	.4byte func_80141E78
 	.4byte func_80142108
