@@ -355,13 +355,13 @@ glabel lbl_8025D1C0
 glabel lbl_8025D1C8
 	.skip 0x8
 
-glabel lbl_8025D1D0
+glabel gnHeapTakeCacheCount
 	.skip 0x8
 
-glabel lbl_8025D1D8
+glabel gpHeapBlockLast
 	.skip 0x8
 
-glabel lbl_8025D1E0
+glabel gpHeapBlockFirst
 	.skip 0x8
 
 glabel lbl_8025D1E8
