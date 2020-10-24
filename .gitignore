@@ -5,6 +5,7 @@ mwcc_compiler/
 tools/elf2dol
 
 # Build artifacts
+tools/asm_processor/tmp/
 build/
 *.o
 *.obj

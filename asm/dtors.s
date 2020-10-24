@@ -4,6 +4,6 @@
 
 .balign 0x20
 
-glabel lbl_8016A740
+glabel _dtors
 	.4byte func_801525F4
 	.4byte func_80153654

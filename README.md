@@ -1,7 +1,7 @@
 
 # ootvc
 
-This repo contains a disassembly of the Japanese version of the Wii Virtual Console N64 Emulator intended for use with the Wii VC release of The Legend of Zelda Ocarina of Time.
+This repo contains a WIP decompilation of the Japanese version of the Wii Virtual Console N64 Emulator intended for use with the Wii VC release of The Legend of Zelda Ocarina of Time.
 
 It builds the following DOL:
 
