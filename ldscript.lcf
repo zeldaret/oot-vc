@@ -27,6 +27,8 @@ SECTIONS {
         code_80007020.o(.text)
         xlHeap.o(.text)
         code_80082074.o(.text)
+        xlObject.o(.text)
+        code_800825B0.o(.text)
         *(.text) 
     }
 
