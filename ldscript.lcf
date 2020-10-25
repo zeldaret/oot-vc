@@ -27,6 +27,7 @@ SECTIONS {
         code_80007020.o(.text)
         tree.o(.text)
         code_80040B24.o(.text)
+        xlList.o(.text)
         xlHeap.o(.text)
         code_80082074.o(.text)
         xlObject.o(.text)
