@@ -19,15 +19,15 @@ extern void *gpHeapBlockLast[2];
 extern s32 lbl_8025D1C8[2];
 extern s32 gnHeapTakeCacheCount[2];
 
-GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/func_800809B0.s")
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/func_800809B0.s")
 
-GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapBlockCacheAdd.s")
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapBlockCacheAdd.s")
 
-GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapBlockCacheClear.s")
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapBlockCacheClear.s")
 
-GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapBlockCacheReset.s")
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapBlockCacheReset.s")
 
-GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapCompact.s")
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapCompact.s")
 
 #ifdef NON_EQUIVALENT
 s32 xlHeapTake(void **ptr, size_t size) {
@@ -118,7 +118,7 @@ s32 xlHeapTake(void **ptr, size_t size) {
 
 }
 #else
-GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapTake.s")
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapTake.s")
 #endif
 
 #ifdef NON_EQUIVALENT
@@ -170,7 +170,7 @@ s32 xlHeapFree(void **ptr) {
     
 }
 #else
-GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapFree.s")
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapFree.s")
 #endif
 
 s32 xlHeapCopy(void *dst, void *src, int len) {
@@ -339,7 +339,7 @@ s32 xlHeapGetFree(u32 *free) {
     return __xlHeapGetFree(0, free);
 }
 
-GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapSetup.s")
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapSetup.s")
 
 s32 xlHeapReset(void) {
     OSSetArena1Lo(lbl_8025D1B8[0]);

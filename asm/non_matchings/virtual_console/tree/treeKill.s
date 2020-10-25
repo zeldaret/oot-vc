@@ -1,4 +1,4 @@
-glabel func_8003E9D0
+glabel treeKill
 /* 8003E9D0 00039F90  94 21 FF D0 */	stwu r1, -0x30(r1)
 /* 8003E9D4 00039F94  7C 08 02 A6 */	mflr r0
 /* 8003E9D8 00039F98  90 01 00 34 */	stw r0, 0x34(r1)

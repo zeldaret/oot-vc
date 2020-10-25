@@ -35,5 +35,5 @@ void __init_data(void) {
     }
 }
 #else
-GLOBAL_ASM("asm/non_matchings/init/__init_data.s")
+#pragma GLOBAL_ASM("asm/non_matchings/init/__init_data.s")
 #endif
