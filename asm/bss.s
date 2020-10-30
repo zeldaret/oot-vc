@@ -85,7 +85,7 @@ glabel lbl_801C9680
 glabel lbl_801C96A8
 	.skip 0x10
 
-glabel lbl_801C96B8
+glabel gListList
 	.skip 0x10
 
 glabel lbl_801C96C8
