@@ -13,3 +13,5 @@ typedef struct {
     /* 0x0008 */ u32 unk_0x08;
     /* 0x000C */ event_cb_t callback;
 } class_t; // size = 0x10
+
+#endif

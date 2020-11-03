@@ -1,4 +1,4 @@
-glabel func_80082514
+glabel xlObjectSetup
 /* 80082514 0007DAD4  94 21 FF F0 */	stwu r1, -0x10(r1)
 /* 80082518 0007DAD8  7C 08 02 A6 */	mflr r0
 /* 8008251C 0007DADC  38 6D 8B 38 */	addi r3, r13, lbl_8025D1F8-_SDA_BASE_

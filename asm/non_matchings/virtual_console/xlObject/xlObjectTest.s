@@ -1,4 +1,4 @@
-glabel func_800823EC
+glabel xlObjectTest
 /* 800823EC 0007D9AC  94 21 FF F0 */	stwu r1, -0x10(r1)
 /* 800823F0 0007D9B0  7C 08 02 A6 */	mflr r0
 /* 800823F4 0007D9B4  2C 03 00 00 */	cmpwi r3, 0
