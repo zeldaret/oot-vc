@@ -1,11 +1,13 @@
+#include "types.h"
+
 typedef struct {
-    char *src;
-    char *dst;
+    u8 *src;
+    u8 *dst;
     unsigned int len;
 } __data_inf;
 
 typedef struct {
-    char *src;
+    u8 *src;
     unsigned int len;
 } __bss_init;
 
