@@ -1,3 +1,5 @@
+#include "types.h"
+
 void OSResetSystem(int,int,int);
 
 void __check_pad3(void){
@@ -9,12 +11,12 @@ void __check_pad3(void){
     OSResetSystem(0x0, 0x0, 0x0);
 }
 
-extern unsigned char Debug_BBA;
+extern u8 Debug_BBA;
 
 void __set_debug_bba(void) {
     Debug_BBA = 1;
 }
 
-unsigned char __get_debug_bba(void) {
+u8 __get_debug_bba(void) {
     return Debug_BBA;
 }

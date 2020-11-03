@@ -7,7 +7,7 @@ typedef struct list_item_s list_item_t;
 
 struct list_item_s{
     list_item_t *next;
-    char data[];
+    u8 data[];
 };
 
 typedef struct {
@@ -18,7 +18,7 @@ typedef struct {
 } list_type_t;
 
 s32 xlListMake(list_type_t **list, s32 item_size);
-s32 rspFreeList(list_type_t **list);
+s32 xlListFree (list_type_t **list);
 s32 xlListMakeItem(list_type_t *list, void **item);
 s32 xlListFreeItem(list_type_t *list, void **item);
 s32 xlListTestItem(list_type_t *list, void *item);

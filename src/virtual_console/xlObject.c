@@ -72,11 +72,11 @@ s32 xlObjectMake(void **dst, void *arg, class_t *class) {
 
 s32 xlObjectFree(void **obj) {
     if(obj != NULL && *obj != NULL) {
-        class_ent_t *ent = *(class_ent_t**)((char*)*obj - 4);
+        class_ent_t *ent = *(class_ent_t**)((u8*)*obj - 4);
 
         ent->class->callback(*obj, 3, NULL);
         
-        *obj = (void*)((char*)*obj - 4);
+        *obj = (void*)((u8*)*obj - 4);
     
         if(!xlListFreeItem(ent->class_list, obj)) {
             return 0;
@@ -92,7 +92,7 @@ s32 xlObjectFree(void **obj) {
 s32 xlObjectTest(void *obj, class_t *class) {
     class_ent_t *ent;
     if(obj != NULL){
-        ent = *(class_ent_t**)((char*)obj - 4);
+        ent = *(class_ent_t**)((u8*)obj - 4);
         if(xlListTestItem(lbl_8025D1F8, ent) && ent->class == class) { 
             return 1;
         }
@@ -104,7 +104,7 @@ inline s32 testClass(void *obj, class_ent_t *ent2) {
     class_ent_t *ent;
     class_t *class2 = ent2->class;
     if(obj != NULL) {
-        ent = *(class_ent_t**)((char*)obj - 4);
+        ent = *(class_ent_t**)((u8*)obj - 4);
         if(xlListTestItem(lbl_8025D1F8, ent)) {
             if(ent->class == class2) {
                 return 1;
@@ -117,7 +117,7 @@ inline s32 testClass(void *obj, class_ent_t *ent2) {
 
 s32 xlObjectEvent(void *obj, s32 event, void *arg) {
     if(obj != NULL) {
-        class_ent_t *ent = *(class_ent_t**)((char*)obj - 4);
+        class_ent_t *ent = *(class_ent_t**)((u8*)obj - 4);
         if(xlListTestItem(lbl_8025D1F8, ent)) {
             if(testClass(obj, ent)) {
                 return ent->class->callback(obj, event, arg);
@@ -134,10 +134,10 @@ s32 xlObjectSetup(void) {
 s32 xlObjectReset(void) {
     list_item_t *item_p;
     for(item_p = lbl_8025D1F8->first; item_p != NULL; item_p = item_p->next) {
-        if(!rspFreeList((list_type_t**)item_p->data)) {
+        if(!xlListFree ((list_type_t**)item_p->data)) {
             return 0;
         }
     }
 
-    return !!rspFreeList(&lbl_8025D1F8);
+    return !!xlListFree (&lbl_8025D1F8);
 }

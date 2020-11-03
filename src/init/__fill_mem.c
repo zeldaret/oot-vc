@@ -3,11 +3,11 @@
 void __fill_mem(void *ptr, u32 fill, size_t len) {
     u32 i;
     u32 *w_ptr;
-    char *c_ptr;
+    u8 *c_ptr;
     u32 val;
 
     val = (u8)fill;
-    c_ptr = (char*)ptr - 1;
+    c_ptr = (u8*)ptr - 1;
     if (len >= 32) {
         i = ~(u32)c_ptr % 4;
         if (i != 0) {
@@ -43,7 +43,7 @@ void __fill_mem(void *ptr, u32 fill, size_t len) {
             } while(--i);
         }
 
-        c_ptr = (char*)w_ptr + 3;
+        c_ptr = (u8*)w_ptr + 3;
         len %= 4;
     }
 

@@ -57,7 +57,7 @@ inline s32 listFree(list_type_t **list) {
     return 1;
 }
 
-s32 rspFreeList(list_type_t **list) {
+s32 xlListFree (list_type_t **list) {
     if(!listFree(list)) {
         return 0;
     }
