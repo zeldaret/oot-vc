@@ -8,10 +8,10 @@ void *TRK_memset(void *p, s32 fill, size_t len) {
 }
 
 void *TRK_memcpy(void *dst, void *src, size_t len) {
-    char *s;
-    char *d;
+    u8 *s;
+    u8 *d;
 
-    for(s = (char*)src - 1, d = (char*)dst - 1, len++; --len;) {
+    for(s = (u8*)src - 1, d = (u8*)dst - 1, len++; --len;) {
         *++d = *++s;
     }
 }
