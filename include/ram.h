@@ -1,5 +1,5 @@
-#ifndef _RAM_CLASS_H
-#define _RAM_CLASS_H
+#ifndef _RAM_H
+#define _RAM_H
 
 #include "types.h"
 

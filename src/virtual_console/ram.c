@@ -1,9 +1,9 @@
 #include "types.h"
 #include "xlHeap.h"
 #include "xlObject.h"
-#include "CPUClass.h"
-#include "RAMClass.h"
-#include "SystemClass.h"
+#include "cpu.h"
+#include "ram.h"
+#include "system.h"
 
 static char class_name[8] = "RAM";
 

@@ -1,8 +1,8 @@
-#ifndef _SYSTEM_CLASS_H
-#define _SYSTEM_CLASS_H
+#ifndef _SYSTEM_H
+#define _SYSTEM_H
 
-#include "CPUClass.h"
-#include "RAMClass.h"
+#include "cpu.h"
+#include "ram.h"
 
 typedef struct {
     /* 0x0000 */ char unk_0x00[0x10];
