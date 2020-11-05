@@ -1,5 +1,5 @@
 #include "tree.h"
-#include "CPUClass.h"
+#include "cpu.h"
 
 s32 cpuTreeTake(recomp_node_t**, u32*, size_t);
 s32 treeInsertNode(recomp_node_t **root, u32 n64_start_addr, u32 n64_end_addr, recomp_node_t **new_node);

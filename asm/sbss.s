@@ -4,7 +4,7 @@
 
 .balign 0x20
 
-glabel lbl_8025CFE0
+glabel gSystem
 	.skip 0x8
 
 glabel lbl_8025CFE8
