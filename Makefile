@@ -106,3 +106,5 @@ $(BUILD_DIR)/%.o: %.s
 
 $(BUILD_DIR)/%.o: %.c
 	$(BUILD_C) $@ $<
+	$(OBJCOPY) --remove-section .comment $@
+	$(OBJCOPY) --remove-section .mwcats.text $@

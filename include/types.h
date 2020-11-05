@@ -3,6 +3,8 @@
 
 #define NULL ((void*)0)
 
+typedef long long s64;
+typedef unsigned long long u64;
 typedef int s32;
 typedef unsigned int u32;
 typedef short s16;
