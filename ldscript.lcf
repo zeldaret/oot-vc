@@ -66,6 +66,8 @@ SECTIONS {
 
     .sdata : {
         sdata.o(.sdata)
+        gClassRAM.o(.sdata)
+        sdata_2.o(.sdata)
         *(.sdata)
     }
 

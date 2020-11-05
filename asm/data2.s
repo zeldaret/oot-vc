@@ -2,8 +2,8 @@
 
 .section .data, "wa"
 
-glabel lbl_80172280
-	.incbin "00000001.app", 0x16E380, 0x20
+glabel lbl_80172290
+	.incbin "00000001.app", 0x16E390, 0x10
 
 glabel lbl_801722A0
 	.incbin "00000001.app", 0x16E3A0, 0x80

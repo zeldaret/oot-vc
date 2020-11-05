@@ -1,30 +1,34 @@
 #include "types.h"
 #include "xlHeap.h"
+#include "xlObject.h"
 #include "CPUClass.h"
 #include "RAMClass.h"
 #include "SystemClass.h"
 
+static char class_name[8] = "RAM";
+
 /* RDRAM Interface Registers */
-#define RI_MODE 0
-#define RI_CONFIG 4
-#define RI_CURRENT_LOAD 8
-#define RI_SELECT 0xC
-#define RI_REFRESH 0x10
-#define RI_LATENCY 0x14
-#define RI_RERROR 0x18
-#define RI_WERROR 0x1C
+#define RI_MODE             0x00
+#define RI_CONFIG           0x04
+#define RI_CURRENT_LOAD     0x08
+#define RI_SELECT           0x0C
+#define RI_REFRESH          0x10
+#define RI_LATENCY          0x14
+#define RI_RERROR           0x18
+#define RI_WERROR           0x1C
 
 /* RDRAM Control Registers */
-#define RDRAM_CONFIG 0
-#define RDRAM_DEVICE_ID 4
-#define RDRAM_DELAY 8
-#define RDRAM_MODE 0xC
-#define RDRAM_REF_INTERVAL 0x10
-#define RDRAM_REF_NOW 0x14
-#define RDRAM_RAS_INTERVAL 0x18
-#define RDRAM_MIN_INTERVAL 0x1C
-#define RDRAM_ADDR_SELECT 0x20
-#define RDRAM_DEVICE_MANUF 0x24
+#define RDRAM_CONFIG        0x00
+#define RDRAM_DEVICE_ID     0x04
+#define RDRAM_DELAY         0x08
+#define RDRAM_MODE          0x0C
+#define RDRAM_REF_INTERVAL  0x10
+#define RDRAM_REF_NOW       0x14
+#define RDRAM_RAS_INTERVAL  0x18
+#define RDRAM_MIN_INTERVAL  0x1C
+#define RDRAM_ADDR_SELECT   0x20
+#define RDRAM_DEVICE_MANUF  0x24
+
 
 s32 ramPutControl8(void *obj, u32 addr, s8 *src) {
     return 0;
@@ -404,3 +408,10 @@ s32 ramEvent(void *obj, s32 event, void *arg) {
     }
     return 1;
 }
+
+class_t gClassRAM = {
+    class_name,
+    sizeof(ram_class_t),
+    0x00000000,
+    ramEvent
+};
