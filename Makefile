@@ -92,7 +92,8 @@ clean:
 tools:
 	$(MAKE) -C tools
 
-$(ELF): $(O_FILES) $(LDSCRIPT)
+$(ELF): $(O_FILES) $(GLOBAL_ASM_O_FILES) $(LDSCRIPT)
+	$(RM) -rf $(ASM_PROCESSOR_DIR)/tmp
 	$(LD) $(LDFLAGS) -o $@ -lcf $(LDSCRIPT) $(O_FILES)
 
 $(BUILD_DIR)/src/MetroTRK/%.o : CC := $(CC_2.7)
@@ -106,5 +107,3 @@ $(BUILD_DIR)/%.o: %.s
 
 $(BUILD_DIR)/%.o: %.c
 	$(BUILD_C) $@ $<
-	$(OBJCOPY) --remove-section .comment $@
-	$(OBJCOPY) --remove-section .mwcats.text $@
