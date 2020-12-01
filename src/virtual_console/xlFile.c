@@ -11,7 +11,7 @@ s32 func_800FF2FC(file_info_0x38_t *arg0, char *data, u32 size, u32 pos);       
 s32 func_800FF42C(u8_archive_t*);                                               // contentReleaseHandleNAND
 s32 func_800FF424(void*);                                                       // contentCloseNAND
 
-extern file_class_t gClassFile;
+extern class_t gClassFile;
 
 extern u8_archive_t lbl_801C9680;
 extern unk_file_struct lbl_801C96A8;
@@ -31,7 +31,7 @@ s32 xlFileOpen(file_class_t **file, s32 arg1, char *fn) {
     s32 ret;
     u32 uVar1;
 
-    if (xlObjectMake((void**)file, NULL, (class_t*)&gClassFile) == 0) {
+    if (xlObjectMake((void**)file, NULL, &gClassFile) == 0) {
         return 0;
     } else {
         if (lbl_8025D1B0 != NULL) {
