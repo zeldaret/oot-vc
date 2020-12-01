@@ -164,7 +164,7 @@ glabel lbl_80175254
 glabel lbl_80175274
 	.incbin "00000001.app", 0x171374, 0xC
 
-glabel lbl_80175280
+glabel gClassFile
 	.incbin "00000001.app", 0x171380, 0x10
 
 glabel lbl_80175290

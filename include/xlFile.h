@@ -38,13 +38,39 @@ typedef struct {
 
 typedef struct {
     /* 0x000 */ class_ref_t common;
-    /* 0x008 */ char unk_8[0x8];
+    /* 0x008 */ char* unk_8;
+    /* 0x00C */ char unk_C[0x4];
     /* 0x010 */ s32 size;
     /* 0x014 */ s32 pos;
     /* 0x018 */ s32 unk_18;
-    /* 0x01C */ char unk_1C[0xC];
+    /* 0x01C */ char unk_1C[0x8];
+    /* 0x024 */ s32 unk_24;
     /* 0x028 */ file_info_0x38_t unk_28;
 } file_class_t; // size = 0x38
 
+struct unk_file_struct;
+
+typedef void unk_file_func(struct unk_file_struct*, s32);
+
+typedef struct {
+    unk_file_func **unk_0;
+    void *unk_4;
+    s32 unk_8;
+    s32 unk_C;
+} unk_file_struct; // size = 0x10
+
+typedef struct {
+    void* unk_0;
+    void* unk_4;
+    void* unk_8;
+    void* unk_C;
+    void* unk_10;
+    void* unk_14;
+    void* unk_18;
+    void* unk_1C;
+    void* unk_20;
+    u32 unk_24;
+    void* unk_28;
+} file_t;
 
 #endif

@@ -1,5 +1,23 @@
 #include "xlFile.h"
+#include "xlHeap.h"
 #include "xlObject.h"
+
+void *func_800B0DF0(void*, size_t, s32);
+
+s32 func_800FEFF0(u32 content, u8_hdr_t **arg1, unk_file_struct *arg2);         // contentInitHandleNAND
+u32 func_800FF1B0(u8_archive_t*, char *fn, file_info_0x38_t*);                  // ARCGetFile
+s32 func_800FF28C(file_info_0x38_t*);                                           // contentGetLengthNAND
+s32 func_800FF2FC(file_info_0x38_t *arg0, char *data, u32 size, u32 pos);       // contentReadNAND
+s32 func_800FF42C(u8_archive_t*);                                               // contentReleaseHandleNAND
+s32 func_800FF424(void*);                                                       // contentCloseNAND
+
+extern file_class_t gClassFile;
+
+extern u8_archive_t lbl_801C9680;
+extern unk_file_struct lbl_801C96A8;
+
+extern u32 (*lbl_8025D1B0)(char*, file_info_0x38_t*);
+extern void (*lbl_8025D1B4)(list_type_t*, char*, u32, u32, u32);
 
 s32 xlFileSetOpen(void) {
     return 1;
@@ -9,53 +27,89 @@ s32 xlFileSetRead(void) {
     return 1;
 }
 
-extern file_class_t lbl_80175280; // gClassFile
-
-typedef u32 callback(char*, file_info_0x38_t*);
-
-extern callback lbl_8025D1B0;
-
-extern u8_archive_t lbl_801C9680;
-
-s32 func_800FF28C(file_info_0x38_t*);                               // contentGetLengthNAND
-u32 func_800FF1B0(u8_archive_t*, char *fn, file_info_0x38_t*);      // ARCGetFile
-
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlFile/func_800800D4.s")
-/* s32 xlFileOpen(file_class_t **file, s32 arg1, char *fn) {
+s32 xlFileOpen(file_class_t **file, s32 arg1, char *fn) {
     s32 ret;
     u32 uVar1;
 
-    if (xlObjectMake((void**)file, NULL, (class_t*)&lbl_80175280) == 0) {
-        ret = 0;
+    if (xlObjectMake((void**)file, NULL, (class_t*)&gClassFile) == 0) {
+        return 0;
     } else {
-        if (lbl_8025D1B0 == NULL) {
-            uVar1 = func_800FF1B0(&lbl_801C9680,fn,&(*file)->unk_28) >> 5;
-        }
-        else {
+        if (lbl_8025D1B0 != NULL) {
             uVar1 = (*lbl_8025D1B0)(fn, &(*file)->unk_28);
+        } else {
+            uVar1 = !func_800FF1B0(&lbl_801C9680, fn, &(*file)->unk_28);
         }
-        if (uVar1 == 0) {
-            xlObjectFree((void**)file);
-            ret = 0;
-        }
-        else {
+        if (uVar1 != 0) {
             (*file)->unk_18 = arg1;
-            *(u8_archive_t **)&(*file)->size = func_800FF28C(&(*file)->unk_28);
-            ret = 1;
-            *(file_info_0x38_t **)&((*file)->common).ref_list = &(*file)->unk_28;
+            (*file)->size = func_800FF28C(&(*file)->unk_28);
+            (*file)->common.ref_list = (list_type_t*)&(*file)->unk_28;
+            return 1;
+        } else {
+            xlObjectFree((void**)file);
+            return 0;
         }
     }
-    return ret;
-} */
+}
 
-// xlFileClose
-s32 func_800801BC(file_class_t** file) {
+s32 xlFileClose(file_class_t **file) {
     return !!xlObjectFree((void**)file);
 }
 
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlFile/func_800801E8.s")
+s32 xlFileRead(file_class_t *file, char *data, s32 size) {
+    s32 iVar1;
+    u32 size_00;
+    u32 pos;
+    s32 len;
 
-s32 func_8008039C(file_class_t* arg0, s32 arg1) {
+    if (file->pos + size > file->size) {
+        size = file->size - file->pos;
+    }
+    if (size == 0) {
+        *data = -1;
+        return 0;
+    }
+    while (size > 0) {
+        if ((file->unk_24 != -1) && (iVar1 = file->pos - file->unk_24, iVar1 < 0x1000)) {
+            len = 0x1000 - iVar1;
+            if (len > size) {
+                len = size;
+            }
+            if (xlHeapCopy(data, (void *)&file->unk_8[iVar1], len) == 0) {
+                return 0;
+            }
+            data += len;
+            size -= len;
+            file->pos += len;
+        }
+        if (size > 0) {
+            if ((((u32)data % 0x20 == 0) && (pos = file->pos, (pos % 4) == 0)) && ((u32)size % 0x20 == 0)) {
+                if (lbl_8025D1B4 != NULL) {
+                    (*lbl_8025D1B4)((file->common).ref_list, data, size, pos, 0);
+                } else {
+                    func_800FF2FC((file_info_0x38_t *)file->common.ref_list, data, size, pos);
+                }
+                file->pos += size;
+                size = 0;
+            } else {
+                size_00 = 0x1000;
+                pos = file->pos & ~3;
+                iVar1 = file->size - pos;
+                file->unk_24 = pos;
+                if (iVar1 <= 0x1000) {
+                    size_00 = (iVar1 + 0x1F) & ~0x1F; // align 0x20
+                }
+                if (lbl_8025D1B4 != NULL) {
+                    (*lbl_8025D1B4)((file->common).ref_list, file->unk_8, size_00, pos, 0);
+                } else {
+                    func_800FF2FC((file_info_0x38_t *)file->common.ref_list, file->unk_8, size_00, pos);
+                }
+            }
+        }
+    }
+    return 1;
+}
+
+s32 func_8008039C(file_class_t *arg0, s32 arg1) {
     if (arg1 >= 0 && arg1 < arg0->size) {
         arg0->pos = arg1;
         return 1;
@@ -63,66 +117,59 @@ s32 func_8008039C(file_class_t* arg0, s32 arg1) {
     return 0;
 }
 
-#define OBJECT_INIT 2
-#define OBJECT_INSERTED 0
-
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlFile/func_800803C4.s")
-// fileEvent
-/* s32 func_800803C4(void *file, event_t event, void *arg) {
+s32 fileEvent(file_t *file, event_t event, void *arg) {
     s32 bVar2;
     void *pvVar1;
     void *local_18;
 
-    if (event == OBJECT_INIT) {
-        *(undefined4 *)((int)file + 0x10) = 0;
-        *(undefined4 *)((int)file + 0x14) = 0;
-        *(undefined4 *)file = 0;
-        *(undefined4 *)((int)file + 4) = 0;
-        *(undefined4 *)((int)file + 0x24) = 0xffffffff;
-        bVar2 = xlHeapTake((void **)((int)file + 8),0x30001000);
-        if (bVar2 == false) {
-            return false;
-        }
-    } else if (event < 2) {
-        if (event == OBJECT_INSERTED) {
-            bVar2 = xlHeapTake(&local_18,0x70020000);
-            if (bVar2 == false) {
-                bVar2 = false;
+    switch (event) {
+        case 0:
+            bVar2 = xlHeapTake(&local_18, 0x70020000);
+            if (bVar2 == 0) {
+                bVar2 = 0;
             } else {
-                pvVar1 = FUN_800b0df0(local_18,0x20000,0);
-                if (pvVar1 == (void *)0x0) {
-                    bVar2 = false;
+                pvVar1 = func_800B0DF0(local_18, 0x20000, 0);
+                if (pvVar1 == NULL) {
+                    bVar2 = 0;
                 } else {
-                    FUN_800b165c(&__unk_file_struct_801c96a8,pvVar1,4);
-                    bVar2 = true;
+                    func_800B165C(&lbl_801C96A8, pvVar1, 4);
+                    bVar2 = 1;
                 }
             }
             if (!bVar2) {
-                return false;
+                return 0;
             }
-            contentInitHandleNAND(5, (u8_hdr_t **)&u8_archive_t_801c9680, &__unk_file_struct_801c96a8);
-        } else {
-            if (event < 0) {
-                return false;
+            func_800FEFF0(5, &lbl_801C9680.hdr, &lbl_801C96A8);
+            break;
+        case 1:
+            func_800FF42C(&lbl_801C9680);
+            break;
+        case 2:
+            file->unk_10 = NULL;
+            file->unk_14 = NULL;
+            file->unk_0 = NULL;
+            file->unk_4 = NULL;
+            file->unk_24 = 0xffffffff;
+            if (!xlHeapTake(&file->unk_8, 0x30001000)) {
+                return 0;
             }
-            contentReleaseHandleNAND(&u8_archive_t_801c9680);
-        }
-    } else if (event != 4) {
-        if (3 < event) {
-            return false;
-        }
-        if ((*(int *)((int)file + 4) != 0) &&
-            (bVar2 = xlHeapFree((void **)((int)file + 4)), bVar2 == false)) {
-            return false;
-        }
-        contentCloseNAND((int)file + 0x28);
-        bVar2 = xlHeapFree((void **)((int)file + 8));
-        if (bVar2 == false) {
-            return false;
-        }
+            break;
+        case 3:
+            if (file->unk_4 != NULL && !xlHeapFree(&file->unk_4)) {
+                return 0;
+            }
+            func_800FF424(&file->unk_28);
+            if (!xlHeapFree(&file->unk_8)) {
+                return 0;
+            }
+            break;
+        case 4:
+            break;
+        default:
+            return 0;
     }
-    return true;
-} */
+    return 1;
+}
 
 s32 func_80080534(char *str) {
     s32 iVar1 = 0;
