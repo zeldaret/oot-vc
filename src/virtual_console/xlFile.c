@@ -31,23 +31,23 @@ s32 xlFileOpen(file_class_t **file, s32 arg1, char *fn) {
     s32 ret;
     u32 uVar1;
 
-    if (xlObjectMake((void**)file, NULL, &gClassFile) == 0) {
+    if (!xlObjectMake((void**)file, NULL, &gClassFile)) {
         return 0;
+    }
+
+    if (lbl_8025D1B0 != NULL) {
+        uVar1 = (*lbl_8025D1B0)(fn, &(*file)->unk_28);
     } else {
-        if (lbl_8025D1B0 != NULL) {
-            uVar1 = (*lbl_8025D1B0)(fn, &(*file)->unk_28);
-        } else {
-            uVar1 = !func_800FF1B0(&lbl_801C9680, fn, &(*file)->unk_28);
-        }
-        if (uVar1 != 0) {
-            (*file)->unk_18 = arg1;
-            (*file)->size = func_800FF28C(&(*file)->unk_28);
-            (*file)->common.ref_list = (list_type_t*)&(*file)->unk_28;
-            return 1;
-        } else {
-            xlObjectFree((void**)file);
-            return 0;
-        }
+        uVar1 = !func_800FF1B0(&lbl_801C9680, fn, &(*file)->unk_28);
+    }
+    if (uVar1 != 0) {
+        (*file)->unk_18 = arg1;
+        (*file)->size = func_800FF28C(&(*file)->unk_28);
+        (*file)->common.ref_list = (list_type_t*)&(*file)->unk_28;
+        return 1;
+    } else {
+        xlObjectFree((void**)file);
+        return 0;
     }
 }
 
@@ -74,7 +74,7 @@ s32 xlFileRead(file_class_t *file, char *data, s32 size) {
             if (len > size) {
                 len = size;
             }
-            if (xlHeapCopy(data, (void *)&file->unk_8[iVar1], len) == 0) {
+            if (!xlHeapCopy(data, (void *)&file->unk_8[iVar1], len)) {
                 return 0;
             }
             data += len;
