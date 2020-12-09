@@ -16,8 +16,8 @@ extern class_t gClassFile;
 extern u8_archive_t lbl_801C9680;
 extern unk_file_struct lbl_801C96A8;
 
-extern u32 (*lbl_8025D1B0)(char*, file_info_0x38_t*);
-extern void (*lbl_8025D1B4)(list_type_t*, char*, u32, u32, u32);
+extern u32 (*gpfOpen)(char*, file_info_0x38_t*);
+extern void (*gpfRead)(list_type_t*, char*, u32, u32, u32);
 
 s32 xlFileSetOpen(void) {
     return 1;
@@ -35,8 +35,8 @@ s32 xlFileOpen(file_class_t **file, s32 arg1, char *fn) {
         return 0;
     }
 
-    if (lbl_8025D1B0 != NULL) {
-        uVar1 = (*lbl_8025D1B0)(fn, &(*file)->unk_28);
+    if (gpfOpen != NULL) {
+        uVar1 = (*gpfOpen)(fn, &(*file)->unk_28);
     } else {
         uVar1 = !func_800FF1B0(&lbl_801C9680, fn, &(*file)->unk_28);
     }
@@ -83,8 +83,8 @@ s32 xlFileRead(file_class_t *file, char *data, s32 size) {
         }
         if (size > 0) {
             if ((((u32)data % 0x20 == 0) && (pos = file->pos, (pos % 4) == 0)) && ((u32)size % 0x20 == 0)) {
-                if (lbl_8025D1B4 != NULL) {
-                    (*lbl_8025D1B4)((file->common).ref_list, data, size, pos, 0);
+                if (gpfRead != NULL) {
+                    (*gpfRead)((file->common).ref_list, data, size, pos, 0);
                 } else {
                     func_800FF2FC((file_info_0x38_t *)file->common.ref_list, data, size, pos);
                 }
@@ -98,8 +98,8 @@ s32 xlFileRead(file_class_t *file, char *data, s32 size) {
                 if (iVar1 <= 0x1000) {
                     size_00 = (iVar1 + 0x1F) & ~0x1F; // align 0x20
                 }
-                if (lbl_8025D1B4 != NULL) {
-                    (*lbl_8025D1B4)((file->common).ref_list, file->unk_8, size_00, pos, 0);
+                if (gpfRead != NULL) {
+                    (*gpfRead)((file->common).ref_list, file->unk_8, size_00, pos, 0);
                 } else {
                     func_800FF2FC((file_info_0x38_t *)file->common.ref_list, file->unk_8, size_00, pos);
                 }
