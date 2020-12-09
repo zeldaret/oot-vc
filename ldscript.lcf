@@ -30,6 +30,7 @@ SECTIONS {
         ram.o(.text)
         code_8004207C.o(.text)
         xlFile.o(.text)
+        xlText.o(.text)
         xlList.o(.text)
         xlHeap.o(.text)
         code_80082074.o(.text)
