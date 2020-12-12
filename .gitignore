@@ -1,7 +1,8 @@
 # Compiler binaries
 mwcc_compiler/
 
-# Tool binaries
+# Tool artifacts
+__pycache__/
 tools/elf2dol
 
 # Build artifacts
