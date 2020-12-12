@@ -1,17 +1,13 @@
 #ifndef _XL_OBJECT_H
 #define _XL_OBJECT_H
 
-#include "types.h"
+#include "class.h"
 
-typedef s32 event_t;
-
-typedef s32 (*event_cb_t)(void *obj, event_t event, void *arg);
-
-typedef struct {
-    /* 0x0000 */ const char *name;
-    /* 0x0004 */ size_t size;
-    /* 0x0008 */ u32 unk_0x08;
-    /* 0x000C */ event_cb_t callback;
-} class_t; // size = 0x10
+s32 xlObjectEvent(void *obj, s32 event, void *arg);
+s32 xlObjectFree(void **obj);
+s32 xlObjectMake(void **dst, void *arg, class_t *class);
+s32 xlObjectReset(void);
+s32 xlObjectSetup(void);
+s32 xlObjectTest(void *obj, class_t *class);
 
 #endif

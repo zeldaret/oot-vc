@@ -340,10 +340,10 @@ glabel lbl_8025D1A4
 glabel lbl_8025D1A8
 	.skip 0x8
 
-glabel lbl_8025D1B0
+glabel gpfOpen
 	.skip 0x4
 
-glabel lbl_8025D1B4
+glabel gpfRead
 	.skip 0x4
 
 glabel lbl_8025D1B8
