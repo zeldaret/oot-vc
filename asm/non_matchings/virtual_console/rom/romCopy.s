@@ -1,4 +1,4 @@
-glabel func_80043700
+glabel romCopy
 /* 80043700 0003ECC0  94 21 FF D0 */	stwu r1, -0x30(r1)
 /* 80043704 0003ECC4  7C 08 02 A6 */	mflr r0
 /* 80043708 0003ECC8  90 01 00 34 */	stw r0, 0x34(r1)

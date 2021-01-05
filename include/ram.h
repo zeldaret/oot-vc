@@ -24,4 +24,6 @@ typedef struct {
     /* 0x0044 */ u32 RI_LATENCY_REG;
 } ram_class_t; // size = 0x48
 
+s32 ramGetBuffer(ram_class_t *ram, void **buffer, u32 addr, s32 *len);
+
 #endif

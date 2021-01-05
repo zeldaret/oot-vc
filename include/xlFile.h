@@ -73,4 +73,10 @@ typedef struct {
     void* unk_28;
 } file_t;
 
+s32 xlFileOpen(file_class_t **file, s32 arg1, char *fn);
+s32 func_8008039C(file_class_t *arg0, s32 arg1);
+s32 xlFileRead(file_class_t *file, char *data, s32 size);
+s32 xlFileClose(file_class_t **file);
+
+
 #endif

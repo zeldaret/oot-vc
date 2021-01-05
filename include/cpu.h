@@ -13,7 +13,8 @@ typedef s32 (*sw_func_t)(void *obj, u32 addr, s32 *src);
 typedef s32 (*sd_func_t)(void *obj, u32 addr, s64 *src);
 
 typedef struct {
-    /* 0x0000 */ char unk_00[0xC];
+    /* 0x0000 */ u32 unk_0;
+    /* 0x0004 */ char unk_4[0x8];
     /* 0x000C */ lb_func_t lb;
     /* 0x0010 */ lh_func_t lh;
     /* 0x0014 */ lw_func_t lw;
@@ -35,6 +36,18 @@ typedef struct {
     /* 0x11494 */ recomp_tree_t *recomp_tree;
     /* 0x11498 */ char unk_0x11498[0xE40];
 } cpu_class_t; // size = 0x122D8
+
+struct cpu_blk_req_t;
+
+typedef s32 blockReqHandler(struct cpu_blk_req_t*, s32);
+
+typedef struct cpu_blk_req_t {
+    struct cpu_blk_req_t*  done;
+    s32             len;
+    blockReqHandler* handler;
+    s32             dev_addr;
+    u32             dst_phys_ram;
+} cpu_blk_req_t;
 
 s32 cpuSetGetBlock(cpu_class_t *cpu, void *arg1, void *arg2);
 s32 cpuSetDevicePut(cpu_class_t *cpu, void *arg1, sb_func_t sb, sh_func_t sh, sw_func_t sw, sd_func_t sd);

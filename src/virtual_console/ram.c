@@ -310,7 +310,7 @@ s32 func_80041C90(ram_class_t *ram, unk_func_80041C90_t *arg1) {
     return 1;
 }
 
-s32 ramGetBuffer(ram_class_t *ram, void **buffer, s32 addr, s32 *len) {
+s32 ramGetBuffer(ram_class_t *ram, void **buffer, u32 addr, s32 *len) {
     u32 dram_size = ram->dram_size;
     addr = addr & 0x3FFFFFF;
     if(dram_size == 0) {
