@@ -84,7 +84,7 @@ s32 romGet8(void* obj, u32 addr, s8* dst) {
     rom_class_t* rom = (rom_class_t*)obj;
     s8 buf[1];
 
-    if ((addr & 0x7FFFFFF) < rom->unk_214 && romCopy(rom, buf, addr & 0x7FFFFFF, sizeof(s8), NULL) != 0) {
+    if ((addr & 0x7FFFFFF) < rom->unk_214 && romCopy(rom, buf, addr & 0x7FFFFFF, sizeof(s8), NULL)) {
         *dst = buf[0];
         return 1;
     }
@@ -95,7 +95,7 @@ s32 romGet16(void* obj, u32 addr, s16* dst) {
     rom_class_t* rom = (rom_class_t*)obj;
     s16 buf[1];
 
-    if ((addr & 0x7FFFFFF) < rom->unk_214 && romCopy(rom, buf, addr & 0x7FFFFFF, sizeof(s16), NULL) != 0) {
+    if ((addr & 0x7FFFFFF) < rom->unk_214 && romCopy(rom, buf, addr & 0x7FFFFFF, sizeof(s16), NULL)) {
         *dst = buf[0];
         return 1;
     }
@@ -106,7 +106,7 @@ s32 romGet32(void* obj, u32 addr, s32* dst) {
     rom_class_t* rom = (rom_class_t*)obj;
     s32 buf[1];
 
-    if ((addr & 0x7FFFFFF) < rom->unk_214 && romCopy(rom, buf, addr & 0x7FFFFFF, sizeof(s32), NULL) != 0) {
+    if ((addr & 0x7FFFFFF) < rom->unk_214 && romCopy(rom, buf, addr & 0x7FFFFFF, sizeof(s32), NULL)) {
         *dst = buf[0];
         return 1;
     }
@@ -117,7 +117,7 @@ s32 romGet64(void* obj, u32 addr, s64* dst) {
     rom_class_t* rom = (rom_class_t*)obj;
     s64 buf[1];
 
-    if ((addr & 0x7FFFFFF) < rom->unk_214 && romCopy(rom, buf, addr & 0x7FFFFFF, sizeof(s64), NULL) != 0) {
+    if ((addr & 0x7FFFFFF) < rom->unk_214 && romCopy(rom, buf, addr & 0x7FFFFFF, sizeof(s64), NULL)) {
         *dst = buf[0];
         return 1;
     }
@@ -177,84 +177,74 @@ s32 romGetDebug64(void* obj, u32 addr, s64* dst) {
     return 1;
 }
 
-#ifdef NON_MATCHING
-// Regalloc differences
-s32 romCopy(rom_class_t* rom, void* dst, u32 addr, s32 len, unk_rom_callback arg4) {
-    u32 uVar3;
+inline s32 romCopyLoop(rom_class_t* rom, void* dst, u32 addr, s32 len, unk_rom_callback callback) {
+    s32 i;
+    rom->unk_19A28 = 0;
+    rom->unk_19A34 = len;
+    rom->unk_19A30 = dst;
+    rom->unk_19A38 = addr;
+    rom->unk_19A2C = callback;
+
+    for (i = 0; i < rom->unk_19AB8; i += 2) {
+        if (rom->unk_19AB4[i] <= addr && addr <= rom->unk_19AB4[i + 1]) {
+            rom->unk_19A5C = rom->unk_19AB4[i];
+            rom->unk_19A60 = rom->unk_19AB4[i + 1];
+            return 1;
+        }
+    }
+    return 0;
+}
+
+inline s32 romCopyUnkInline(rom_class_t* rom) {
+    if (!func_80042E68(rom)) {
+        return 0;
+    }
+    rom->unk_8 = 0;
+    return 1;
+}
+
+s32 romCopy(rom_class_t* rom, void* dst, u32 addr, s32 len, unk_rom_callback callback) {
     file_class_t* file;
 
     addr &= 0x7FFFFFF;
     if (rom->unk_19A70 == 0) {
         if (!xlFileOpen(&file, 1, rom->rom_fn)) {
-            uVar3 = 0;
+            return 0;
         } else if (!func_8008039C(file, addr + rom->unk_19AFC)) {
-            uVar3 = 0;
+            return 0;
         } else if (!xlFileRead(file, dst, len)) {
-            uVar3 = 0;
+            return 0;
         } else if (!xlFileClose(&file)) {
-            uVar3 = 0;
-        } else if (arg4 != NULL && !arg4()) {
-            uVar3 = 0;
+            return 0;
+        } else if (callback != NULL && !callback()) {
+            return 0;
         } else {
-            uVar3 = 1;
+            return 1;
+        }
+    } else if (rom->unk_8 != 0 && !romCopyUnkInline(rom)) {
+        return 0;
+    } else if (addr + len > rom->unk_214 && (len = rom->unk_214 - addr, len < 0)) {
+        return 1;
+    } else if (rom->unk_21C == 0) {
+        if (romCopyLoop(rom, dst, addr, len, callback) && !func_800428E8(rom)) {
+            return 0;
+        } else if (!func_80042A50(rom)) {
+            return 0;
+        } else {
+            return 1;
+        }
+    } else if (rom->unk_21C == 1) {
+        if (!xlHeapCopy(dst, (void*)((u32)rom->common.ref_list + addr), len)) {
+            return 0;
+        } else if (callback != NULL && !callback()) {
+            return 0;
+        } else {
+            return 1;
         }
     } else {
-        if (rom->unk_8 != 0) {
-            s32 tmp;
-            if (!func_80042E68(rom)) {
-                tmp = 0;
-            } else {
-                rom->unk_8 = 0;
-                tmp = 1;
-            }
-            if (!tmp) {
-                return 0;
-            }
-        }
-        if ((addr + len > rom->unk_214) && (len = rom->unk_214 - addr, len < 0)) {
-            uVar3 = 1;
-        } else if (rom->unk_21C == 0) {
-            s32 uVar6;
-            rom->unk_19A28 = 0;
-            rom->unk_19A34 = len;
-            rom->unk_19A30 = dst;
-            rom->unk_19A38 = addr;
-            rom->unk_19A2C = arg4;
-
-            for (uVar6 = 0; uVar6 < rom->unk_19AB8; uVar6 += 2) {
-                if (rom->unk_19AB4[uVar6] <= addr && addr <= rom->unk_19AB4[uVar6 + 1]) {
-                    rom->unk_19A5C = rom->unk_19AB4[uVar6];
-                    rom->unk_19A60 = rom->unk_19AB4[uVar6 + 1];
-                    uVar6 = 1;
-                    goto done;
-                }
-            }
-            uVar6 = 0;
-        done:
-            if (uVar6 && !func_800428E8(rom)) {
-                uVar3 = 0;
-            } else if (!func_80042A50(rom)) {
-                uVar3 = 0;
-            } else {
-                uVar3 = 1;
-            }
-        } else if (rom->unk_21C == 1) {
-            if (!xlHeapCopy(dst, (void*)((u32)rom->common.ref_list + addr), len)) {
-                uVar3 = 0;
-            } else if (arg4 != NULL && !arg4()) {
-                uVar3 = 0;
-            } else {
-                uVar3 = 1;
-            }
-        } else {
-            uVar3 = 0;
-        }
+        return 0;
     }
-    return uVar3;
 }
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/rom/romCopy.s")
-#endif
 
 s32 romUpdate(rom_class_t* rom) {
     s32 ret;
@@ -354,12 +344,12 @@ s32 romGetImage(rom_class_t* rom, char* buf) {
     return 1;
 }
 
-s32 func_80043E0C(s32* param_1, s32* param_2, u32 addr, s32* param_4) {
-    if (param_1[0x87] == 1) {
+s32 func_80043E0C(rom_class_t* rom, void** param_2, u32 addr, s32* param_4) {
+    if (rom->unk_21C == 1) {
         addr &= 0x7ffffff;
 
         if (param_4 != NULL) {
-            u32 uVar1 = param_1[0x85];
+            u32 uVar1 = rom->unk_214;
             if (addr >= uVar1) {
                 return 0;
             }
@@ -367,7 +357,7 @@ s32 func_80043E0C(s32* param_1, s32* param_2, u32 addr, s32* param_4) {
                 *param_4 -= (uVar1 - addr);
             }
         }
-        *param_2 = *param_1 + addr;
+        *param_2 = (void*)((u32)rom->common.ref_list + addr);
         return 1;
     }
     return 0;
