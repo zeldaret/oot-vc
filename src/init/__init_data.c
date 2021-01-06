@@ -1,37 +1,37 @@
 #include "types.h"
 
 typedef struct {
-    u8 *src;
-    u8 *dst;
+    u8* src;
+    u8* dst;
     unsigned int len;
 } __data_inf;
 
 typedef struct {
-    u8 *src;
+    u8* src;
     unsigned int len;
 } __bss_init;
 
 extern __data_inf __rom_copy_info[];
 extern __bss_init __bss_init_info[];
 
-void *memcpy(void *dst, void *src, unsigned int len);
-void __flush_cache(void *src, unsigned int len);
-void *memset(void *dst, int fill, unsigned int len);
+void* memcpy(void* dst, void* src, unsigned int len);
+void __flush_cache(void* src, unsigned int len);
+void* memset(void* dst, int fill, unsigned int len);
 
 #ifdef NON_MATCHING
 void __init_data(void) {
-    __data_inf *data_p;
-    __bss_init *bss_p;
+    __data_inf* data_p;
+    __bss_init* bss_p;
 
-    for(data_p = __rom_copy_info; data_p->len != 0; data_p++){
-        if(data_p->src != data_p->dst) {
+    for (data_p = __rom_copy_info; data_p->len != 0; data_p++) {
+        if (data_p->src != data_p->dst) {
             memcpy(data_p->dst, data_p->src, data_p->len);
             __flush_cache(data_p->dst, data_p->len);
         }
     }
 
-    for(bss_p = __bss_init_info; bss_p->len != 0; bss_p++) {
-        if(bss_p->len != 0){
+    for (bss_p = __bss_init_info; bss_p->len != 0; bss_p++) {
+        if (bss_p->len != 0) {
             memset(bss_p->src, 0, data_p->len);
         }
     }

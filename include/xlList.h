@@ -6,22 +6,22 @@
 typedef struct list_item_s list_item_t;
 
 struct list_item_s{
-    list_item_t *next;
+    list_item_t* next;
     u8 data[];
 };
 
 typedef struct {
     size_t item_size;
     s32 item_cnt;
-    list_item_t *first;
-    list_item_t *last;
+    list_item_t* first;
+    list_item_t* last;
 } list_type_t;
 
-s32 xlListMake(list_type_t **list, s32 item_size);
-s32 xlListFree (list_type_t **list);
-s32 xlListMakeItem(list_type_t *list, void **item);
-s32 xlListFreeItem(list_type_t *list, void **item);
-s32 xlListTestItem(list_type_t *list, void *item);
+s32 xlListMake(list_type_t** list, s32 item_size);
+s32 xlListFree (list_type_t** list);
+s32 xlListMakeItem(list_type_t* list, void** item);
+s32 xlListFreeItem(list_type_t* list, void** item);
+s32 xlListTestItem(list_type_t* list, void* item);
 s32 xlListSetup(void);
 s32 xlListReset(void);
 

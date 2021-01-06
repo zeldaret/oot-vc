@@ -164,6 +164,6 @@ typedef enum {
     NZSP = 'NZSP'
 } rom_id_t;
 
-s32 romCopy(rom_class_t *rom, void* dst, u32 addr, s32 len, unk_rom_callback arg4);
+s32 romCopy(rom_class_t* rom, void* dst, u32 addr, s32 len, unk_rom_callback arg4);
 
 #endif

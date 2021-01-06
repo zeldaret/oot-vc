@@ -2,14 +2,14 @@
 #include "xlHeap.h"
 #include "xlObject.h"
 
-void *func_800B0DF0(void*, size_t, s32);
+void* func_800B0DF0(void*, size_t, s32);
 
-s32 func_800FEFF0(u32 content, u8_hdr_t **arg1, unk_file_struct *arg2);         // contentInitHandleNAND
-u32 func_800FF1B0(u8_archive_t*, char *fn, file_info_0x38_t*);                  // ARCGetFile
-s32 func_800FF28C(file_info_0x38_t*);                                           // contentGetLengthNAND
-s32 func_800FF2FC(file_info_0x38_t *arg0, char *data, u32 size, u32 pos);       // contentReadNAND
-s32 func_800FF42C(u8_archive_t*);                                               // contentReleaseHandleNAND
-s32 func_800FF424(void*);                                                       // contentCloseNAND
+s32 func_800FEFF0(u32 content, u8_hdr_t** arg1, unk_file_struct* arg2);   // contentInitHandleNAND
+u32 func_800FF1B0(u8_archive_t*, char* fn, file_info_0x38_t*);            // ARCGetFile
+s32 func_800FF28C(file_info_0x38_t*);                                     // contentGetLengthNAND
+s32 func_800FF2FC(file_info_0x38_t* arg0, char* data, u32 size, u32 pos); // contentReadNAND
+s32 func_800FF42C(u8_archive_t*);                                         // contentReleaseHandleNAND
+s32 func_800FF424(void*);                                                 // contentCloseNAND
 
 extern class_t gClassFile;
 
@@ -27,7 +27,7 @@ s32 xlFileSetRead(void) {
     return 1;
 }
 
-s32 xlFileOpen(file_class_t **file, s32 arg1, char *fn) {
+s32 xlFileOpen(file_class_t** file, s32 arg1, char* fn) {
     s32 ret;
     u32 uVar1;
 
@@ -51,11 +51,11 @@ s32 xlFileOpen(file_class_t **file, s32 arg1, char *fn) {
     }
 }
 
-s32 xlFileClose(file_class_t **file) {
+s32 xlFileClose(file_class_t** file) {
     return !!xlObjectFree((void**)file);
 }
 
-s32 xlFileRead(file_class_t *file, char *data, s32 size) {
+s32 xlFileRead(file_class_t* file, char* data, s32 size) {
     s32 iVar1;
     u32 size_00;
     u32 pos;
@@ -74,7 +74,7 @@ s32 xlFileRead(file_class_t *file, char *data, s32 size) {
             if (len > size) {
                 len = size;
             }
-            if (!xlHeapCopy(data, (void *)&file->unk_8[iVar1], len)) {
+            if (!xlHeapCopy(data, (void*)&file->unk_8[iVar1], len)) {
                 return 0;
             }
             data += len;
@@ -86,7 +86,7 @@ s32 xlFileRead(file_class_t *file, char *data, s32 size) {
                 if (gpfRead != NULL) {
                     (*gpfRead)((file->common).ref_list, data, size, pos, 0);
                 } else {
-                    func_800FF2FC((file_info_0x38_t *)file->common.ref_list, data, size, pos);
+                    func_800FF2FC((file_info_0x38_t*)file->common.ref_list, data, size, pos);
                 }
                 file->pos += size;
                 size = 0;
@@ -101,7 +101,7 @@ s32 xlFileRead(file_class_t *file, char *data, s32 size) {
                 if (gpfRead != NULL) {
                     (*gpfRead)((file->common).ref_list, file->unk_8, size_00, pos, 0);
                 } else {
-                    func_800FF2FC((file_info_0x38_t *)file->common.ref_list, file->unk_8, size_00, pos);
+                    func_800FF2FC((file_info_0x38_t*)file->common.ref_list, file->unk_8, size_00, pos);
                 }
             }
         }
@@ -109,7 +109,7 @@ s32 xlFileRead(file_class_t *file, char *data, s32 size) {
     return 1;
 }
 
-s32 func_8008039C(file_class_t *arg0, s32 arg1) {
+s32 func_8008039C(file_class_t* arg0, s32 arg1) {
     if (arg1 >= 0 && arg1 < arg0->size) {
         arg0->pos = arg1;
         return 1;
@@ -117,10 +117,10 @@ s32 func_8008039C(file_class_t *arg0, s32 arg1) {
     return 0;
 }
 
-s32 fileEvent(file_t *file, event_t event, void *arg) {
+s32 fileEvent(file_t* file, event_t event, void* arg) {
     s32 bVar2;
-    void *pvVar1;
-    void *local_18;
+    void* pvVar1;
+    void* local_18;
 
     switch (event) {
         case 0:

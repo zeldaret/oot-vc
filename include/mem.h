@@ -3,6 +3,6 @@
 
 #include "types.h"
 
-void *memset(void *ptr, s32 fill, size_t len);
+void* memset(void* ptr, s32 fill, size_t len);
 
 #endif
