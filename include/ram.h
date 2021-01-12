@@ -5,7 +5,7 @@
 
 typedef struct {
     /* 0x0000 */char unk_0x00[4];
-    /* 0x0004 */ u8 *dram;
+    /* 0x0004 */ u8* dram;
     /* 0x0008 */ size_t dram_size;
     /* 0x000C */ u32 RDRAM_CONFIG_REG;
     /* 0x0010 */ u32 RDRAM_DEVICE_ID_REG;
@@ -23,5 +23,7 @@ typedef struct {
     /* 0x0040 */ u32 RI_REFRESH_REG;
     /* 0x0044 */ u32 RI_LATENCY_REG;
 } ram_class_t; // size = 0x48
+
+s32 ramGetBuffer(ram_class_t* ram, void** buffer, u32 addr, s32* len);
 
 #endif

@@ -1,9 +1,9 @@
 #include "types.h"
 
-void __fill_mem(void *ptr, u32 fill, size_t len) {
+void __fill_mem(void* ptr, u32 fill, size_t len) {
     u32 i;
-    u32 *w_ptr;
-    u8 *c_ptr;
+    u32* w_ptr;
+    u8* c_ptr;
     u32 val;
 
     val = (u8)fill;
@@ -23,8 +23,8 @@ void __fill_mem(void *ptr, u32 fill, size_t len) {
 
         i = len / 32;
         w_ptr = (u32*)(c_ptr - 3);
-        if(i != 0){
-            do{
+        if (i != 0) {
+            do {
                 *++w_ptr = val;
                 *++w_ptr = val;
                 *++w_ptr = val;
@@ -33,14 +33,14 @@ void __fill_mem(void *ptr, u32 fill, size_t len) {
                 *++w_ptr = val;
                 *++w_ptr = val;
                 *++w_ptr = val;
-            } while(--i);
+            } while (--i);
         }
 
         i = (len / 4) % 8;
-        if(i != 0){
+        if (i != 0) {
             do {
                 *++w_ptr = val;
-            } while(--i);
+            } while (--i);
         }
 
         c_ptr = (u8*)w_ptr + 3;

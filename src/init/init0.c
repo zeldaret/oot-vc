@@ -1,10 +1,10 @@
 #include "types.h"
 
-void OSResetSystem(int,int,int);
+void OSResetSystem(int, int, int);
 
-void __check_pad3(void){
-    unsigned short *t = (unsigned short *)0x800030E4;
-    if((*t & 0xEEF) != 0xEEF){
+void __check_pad3(void) {
+    unsigned short* t = (unsigned short*)0x800030E4;
+    if ((*t & 0xEEF) != 0xEEF) {
         return;
     }
 

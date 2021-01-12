@@ -19,11 +19,11 @@ typedef struct {
 } u8_node_t; // size = 0xC
 
 typedef struct {
-    /* 0x000 */ u8_hdr_t *hdr;
-    /* 0x004 */ u8_node_t *nodes;
-    /* 0x008 */ void *unk_8;
+    /* 0x000 */ u8_hdr_t* hdr;
+    /* 0x004 */ u8_node_t* nodes;
+    /* 0x008 */ void* unk_8;
     /* 0x00C */ s32 node_cnt;
-    /* 0x010 */ char *string_table;
+    /* 0x010 */ char* string_table;
     /* 0x014 */ s32 unk_20;
     /* 0x018 */ s32 data_offset;
     /* 0x01C */ s32 unk_28;
@@ -53,8 +53,8 @@ struct unk_file_struct;
 typedef void unk_file_func(struct unk_file_struct*, s32);
 
 typedef struct {
-    unk_file_func **unk_0;
-    void *unk_4;
+    unk_file_func** unk_0;
+    void* unk_4;
     s32 unk_8;
     s32 unk_C;
 } unk_file_struct; // size = 0x10
@@ -72,5 +72,10 @@ typedef struct {
     u32 unk_24;
     void* unk_28;
 } file_t;
+
+s32 xlFileOpen(file_class_t** file, s32 arg1, char* fn);
+s32 func_8008039C(file_class_t* arg0, s32 arg1);
+s32 xlFileRead(file_class_t* file, char* data, s32 size);
+s32 xlFileClose(file_class_t** file);
 
 #endif
