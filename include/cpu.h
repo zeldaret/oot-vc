@@ -14,7 +14,8 @@ typedef s32 (*sd_func_t)(void* obj, u32 addr, s64* src);
 
 typedef struct {
     /* 0x0000 */ u32 unk_0;
-    /* 0x0004 */ char unk_4[0x8];
+    /* 0x0004 */ void *unk_4;
+    /* 0x0008 */ u32 unk_8;
     /* 0x000C */ lb_func_t lb;
     /* 0x0010 */ lh_func_t lh;
     /* 0x0014 */ lw_func_t lw;
@@ -26,13 +27,22 @@ typedef struct {
     /* 0x002C */ char unk_0x2C[0x14];
 } cpu_dev_t; // size = 0x40
 
+#define SM_BLK_CNT 192
+#define LG_BLK_CNT 13
+#define TREE_BLK_CNT 125
+
 typedef struct {
     /* 0x00000 */ char unk_0x00[0x34];
     /* 0x00034 */ s32 unk_0x34; // timer?
     /* 0x00038 */ char unk_0x38[0xB28];
     /* 0x00B60 */ cpu_dev_t* devices[0x100];
     /* 0x00F60 */ u8 mem_hi_map[0x10000];
-    /* 0x10F60 */ char unk_0x10F60[0x534];
+    /* 0x10F60 */ void *sm_blk_code;
+    /* 0x10F64 */ void *lg_blk_code;
+    /* 0x10F68 */ u32 sm_blk_status[SM_BLK_CNT];
+    /* 0x11268 */ u32 lg_blk_status[LG_BLK_CNT];
+    /* 0x1129C */ recomp_node_t *recomp_tree_nodes;
+    /* 0x112A0 */ u32 tree_blk_status[TREE_BLK_CNT];
     /* 0x11494 */ recomp_tree_t* recomp_tree;
     /* 0x11498 */ char unk_0x11498[0xE40];
 } cpu_class_t; // size = 0x122D8

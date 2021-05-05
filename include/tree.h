@@ -21,7 +21,7 @@ struct recomp_node_s{
     /* 0x0028 */ s32 unk_0x28;
     /* 0x002C */ u32 size;
     /* 0x0030 */ s32 alloc_type;
-    /* 0x0034 */ u32 unk_0x34;
+    /* 0x0034 */ s32 unk_0x34;
     /* 0x0038 */ u32 unk_0x38;
     /* 0x003C */ recomp_node_t* parent;
     /* 0x0040 */ recomp_node_t* left;
