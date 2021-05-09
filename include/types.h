@@ -12,6 +12,7 @@ typedef unsigned short u16;
 typedef signed char s8;
 typedef unsigned char u8;
 typedef float f32;
+typedef double f64;
 
 typedef unsigned int size_t;
 
