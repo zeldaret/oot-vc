@@ -7,7 +7,7 @@
 
 typedef struct {
     /* 0x0000 */ s32 unk_0x00;
-    /* 0x0004 */ char unk_0x04[0x4];
+    /* 0x0004 */ char unk_0x04[0x8];
     /* 0x000C */ u32 rom_id;
     /* 0x0010 */ cpu_class_t* cpu;
     /* 0x0014 */ char unk_0x14[4];

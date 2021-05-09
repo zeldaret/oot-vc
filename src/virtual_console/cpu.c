@@ -25,6 +25,7 @@ extern void (*lbl_8025CFE8)();
 
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000D580.s")
 
+s32 func_8000D6EC(cpu_class_t *cpu, s32 arg1);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000D6EC.s")
 
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000DEBC.s")
@@ -33,8 +34,10 @@ extern void (*lbl_8025CFE8)();
 
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000E054.s")
 
+s32 func_8000E0E8(cpu_class_t *cpu, s32 reg, u32 hi, u32 lo);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000E0E8.s")
 
+s32 func_8000E2B0(cpu_class_t *cpu, s32, u32*);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000E2B0.s")
 
 int func_8000E43C(cpu_class_t *cpu) {
@@ -496,6 +499,18 @@ int cpuCompile_LB(cpu_class_t *cpu, void **code) {
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_LWR.s")
 
 u32 OSGetTick(void);
+s32 systemCheckInterrupts(system_class_t *sys);
+inline s32 checkRetrace() {
+    if(gSystem->unk_0x00 != 0) {
+        if(!systemCheckInterrupts(gSystem)) {
+            return 0;
+        }
+    } else {    
+        videoForceRetrace(gSystem->video);
+    }
+
+    return 1;
+}
 void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
     u32 tick = OSGetTick();
     u32 *code_buf;
@@ -883,11 +898,15 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                     break;
             }
             break;
-        case 2:
+        case 2: // J
             {
                 cpu->unk_0x24 = (cpu->pc & 0xF0000000) | ((inst & 0x3FFFFFF) << 2);
                 if(cpu->unk_0x24 != cpu->pc - 4) {
                     break;
+                }
+
+                if(!checkRetrace()) {
+                    return NULL;
                 }
             }
             break;
@@ -902,25 +921,170 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
             break;
         case 4: // BEQ
              if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] == cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                 cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF);
+                 cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
              }
 
              if(cpu->unk_0x24 != cpu->pc - 4) {
                  break;
              }
 
-             if(gSystem->unk_0x00 != 0) {
-                 videoForceRetrace(gSystem->video);
-             } else if(!systemCheckInterrupts(gSystem)) {
+             if(!checkRetrace()) {
                  return NULL;
              }
              break;
         case 5: // BNE
             if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] != cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                cpu->unk_0x24 = cpu->pc + 4;
+                cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
             }
             break;
-            
+        case 6: // BLEZ
+            if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] <= 0) {
+                cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
+            }
+            break;
+        case 7: // BGTZ
+            if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] > 0) {
+                cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
+            }
+            break;
+        case 8: // ADDI
+            cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + (s16)(inst & 0xFFFF);
+            break;
+        case 9: // ADDIU
+            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + (s16)(inst & 0xFFFF);
+            break;
+        case 10: // SLTI
+            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = !!(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] < (s16)(inst & 0xFFFF));
+            break;
+        case 11: // SLTIU
+            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = !!(cpu->gpr[(inst >> 0x15) & 0x1F].w[1] < (s16)(inst & 0xFFFF));
+            break;
+        case 12: // ANDI
+            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] & (inst & 0xFFFF);
+            break;
+        case 13: // ORI
+            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] | (inst & 0xFFFF);
+            break;
+        case 14: // XORI
+            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] ^ (inst & 0xFFFF);
+            break; 
+        case 15: // LUI
+            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = (inst & 0xFFFF) << 0x10;
+            break;
+        case 16: // CP0
+            switch(inst & 0x3F) {
+                case 1: // TLBR
+                    cpu->cp0[2].d = cpu->unk_0x248[cpu->cp0[0].w[1] & 0x3F].unk_0x00.d;
+                    cpu->cp0[3].d = cpu->unk_0x248[cpu->cp0[0].w[1] & 0x3F].unk_0x08.d;
+                    cpu->cp0[0xA].d = cpu->unk_0x248[cpu->cp0[0].w[1] & 0x3F].unk_0x10.d;
+                    cpu->cp0[5].d = cpu->unk_0x248[cpu->cp0[0].w[1] & 0x3F].unk_0x18.d;
+                    break;
+                case 2: // TLBWI
+                    func_8000D6EC(cpu, cpu->cp0[0].w[1] & 0x3F);
+                    break;
+                case 5: // TLBWR
+                    {
+                        s32 i;
+                        u32 val;
+
+                        for(i = 0; i < 0x30; i++) {
+                            if(!(cpu->unk_0x248[i].unk_0x10.w[1] & 2)) {
+                                val++;
+                            }
+                        }
+
+                        cpu->cp0[1].d = val;
+                        func_8000D6EC(cpu, val);
+                    }
+                    break;
+                case 8: // TLBP
+                    {
+                        s32 i;
+                        u32 val;
+
+                        cpu->cp0[0].w[1] |= 0x80000000;
+
+                        for(i = 0; i < 0x30; i++) {
+                            if(cpu->unk_0x248[i].unk_0x00.w[1] & 2) {
+                                if(!(cpu->cp0[10].d ^ cpu->unk_0x248[i].unk_0x10.d)) {
+                                    cpu->cp0[0].d = val;
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+                case 24: // ERET
+                    if(cpu->cp0[12].d & 4) {
+                        cpu->pc = cpu->cp0[30].w[1];
+                        cpu->cp0[12].d &= ~4;
+                    } else {
+                        cpu->pc = cpu->cp0[14].w[1];
+                        cpu->cp0[12].d &= ~2;
+                    }
+                    cpu->unk_0x00 |= 0x24;
+                    break;
+                case 0: // SUB
+                case 3:
+                case 4: 
+                case 6:
+                case 7:
+                case 9:
+                case 10:
+                case 11:
+                case 12:
+                case 13:
+                case 14:
+                case 15:
+                case 16:
+                case 17:
+                case 18:
+                case 19:
+                case 20:
+                case 21:
+                case 22:
+                case 23:
+                    switch((inst >> 0x15) & 0x1F) {
+                        case 0: // MFC0
+                            {
+                                u32 res;
+                            
+                                if(!func_8000E2B0(cpu, (inst >> 0xB) & 0x1F, &res)) {
+                                    break;
+                                }
+
+                                cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = res;
+                            }
+                            break;
+                        case 1: // DMFC0
+                            {
+                                u32 res[2];
+                                if(!func_8000E2B0(cpu, (inst >> 0xB) & 0x1F, res)) {
+                                    break;
+                                }
+
+                                cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = res[1];
+                                cpu->gpr[(inst >> 0x10) & 0x1F].w[0] = res[0];
+                            }
+                            break;
+                        case 2:
+                        case 3:
+                            break;
+                        case 4: // MTC0
+                            func_8000E0E8(cpu, (inst >> 0xB) & 0x1F, 0, cpu->gpr[(inst >> 0x10) & 0x1F].w[1]);
+                            break;
+                        case 5: // DMTC0
+                            func_8000E0E8(cpu, (inst >> 0xB) & 0x1F, cpu->gpr[(inst >> 0x10) & 0x1F].w[0], cpu->gpr[(inst >> 0x10) & 0x1F].w[1]);
+                            break;
+                        case 6:
+                        case 7:
+                        case 8:
+                            break;
+                    }
+                    break;
+
+
+            }
     }
 
     if(!cpuExecuteUpdate(cpu, &ret, tick + 1)) {
