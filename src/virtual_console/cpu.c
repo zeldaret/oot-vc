@@ -12,6 +12,9 @@ int func_8000CB1C(cpu_class_t *cpu);
 int cpuMakeDevice(cpu_class_t *cpu, u32*, void *, s32, s32, u32, u32);
 void DCStoreRange(void *, size_t);
 void ICInvalidateRange(void *, size_t);
+double sqrt(double in);
+double ceil(double in);
+double floor(double in);
 
 extern class_t lbl_80171F38;
 extern u32 lbl_80170B68[32];
@@ -985,7 +988,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 case 5: // TLBWR
                     {
                         s32 i;
-                        u32 val;
+                        s32 val;
 
                         for(i = 0; i < 0x30; i++) {
                             if(!(cpu->unk_0x248[i].unk_0x10.w[1] & 2)) {
@@ -993,27 +996,27 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                             }
                         }
 
-                        cpu->cp0[1].d = val;
+                        cpu->cp0[1].sd = val;
                         func_8000D6EC(cpu, val);
                     }
                     break;
                 case 8: // TLBP
                     {
                         s32 i;
-                        u32 val;
+                        s32 val;
 
-                        cpu->cp0[0].w[1] |= 0x80000000;
+                        cpu->cp0[0].d |= 0x80000000;
 
                         for(i = 0; i < 0x30; i++) {
                             if(cpu->unk_0x248[i].unk_0x00.w[1] & 2) {
                                 if(!(cpu->cp0[10].d ^ cpu->unk_0x248[i].unk_0x10.d)) {
-                                    cpu->cp0[0].d = val;
+                                    cpu->cp0[0].d = i;
+                                    break;
                                 }
                             }
                         }
-
-                        break;
                     }
+                    break;
                 case 24: // ERET
                     if(cpu->cp0[12].d & 4) {
                         cpu->pc = cpu->cp0[30].w[1];
@@ -1067,22 +1070,194 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                                 cpu->gpr[(inst >> 0x10) & 0x1F].w[0] = res[0];
                             }
                             break;
-                        case 2:
-                        case 3:
-                            break;
                         case 4: // MTC0
                             func_8000E0E8(cpu, (inst >> 0xB) & 0x1F, 0, cpu->gpr[(inst >> 0x10) & 0x1F].w[1]);
                             break;
                         case 5: // DMTC0
                             func_8000E0E8(cpu, (inst >> 0xB) & 0x1F, cpu->gpr[(inst >> 0x10) & 0x1F].w[0], cpu->gpr[(inst >> 0x10) & 0x1F].w[1]);
                             break;
-                        case 6:
-                        case 7:
-                        case 8:
-                            break;
                     }
                     break;
 
+
+            }
+            break;
+        case 17: // CP1
+            if((inst & 0x7FF) == 0) {
+                switch((inst >> 0x15) & 0x1F) {
+                    case 0: // MFC1
+                        if((inst >> 0x10) & 1) {
+                            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->fpr[(inst >> 0xB) & 0x1F].w[0];
+                        } else {
+                            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->fpr[(inst >> 0xB) & 0x1F].w[1];
+                        }
+                        break;
+                    case 1: // DMFC1
+                        cpu->gpr[(inst >> 0x10) & 0x1F].d = cpu->fpr[(inst >> 0xB) & 0x1F].d;
+                        break;
+                    case 2: // CFC1
+                        cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->fscr[(inst >> 0xB) & 0x1F];
+                        break;
+                    case 4:
+                        if((inst >> 0xB) & 1) {
+                            cpu->fpr[(inst >> 0xB) & 0x1F].w[0] = cpu->gpr[(inst >> 0x10) & 0x1F].w[1];
+                        } else {
+                            cpu->fpr[(inst >> 0xB) & 0x1F].w[1] = cpu->gpr[(inst >> 0x10) & 0x1F].w[1];
+                        }
+                        break;
+                    case 5:
+                        cpu->fpr[(inst >> 0xB) & 0x1F].d = cpu->fpr[(inst >> 0xB) & 0x1F].d;
+                        break;
+
+                }
+                break;
+            }
+
+            switch((inst >> 0x15) & 0x1F) {
+                case 8:
+                    switch((inst >> 0x10) & 0x1F) {
+                        case 0: // BC1F
+                            if(!(cpu->fscr[0x1F] & 0x800000)) {
+                                cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
+                            }
+                            break;
+                        case 1: // BC1T
+                            if(cpu->fscr[0x1F] & 0x800000) {
+                                cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
+                            }
+                            break;
+                        case 2: // BC1FL
+                            if(!(cpu->fscr[0x1F] & 0x800000)) {
+                                cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
+                            } else {
+                                cpu->unk_0x00 |= 4;
+                                cpu->pc += 4;
+                            }
+                            break;
+                        case 3: // BC1TL
+                            if(cpu->fscr[0x1F] & 0x800000) {
+                                cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
+                            } else {
+                                cpu->unk_0x00 |= 4;
+                                cpu->pc += 4;
+                            }
+                            break;
+                    }
+                    break;
+                case 0x10: // SINGLE
+                    switch(inst & 0x3F) {
+                        case 0: // ADD.S
+                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1] + cpu->fpr[(inst >> 0x10) & 0x1F].f[1];
+                            break;
+                        case 1: // SUB.S
+                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1] - cpu->fpr[(inst >> 0x10) & 0x1F].f[1];
+                            break;
+                        case 2: // MUL.S
+                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1] * cpu->fpr[(inst >> 0x10) & 0x1F].f[1];
+                            break;
+                        case 3: // DIV.S
+                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1] / cpu->fpr[(inst >> 0x10) & 0x1F].f[1];
+                            break;
+                        case 4: // SQRT.S
+                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = sqrt(cpu->fpr[(inst >> 0xB) & 0x1F].f[1]);
+                            break;
+                        case 5: // ABS.S
+                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = __fabs(cpu->fpr[(inst >> 0xB) & 0x1F].f[1]);
+                            break;
+                        case 6: // MOV.S
+                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
+                            break;
+                        case 7: // NEG.S
+                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = -cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
+                            break;
+                        case 8: // ROUND.L.S
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = 0.5f + cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
+                            break;
+                        case 9: // TRUNC.L.S
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
+                            break;
+                        case 10: // CEIL.L.S
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].f[1]);
+                            break;
+                        case 11: // FLOOR.L.S
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = floor(cpu->fpr[(inst >> 0xB) & 0x1F].f[1]);
+                            break;
+                        case 12: // ROUND.W.S
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = 0.5f + cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
+                            break;
+                        case 13: // TRUNC.W.S
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
+                            break;
+                        case 14: // CEIL.W.S
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].f[1]);
+                            break;
+                        case 15: // FLOOR.L.S
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = floor(cpu->fpr[(inst >> 0xB) & 0x1F].f[1]);
+                            break;
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                            break;
+                        case 32: // CVT.S.S
+                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
+                            break;
+                        case 33: // CVT.D.S
+                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
+                            break;
+                        case 34:
+                        case 35:
+                            break;
+                        case 37: // CVT.W.S
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
+                            break;
+                        case 38: // CVT.L.S
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
+                            break;
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                            break;
+                        case 49: // C.F.S
+                            cpu->fscr[0x1F] &= ~0x00800000;
+                            break;
+                        case 50: // C.UN.S
+                            cpu->fscr[0x1F] &= ~0x00800000;
+                            break;
+                        case 51: // C.EQ.S
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] == cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+
+
+                    }
+                    break;
+                case 0x11: // DOUBLE
+                case 0x14: // LONG
+                case 0x15: // WORD
+                    break;
 
             }
     }
