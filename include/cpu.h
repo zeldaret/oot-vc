@@ -3,19 +3,19 @@
 
 #include "tree.h"
 
-typedef s32 (*lb_func_t)(void* obj, u32 addr, s8* dst);
-typedef s32 (*lh_func_t)(void* obj, u32 addr, s16* dst);
-typedef s32 (*lw_func_t)(void* obj, u32 addr, s32* dst);
-typedef s32 (*ld_func_t)(void* obj, u32 addr, s64* dst);
-typedef s32 (*sb_func_t)(void* obj, u32 addr, s8* src);
-typedef s32 (*sh_func_t)(void* obj, u32 addr, s16* src);
-typedef s32 (*sw_func_t)(void* obj, u32 addr, s32* src);
-typedef s32 (*sd_func_t)(void* obj, u32 addr, s64* src);
+typedef s32 (*lb_func_t)(void* obj, s32 addr, s8* dst);
+typedef s32 (*lh_func_t)(void* obj, s32 addr, s16* dst);
+typedef s32 (*lw_func_t)(void* obj, s32 addr, s32* dst);
+typedef s32 (*ld_func_t)(void* obj, s32 addr, s64* dst);
+typedef s32 (*sb_func_t)(void* obj, s32 addr, s8* src);
+typedef s32 (*sh_func_t)(void* obj, s32 addr, s16* src);
+typedef s32 (*sw_func_t)(void* obj, s32 addr, s32* src);
+typedef s32 (*sd_func_t)(void* obj, s32 addr, s64* src);
 
 typedef struct {
     /* 0x0000 */ u32 unk_0;
     /* 0x0004 */ void *unk_4;
-    /* 0x0008 */ u32 unk_8;
+    /* 0x0008 */ s32 unk_8;
     /* 0x000C */ lb_func_t lb;
     /* 0x0010 */ lh_func_t lh;
     /* 0x0014 */ lw_func_t lw;

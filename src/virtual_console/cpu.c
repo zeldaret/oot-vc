@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "mips.h"
 #include "rom.h"
 #include "xlHeap.h"
 #include "system.h"
@@ -514,11 +515,55 @@ inline s32 checkRetrace() {
 
     return 1;
 }
+
+inline unkFrameSet(u32 rom_id, u32 *frame, u32 addr) {
+    if(rom_id == 'NKTJ') {
+        if(addr == 0x802A4118) {
+            frame[0x11] = 0;
+        }
+        if(addr == 0x80072D94) {
+            frame[0x11] = 1;
+        }
+    } else if(rom_id == 'NKTP') {
+        if(addr == 0x802A4160) {
+            frame[0x11] = 0;
+        }
+        if(addr == 0x80072E34) {
+            frame[0x11] = 1;
+        }
+    } else if(rom_id == 'NKTE') {
+        if(addr == 0x802A4160) {
+            frame[0x11] = 0;
+        }
+        if(addr == 0x80072E54) {
+            frame[0x11] = 1;
+        }
+    }
+}
+
+
+
+inline cpu_dev_t *get_dev(cpu_dev_t **devs, u8 *idxs, u32 addr) {
+    return devs[idxs[(addr >> 0x10)]];
+}
+
+inline s32 calc_ea(cpu_class_t *cpu, s32 reg, s32 imm) {
+    return cpu->gpr[reg].w[1] + (u32)imm;
+}
+
 void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
+    s32 save_ra = 0;
     u32 tick = OSGetTick();
     u32 *code_buf;
     u32 inst;
-    reg64_t prev_ra;
+    u64 prev_ra;
+    u8 *dev_idx;
+    cpu_dev_t *dev;
+    cpu_dev_t **devs;
+    reg64_t tmp;
+    s32 i;
+    s32 val;
+    u32 ea;
 
     if(cpu->unk_0x24 != 0) {
         cpu->unk_0x00 |= 8;
@@ -526,28 +571,10 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
         cpu->unk_0x00 &= ~8;
     }
 
-    if(gSystem->rom_id == 'NKTJ') {
-        if(addr == 0x802A4118) {
-            gSystem->frame[0x11] = 0;
-        }
-        if(addr == 0x80072D94) {
-            gSystem->frame[0x11] = 1;
-        }
-    } else if(gSystem->rom_id == 'NKTP') {
-        if(addr == 0x802A4160) {
-            gSystem->frame[0x11] = 0;
-        }
-        if(addr == 0x80072E34) {
-            gSystem->frame[0x11] = 1;
-        }
-    } else if(gSystem->rom_id == 'NKTE') {
-        if(addr == 0x802A4160) {
-            gSystem->frame[0x11] = 0;
-        }
-        if(addr == 0x80072E54) {
-            gSystem->frame[0x11] = 1;
-        }
-    }
+    unkFrameSet(gSystem->rom_id, gSystem->frame, addr);
+
+    dev_idx = cpu->mem_hi_map;
+    devs = cpu->devices;
 
     if(!cpuGetAddressBuffer(cpu, (void**)&code_buf, addr)) {
         return NULL;
@@ -556,344 +583,320 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
     inst = *code_buf;
     cpu->pc = addr + 4;
     if(inst == 0xACBF011C) {
-        prev_ra = cpu->gpr[0x1F];
+        prev_ra = cpu->gpr[0x1F].d;
         cpu->gpr[0x1F].w[1] = cpu->unk_0x30;
+        save_ra = 1;
     }
 
-    switch(inst >> 0x1A) {
-        case 0:
-            switch(inst & 0x3F) {
-                case 0: // SLL
-                    cpu->gpr[(inst >> 0xB) & 0x1F].w[1] = cpu->gpr[(inst >> 0x10) & 0x1F].w[1] << ((inst >> 6) & 0x1F);
+    switch(MIPS_OP(inst)) {
+        case OPC_SPECIAL:
+            switch(SPEC_FUNCT(inst)) {
+                case SPEC_SLL: // SLL
+                    cpu->gpr[MIPS_RD(inst)].w[1] = cpu->gpr[MIPS_RT(inst)].w[1] << MIPS_SA(inst);
                     break;
-                case 2: // SRL
-                    cpu->gpr[(inst >> 0xB) & 0x1F].w[1] = cpu->gpr[(inst >> 0x10) & 0x1F].w[1] >> ((inst >> 6) & 0x1F);
+                case SPEC_SRL: // SRL
+                    cpu->gpr[MIPS_RD(inst)].w[1] = cpu->gpr[MIPS_RT(inst)].w[1] >> MIPS_SA(inst);
                     break;
-                case 3: // SRA
-                    cpu->gpr[(inst >> 0xB) & 0x1F].sw[1] = cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] >> ((inst >> 6) & 0x1F);
+                case SPEC_SRA: // SRA
+                    cpu->gpr[MIPS_RD(inst)].sw[1] = cpu->gpr[MIPS_RT(inst)].sw[1] >> MIPS_SA(inst);
                     break;
-                case 4: // SLLV
-                    cpu->gpr[(inst >> 0xB) & 0x1F].w[1] = cpu->gpr[(inst >> 0x10) & 0x1F].w[1] << (cpu->gpr[(inst >> 0x15) & 0x1F].w[1] & 0x1F);
+                case SPEC_SLLV: // SLLV
+                    cpu->gpr[MIPS_RD(inst)].w[1] = 
+                        cpu->gpr[MIPS_RT(inst)].w[1] << (cpu->gpr[MIPS_RS(inst)].w[1] & 0x1F);
                     break;
-                case 6: // SRLV
-                    cpu->gpr[(inst >> 0xB) & 0x1F].w[1] = cpu->gpr[(inst >> 0x10) & 0x1F].w[1] >> (cpu->gpr[(inst >> 0x15) & 0x1F].w[1] & 0x1F);
+                case SPEC_SRLV: // SRLV
+                    cpu->gpr[MIPS_RD(inst)].w[1] = 
+                        cpu->gpr[MIPS_RT(inst)].w[1] >> (cpu->gpr[MIPS_RS(inst)].w[1] & 0x1F);
                     break;
-                case 7: // SRAV
-                    cpu->gpr[(inst >> 0xB) & 0x1F].sw[1] = cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] >> (cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] & 0x1F);
+                case SPEC_SRAV: // SRAV
+                    cpu->gpr[MIPS_RD(inst)].sw[1] = 
+                        cpu->gpr[MIPS_RT(inst)].sw[1] >> (cpu->gpr[MIPS_RS(inst)].sw[1] & 0x1F);
                     break;
-                case 8: // JR
-                    cpu->unk_0x24 = cpu->gpr[(inst >> 0x15) & 0x1F].w[1];
+                case SPEC_JR: // JR
+                    cpu->unk_0x24 = cpu->gpr[MIPS_RS(inst)].w[1];
                     break;
-                case 9: // JALR
-                    cpu->unk_0x24 = cpu->gpr[(inst >> 0x15) & 0x1F].w[1];
-                    cpu->gpr[(inst >> 0xB) & 0x1F].d = cpu->pc + 4;
+                case SPEC_JALR: // JALR
+                    cpu->unk_0x24 = cpu->gpr[MIPS_RS(inst)].w[1];
+                    cpu->gpr[MIPS_RD(inst)].d = cpu->pc + 4;
                     break;
-                case 10:
-                case 11:
-                    break;
-                case 12: // SYSCALL
+                case SPEC_SYSCALL: // SYSCALL
                     cpuException(cpu, 8, 0);
                     break;
-                case 13: // BREAk
+                case SPEC_BREAK: // BREAk
                     cpuException(cpu, 9, 0);
                     break;
-                case 14:
-                case 15:
+                case SPEC_MFHI: // MFHI
+                    cpu->gpr[MIPS_RD(inst)].d = cpu->hi.d;
                     break;
-                case 16: // MFHI
-                    cpu->gpr[(inst >> 0xB) & 0x1F].d = cpu->hi.d;
+                case SPEC_MTHI: // MTHI
+                    cpu->hi.d = cpu->gpr[MIPS_RS(inst)].d;
                     break;
-                case 17: // MTHI
-                    cpu->hi.d = cpu->gpr[(inst >> 0x15) & 0x1F].d;
+                case SPEC_MFLO: // MFLO
+                    cpu->gpr[MIPS_RD(inst)].d = cpu->lo.d;
                     break;
-                case 18: // MFLO
-                    cpu->gpr[(inst >> 0xB) & 0x1F].d = cpu->lo.d;
+                case SPEC_MTLO: // MTLO
+                    cpu->lo.d = cpu->gpr[MIPS_RD(inst)].d;
                     break;
-                case 19: // MTLO
-                    cpu->lo.d = cpu->gpr[(inst >> 0xB) & 0x1F].d;
+                case SPEC_DSLLV: // DSLLV
+                    cpu->gpr[MIPS_RD(inst)].d = cpu->gpr[MIPS_RT(inst)].d << (cpu->gpr[MIPS_RS(inst)].d & 0x1F);
                     break;
-                case 20: // DSLLV
-                    cpu->gpr[(inst >> 0xB) & 0x1F].d = cpu->gpr[(inst >> 0x10) & 0x1F].d << (cpu->gpr[(inst >> 0x15) & 0x1F].d & 0x1F);
+                case SPEC_DSRLV: // DSRLV
+                    cpu->gpr[MIPS_RD(inst)].d = cpu->gpr[MIPS_RT(inst)].d >> (cpu->gpr[MIPS_RS(inst)].d & 0x1F);
                     break;
-                case 21:
+                case SPEC_DSRAV: // DRAV
+                    cpu->gpr[MIPS_RD(inst)].sd = cpu->gpr[MIPS_RT(inst)].sd >> (cpu->gpr[MIPS_RS(inst)].sd & 0x1F);
                     break;
-                case 22: // DSRLV
-                    cpu->gpr[(inst >> 0xB) & 0x1F].d = cpu->gpr[(inst >> 0x10) & 0x1F].d >> (cpu->gpr[(inst >> 0x15) & 0x1F].d & 0x1F);
-                    break;
-                case 23: // DRAV
-                    cpu->gpr[(inst >> 0xB) & 0x1F].sd = cpu->gpr[(inst >> 0x10) & 0x1F].sd >> (cpu->gpr[(inst >> 0x15) & 0x1F].sd & 0x1F);
-                    break;
-                case 24: // MULT
+                case SPEC_MULT: // MULT
                     {
-                        reg64_t r;
-                        r.sd = (s64)(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] * cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]);
-                        cpu->lo.sd = r.w[0];
-                        cpu->hi.sd = r.w[1];
+                        s64 rs = cpu->gpr[MIPS_RS(inst)].sw[1];
+                        s64 rt = cpu->gpr[MIPS_RT(inst)].sw[1];
+                        tmp.sd = (s64)(rs * rt);
+                        cpu->lo.sd = (s32)(tmp.sd & 0xFFFFFFFF);
+                        cpu->hi.sd = (s32)(tmp.sd >> 32);
                     }
                     break;
-                case 25: // MULTU
+                case SPEC_MULTU: // MULTU
                     {
-                        reg64_t r;
-                        u64 rs = cpu->gpr[(inst >> 0x15) & 0x1F].w[1];
-                        u64 rt = cpu->gpr[(inst >> 0x10) & 0x1F].w[1];
-                        r.sd = rs * rt;
-                        cpu->lo.sd = r.d & 0xFFFFFFFF;
-                        cpu->hi.d  = r.w[1] >> 32;
+                        u64 rs = cpu->gpr[MIPS_RS(inst)].w[1];
+                        u64 rt = cpu->gpr[MIPS_RT(inst)].w[1];
+                        tmp.d = (s64)(rs * rt);
+                        cpu->lo.sd = (s32)(tmp.sd & 0xFFFFFFFF);
+                        cpu->hi.sd = (s32)(tmp.sd >> 32);
                     }
                     break;
-                case 26: // DIV
+                case SPEC_DIV: // DIV
                     {
-                        u32 res;
-                        if(cpu->gpr[(inst >> 0x10) & 0x1F].w[1] == 0) {
+                        if(cpu->gpr[MIPS_RT(inst)].w[1] == 0) {
                             break;
                         }
 
-                        res = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] / cpu->gpr[(inst >> 0x10) & 0x1F].sw[1];
-                        cpu->lo.d = res;
+                        cpu->lo.sd = cpu->gpr[MIPS_RS(inst)].sw[1] / cpu->gpr[MIPS_RT(inst)].sw[1];
 
-                        res = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] % cpu->gpr[(inst >> 0x10) & 0x1F].sw[1];
-                        cpu->hi.d = res;
+                        cpu->hi.sd = cpu->gpr[MIPS_RS(inst)].sw[1] % cpu->gpr[MIPS_RT(inst)].sw[1];
                     }
                     break;
-                case 27: // DIVU
+                case SPEC_DIVU: // DIVU
                     {
-                        u64 res;
-                        if(cpu->gpr[(inst >> 0x10) & 0x1F].w[1] == 0) {
+                        if(cpu->gpr[MIPS_RT(inst)].w[1] == 0) {
                             break;
                         }
 
-                        cpu->lo.d = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] / cpu->gpr[(inst >> 0x10) & 0x1F].w[1];
-                        cpu->hi.d = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] % cpu->gpr[(inst >> 0x10) & 0x1F].w[1];
+                        cpu->lo.sd = (s32)(cpu->gpr[MIPS_RS(inst)].w[1] / cpu->gpr[MIPS_RT(inst)].w[1]);
+                        cpu->hi.sd = (s32)(cpu->gpr[MIPS_RS(inst)].w[1] % cpu->gpr[MIPS_RT(inst)].w[1]);
                     }
                     break;
 
-                case 28: // DMULT
-                {
-                    s64 prod = cpu->gpr[(inst >> 0x15) & 0x1F].sd * cpu->gpr[(inst >> 0x10) & 0x1F].sd;
-                    cpu->lo.sd = prod;
-                    cpu->hi.sd = prod >> 32;
-                }
-                break;
-                case 29: // DMULTU
-                {
-                    u64 prod = cpu->gpr[(inst >> 0x15) & 0x1F].d * cpu->gpr[(inst >> 0x10) & 0x1F].d;
-                    cpu->lo.d = prod;
-                    cpu->hi.d = prod >> 32;
-                }
-                break;
-                case 30: // DDIV
-                    if(cpu->gpr[(inst >> 0x10) & 0x1F].w[1] == 0) {
+                case SPEC_DMULT: // DMULT
+                    {
+
+                        reg64_t *rs = &cpu->gpr[MIPS_RS(inst)];
+                        reg64_t *rt = &cpu->gpr[MIPS_RT(inst)];
+
+                        cpu->lo.w[1] = rs->w[1] * rt->w[1];
+                        cpu->lo.w[0] = (u32)(((u64)rs->w[1] * (u64)rt->w[1]) >> 32) + (rs->w[0] * rt->w[1]);
+                        cpu->hi.sd = -((cpu->lo.w[0] ^ 0x80000000) < 0x80000000);
+                    }
+                    break;
+                case SPEC_DMULTU: // DMULTU
+                    {
+                        tmp.d = cpu->gpr[MIPS_RS(inst)].d * cpu->gpr[MIPS_RT(inst)].d;
+                        cpu->lo.d = tmp.d;
+                        cpu->hi.d = tmp.d >> 32;
+                    }
+                    break;
+                case SPEC_DDIV: // DDIV
+                    if(cpu->gpr[MIPS_RT(inst)].d == 0) {
                         break;
                     }
 
-                    cpu->lo.sd = cpu->gpr[(inst >> 0x15) & 0x1F].sd / cpu->gpr[(inst >> 0x10) & 0x1F].sd;
-                    cpu->hi.sd = cpu->gpr[(inst >> 0x15) & 0x1F].sd % cpu->gpr[(inst >> 0x10) & 0x1F].sd;
+                    cpu->lo.sd = cpu->gpr[MIPS_RS(inst)].sd / cpu->gpr[MIPS_RT(inst)].sd;
+                    cpu->hi.sd = cpu->gpr[MIPS_RS(inst)].sd % cpu->gpr[MIPS_RT(inst)].sd;
                     break;
 
-                case 31: // DDIVU
-                    if(cpu->gpr[(inst >> 0x10) & 0x1F].w[1] == 0) {
+                case SPEC_DDIVU: // DDIVU
+                    if(cpu->gpr[MIPS_RT(inst)].d == 0) {
                         break;
                     }
 
-                    cpu->lo.d = cpu->gpr[(inst >> 0x15) & 0x1F].d / cpu->gpr[(inst >> 0x10) & 0x1F].d;
-                    cpu->hi.d = cpu->gpr[(inst >> 0x15) & 0x1F].d % cpu->gpr[(inst >> 0x10) & 0x1F].d;
+                    cpu->lo.d = cpu->gpr[MIPS_RS(inst)].d / cpu->gpr[MIPS_RT(inst)].d;
+                    cpu->hi.d = cpu->gpr[MIPS_RS(inst)].d % cpu->gpr[MIPS_RT(inst)].d;
                     break;
-                case 32: // ADD
-                    cpu->gpr[(inst >> 0xB) & 0x1F].sw[1] = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + cpu->gpr[(inst >> 0x10) & 0x1F].sw[1];
+                case SPEC_ADD: // ADD
+                    cpu->gpr[MIPS_RD(inst)].sw[1] = cpu->gpr[MIPS_RS(inst)].sw[1] + cpu->gpr[MIPS_RT(inst)].sw[1];
                     break;
-                case 33: // ADDU
-                    cpu->gpr[(inst >> 0xB) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + cpu->gpr[(inst >> 0x10) & 0x1F].w[1];
+                case SPEC_ADDU: // ADDU
+                    cpu->gpr[MIPS_RD(inst)].w[1] = cpu->gpr[MIPS_RS(inst)].w[1] + cpu->gpr[MIPS_RT(inst)].w[1];
                     break;
-                case 34:  // SUB
-                    cpu->gpr[(inst >> 0xB) & 0x1F].sw[1] = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] - cpu->gpr[(inst >> 0x10) & 0x1F].sw[1];
+                case SPEC_SUB:  // SUB
+                    cpu->gpr[MIPS_RD(inst)].sw[1] = cpu->gpr[MIPS_RS(inst)].sw[1] - cpu->gpr[MIPS_RT(inst)].sw[1];
                     break;
-                case 35: // SUBU
-                    cpu->gpr[(inst >> 0xB) & 0x1F].sw[1] = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] - cpu->gpr[(inst >> 0x10) & 0x1F].sw[1];
+                case SPEC_SUBU: // SUBU
+                    cpu->gpr[MIPS_RD(inst)].sw[1] = cpu->gpr[MIPS_RS(inst)].sw[1] - cpu->gpr[MIPS_RT(inst)].sw[1];
                     break;
-                case 36: // AND
-                    cpu->gpr[(inst >> 0xB) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] & cpu->gpr[(inst >> 0x10) & 0x1F].w[1];
+                case SPEC_AND: // AND
+                    cpu->gpr[MIPS_RD(inst)].w[1] = cpu->gpr[MIPS_RS(inst)].w[1] & cpu->gpr[MIPS_RT(inst)].w[1];
                     break;
-                case 37: // AND
-                    cpu->gpr[(inst >> 0xB) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] | cpu->gpr[(inst >> 0x10) & 0x1F].w[1];
+                case SPEC_OR: // OR
+                    cpu->gpr[MIPS_RD(inst)].w[1] = cpu->gpr[MIPS_RS(inst)].w[1] | cpu->gpr[MIPS_RT(inst)].w[1];
                     break;
-                case 38: // XOR
-                    cpu->gpr[(inst >> 0xB) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] ^ cpu->gpr[(inst >> 0x10) & 0x1F].w[1];
+                case SPEC_XOR: // XOR
+                    cpu->gpr[MIPS_RD(inst)].w[1] = cpu->gpr[MIPS_RS(inst)].w[1] ^ cpu->gpr[MIPS_RT(inst)].w[1];
                     break;
-                case 39: // NOR
-                    cpu->gpr[(inst >> 0xB) & 0x1F].w[1] = ~(cpu->gpr[(inst >> 0x15) & 0x1F].w[1] | cpu->gpr[(inst >> 0x10) & 0x1F].w[1]);
+                case SPEC_NOR: // NOR
+                    cpu->gpr[MIPS_RD(inst)].w[1] = ~(cpu->gpr[MIPS_RS(inst)].w[1] | cpu->gpr[MIPS_RT(inst)].w[1]);
                     break;
-                case 40:
-                case 41:
+                case SPEC_SLT: // SLT
+                    cpu->gpr[MIPS_RD(inst)].sw[1] = !!(cpu->gpr[MIPS_RS(inst)].sw[1] < cpu->gpr[MIPS_RT(inst)].sw[1]);
                     break;
-                case 42: // SLT
-                    cpu->gpr[(inst >> 0xB) & 0x1F].sw[1] = !!(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] < cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]);
+                case SPEC_SLTU: // SLTU
+                    cpu->gpr[MIPS_RD(inst)].w[1] = !!(cpu->gpr[MIPS_RS(inst)].w[1] < cpu->gpr[MIPS_RT(inst)].w[1]);
                     break;
-                case 43: // SLTU
-                    cpu->gpr[(inst >> 0xB) & 0x1F].w[1] = !!(cpu->gpr[(inst >> 0x15) & 0x1F].w[1] < cpu->gpr[(inst >> 0x10) & 0x1F].w[1]);
+                case SPEC_DADD: // DADD
+                    cpu->gpr[MIPS_RD(inst)].sd = cpu->gpr[MIPS_RS(inst)].sd + cpu->gpr[MIPS_RT(inst)].sd;
                     break;
-                case 44: // DADD
-                    cpu->gpr[(inst >> 0xB) & 0x1F].sd = cpu->gpr[(inst >> 0x15) & 0x1F].sd + cpu->gpr[(inst >> 0x10) & 0x1F].sd;
+                case SPEC_DADDU: // DADDU
+                    cpu->gpr[MIPS_RD(inst)].d = cpu->gpr[MIPS_RS(inst)].d + cpu->gpr[MIPS_RT(inst)].d;
                     break;
-                case 45: // DADDU
-                    cpu->gpr[(inst >> 0xB) & 0x1F].d = cpu->gpr[(inst >> 0x15) & 0x1F].d + cpu->gpr[(inst >> 0x10) & 0x1F].d;
+                case SPEC_DSUB: // DSUB
+                    cpu->gpr[MIPS_RD(inst)].sd = cpu->gpr[MIPS_RS(inst)].sd - cpu->gpr[MIPS_RT(inst)].sd;
                     break;
-                case 46: // DSUB
-                    cpu->gpr[(inst >> 0xB) & 0x1F].sd = cpu->gpr[(inst >> 0x15) & 0x1F].sd - cpu->gpr[(inst >> 0x10) & 0x1F].sd;
+                case SPEC_DSUBU: // DSUBU
+                    cpu->gpr[MIPS_RD(inst)].sd = cpu->gpr[MIPS_RS(inst)].sd - cpu->gpr[MIPS_RT(inst)].sd;
                     break;
-                case 47: // DSUBU
-                    cpu->gpr[(inst >> 0xB) & 0x1F].sd = cpu->gpr[(inst >> 0x15) & 0x1F].sd - cpu->gpr[(inst >> 0x10) & 0x1F].sd;
-                    break;
-                case 48: // TGE
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] >= cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                case SPEC_TGE: // TGE
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] >= cpu->gpr[MIPS_RT(inst)].sw[1]) {
                         cpuException(cpu, 0xD, 0);
                     }
                     break;
-                case 49: // TGEU
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].w[1] >= cpu->gpr[(inst >> 0x10) & 0x1F].w[1]) {
+                case SPEC_TGEU: // TGEU
+                    if(cpu->gpr[MIPS_RS(inst)].w[1] >= cpu->gpr[MIPS_RT(inst)].w[1]) {
                         cpuException(cpu, 0xD, 0);
                     }
                     break;
-                case 50: // TGE
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] < cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                case SPEC_TLT: // TGE
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] < cpu->gpr[MIPS_RT(inst)].sw[1]) {
                         cpuException(cpu, 0xD, 0);
                     }
                     break;
-                case 51: // TGEU
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].w[1] < cpu->gpr[(inst >> 0x10) & 0x1F].w[1]) {
+                case SPEC_TLTU: // TGEU
+                    if(cpu->gpr[MIPS_RS(inst)].w[1] < cpu->gpr[MIPS_RT(inst)].w[1]) {
                         cpuException(cpu, 0xD, 0);
                     }
                     break;
-                case 52: // TEQ
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] == cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                case SPEC_TEQ: // TEQ
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] == cpu->gpr[MIPS_RT(inst)].sw[1]) {
                         cpuException(cpu, 0xD, 0);
                     }
                     break;
-                case 53:
-                    break;
-                case 54: // TNE
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] != cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                case SPEC_TNE: // TNE
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] != cpu->gpr[MIPS_RT(inst)].sw[1]) {
                         cpuException(cpu, 0xD, 0);
                     }
                     break;
-                case 55:
+                case SPEC_DSLL: // DSLL
+                    cpu->gpr[MIPS_RD(inst)].d = cpu->gpr[MIPS_RT(inst)].d << MIPS_SA(inst);
                     break;
-                case 56: // DSLL
-                    cpu->gpr[(inst >> 0xB) & 0x1F].d = cpu->gpr[(inst >> 0x10) & 0x1F].d << ((inst >> 6) & 0x1F);
+                case SPEC_DSRL: // DSRL
+                    cpu->gpr[MIPS_RD(inst)].d = cpu->gpr[MIPS_RT(inst)].d >> MIPS_SA(inst);
                     break;
-                case 57: 
+                case SPEC_DSRA: // DSRA
+                    cpu->gpr[MIPS_RD(inst)].sd = cpu->gpr[MIPS_RT(inst)].sd >> MIPS_SA(inst);
                     break;
-                case 58: // DSRL
-                    cpu->gpr[(inst >> 0xB) & 0x1F].d = cpu->gpr[(inst >> 0x10) & 0x1F].d >> ((inst >> 6) & 0x1F);
+                case SPEC_DSLL32: // DSLL32
+                    cpu->gpr[MIPS_RD(inst)].d = cpu->gpr[MIPS_RT(inst)].d << (MIPS_SA(inst) + 32);
                     break;
-                case 59: // DSRA
-                    cpu->gpr[(inst >> 0xB) & 0x1F].sd = cpu->gpr[(inst >> 0x10) & 0x1F].sd >> ((inst >> 6) & 0x1F);
+                case SPEC_DSRL32: // DSRL32
+                    cpu->gpr[MIPS_RD(inst)].d = cpu->gpr[MIPS_RT(inst)].d >> (MIPS_SA(inst) + 32);
                     break;
-                case 60: // DSLL32
-                    cpu->gpr[(inst >> 0xB) & 0x1F].d = cpu->gpr[(inst >> 0x10) & 0x1F].d << (((inst >> 6) & 0x1F) + 32);
-                    break;
-                case 61:
-                    break;
-                case 62: // DSRL32
-                    cpu->gpr[(inst >> 0xB) & 0x1F].d = cpu->gpr[(inst >> 0x10) & 0x1F].d >> (((inst >> 6) & 0x1F) + 32);
-                    break;
-                case 63: // DSRA32
-                    cpu->gpr[(inst >> 0xB) & 0x1F].sd = cpu->gpr[(inst >> 0x10) & 0x1F].sd >> (((inst >> 6) & 0x1F) + 32);
+                case SPEC_DSRA32: // DSRA32
+                    cpu->gpr[MIPS_RD(inst)].sd = cpu->gpr[MIPS_RT(inst)].sd >> (MIPS_SA(inst) + 32);
                     break;
 
             }       
             break;
-        case 1:
-            switch((inst >> 0x10) & 0x1F) {
-                case 0: // BLTZ
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] < 0) {
-                        cpu->unk_0x24 = cpu->pc + ((s16)(inst & 0xFFFF) * 4);
+        case OPC_REGIMM:
+            switch(REGIMM_SUB(inst)) {
+                case REGIMM_BLTZ: // BLTZ
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] < 0) {
+                        cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
                     }
                     break;
-                case 1: // BGEZ
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] >= 0) {
-                        cpu->unk_0x24 = cpu->pc + ((s16)(inst & 0xFFFF) * 4);
+                case REGIMM_BGEZ: // BGEZ
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] >= 0) {
+                        cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
                     }
                     break;
-                case 2: // BLTZL
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] < 0) {
-                        cpu->unk_0x24 = cpu->pc + ((s16)(inst & 0xFFFF) * 4);
+                case REGIMM_BLTZL: // BLTZL
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] < 0) {
+                        cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
                     } else {
                         cpu->unk_0x00 |= 4;
                         cpu->pc += 4;
                     }
                     break;
-                case 3: // BGEZL
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] >= 0) {
-                        cpu->unk_0x24 = cpu->pc + ((s16)(inst & 0xFFFF) * 4);
+                case REGIMM_BGEZL: // BGEZL
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] >= 0) {
+                        cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
                     } else {
                         cpu->unk_0x00 |= 4;
                         cpu->pc += 4;
                     }
                     break;
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                    break;
-                case 8: // TGEI
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] >= (s16)(inst & 0xFFFF)) {
+                case REGIMM_TGEI: // TGEI
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] >= MIPS_IMM(inst) ) {
                         cpuException(cpu, 0xD, 0);
                     }
                     break;
-                case 9: // TGEIU
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].w[1] >= (s16)(inst & 0xFFFF)) {
+                case REGIMM_TGEIU: // TGEIU
+                    if(cpu->gpr[MIPS_RS(inst)].w[1] >= MIPS_IMM(inst) ) {
                         cpuException(cpu, 0xD, 0);
                     }
                     break;
-                case 10: // TLTI
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] < (s16)(inst & 0xFFFF)) {
+                case REGIMM_TLTI: // TLTI
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] < MIPS_IMM(inst) ) {
                         cpuException(cpu, 0xD, 0);
                     }
                     break;
-                case 11: // TLTIU
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].w[1] < (s16)(inst & 0xFFFF)) {
+                case REGIMM_TLTIU: // TLTIU
+                    if(cpu->gpr[MIPS_RS(inst)].w[1] < MIPS_IMM(inst) ) {
                         cpuException(cpu, 0xD, 0);
                     }
                     break;
-                case 12: // TEQI
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] == (s16)(inst & 0xFFFF)) {
+                case REGIMM_TEQI: // TEQI
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] == MIPS_IMM(inst) ) {
                         cpuException(cpu, 0xD, 0);
                     }
                     break;
-                case 13:
-                    break;
-                case 14: // TNEI
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] != (s16)(inst & 0xFFFF)) {
+                case REGIMM_TNEI: // TNEI
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] != MIPS_IMM(inst) ) {
                         cpuException(cpu, 0xD, 0);
                     }
                     break;
-                case 15:
-                    break;
-                case 16: // BLTZAL
+                case REGIMM_BLTZAL: // BLTZAL
                     cpu->gpr[0x1F].w[1] = cpu->pc + 4;
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] < 0) {
-                        cpu->unk_0x24 = cpu->unk_0x28 = cpu->pc + ((s16)(inst & 0xFFFF) * 4);
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] < 0) {
+                        cpu->unk_0x24 = cpu->unk_0x28 = cpu->pc + (MIPS_IMM(inst) * 4);
                     }
                     break;
-                case 17: // BGEZAL
+                case REGIMM_BGEZAL: // BGEZAL
                     cpu->gpr[0x1F].w[1] = cpu->pc + 4;
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] >= 0) {
-                        cpu->unk_0x24 = cpu->unk_0x28 = cpu->pc + ((s16)(inst & 0xFFFF) * 4);
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] >= 0) {
+                        cpu->unk_0x24 = cpu->unk_0x28 = cpu->pc + (MIPS_IMM(inst) * 4);
                     }
                     break;
-                case 18: // BLTZALL
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] < 0) {
+                case REGIMM_BLTZALL: // BLTZALL
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] < 0) {
                         cpu->gpr[0x1F].sw[1] = cpu->pc + 4;
-                        cpu->unk_0x24 = cpu->pc + ((s16)(inst & 0xFFFF) * 4);
+                        cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
                     } else {
                         cpu->unk_0x00 |= 4;
                         cpu->pc += 4;
                     }
                     break;
-                case 19: // BGEZALL
-                    if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] >= 0) {
+                case REGIMM_BGEZALL: // BGEZALL
+                    if(cpu->gpr[MIPS_RS(inst)].sw[1] >= 0) {
                         cpu->gpr[0x1F].sw[1] = cpu->pc + 4;
-                        cpu->unk_0x24 = cpu->pc + ((s16)(inst & 0xFFFF) * 4);
+                        cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
                     } else {
                         cpu->unk_0x00 |= 4;
                         cpu->pc += 4;
@@ -901,7 +904,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                     break;
             }
             break;
-        case 2: // J
+        case OPC_J: // J
             {
                 cpu->unk_0x24 = (cpu->pc & 0xF0000000) | ((inst & 0x3FFFFFF) << 2);
                 if(cpu->unk_0x24 != cpu->pc - 4) {
@@ -913,7 +916,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 }
             }
             break;
-        case 3: //JAL
+        case OPC_JAL: //JAL
             {
                 recomp_node_t *node;
     
@@ -922,9 +925,9 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 cpuFindFunction(cpu, cpu->unk_0x24, &node);
             }
             break;
-        case 4: // BEQ
-             if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] == cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                 cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
+        case OPC_BEQ: // BEQ
+             if(cpu->gpr[MIPS_RS(inst)].sw[1] == cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                 cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
              }
 
              if(cpu->unk_0x24 != cpu->pc - 4) {
@@ -935,46 +938,47 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                  return NULL;
              }
              break;
-        case 5: // BNE
+        case OPC_BNE: // BNE
             if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] != cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
+                cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
             }
             break;
-        case 6: // BLEZ
+        case OPC_BLEZ: // BLEZ
             if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] <= 0) {
-                cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
+                cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
             }
             break;
-        case 7: // BGTZ
+        case OPC_BGTZ: // BGTZ
             if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] > 0) {
-                cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
+                cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
             }
             break;
-        case 8: // ADDI
-            cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + (s16)(inst & 0xFFFF);
+        case OPC_ADDI: // ADDI
+            cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + MIPS_IMM(inst) ;
             break;
-        case 9: // ADDIU
-            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + (s16)(inst & 0xFFFF);
+        case OPC_ADDIU: // ADDIU
+            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst) ;
             break;
-        case 10: // SLTI
-            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = !!(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] < (s16)(inst & 0xFFFF));
+        case OPC_SLTI: // SLTI
+            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = !!(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] < MIPS_IMM(inst) );
             break;
-        case 11: // SLTIU
-            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = !!(cpu->gpr[(inst >> 0x15) & 0x1F].w[1] < (s16)(inst & 0xFFFF));
+        case OPC_SLTIU: // SLTIU
+            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = !!(cpu->gpr[(inst >> 0x15) & 0x1F].w[1] < MIPS_IMM(inst) );
             break;
-        case 12: // ANDI
+        case OPC_ANDI: // ANDI
             cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] & (inst & 0xFFFF);
             break;
-        case 13: // ORI
+        case OPC_ORI: // ORI
             cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] | (inst & 0xFFFF);
             break;
-        case 14: // XORI
+        case OPC_XORI: // XORI
             cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] ^ (inst & 0xFFFF);
             break; 
-        case 15: // LUI
+        case OPC_LUI: // LUI
             cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = (inst & 0xFFFF) << 0x10;
+            
             break;
-        case 16: // CP0
+        case OPC_CP0: // CP0
             switch(inst & 0x3F) {
                 case 1: // TLBR
                     cpu->cp0[2].d = cpu->unk_0x248[cpu->cp0[0].w[1] & 0x3F].unk_0x00.d;
@@ -987,9 +991,6 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                     break;
                 case 5: // TLBWR
                     {
-                        s32 i;
-                        s32 val;
-
                         for(i = 0; i < 0x30; i++) {
                             if(!(cpu->unk_0x248[i].unk_0x10.w[1] & 2)) {
                                 val++;
@@ -1002,9 +1003,6 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                     break;
                 case 8: // TLBP
                     {
-                        s32 i;
-                        s32 val;
-
                         cpu->cp0[0].d |= 0x80000000;
 
                         for(i = 0; i < 0x30; i++) {
@@ -1027,48 +1025,28 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                     }
                     cpu->unk_0x00 |= 0x24;
                     break;
-                case 0: // SUB
-                case 3:
-                case 4: 
-                case 6:
-                case 7:
-                case 9:
-                case 10:
-                case 11:
-                case 12:
-                case 13:
-                case 14:
-                case 15:
-                case 16:
-                case 17:
-                case 18:
-                case 19:
-                case 20:
-                case 21:
-                case 22:
-                case 23:
+                case 0:
+                default:
                     switch((inst >> 0x15) & 0x1F) {
                         case 0: // MFC0
                             {
-                                u32 res;
-                            
-                                if(!func_8000E2B0(cpu, (inst >> 0xB) & 0x1F, &res)) {
+                                if(!func_8000E2B0(cpu, (inst >> 0xB) & 0x1F, &tmp.w[1])) {
                                     break;
                                 }
 
-                                cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = res;
+                                cpu->gpr[(inst >> 0x10) & 0x1F].d = tmp.d & 0xFFFFFFFFUL;
                             }
                             break;
                         case 1: // DMFC0
                             {
-                                u32 res[2];
-                                if(!func_8000E2B0(cpu, (inst >> 0xB) & 0x1F, res)) {
+                                if(!func_8000E2B0(cpu, (inst >> 0xB) & 0x1F, &tmp.w[0])) {
                                     break;
                                 }
 
-                                cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = res[1];
-                                cpu->gpr[(inst >> 0x10) & 0x1F].w[0] = res[0];
+                                cpu->gpr[(inst >> 0x10) & 0x1F].d = tmp.d;
                             }
+                            break;
+                        case 2:
                             break;
                         case 4: // MTC0
                             func_8000E0E8(cpu, (inst >> 0xB) & 0x1F, 0, cpu->gpr[(inst >> 0x10) & 0x1F].w[1]);
@@ -1076,76 +1054,87 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                         case 5: // DMTC0
                             func_8000E0E8(cpu, (inst >> 0xB) & 0x1F, cpu->gpr[(inst >> 0x10) & 0x1F].w[0], cpu->gpr[(inst >> 0x10) & 0x1F].w[1]);
                             break;
+                        case 6:
+                            break;
                     }
                     break;
-
-
             }
             break;
-        case 17: // CP1
-            if((inst & 0x7FF) == 0) {
-                switch((inst >> 0x15) & 0x1F) {
-                    case 0: // MFC1
-                        if((inst >> 0x10) & 1) {
-                            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->fpr[(inst >> 0xB) & 0x1F].w[0];
-                        } else {
-                            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->fpr[(inst >> 0xB) & 0x1F].w[1];
-                        }
-                        break;
-                    case 1: // DMFC1
-                        cpu->gpr[(inst >> 0x10) & 0x1F].d = cpu->fpr[(inst >> 0xB) & 0x1F].d;
-                        break;
-                    case 2: // CFC1
-                        cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->fscr[(inst >> 0xB) & 0x1F];
-                        break;
-                    case 4:
-                        if((inst >> 0xB) & 1) {
-                            cpu->fpr[(inst >> 0xB) & 0x1F].w[0] = cpu->gpr[(inst >> 0x10) & 0x1F].w[1];
-                        } else {
-                            cpu->fpr[(inst >> 0xB) & 0x1F].w[1] = cpu->gpr[(inst >> 0x10) & 0x1F].w[1];
-                        }
-                        break;
-                    case 5:
-                        cpu->fpr[(inst >> 0xB) & 0x1F].d = cpu->fpr[(inst >> 0xB) & 0x1F].d;
-                        break;
+        case OPC_CP1:
+            if(MIPS_FDT(inst) == 0) {
+                if(MIPS_FSUB(inst) >= 0x10) {
+                    break;
+                }
 
+                switch(MIPS_FSUB(inst)) {
+                    case MIPS_FSUB_MFC:
+                        if(MIPS_FS(inst) & 1) {
+                            cpu->gpr[MIPS_RT(inst)].w[1] = cpu->fpr[MIPS_FS(inst) - 1].w[0];
+                        } else {
+                            cpu->gpr[MIPS_RT(inst)].w[1] = cpu->fpr[MIPS_FS(inst)].w[1];
+                        }
+                        break;
+                    case MIPS_FSUB_DMFC:
+                        cpu->gpr[MIPS_RT(inst)].d = cpu->fpr[MIPS_FS(inst)].d;
+                        break;
+                    case MIPS_FSUB_CFC:
+                        cpu->gpr[MIPS_RT(inst)].w[1] = cpu->fscr[MIPS_FS(inst)];
+                        break;
+                    case MIPS_FSUB_MTC:
+                        if(MIPS_FS(inst) & 1) {
+                            cpu->fpr[MIPS_FS(inst) - 1].d = cpu->fpr[MIPS_FS(inst) - 1].d & 0xFFFFFFFFUL;
+                            cpu->fpr[MIPS_FS(inst) - 1].d |= ((u64)cpu->gpr[MIPS_RT(inst)].w[1] << 32);
+
+                        } else {
+                            cpu->fpr[MIPS_FS(inst)].w[1] = cpu->gpr[MIPS_RT(inst)].w[1];
+                        }
+                        break;
+                    case MIPS_FSUB_DMTC:
+                        cpu->fpr[MIPS_FS(inst)].d = cpu->gpr[MIPS_RT(inst)].d;
+                        break;
+                    case MIPS_FSUB_CTC:
+                        cpu->fscr[MIPS_FS(inst)] = cpu->gpr[MIPS_RT(inst)].w[1];
+                        break;
+                }
+                break;
+            }
+            
+            // Condition Code
+            if(MIPS_FFMT(inst) == 8) {
+                switch((inst >> 0x10) & 0x1F) {
+                    case 0: // BC1F
+                        if(!(cpu->fscr[0x1F] & 0x800000)) {
+                            cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
+                        }
+                        break;
+                    case 1: // BC1T
+                        if(cpu->fscr[0x1F] & 0x800000) {
+                            cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
+                        }
+                        break;
+                    case 2: // BC1FL
+                        if(!(cpu->fscr[0x1F] & 0x800000)) {
+                            cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
+                        } else {
+                            cpu->unk_0x00 |= 4;
+                            cpu->pc += 4;
+                        }
+                        break;
+                    case 3: // BC1TL
+                        if(cpu->fscr[0x1F] & 0x800000) {
+                            cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
+                        } else {
+                            cpu->unk_0x00 |= 4;
+                            cpu->pc += 4;
+                        }
+                        break;
                 }
                 break;
             }
 
-            switch((inst >> 0x15) & 0x1F) {
-                case 8:
-                    switch((inst >> 0x10) & 0x1F) {
-                        case 0: // BC1F
-                            if(!(cpu->fscr[0x1F] & 0x800000)) {
-                                cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
-                            }
-                            break;
-                        case 1: // BC1T
-                            if(cpu->fscr[0x1F] & 0x800000) {
-                                cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
-                            }
-                            break;
-                        case 2: // BC1FL
-                            if(!(cpu->fscr[0x1F] & 0x800000)) {
-                                cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
-                            } else {
-                                cpu->unk_0x00 |= 4;
-                                cpu->pc += 4;
-                            }
-                            break;
-                        case 3: // BC1TL
-                            if(cpu->fscr[0x1F] & 0x800000) {
-                                cpu->unk_0x24 = cpu->pc + (s16)(inst & 0xFFFF) * 4;
-                            } else {
-                                cpu->unk_0x00 |= 4;
-                                cpu->pc += 4;
-                            }
-                            break;
-                    }
-                    break;
-                case 0x10: // SINGLE
-                    switch(inst & 0x3F) {
+            switch(MIPS_FFMT(inst)) {
+                case MIPS_FMT_SINGLE:
+                    switch(MIPS_FFUNC(inst)) {
                         case 0: // ADD.S
                             cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1] + cpu->fpr[(inst >> 0x10) & 0x1F].f[1];
                             break;
@@ -1191,7 +1180,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                         case 14: // CEIL.W.S
                             cpu->fpr[(inst >> 6) & 0x1F].sw[1] = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].f[1]);
                             break;
-                        case 15: // FLOOR.L.S
+                        case 15: // FLOOR.W.S
                             cpu->fpr[(inst >> 6) & 0x1F].sw[1] = floor(cpu->fpr[(inst >> 0xB) & 0x1F].f[1]);
                             break;
                         case 16:
@@ -1250,26 +1239,1078 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                                 cpu->fscr[0x1F] &= ~0x00800000;
                             }
                             break;
-
-
+                        case 52: // C.UEQ.S
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] == cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 53: // C.OLT.S
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] < cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 54: // C.ULT.S
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] < cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 55: // C.OLE.S
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 56: // C.ULE.S
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 57: // C.SF.S
+                            cpu->fscr[0x1F] &= ~0x00800000;
+                            break;
+                        case 58: // C.NGLE.S
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 59: // C.SEQ.S
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] == cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 60: // C.NGL.S
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] == cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 61: // C.LT.S
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] < cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 62: // C.NGE.S
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] < cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 63:  // C.LE.S
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 64: // C.NGT.S
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
                     }
                     break;
-                case 0x11: // DOUBLE
-                case 0x14: // LONG
-                case 0x15: // WORD
+                case MIPS_FMT_DOUBLE:
+                    switch(MIPS_FFUNC(inst)) {
+                        case 0: // ADD.D
+                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].fd + cpu->fpr[(inst >> 0x10) & 0x1F].fd;
+                            break;
+                        case 1: // SUB.D
+                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].fd - cpu->fpr[(inst >> 0x10) & 0x1F].fd;
+                            break;
+                        case 3: // MUL.D
+                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].fd * cpu->fpr[(inst >> 0x10) & 0x1F].fd;
+                            break;
+                        case 4: // DIV.D
+                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].fd / cpu->fpr[(inst >> 0x10) & 0x1F].fd;
+                            break;
+                        case 5: // SQRT.D
+                            cpu->fpr[(inst >> 6) & 0x1F].fd = sqrt(cpu->fpr[(inst >> 0xB) & 0x1F].fd);
+                            break;
+                        case 6: // ABS.D
+                            cpu->fpr[(inst >> 6) & 0x1F].fd = __fabs(cpu->fpr[(inst >> 0xB) & 0x1F].fd);
+                            break;
+                        case 7: // MOV.D
+                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
+                            break;
+                        case 8: // NEG.D
+                            cpu->fpr[(inst >> 6) & 0x1F].fd = -cpu->fpr[(inst >> 0xB) & 0x1F].fd;
+                            break;
+                        case 9: // ROUND.L.D
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = 0.5 + cpu->fpr[(inst >> 0xB) & 0x1F].fd;
+                            break;
+                        case 10: // TRUNC.L.D
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
+                            break;
+                        case 11: // CEIL.L.D
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].fd);
+                            break;
+                        case 12: // FLOOR.L.D
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = floor(cpu->fpr[(inst >> 0xB) & 0x1F].fd);
+                            break;
+                        case 13: // ROUND.W.D
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = 0.5 + cpu->fpr[(inst >> 0xB) & 0x1F].fd;
+                            break;
+                        case 14: // TRUNC.W.D
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
+                            break;
+                        case 15: // CEIL.W.D
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].fd);
+                            break;
+                        case 16: // FLOOR.W.D
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = floor(cpu->fpr[(inst >> 0xB) & 0x1F].fd);
+                            break;
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                            break;
+                        case 33: // CVT.S.D
+                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
+                            break;
+                        case 34: // CVT.D.D
+                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
+                            break;
+                        case 35:
+                        case 36:
+                            break;
+                        case 37: // CVT.W.D
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
+                            break;
+                        case 38: // CVT.L.D
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
+                            break;
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                            break;
+                        case 49: // C.F.D
+                            cpu->fscr[0x1F] &= ~0x00800000;
+                            break;
+                        case 50: // C.UN.D
+                            cpu->fscr[0x1F] &= ~0x00800000;
+                            break;
+                        case 51: // C.EQ.D
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd == cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 52: // C.UEQ.D
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd == cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 53: // C.OLT.D
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd < cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 54: // C.ULT.D
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd < cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 55: // C.OLE.D
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd <= cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 56: // C.ULE.D
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd <= cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 57: // C.SF.D
+                            cpu->fscr[0x1F] &= ~0x00800000;
+                            break;
+                        case 58: // C.NGLE.D
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd <= cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 59: // C.SEQ.D
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd == cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 60: // C.NGL.D
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd == cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 61: // C.LT.D
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd < cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 62: // C.NGE.D
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd < cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 63:  // C.LE.D
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd <= cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 64: // C.NGT.D
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd <= cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                    }
                     break;
-
+                case MIPS_FMT_WORD:
+                    switch(MIPS_FFUNC(inst)) {
+                        case 0: // ADD.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] + cpu->fpr[(inst >> 0x10) & 0x1F].sw[1];
+                            break;
+                        case 1: // SUB.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] - cpu->fpr[(inst >> 0x10) & 0x1F].sw[1];
+                            break;
+                        case 2: // MUL.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] * cpu->fpr[(inst >> 0x10) & 0x1F].sw[1];
+                            break;
+                        case 3: // DIV.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] / cpu->fpr[(inst >> 0x10) & 0x1F].sw[1];
+                            break;
+                        case 4: // SQRT.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = sqrt(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1]);
+                            break;
+                        case 5: // ABS.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = __fabs(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1]);
+                            break;
+                        case 6: // MOV.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
+                            break;
+                        case 7: // NEG.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = -cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
+                            break;
+                        case 8: // ROUND.L.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
+                            break;
+                        case 9: // TRUNC.L.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
+                            break;
+                        case 10: // CEIL.L.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1]);
+                            break;
+                        case 11: // FLOOR.L.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = floor(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1]);
+                            break;
+                        case 12: // ROUND.W.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
+                            break;
+                        case 13: // TRUNC.W.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
+                            break;
+                        case 14: // CEIL.W.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1]);
+                            break;
+                        case 15: // FLOOR.W.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = floor(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1]);
+                            break;
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                            break;
+                        case 32: // CVT.S.W
+                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
+                            break;
+                        case 33: // CVT.D.W
+                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
+                            break;
+                        case 34:
+                        case 35:
+                            break;
+                        case 37: // CVT.W.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
+                            break;
+                        case 38: // CVT.L.W
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
+                            break;
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                            break;
+                        case 49: // C.F.W
+                            cpu->fscr[0x1F] &= ~0x00800000;
+                            break;
+                        case 50: // C.UN.W
+                            cpu->fscr[0x1F] &= ~0x00800000;
+                            break;
+                        case 51: // C.EQ.W
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] == cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 52: // C.UEQ.W
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] == cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 53: // C.OLT.W
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] < cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 54: // C.ULT.W
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] < cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 55: // C.OLE.W
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 56: // C.ULE.W
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 57: // C.SF.W
+                            cpu->fscr[0x1F] &= ~0x00800000;
+                            break;
+                        case 58: // C.NGLE.W
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 59: // C.SEQ.W
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] == cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 60: // C.NGL.W
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] == cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 61: // C.LT.W
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] < cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 62: // C.NGE.W
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] < cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 63:  // C.LE.W
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 64: // C.NGT.W
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                    }
+                    break;
+                case MIPS_FMT_DBLWORD:
+                    switch(MIPS_FFUNC(inst)) {
+                        case 0: // ADD.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd + cpu->fpr[(inst >> 0x10) & 0x1F].sd;
+                            break;
+                        case 1: // SUB.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd - cpu->fpr[(inst >> 0x10) & 0x1F].sd;
+                            break;
+                        case 2: // MUL.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd * cpu->fpr[(inst >> 0x10) & 0x1F].sd;
+                            break;
+                        case 3: // DIV.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd / cpu->fpr[(inst >> 0x10) & 0x1F].sd;
+                            break;
+                        case 4: // SQRT.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = sqrt(cpu->fpr[(inst >> 0xB) & 0x1F].sd);
+                            break;
+                        case 5: // ABS.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = __fabs(cpu->fpr[(inst >> 0xB) & 0x1F].sd);
+                            break;
+                        case 6: // MOV.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
+                            break;
+                        case 7: // NEG.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = -cpu->fpr[(inst >> 0xB) & 0x1F].sd;
+                            break;
+                        case 8: // ROUND.L.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
+                            break;
+                        case 9: // TRUNC.L.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
+                            break;
+                        case 10: // CEIL.L.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].sd);
+                            break;
+                        case 11: // FLOOR.L.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = floor(cpu->fpr[(inst >> 0xB) & 0x1F].sd);
+                            break;
+                        case 12: // ROUND.W.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
+                            break;
+                        case 13: // TRUNC.W.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
+                            break;
+                        case 14: // CEIL.W.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].sd);
+                            break;
+                        case 15: // FLOOR.W.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = floor(cpu->fpr[(inst >> 0xB) & 0x1F].sd);
+                            break;
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                            break;
+                        case 32: // CVT.S.L
+                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
+                            break;
+                        case 33: // CVT.D.L
+                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
+                            break;
+                        case 34:
+                        case 35:
+                            break;
+                        case 37: // CVT.W.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
+                            break;
+                        case 38: // CVT.L.L
+                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
+                            break;
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                            break;
+                        case 49: // C.F.L
+                            cpu->fscr[0x1F] &= ~0x00800000;
+                            break;
+                        case 50: // C.UN.L
+                            cpu->fscr[0x1F] &= ~0x00800000;
+                            break;
+                        case 51: // C.EQ.L
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd == cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 52: // C.UEQ.L
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd == cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 53: // C.OLT.L
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd < cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 54: // C.ULT.L
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd < cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 55: // C.OLE.L
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd <= cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 56: // C.ULE.L
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd <= cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 57: // C.SF.L
+                            cpu->fscr[0x1F] &= ~0x00800000;
+                            break;
+                        case 58: // C.NGLE.L
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd <= cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 59: // C.SEQ.L
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd == cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 60: // C.NGL.L
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd == cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 61: // C.LT.L
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd < cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 62: // C.NGE.L
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd < cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 63:  // C.LE.L
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd <= cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                        case 64: // C.NGT.L
+                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd <= cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
+                                cpu->fscr[0x1F] |= 0x00800000;
+                            } else {
+                                cpu->fscr[0x1F] &= ~0x00800000;
+                            }
+                            break;
+                    }
+                    break;
             }
+            break;
+        case 20: // BEQL
+            if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] == cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
+            } else {
+                cpu->unk_0x00 |= 4;
+                cpu->pc += 4;
+            }
+            break;
+        case 21: // BNEL
+            if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] != cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
+                cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
+            } else {
+                cpu->unk_0x00 |= 4;
+                cpu->pc += 4;
+            }
+            break;
+        case 22: // BLEZL
+            if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] <= 0) {
+                cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
+            } else {
+                cpu->unk_0x00 |= 4;
+                cpu->pc += 4;
+            }
+            break;
+        case 23: // BGTZL
+            if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] > 0) {
+                cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
+            } else {
+                cpu->unk_0x00 |= 4;
+                cpu->pc += 4;
+            }
+            break;
+        case 24: // DADDI
+            cpu->gpr[(inst >> 0x10) & 0x1F].sd = cpu->gpr[(inst >> 0x15) & 0x1F].sd + MIPS_IMM(inst) ;
+            break;
+        case 25: // DADDIU
+            cpu->gpr[(inst >> 0x10) & 0x1F].d = cpu->gpr[(inst >> 0x15) & 0x1F].sd + MIPS_IMM(inst) ;
+            break;
+        case 31: // precompiled function.
+            if(!func_8005D614(gSystem->unk_0x0058, cpu, MIPS_IMM(inst) )) {
+                return NULL;
+            }
+            break;
+        case 26: // LDL
+            {
+                s32 sh = 0x38;
+                u8 buf;
+                ea = MIPS_IMM(inst) + cpu->gpr[MIPS_RS(inst)].sw[1];
+
+                do {
+                    dev = devs[dev_idx[ea >> 0x10]];
+
+                    if(dev->lb(dev->unk_4, ea + dev->unk_8, (s8*)&buf)) {
+                        tmp.d = (u64)buf << sh;
+                        cpu->gpr[(inst >> 0x10) & 0x1F].d = tmp.d | (cpu->gpr[(inst >> 0x10) & 0x1F].d & ~((u64)0xFF << sh));
+                    }
+
+                    ea++;
+                    sh -= 8;
+
+                } while((ea - 1) & 7);
+            }
+            break;
+        case 27: // LDR
+            {
+                s32 sh = 0;
+                u8 buf;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + MIPS_IMM(inst) ;
+
+                do {
+                    if(devs[dev_idx[ea >> 0x10]]->lb(devs[dev_idx[ea >> 0x10]]->unk_4, ea + devs[dev_idx[ea >> 0x10]]->unk_8, (s8*)&buf)) {
+                        tmp.d = (u64)buf << sh;
+                        cpu->gpr[(inst >> 0x10) & 0x1F].d = tmp.d | (cpu->gpr[(inst >> 0x10) & 0x1F].d & ~((u64)0xFF << sh));
+                    }
+                    ea--;
+                    sh += 8;
+                } while((ea + 1) & 7);
+            }
+            break;
+        case 39: // LWU
+            {
+                u32 dst;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                if(dev->lw(dev->unk_4, ea + dev->unk_8, (s32*)&dst)) {
+                    cpu->gpr[(inst >> 0x10) & 0x1F].d = dst;
+                }
+            }
+            break;
+        case 32: // LB
+            {
+                s8 dst;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                if(dev->lb(dev->unk_4, ea + dev->unk_8, &dst)) {
+                    cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = dst;
+                }
+            }
+            break;
+        case 33: // LH
+            {
+                s16 dst;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                if(dev->lh(dev->unk_4, ea + dev->unk_8, &dst)) {
+                    cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = dst;
+                }
+            }
+            break;
+        case 34: // LWL
+            {
+                u8 buf;
+                s32 sh = 0x18;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + MIPS_IMM(inst);
+
+                do {
+                    dev = devs[dev_idx[ea >> 0x10]];
+                    if(dev->lb(dev->unk_4, ea + dev->unk_8, (s8*)&buf)) {
+                        tmp.w[1] = (u32)buf << sh;
+                        cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = tmp.w[1] | (cpu->gpr[(inst >> 0x10) & 0x1F].w[1] & ~((u32)0xFF << sh));
+                    }
+                    ea++;
+                    sh -= 8;
+                } while((ea - 1) & 3);
+            }
+            break;
+        case 35: // LW
+            {
+                s32 dst;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                if(dev->lw(dev->unk_4, ea + dev->unk_8, &dst)) {
+                    cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = dst;
+                }
+            }
+            break;
+        case 36: // LBU
+            {
+                u8 dst;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                if(dev->lb(dev->unk_4, ea + dev->unk_8, (s8*)&dst)) {
+                    cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = dst;
+                }
+            }
+            break;
+        case 37: // LHU
+            {
+                u16 dst;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+
+                if(func_80052D68(gSystem->frame, &dst, ea)) {
+                    cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = dst;
+                    break;
+                }
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                if(dev->lh(dev->unk_4, ea + dev->unk_8, (s16*)&dst)) {
+                    cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = dst;
+                }
+            }
+            break;
+        case 38: // LWR
+            {
+                u8 buf;
+                s32 sh = 0;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + MIPS_IMM(inst);
+
+                do {
+                    dev = devs[dev_idx[ea >> 0x10]];
+                    if(dev->lb(dev->unk_4, ea + dev->unk_8, (s8*)&buf)) {
+                        tmp.w[1] = (u32)buf << sh;
+                        cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = tmp.w[1] | (cpu->gpr[(inst >> 0x10) & 0x1F].w[1] & ~((u32)0xFF << sh));
+                    }
+                    ea--;
+                    sh += 8;
+                } while((ea + 1) & 3);
+            }
+            break;
+        case 40: // SB
+            {
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                dev->sb(dev->unk_4, ea + dev->unk_8, (s8*)&cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]);
+            }
+            break;
+        case 41: // SH
+            {
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                dev->sh(dev->unk_4, ea + dev->unk_8, (s16*)&cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]);
+            }
+            break;
+        case 42: // SWL
+            {
+                s8 buf;
+                s32 sh = 0x18;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + MIPS_IMM(inst);
+
+                do {
+                    buf = cpu->gpr[(inst >> 0x10) & 0x1F].w[1] >> sh;
+                    dev = devs[dev_idx[ea >> 0x10]];
+                    dev->sb(dev->unk_4, ea + dev->unk_8, &buf);
+                    ea++;
+                    sh -= 8;
+                } while((ea - 1) & 3);
+            }
+            break;
+        case 43: // SW
+            {
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                dev->sw(dev->unk_4, ea + dev->unk_8, &cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]);
+            }
+            break;
+        case 44: // SDL
+            {
+                s8 buf;
+                s32 sh = 0x38;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + MIPS_IMM(inst);
+
+                do {
+                    buf = cpu->gpr[(inst >> 0x10) & 0x1F].d >> sh;
+                    dev = devs[dev_idx[ea >> 0x10]];
+                    dev->sb(dev->unk_4, ea + dev->unk_8, &buf);
+                    ea++;
+                    sh -= 8;
+                } while((ea - 1) & 7);
+            }
+            break;
+        case 45: // SDR
+            {
+                s8 buf;
+                s32 sh = 0;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + MIPS_IMM(inst);
+
+                do {
+                    buf = cpu->gpr[(inst >> 0x10) & 0x1F].d >> sh;
+                    dev = devs[dev_idx[ea >> 0x10]];
+                    dev->sb(dev->unk_4, ea + dev->unk_8, &buf);
+                    ea--;
+                    sh += 8;
+                } while((ea + 1) & 7);
+            }
+            break;
+            break;
+        case 46: // SWR
+            {
+                s8 buf;
+                s32 sh = 0;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + MIPS_IMM(inst);
+
+                do {
+                    buf = cpu->gpr[(inst >> 0x10) & 0x1F].w[1] >> sh;
+                    dev = devs[dev_idx[ea >> 0x10]];
+                    dev->sb(dev->unk_4, ea + dev->unk_8, &buf);
+                    ea--;
+                    sh += 8;
+                } while((ea + 1) & 3);
+            }
+            break;
+        case 48: // LL
+            {
+                s32 dst;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                if(dev->lw(dev->unk_4, ea + dev->unk_8, &dst)) {
+                    cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = dst;
+                }
+            }
+            break;
+        case 49: // LWC1
+            {
+                s32 dst;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                if(dev->lw(dev->unk_4, ea + dev->unk_8, &dst)) {
+                    if((inst >> 0x10) & 1) {
+                        cpu->fpr[MIPS_FS(inst) - 1].d = cpu->fpr[MIPS_FS(inst) - 1].d & 0xFFFFFFFFUL;
+                        cpu->fpr[MIPS_FS(inst) - 1].d |= ((u64)cpu->gpr[MIPS_RT(inst)].w[1] << 32);
+                    } else {
+                        cpu->fpr[(inst >> 0x10) & 0x1F].sw[1] = dst;
+                    }
+                }
+            }
+            break;
+        case 52: // LLD
+            {
+                s64 dst;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                if(dev->ld(dev->unk_4, ea + dev->unk_8, &dst)) {
+                    cpu->gpr[(inst >> 0x10) & 0x1F].d = dst;
+                }
+            }
+            break;
+        case 53: // LDC1 
+            {
+                s64 dst;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                if(dev->ld(dev->unk_4, ea + dev->unk_8, &dst)) {
+                    cpu->fpr[(inst >> 0x10) & 0x1F].d = dst;
+                }
+            }
+            break;
+        case 55: // LD
+            {
+                s64 dst;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                if(dev->ld(dev->unk_4, ea + dev->unk_8, &dst)) {
+                    cpu->gpr[(inst >> 0x10) & 0x1F].d = dst;
+                }
+            }
+            break;
+        case 56: // SC
+            {
+                ea = cpu->gpr[(inst >> 0x10) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+                
+                cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = !!dev->sw(dev->unk_4, ea + dev->unk_8, &cpu->gpr[(inst >> 0x15) & 0x1F].sw[1]);
+            }
+            break;
+        case 57: // SWC1
+            {
+                u32 buf;
+                
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                if((inst >> 0x10) & 1) {
+                    buf = cpu->fpr[(inst >> 0x10) & 0x1F].w[0];
+                } else {
+                    buf = cpu->fpr[(inst >> 0x10) & 0x1F].w[1];
+                }
+
+                dev->sw(dev->unk_4, ea + dev->unk_8, (s32*)&buf);
+            }
+            break;
+        case 60: // SCD
+            {
+                ea = cpu->gpr[(inst >> 0x10) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+                
+                cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = !!dev->sd(dev->unk_4, ea + dev->unk_8, &cpu->gpr[(inst >> 0x15) & 0x1F].sd);
+            }
+            break;
+        case 61: // SDC1
+            {
+                u64 buf  = cpu->fpr[(inst >> 0x10) & 0x1F].d;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                dev->sd(dev->unk_4, ea + dev->unk_8, (s64*)&buf);
+            }
+            break;
+        case 63:
+            {
+                u64 buf  = cpu->gpr[(inst >> 0x10) & 0x1F].d;
+                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
+                dev = devs[dev_idx[ea >> 0x10]];
+
+                dev->sd(dev->unk_4, ea + dev->unk_8, (s64*)&buf);
+            }
+            break;
+
     }
 
     if(!cpuExecuteUpdate(cpu, &ret, tick + 1)) {
         return NULL;
     }
 
-    if(inst == 0xACBF011C) {
-        cpu->gpr[0x1F] = prev_ra;
+    if(save_ra) {
+        cpu->gpr[0x1F].d = prev_ra;
     }
+
+    cpu->unk_0x24 = -1;
+    cpu->unk_0x38 = OSGetTick();
+
+    return ret;
 }
+
 //#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecuteOpcode.s")
 
 s32 videoForceRetrace(void *);
