@@ -1,3 +1,8 @@
+.data 
+glabel lbl_80170A68
+	.incbin "00000001.app", 0x16CB68, 0x80
+
+.text
 glabel func_8000E0E8
 /* 8000E0E8 000096A8  94 21 FF E0 */	stwu r1, -0x20(r1)
 /* 8000E0EC 000096AC  7C 08 02 A6 */	mflr r0

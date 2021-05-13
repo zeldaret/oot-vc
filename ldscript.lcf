@@ -59,6 +59,7 @@ SECTIONS {
 
     .data : {
         data.o(.data)
+        cpu.o(.data)
         ram.o(.data)
         data2.o(.data)
         *(.data)

@@ -18,8 +18,112 @@ double ceil(double in);
 double floor(double in);
 
 extern class_t lbl_80171F38;
-extern u32 lbl_80170B68[32];
+extern u32 reg_map[32];
 extern void (*lbl_8025CFE8)();
+extern u32 *cpuCompile_DSLLV_function;
+extern u32 *cpuCompile_DSRLV_function;
+extern u32 *cpuCompile_DSRAV_function;
+extern u32 *cpuCompile_DMULT_function;
+extern u32 *cpuCompile_DMULTU_function;
+extern u32 *cpuCompile_DDIV_function;
+extern u32 *cpuCompile_DDIVU_function;
+extern u32 *cpuCompile_DADD_function;
+extern u32 *cpuCompile_DADDU_function;
+extern u32 *cpuCompile_DSUB_function;
+extern u32 *cpuCompile_DSUBU_function;
+extern u32 *cpuCompile_S_SQRT_function;
+extern u32 *cpuCompile_D_SQRT_function;
+extern u32 *cpuCompile_W_CVT_SD_function;
+extern u32 *cpuCompile_L_CVT_SD_function;
+extern u32 *cpuCompile_CEIL_W_function;
+extern u32 *cpuCompile_FLOOR_W_function;
+extern u32 *cpuCompile_ROUND_W_function;
+extern u32 *cpuCompile_TRUNC_W_function;
+extern u32 *cpuCompile_LB_function;
+extern u32 *cpuCompile_LH_function;
+extern u32 *cpuCompile_LW_function;
+extern u32 *cpuCompile_LBU_function;
+extern u32 *cpuCompile_LHU_function;
+extern u32 *cpuCompile_SB_function;
+extern u32 *cpuCompile_SH_function;
+extern u32 *cpuCompile_SW_function;
+extern u32 *cpuCompile_LDC_function;
+extern u32 *cpuCompile_SDC_function;
+extern u32 *cpuCompile_LWL_function;
+extern u32 *cpuCompile_LWR_function;
+
+u64 lbl_80170780[] = { 
+    0x000000008000003F, 0x000000000000003F, 0x000000003FFFFFFF, 0x000000003FFFFFFF,
+    0xFFFFFFFFFFFFFFF0, 0x0000000001FFE000, 0x000000000000001F, 0x0000000000000000,
+    0xFFFFFFFFFFFFFFFF, 0x00000000FFFFFFFF, 0x00000000FFFFE0FF, 0x00000000FFFFFFFF,
+    0x00000000FFFFFFFF, 0x00000000F000FF7C, 0xFFFFFFFFFFFFFFFF, 0x000000000000FFFF,
+    0x00000000FFFFEFFF, 0x00000000FFFFFFFF, 0x00000000FFFFFFFB, 0x000000000000000F,
+    0x00000000FFFFFFF0, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
+    0x0000000000000000, 0x0000000000000000, 0x00000000000000FF, 0x00000000FFBFFFFF,
+    0x00000000FFFFFFFF, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF, 0x0000000000000000
+};
+
+u64 lbl_80170880[] = {
+    0x000000000000003F, 0x000000000000003F, 0x000000003FFFFFFF, 0x000000003FFFFFFF,
+    0xFFFFFFFFFFFFFFF0, 0x0000000001FFE000, 0x000000000000001F, 0x0000000000000000,
+    0xFFFFFFFFFFFFFFFF, 0x00000000FFFFFFFF, 0x00000000FFFFE0FF, 0x00000000FFFFFFFF,
+    0x00000000FFFFFFFF, 0x0000000000000300, 0xFFFFFFFFFFFFFFFF, 0x000000000000FFFF,
+    0x00000000FFFFEFFF, 0x00000000FFFFFFFF, 0x00000000FFFFFFFB, 0x000000000000000F,
+    0x00000000FFFFFFF0, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
+    0x0000000000000000, 0x0000000000000000, 0x00000000000000FF, 0x00000000FFBFFFFF,
+    0x00000000FFFFFFFF, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF, 0x0000000000000000
+};
+
+u8 lbl_80170980[] = {
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+};
+
+u8 lbl_801709C0[] = {
+    1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1,
+    1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1,
+};
+
+u8 lbl_80170A00[] = {
+    1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0,
+    1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+
+u32 lbl_80170A20[] = {
+    0x8F480018, 0x11000014, 0x00000000, 0x4448F800,
+    0x00000000, 0x8CBB0018, 0x1360000A, 0x00000000,
+    0x445BF800, 0x00000000, 0x13600009, 0xACBF011C,
+    0x445BF800, 0x8F5B0018, 0x13600013, 0x00000000,
+    0x8F5B012C, 0x44DBF800
+};
+
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000CB1C.s")
+
+int cpuFreeCachedAddress(cpu_class_t *cpu, s32 addr_start, s32 addr_end) {
+    s32 i;
+    s32 j;
+    recomp_cache_t *recomp_cache = cpu->recomp_cache;
+
+    i = 0;
+    while(i < cpu->cache_cnt) {
+        if(addr_start <= recomp_cache[i].n64_addr && recomp_cache[i].n64_addr <= addr_end) {
+            for(j = i; j < cpu->cache_cnt - 1; j++) {
+                recomp_cache[j] = recomp_cache[j + 1];
+            }
+            cpu->cache_cnt--;
+        } else {
+            i++;
+        }
+    }
+
+    return 1;
+}
+
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuFindCachedAddress.s")
 
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuTestInterrupt.s")
 
@@ -29,77 +133,227 @@ extern void (*lbl_8025CFE8)();
 
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000D580.s")
 
-s32 func_8000D6EC(cpu_class_t *cpu, s32 arg1);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000D6EC.s")
+s32 cpuSetTLB(cpu_class_t *cpu, s32 arg1);
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuSetTLB.s")
 
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000DEBC.s")
 
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000DF58.s")
 
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000E054.s")
+extern u64 lbl_80170880[];
+s32 cpuSetCP0Status(cpu_class_t *, u32, u64, u32);
+#ifdef NON_MATCHING
+s32 func_8000E0E8(cpu_class_t *cpu, s32 reg, s64 val) {
+    s32 set_reg = 0;
 
-s32 func_8000E0E8(cpu_class_t *cpu, s32 reg, u32 hi, u32 lo);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000E0E8.s")
+    switch(reg) {
+        case 0:
+            cpu->cp0[0].d = (val & lbl_80170880[0]) | (cpu->cp0[0].d & 0x80000000);
+            break;
+        case 1:
+        case 7:
+        case 8:
+        case 15:
+        case 21:
+        case 22:
+        case 23:
+        case 24:
+        case 25:
+        case 27:
+        case 31:
+            break;
+        case 9:
+            set_reg = 1;
+            break;
+        case 11:
+            set_reg = 1;
+            xlObjectEvent(gSystem, 0x1001, (void*)3);
+            if(cpu->status & 1 || !(val & lbl_80170880[11])) {
+                cpu->status &= ~1;
+            } else {
+                cpu->status |= 1;
+            }
 
-s32 func_8000E2B0(cpu_class_t *cpu, s32, u32*);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000E2B0.s")
-
-int func_8000E43C(cpu_class_t *cpu) {
-    if(cpu->cp0[0xC].d & 4) {
-        cpu->pc = cpu->cp0[0x1E].d;
-        cpu->cp0[0xC].d &= ~4;
-    } else {
-        cpu->pc = cpu->cp0[0xE].d;
-        cpu->cp0[0xC].d &= ~2;
+            break;
+        case 12:
+            cpuSetCP0Status(cpu, lbl_80170880[12], val & lbl_80170880[12], 0);
+            break;
+        case 13:
+            xlObjectEvent(gSystem, val & 0x100 ? 0x1000 : 0x1001, (void*) 0);
+            xlObjectEvent(gSystem, val & 0x200 ? 0x1000 : 0x1001, (void*) 0);
+            set_reg = 1;
+            break;
+        case 14:
+            set_reg = 1;
+            break;
+        case 16:
+            cpu->cp0[0x10].d = (u32)((u32)val & (u32)lbl_80170880[0x10]);
+            break;
+        default:
+            set_reg = 1;
+            break;
     }
 
-    cpu->unk_0x00 |= 0x24;
+    if(set_reg) {
+        cpu->cp0[reg].d = val & lbl_80170880[reg];
+    }
+
+    return 1;
+}
+#else
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000E0E8.s")
+#endif
+
+extern u64 lbl_80170780[];
+#ifdef NON_MATCHING
+s32 cpuGetRegisterCP0(cpu_class_t *cpu, s32 reg, s64 *dest) {
+    s32 i;
+    s32 res;
+    s32 set_reg = 0;
+
+    switch(reg) {
+        case 1: // RANDOM
+            for(i = 0, res = 0; i < 0x30; i++) {
+                if(!(cpu->unk_0x248[i].unk_0x10.d & 2)) {
+                    res++;
+                }
+            }
+            *dest = res;
+            break;
+        case 7: // rsvd?
+            *dest = 0;
+            break;
+        case 8:
+            set_reg = 1;
+            break;
+        case 9:
+            set_reg = 1;
+            break;
+        case 11:
+            set_reg = 1;
+            break;
+        case 14:
+            set_reg = 1;
+            break;
+        case 21:
+            *dest = 0;
+            break;
+        case 22:
+            *dest = 0;
+            break;
+        case 23:
+            *dest = 0;
+            break;
+        case 24:
+            *dest = 0;
+            break;
+        case 31:
+            *dest = 0;
+            break;
+        default:
+            set_reg = 1;
+    }
+
+    if(set_reg) {
+        *dest = cpu->cp0[reg].d & lbl_80170780[reg];
+    }
+
+    return 1;
+}
+#else
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuGetRegisterCP0.s")
+#endif
+
+u32 reg_map[] = {
+    10,     // r0 -> r10
+    11,     // at -> r11
+    12,     // v0 -> r12
+    14,     // v1 -> r14
+    15,     // a0 -> r15
+    16,     // a1 -> r16
+    17,     // a2 -> r17
+    18,     // a3 -> r18
+    19,     // t0 -> r19
+    20,     // t1 -> r20
+    21,     // t2 -> r21
+    22,     // t3 -> r22
+    23,     // t4 -> r23
+    24,     // t5 -> r24
+    25,     // t6 -> r25
+    26,     // t7 -> r26
+    0x110,  // s0 -> gpr[16] (no ppc reg)
+    0x111,  // s1 -> gpr[17] (no ppc reg)
+    0x112,  // s2 -> gpr[18] (no ppc reg)
+    0x113,  // s3 -> gpr[19] (no ppc reg)
+    0x114,  // s4 -> gpr[20] (no ppc reg)
+    0x115,  // s5 -> gpr[21] (no ppc reg)
+    0x116,  // s6 -> gpr[22] (no ppc reg)
+    0x117,  // s7 -> gpr[23] (no ppc reg)
+    27,     // t8 -> r27
+    28,     // t9 -> r28
+    29,     // k0 -> r29
+    30,     // k1 -> r30
+    0x11C,  // gp -> gpr[28] (no ppc reg)
+    31,     // sp -> r31
+    0x11E,  // fp -> gpr[30] (no ppc reg)
+    0x11F   // ra -> gpr[31] (no ppc reg)
+};
+
+int __cpuERET(cpu_class_t *cpu) {
+    if(cpu->cp0[CP0_STATUS].d & STATUS_ERL) {
+        cpu->pc = cpu->cp0[CP0_ERROREPC].d;
+        cpu->cp0[CP0_STATUS].d &= ~STATUS_ERL;
+    } else {
+        cpu->pc = cpu->cp0[CP0_EPC].d;
+        cpu->cp0[CP0_STATUS].d &= ~STATUS_EXL;
+    }
+
+    cpu->status |= 0x24;
     return 1;
 }
 
 int __cpuBreak(cpu_class_t *cpu) {
-    cpu->unk_0x00 |= 2;
+    cpu->status |= 2;
     return 1;
 }
 
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000E4B8.s")
 
-#ifdef NON_MATCHING
-// matches, but jump table
-int cpuCheckDelaySlot(u32 inst) {
-    s32 t;
-    int ret = 0;
+s32 cpuCheckDelaySlot(u32 inst) {
+    s32 ret = 0;
+
     if(inst == 0) {
         return 0;
     }
 
-    switch(inst >> 0x1A) {
-        case 0:
-            switch(inst & 0x3F) {
-                case 8:
+    switch(MIPS_OP(inst)) {
+        case OPC_SPECIAL:
+            switch(SPEC_FUNCT(inst)) {
+                case SPEC_JR:
                     ret = 0xD05;
                     break;
-                case 9:
+                case SPEC_JALR:
                     ret = 0x8AE;
                     break;
             }
             break;
-        case 1:
-            switch((inst >> 0x10) & 0x1F) {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 0x10:
-                case 0x11:
-                case 0x12:
-                case 0x13:
+        case OPC_REGIMM:
+            switch(REGIMM_SUB(inst)) {
+                case REGIMM_BLTZ:
+                case REGIMM_BGEZ:
+                case REGIMM_BLTZL:
+                case REGIMM_BGEZL:
+                case REGIMM_BLTZAL:
+                case REGIMM_BGEZAL:
+                case REGIMM_BLTZALL:
+                case REGIMM_BGEZALL:
                     ret = 0x457;
                     break;
             }
             break;
-        case 0x10:
-            switch(inst & 0x3F) {
+        case OPC_CP0:
+            switch(MIPS_CP0FUNC(inst)) {
                 default:
                     switch((inst >> 0x15) & 0x1F) {
                         default:
@@ -126,8 +380,8 @@ int cpuCheckDelaySlot(u32 inst) {
                     break;
             }
             break;
-        case 0x11:
-            if(((inst >> 0x15) & 0x1F) == 8) {
+        case OPC_CP1:
+            if(MIPS_FSUB(inst) == 8) {
                 switch((inst >> 0x10) & 0x1F) {
                     case 0:
                     case 1:
@@ -141,43 +395,1132 @@ int cpuCheckDelaySlot(u32 inst) {
                 break;
             }
             break;
-        case 2:
+        case OPC_J:
             ret = 0xD05;
             break;
-        case 3:
+        case OPC_JAL:
             ret = 0x8AE;
             break;
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 0x14:
-        case 0x15:
-        case 0x16:
-        case 0x17:
+        case OPC_BEQ:
+        case OPC_BNE:
+        case OPC_BLEZ:
+        case OPC_BGTZ:
+        case OPC_BEQL:
+        case OPC_BNEL:
+        case OPC_BLEZL:
+        case OPC_BGTZL:
             ret = 0x457;
             break;
     }
 
     return ret;
 }
+
+void cpuNOPFill(u32 *code, s32 *pos, s32 cnt) {
+    if(code == NULL) {
+        *pos += cnt;
+        return;
+    }
+
+    while(cnt-- != 0) {
+        code[(*pos)++] = 0x60000000; // NOP
+    }
+}
+
+#ifdef NON_MATCHING
+// gSystem is loaded each time in original
+s32 func_8000E734(cpu_class_t *cpu, u32 inst, u32 prev_inst, u32 next_inst, s32 pc, u32 *code, s32 *arg6, s32 *arg7) {
+    if(gSystem->rom_id == 'CLBJ' || gSystem->rom_id == 'CLBE' || gSystem->rom_id =='CLBP') {
+        // lw sp, 0x0000(a0)
+        // lw ra, 0x0004(a0)
+        // lw s0, 0x0008(a0)
+        if(inst == 0x8C9F0004 && prev_inst == 0x8C9D0000 && next_inst == 0x8C900008) {
+            cpu->unk_0x12220 |= 2;
+        }
+    } else if(gSystem->rom_id == 'NFXJ' || gSystem->rom_id == 'NFXE' || gSystem->rom_id == 'NFXP') {
+        // nop
+        // lw ra, 0x003C(sp)
+        // sw s2, 0x0040(sp)
+        if(inst == 0x8FBF003C && prev_inst == 0x00000000 && next_inst == 0xAFB20040) {
+            cpu->unk_0x12220 |= 2;
+        }
+    }
+
+    return 1;
+}
 #else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCheckDelaySlot.s")
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000E734.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000E654.s")
+#ifdef NON_MATCHING
+// Same issue as above, some other
+s32 func_8000E81C(cpu_class_t *cpu, u32 inst, u32 prev_inst, u32 next_inst, s32 arg4, u32 *code, s32 *pos, u32 *arg7) {
+    if(gSystem->rom_id == CLBJ || gSystem->rom_id == CLBE || gSystem->rom_id ==CLBP) {
+        // sw sp, 0x0000(a0)
+        // sw ra, 0x0004(a0)
+        // sw s0, 0x0008(a0)
+        if(inst == 0xAC9F0004 && prev_inst == 0xAC9D0000 && next_inst == 0xAC900008) {
+            if(code != NULL) {
+                code[(*pos)++] = 0x80A30000 + ((u32)&cpu->unk_0x30 - (u32)cpu); // addic r0, r0, 0xA380
+            } else {
+                (*pos)++;
+            }
+            *arg7 = reg_map[31];
+            if(*arg7 & 0x100) {
+                if(code != NULL) {
+                    code[(*pos)++] = 0x90A30000 + (u16)((u32)&cpu->gpr[31] - (u32)cpu + 4);
+                } else {
+                    (*pos)++;
+                }
+            } else {
+                if(code != NULL) {
+                    code[(*pos)++] = 0x7CA02B78 | (*arg7 << 16);
+                } else {
+                    (*pos)++;
+                }
+            }
+            cpu->unk_0x12220 |= 2;
+        }
+    } else if(gSystem->rom_id == NFXJ || gSystem->rom_id == NFXE || gSystem->rom_id == NFXP) {
+        // move s4, a0
+        // sw ra, 0x003C(sp)
+        // sw s0, 0x0018(sp)
+        if(inst == 0xAFBF003C && prev_inst == 0x0080A025 && next_inst == 0xAFB00018) {
+            if(code != NULL) {
+                // addic r0, r0, offset(cpu_class_t, unk_0x30)
+                code[(*pos)++] = 0x80A30000 + ((u32)&cpu->unk_0x30 - (u32)cpu);
+            } else {
+                (*pos)++;
+            }
 
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000E734.s")
+            *arg7 = reg_map[31];
+            if(*arg7 & 0x100) {
+                if(code != NULL) {
+                    // stw r5, offsetof(cpu_class_t, gpr[31]) + 4(r3)
+                    code[(*pos)++] = 0x90A30000 + (u16)((u32)&cpu->gpr[31] - (u32)cpu + 4);
+                } else {
+                    (*pos)++;
+                }
+            } else {
+                if(code != NULL) {
+                    // mr *arg7, r5
+                    code[(*pos)++] = 0x7CA02B78 | (*arg7 << 16);
+                } else {
+                    (*pos)++;
+                }
+            }
+            cpu->unk_0x12220 |= 2;
+        }
+    }
 
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000E81C.s")
+#endif
 
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuGetPPC.s")
+s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, s32 *pos, s32 delay) {
+    u32 *mips_buf;
+    u32 prev_inst;
+    u32 cur_inst;
+    u32 next_inst;
+    s32 skip;
+    s32 cur_inst_addr;
+    s32 i;
+    s32 bVar2;
+    u32 offset;
+    s32 iVar5 = 0;
+    u32 rA;
+    u32 rS;
+    u32 rD;
+    u32 rB;
+    s32 prev_pos;
 
-int func_80031D4C() {
+
+    if(!cpuGetAddressBuffer(cpu, (void**)&mips_buf, *inst_addr)) {
+        return 0;
+    }
+
+    skip = 0;
+    next_inst = mips_buf[1];
+    cur_inst = mips_buf[0];
+    prev_inst = mips_buf[-1];
+    cur_inst_addr = *inst_addr;
+    
+    (*inst_addr) += 4;
+    
+    for(i = 0; i < cpu->hack_cnt; i++) {
+        if(cur_inst_addr == cpu->hacks[i].addr && cur_inst == cpu->hacks[i].expected) {
+            if(cpu->hacks[i].replacement == -1) {
+                skip = 1;
+            }
+
+            if(cpu->hacks[i].replacement != -1) {
+                cur_inst = cpu->hacks[i].replacement;
+            }
+        }
+
+        if((cur_inst_addr + 4) == cpu->hacks[i].addr && next_inst == cpu->hacks[i].expected) {
+            if(cpu->hacks[i].replacement != -1) {
+                next_inst = cpu->hacks[i].replacement;
+            }
+        }
+
+        if((cur_inst_addr - 4) == cpu->hacks[i].addr && prev_inst == cpu->hacks[i].expected) {
+            if(cpu->hacks[i].replacement != -1) {
+                prev_inst = cpu->hacks[i].replacement;
+            }
+        }
+    }
+
+    cpu->unk_0x12288 = 0;
+    if(*pos == 0) {
+        cpu->unk_0x1228C = -1;
+
+        if(!skip) {
+            if(!cpuCheckDelaySlot(cur_inst)) {
+                if((node->n64_end_addr - node->n64_start_addr) / 4 >= 25) {
+                    skip = 1;
+                }
+
+                if((node->n64_end_addr - node->n64_start_addr) / 4 <= 26) {
+                    bVar2 = 1;
+                }
+            }
+
+            if(code != NULL) {
+                code[(*pos)++] = 0x3CA00000 | ((u32)node >> 0x10);
+                code[(*pos)++] = 0x60A50000 | ((u32)node & 0xFFFF);
+                code[(*pos)++] = 0x80C50028;
+                code[(*pos)++] = 0x2C060000;
+                code[(*pos)++] = 0x41820008;
+                code[(*pos)++] = 0x90850028;
+            }
+
+            if(bVar2) {
+                if(code != NULL) {
+                    code[(*pos)++] = 0x80a3003c;
+                    code[(*pos)++] = 0x7ca62850;
+                    code[(*pos)++] = 0x2c050002;
+                    code[(*pos)++] = 0x41800014;
+                    code[(*pos)++] = 0x3ca00000 | (cur_inst_addr >> 0x10);
+                    code[(*pos)++] = 0x7ca62850 | (cur_inst_addr & 0xFFFF);
+                    offset = ((u32)cpu->execute_opcode -(u32)&code[*pos]);
+                    code[(*pos)++] = 0x48000001 | (offset & 0x3FFFFFC);
+                } else {
+                    (*pos) += 16;
+                }
+            }
+        }
+    } else {
+        iVar5 = cpuCheckDelaySlot(prev_inst);
+    }
+
+    bVar2 = 0;
+    if(cur_inst != 0 && (iVar5 || delay)) {
+        bVar2 = 1;
+    }
+
+    if(!skip) {
+        if(code == NULL || bVar2) {
+            cpu->unk_0x12274 = 0;
+            cpu->unk_0x12220 = 0;
+            cpu->unk_0x1228C = -1;
+            cpu->unk_0x12294 = 0;
+        }
+
+        switch(MIPS_OP(cur_inst)) {
+            case OPC_SPECIAL:
+                switch(SPEC_FUNCT(cur_inst)) {
+                    case SPEC_SLL:
+                        if(cur_inst == 0) {
+                            if(code != NULL) {
+                                code[(*pos)++] = 0x60000000; // NOP
+                            }
+                        }
+
+                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
+
+                        rA = reg_map[MIPS_RD(cur_inst)];
+
+                        if(rA & 0x100) {
+                            rA = 5;
+                        }
+
+                        rS = reg_map[MIPS_RT(cur_inst)];
+                        if(rS & 0x100) {
+                            rS = 6;
+                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RT(cur_inst))) {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // mr r6, cpu->unk_0x1227C
+                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                }
+                            } else {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // lwz r6, cpu->gpr[rt]
+                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
+                                }
+                            }
+                        }
+
+                        if(code != NULL) {
+                            // li r7, shift_amt
+                            code[*pos] = 0x38E00000 | ((cur_inst >> 6) & 0x1F);
+                        }
+
+                        (*pos)++;
+
+                        if(code != NULL) {
+                            // slw rA, rS, r7
+                            code[*pos] = 0x7C000030 | (rS << 21) | (rA << 16) | 0x3800;
+                        }
+
+                        (*pos)++;
+
+                        if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
+                            cpu->unk_0x12274 = 2;
+                            cpu->unk_0x12278 = MIPS_RD(cur_inst);
+                            cpu->unk_0x1227C = rA;
+                            if(code != NULL) {
+                                // stw r5, cpu->gpr[rd]
+                                code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
+                            }
+                        }
+
+                        break;
+                    case SPEC_SRL:
+                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
+
+                        rA = reg_map[MIPS_RD(cur_inst)];
+
+                        if(rA & 0x100) {
+                            rA = 5;
+                        }
+
+                        rS = reg_map[MIPS_RT(cur_inst)];
+                        if(rS & 0x100) {
+                            rS = 6;
+                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RT(cur_inst))) {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // mr r6, cpu->unk_0x1227C
+                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                }
+                            } else {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // lwz r6, cpu->gpr[rt]
+                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
+                                }
+                            }
+                        }
+
+                        if(code != NULL) {
+                            // li r7, shift_amt
+                            code[*pos] = 0x38E00000 | ((cur_inst >> 6) & 0x1F);
+                        }
+
+                        (*pos)++;
+
+                        if(code != NULL) {
+                            // srw rA, rS, r7
+                            code[*pos] = 0x7C000430 | (rS << 21) | (rA << 16) | 0x3800;
+                        }
+
+                        (*pos)++;
+
+                        if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
+                            cpu->unk_0x12274 = 2;
+                            cpu->unk_0x12278 = MIPS_RD(cur_inst);
+                            cpu->unk_0x1227C = rA;
+                            if(code != NULL) {
+                                // stw r5, cpu->gpr[rd]
+                                code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
+                            }
+                        }
+
+                        break;
+                    case SPEC_SRA:
+                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
+
+                        rA = reg_map[MIPS_RD(cur_inst)];
+
+                        if(rA & 0x100) {
+                            rA = 5;
+                        }
+
+                        rS = reg_map[MIPS_RT(cur_inst)];
+                        if(rS & 0x100) {
+                            rS = 6;
+                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RT(cur_inst))) {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // mr r6, cpu->unk_0x1227C
+                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                }
+                            } else {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // lwz r6, cpu->gpr[rt]
+                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
+                                }
+                            }
+                        }
+
+                        if(code != NULL) {
+                            // srawi rA, rS, r7
+                            code[*pos] = 0x7C000670 | (rS << 21) | (rA << 16) | (((cur_inst >> 6) & 0x1F) << 11);
+                        }
+
+                        (*pos)++;
+
+                        if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
+                            cpu->unk_0x12274 = 2;
+                            cpu->unk_0x12278 = MIPS_RD(cur_inst);
+                            cpu->unk_0x1227C = rA;
+                            if(code != NULL) {
+                                // stw r5, cpu->gpr[rd]
+                                code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
+                            }
+                        }
+
+                        break;
+                    case SPEC_SLLV:
+                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
+
+                        rA = reg_map[MIPS_RD(cur_inst)];
+
+                        if(rA & 0x100) {
+                            rA = 5;
+                        }
+
+                        rS = reg_map[MIPS_RT(cur_inst)];
+                        if(rS & 0x100) {
+                            rS = 6;
+                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RT(cur_inst))) {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // mr r6, cpu->unk_0x1227C
+                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                }
+                            } else {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // lwz r6, cpu->gpr[rt]
+                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
+                                }
+                            }
+                        }
+
+                        rB = reg_map[MIPS_RS(cur_inst)];
+                        if(rB & 0x100) {
+                            rB = 7;
+                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RS(cur_inst))) {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // mr r6, cpu->unk_0x1227C
+                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                }
+                            } else {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // lwz r6, cpu->gpr[rs]
+                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
+                                }
+                            }
+                        }
+
+                        if(code != NULL) {
+                            // andi. rB, rB, 0x1F
+                            code[*pos] = 0x70000000 | (rB << 21) | (rB << 16) | 0x1F;
+                        }
+
+                        (*pos)++;
+
+                        if(code != NULL) {
+                            // slw rA, rS, rB
+                            code[*pos] = 0x7C000030 | (rS << 21) | (rA << 16) | (rB << 11);
+                        }
+
+                        (*pos)++;
+
+                        if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
+                            cpu->unk_0x12274 = 2;
+                            cpu->unk_0x12278 = MIPS_RD(cur_inst);
+                            cpu->unk_0x1227C = rA;
+                            if(code != NULL) {
+                                // stw r5, cpu->gpr[rd]
+                                code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
+                            }
+                        }
+
+                        break;
+                    case SPEC_SRLV:
+                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
+
+                        rA = reg_map[MIPS_RD(cur_inst)];
+
+                        if(rA & 0x100) {
+                            rA = 5;
+                        }
+
+                        rS = reg_map[MIPS_RT(cur_inst)];
+                        if(rS & 0x100) {
+                            rS = 6;
+                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RT(cur_inst))) {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // mr r6, cpu->unk_0x1227C
+                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                }
+                            } else {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // lwz r6, cpu->gpr[rt]
+                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
+                                }
+                            }
+                        }
+
+                        rB = reg_map[MIPS_RS(cur_inst)];
+                        if(rB & 0x100) {
+                            rB = 7;
+                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RS(cur_inst))) {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // mr r6, cpu->unk_0x1227C
+                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                }
+                            } else {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // lwz r6, cpu->gpr[rs]
+                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
+                                }
+                            }
+                        }
+
+                        if(code != NULL) {
+                            // andi. rB, rB, 0x1F
+                            code[*pos] = 0x70000000 | (rB << 21) | (rB << 16) | 0x1F;
+                        }
+
+                        (*pos)++;
+
+                        if(code != NULL) {
+                            // srw rA, rS, rB
+                            code[*pos] = 0x7C000430 | (rS << 21) | (rA << 16) | (rB << 11);
+                        }
+
+                        (*pos)++;
+
+                        if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
+                            cpu->unk_0x12274 = 2;
+                            cpu->unk_0x12278 = MIPS_RD(cur_inst);
+                            cpu->unk_0x1227C = rA;
+                            if(code != NULL) {
+                                // stw r5, cpu->gpr[rd]
+                                code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
+                            }
+                        }
+
+                        break;
+                    case SPEC_SRAV:
+                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
+
+                        rA = reg_map[MIPS_RD(cur_inst)];
+
+                        if(rA & 0x100) {
+                            rA = 5;
+                        }
+
+                        rS = reg_map[MIPS_RT(cur_inst)];
+                        if(rS & 0x100) {
+                            rS = 6;
+                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RT(cur_inst))) {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // mr r6, cpu->unk_0x1227C
+                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                }
+                            } else {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // lwz r6, cpu->gpr[rt]
+                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
+                                }
+                            }
+                        }
+
+                        rB = reg_map[MIPS_RS(cur_inst)];
+                        if(rB & 0x100) {
+                            rB = 7;
+                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RS(cur_inst))) {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // mr r6, cpu->unk_0x1227C
+                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                }
+                            } else {
+                                if(code == NULL) {
+                                    (*pos)++;
+                                } else {
+                                    // lwz r6, cpu->gpr[rs]
+                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
+                                }
+                            }
+                        }
+
+                        if(code != NULL) {
+                            // andi. rB, rB, 0x1F
+                            code[*pos] = 0x70000000 | (rB << 21) | (rB << 16) | 0x1F;
+                        }
+
+                        (*pos)++;
+
+                        if(code != NULL) {
+                            // sraw rA, rS, rB
+                            code[*pos] = 0x7C000630 | (rS << 21) | (rA << 16) | (rB << 11);
+                        }
+
+                        (*pos)++;
+
+                        if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
+                            cpu->unk_0x12274 = 2;
+                            cpu->unk_0x12278 = MIPS_RD(cur_inst);
+                            cpu->unk_0x1227C = rA;
+                            if(code != NULL) {
+                                // stw r5, cpu->gpr[rd]
+                                code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
+                            }
+                        }
+
+                        break;
+
+                    case SPEC_JR:
+                        // Compile delay slot if not a NOP
+                        if(next_inst != 0) {
+                            if(!cpuGetPPC(cpu, inst_addr, node, code, pos, 1)) {
+                                return 0;
+                            }
+
+                            (*inst_addr) -=4;
+                        }
+
+                        if(MIPS_RS(cur_inst) != MREG_RA) {
+                            cpu->unk_0x12270 = 0;
+                        }
+
+                        if(MIPS_RS(cur_inst) == MREG_RA && !(cpu->unk_0x12220 & 2)) {
+                            rA = reg_map[MIPS_RS(cur_inst)];
+                            if(rA & 0x100) {
+                                rA = 5;
+
+                                if(code != NULL) {
+                                    // lwz r5, cpu->gpr[rs]
+                                    code[(*pos++)] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
+                                } else {
+                                    (*pos)++;
+                                }
+                            }
+
+                            if(code != NULL) {
+                                // mtlr rA
+                                code[(*pos)++] = 0x7C0803A6 | (rA << 21);
+                                // blr
+                                code[(*pos)++] = 0x4E800020;
+                            }
+                        } else {
+                            rA = reg_map[MIPS_RS(cur_inst)];
+                            if(rA & 0x100) {
+                                if(code != NULL) {
+                                    // lwz r5, cpu->gpr[rd]
+                                    code[*pos] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
+                                }
+                            } else {
+                                if(code != NULL) {
+                                    // mr r5, rA
+                                    code[*pos] = 0x7C050378 | (rA << 21) | (rA << 11);
+                                }
+                            }
+                            
+                            (*pos)++;
+
+                            if(code != NULL) {
+                                offset = (u32)cpu->execute_jump - (u32)&code[*pos];
+                                code[(*pos)++] = 0x48000001 | (offset & 0x3FFFFFC);
+                            }
+                        }
+
+                        break;
+                    case SPEC_JALR:
+                        // Compile delay slot if not a NOP
+                        if(next_inst != 0) {
+                            if(!cpuGetPPC(cpu, inst_addr, node, code, pos, 1)) {
+                                return 0;
+                            }
+
+                            (*inst_addr) -=4;
+                        }
+
+                        if(code != NULL) {
+                            // lwz r5, cpu->running_node
+                            code[*pos + 0] = 0x80A3002C;
+                            // lis r7, 0x8000
+                            code[*pos + 1] = 0x3ce08000;
+                            // lwz r6, cpu->running_node->unk_0x28
+                            code[*pos + 2] = 0x80c50028;
+                            // or r6, r6, r7
+                            code[*pos + 3] = 0x7cc63b78;
+                            // lis r7, hi(cur_inst_addr + 8)
+                            code[*pos + 4] = 0x3ce00000 | ((cur_inst_addr + 8) >> 0x10);
+                            // stw r6, cpu->running_node->unk_0x28
+                            code[*pos + 5] = 0x90c50028;
+                            // ori r7, r7, lo(cur_inst_addr + 8)
+                            code[*pos + 6] = 0x60e70000 | ((cur_inst_addr + 8) & 0xFFFF);
+                        }
+
+                        (*pos) += 7;
+
+                        if(code != NULL) {
+                            // stw r7, cpu->unk_0x30
+                            code[*pos] = 0x90E30030;
+                        }
+
+                        (*pos)++;
+
+                        rB = reg_map[MREG_RA];
+                        if(rB & 0x100) {
+                            if(code != NULL) {
+                                // lis r5, hi(ret_addr)
+                                code[*pos] = 0x3CA00000 | ((u32)&code[*pos + 5] >> 0x10);
+                                // ori r5, r5, lo(ret_addr)
+                                code[*pos + 1] = 0x60A50000 | ((u32)&code[*pos + 5] & 0xFFFF);
+                            }
+
+                            (*pos) += 2;
+
+                            if(code != NULL) {
+                                (*pos)++;
+                            } else {
+                                // stw r5, cpu->gpr[MREG_RA]
+                                code[(*pos)++] = 0x90A30000 + ((u32)&cpu->gpr[MREG_RA] - (u32)cpu + 4);
+                            }
+                        } else {
+                            if(code != NULL) {
+                                // lis rB, hi(ret_addr)
+                                code[*pos] = 0x3C000000 | ((u32)&code[*pos + 5] >> 0x10) | (reg_map[MREG_RA] << 21);
+                            }
+
+                            (*pos)++;
+
+                            if(code == NULL) {
+                                (*pos)++;
+                            }
+                        }
+
+                        rA = reg_map[MIPS_RS(cur_inst)];
+                        if(rA & 0x100) {
+                            if(code != NULL) {
+                                // lwz r5, cpu->gpr[rs]
+                                code[*pos] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
+                            }
+                        } else {
+                            if(code != NULL) {
+                                // mr r5, rA
+                                code[*pos] = 0x7C050378 | (rA << 21) | (rA << 11);
+                            }
+                        }
+
+                        (*pos)++;
+
+                        if(code != NULL) {
+                            offset = (u32)cpu->execute_jump - (u32)&code[*pos];
+                            // bl cpu->execute_jump
+                            code[*pos + 0] = 0x48000001 | (offset & 0x3FFFFFC);
+                            // lis r5, hi(node)
+                            code[*pos + 1] = 0x3cA00000 | ((u32)node >> 0x10);
+                            // ori r5, r5, lo(node)
+                            code[*pos + 2] = 0x60A50000 | ((u32)node & 0xFFFF);
+                            // stw r5, cpu->running_node
+                            code[*pos + 3] = 0x90A3002C;
+                            // lis r7, 0x8000
+                            code[*pos + 4] = 0x3CE08000;
+                            // lwz r6, node->unk_0x28
+                            code[*pos + 5] = 0x80C50028;
+                            // andc r6, r6, r7
+                            code[*pos + 6] = 0x7CC63878;
+                            // cmpwi r6, 0
+                            code[*pos + 7] = 0x2C060000;
+                            // beq + 8
+                            code[*pos + 8] = 0x41820008;
+                            // stw r4, node->unk_0x28
+                            code[*pos + 9] = 0x90850028;
+                        }
+
+                        (*pos) += 10;
+
+                        prev_pos = *pos;
+
+                        if(!cpuGetPPC(cpu, inst_addr, node, code, pos, 0)) {
+                            return 0;
+                        }
+
+                        if(code != NULL) {
+                            offset = *pos - prev_pos;
+                            // b from prev_pos to cur pos
+                            code[prev_pos] = 0x48000000 | (offset & 0x3FFFFFC);
+                        }
+
+                        break;
+                    case SPEC_MFHI:
+                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
+
+                        rA = reg_map[MIPS_RD(cur_inst)];
+                        if(rA & 0x100) {
+                            if(code != NULL) {
+                                // lwz r5, lo32(cpu->hi)
+                                code[*pos] = 0x80A30000 | ((u32)&cpu->hi - (u32)cpu + 4);
+                                // stw r5, lo32(cpu->gpr[rd])
+                                code[*pos + 1] = 0x90A30000 | ((u32)&cpu->gpr[rA] - (u32)cpu + 4);
+                                // lwz r5, hi32(cpu->hi)
+                                code[*pos + 2] = 0x80a30000 | ((u32)&cpu->hi - (u32)cpu);
+                                // stw r5, hi32(cpu->gpr[rd])
+                                code[*pos + 3] = 0x90a30000 | ((u32)&cpu->gpr[rA] - (u32)cpu);
+                            }
+                        } else {
+                            if(code != NULL) {
+                                // lwz rA, lo32(cpu->hi)
+                                code[*pos] = 0x80030000 | (rA << 21) + ((u32)&cpu->hi - (u32)cpu + 4);
+                                // lwz r5, hi32(cpu->hi)
+                                code[*pos + 1] = 0x80a30000 | ((u32)&cpu->hi - (u32)cpu);
+                                // stw r5, hi32(cpu->gpr[rd])
+                                code[*pos + 2] = 0x90a30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu);
+                            }
+                        }
+
+                        break;
+
+                    case SPEC_MTHI:
+                        rA = reg_map[MIPS_RS(cur_inst)];
+                        if(rA & 0x100) {
+                            if(code != NULL) {
+                                // lwz r5, lo32(cpu->gpr[rs])
+                                code[*pos] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
+                                // stw r5, lo32(cpu->hi)
+                                code[*pos + 1] = 0x90A30000 + ((u32)&cpu->hi -(u32)cpu + 4);
+                                // lwz r5, hi32(cpu->gpr[rs])
+                                code[*pos + 2] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu);
+                                // stw r5, hi32(cpu->hi)
+                                code[*pos + 3] = 0x90A30000 + ((u32)&cpu->hi - (u32)cpu);
+                            }
+                        } else {
+                            if(code != NULL) {
+                                // stw rA, lo32(cpu->hi)
+                                code[*pos] = 0x90030000 | (rA << 11) + ((u32)&cpu->hi - (u32)cpu + 4);
+                                // lwz r5, hi32(cpu->gpr[rs])
+                                code[*pos + 1] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu);
+                                // stw r5, hi32(cpu->hi)
+                                code[*pos + 2] = 0x90A30000 + ((u32)&cpu->hi - (u32)cpu);
+                            }
+                        }
+                        break;
+                    case SPEC_MFLO:
+                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
+
+                        rA = reg_map[MIPS_RD(cur_inst)];
+                        if(rA & 0x100) {
+                            if(code != NULL) {
+                                // lwz r5, lo32(cpu->lo)
+                                code[*pos] = 0x80A30000 | ((u32)&cpu->lo - (u32)cpu + 4);
+                                // stw r5, lo32(cpu->gpr[rd])
+                                code[*pos + 1] = 0x90A30000 | ((u32)&cpu->gpr[rA] - (u32)cpu + 4);
+                                // lwz r5, hi32(cpu->lo)
+                                code[*pos + 2] = 0x80a30000 | ((u32)&cpu->lo - (u32)cpu);
+                                // stw r5, hi32(cpu->gpr[rd])
+                                code[*pos + 3] = 0x90a30000 | ((u32)&cpu->gpr[rA] - (u32)cpu);
+                            }
+                        } else {
+                            if(code != NULL) {
+                                // lwz rA, lo32(cpu->lo)
+                                code[*pos] = 0x80030000 | (rA << 21) + ((u32)&cpu->lo - (u32)cpu + 4);
+                                // lwz r5, hi32(cpu->lo)
+                                code[*pos + 1] = 0x80a30000 | ((u32)&cpu->lo - (u32)cpu);
+                                // stw r5, hi32(cpu->gpr[rd])
+                                code[*pos + 2] = 0x90a30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu);
+                            }
+                        }
+
+                        break;
+                    case SPEC_MTLO:
+                        rA = reg_map[MIPS_RS(cur_inst)];
+                        if(rA & 0x100) {
+                            if(code != NULL) {
+                                // lwz r5, lo32(cpu->gpr[rs])
+                                code[*pos] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
+                                // stw r5, lo32(cpu->lo)
+                                code[*pos + 1] = 0x90A30000 + ((u32)&cpu->lo -(u32)cpu + 4);
+                                // lwz r5, hi32(cpu->gpr[rs])
+                                code[*pos + 2] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu);
+                                // stw r5, hi32(cpu->lo)
+                                code[*pos + 3] = 0x90A30000 + ((u32)&cpu->lo - (u32)cpu);
+                            }
+                        } else {
+                            if(code != NULL) {
+                                // stw rA, lo32(cpu->lo)
+                                code[*pos] = 0x90030000 | (rA << 11) + ((u32)&cpu->lo - (u32)cpu + 4);
+                                // lwz r5, hi32(cpu->gpr[rs])
+                                code[*pos + 1] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu);
+                                // stw r5, hi32(cpu->lo)
+                                code[*pos + 2] = 0x90A30000 + ((u32)&cpu->lo - (u32)cpu);
+                            }
+                        }
+                        break;
+                    case SPEC_DSLLV:
+                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
+
+                        rA = reg_map[MIPS_RT(cur_inst)];
+                        if(!(rA & 0x100)) {
+                            if(code != NULL) {
+                                code[(*pos)++] = 0x90030000 | (rA << 11) + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
+
+                            } else {
+                                (*pos)++;
+                            }
+                        }
+
+                        rS = reg_map[MIPS_RS(cur_inst)];
+                        if(!(rS & 0x100)) {
+                            code[(*pos)++] = 0x90030000 | (rS << 11) + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
+                        } else {
+                            (*pos)++;
+                        }
+
+                        if(code != NULL) {
+                            // lwz r5, hi32(cpu->gpr[rt])
+                            code[*pos + 0] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu);
+                            // lwz r6, cpu->gpr[rt]
+                            code[*pos + 1] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
+                            // lwz r7, cpu->gpr[rs]
+                            code[*pos + 2] = 0x80E30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
+                            offset = (u32)cpuCompile_DSLLV_function - (u32)&code[*pos + 3];
+                            // bl cpuCompile_DSLLV_function
+                            code[*pos + 3] = 0x48000001 | (offset & 0x3FFFFFC);
+                            // stw r5, hi32(cpu->gpr[rd])
+                            code[*pos + 4] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] -(u32)cpu);
+                        }
+
+                        (*pos) += 5;
+
+                        if(code != NULL) {
+                            // stw, r6, cpu->gpr[rD]
+                            code[*pos] = 0x90C30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
+                        }
+
+                        (*pos)++;
+
+                        rD = reg_map[MIPS_RD(cur_inst)];
+                        if(!(rD & 0x100)) {
+                            // mr rD, r6
+                            code[*pos] = 0x7CC03378 | (rD << 16);
+                        }
+                        break;
+                }
+                break;
+        }
+    }
+}
+
+//#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuGetPPC.s")
+
+int func_80031D4C(cpu_class_t *cpu, recomp_node_t *node, s32 arg2) {
     return 0;
 }
 
+s32 cpuFindFunction(cpu_class_t *cpu, s32 addr, recomp_node_t **out_node);
+s32 libraryTestFunction(void *library, recomp_node_t *node);
+
+#ifdef NON_MATCHING
+s32 cpuMakeFunction(cpu_class_t *cpu, recomp_node_t **out_node, s32 addr) {
+    s32 success = 1;
+    unk_node_0x0C unk0xC[0x400];
+    s32 pos;
+    s32 total_inst;
+    s32 i;
+    size_t code_size;
+    size_t ref_size;
+    size_t alloc_size;
+    u32 *code;
+    u32 *code_p;
+    s32 ref_cnt;
+    s32 cur_addr;
+    recomp_node_t *node;
+
+    if(!cpuFindFunction(cpu, addr, &node)) {
+        return 0;
+    }
+
+    if(func_80031D4C(cpu, node, 1)) {
+        if(out_node != NULL) {
+            *out_node = node;
+        }
+        return 1;
+    }
+
+    if(node->recompiled_func == NULL) {
+        libraryTestFunction(gSystem->unk_0x0058, node);
+        node->unk_0x08 = 0;
+        node->unk_0x0C = unk0xC;
+        cpu->unk_0x1221C = 0x20000000;
+        cpu->unk_0x12220 = 0;
+        node->unk_0x1C = 0;
+        node->state = 11;
+        cpu->unk_0x12270 = 1;
+        cpu->unk_0x12294 = 0;
+        pos = 0;
+        cur_addr = node->n64_start_addr;
+        while(cur_addr <= node->n64_end_addr) {
+            if(!cpuGetPPC(cpu, &cur_addr, node, NULL, &pos, 0)) {
+                return 0;
+            }
+        }
+        total_inst = pos;
+        code_size = pos * 4;
+        alloc_size = code_size;
+        if(node->unk_0x1C != 0) {
+            ref_size = node->unk_0x1C * 8;
+            alloc_size += ref_size;
+        } else {
+            ref_size = 0;
+        }
+
+        if(node->unk_0x08 > 0) {
+            alloc_size += node->unk_0x08 * sizeof(*node->unk_0x0C);
+        }
+
+        do {
+            s32 clean_cnt;
+            recomp_tree_t *recomp_tree;
+            if(cpuHeapTake((char**)&code, cpu, node, alloc_size)){
+                break;
+            }
+
+            recomp_tree = cpu->recomp_tree;
+            if(success) {
+                success = 0;
+                clean_cnt = cpu->unk_0x34 - 300;
+                continue;
+            }
+
+            clean_cnt += 95;
+            if(clean_cnt > (cpu->unk_0x34 - 10)) {
+                clean_cnt = cpu->unk_0x34 - 10;
+            }
+
+            recomp_tree->unk_0x70 = 0;
+            recomp_tree->unk_0x7C = NULL;
+            recomp_tree->unk_0x80 = 0;
+            if(node != NULL && node->unk_0x28 > 0) {
+                node->unk_0x28 = cpu->unk_0x34;
+            }
+
+            if(recomp_tree->unk_0x78 == 0) {
+                if(recomp_tree->code_root != NULL) {
+                    treeForceCleanNodes(cpu, recomp_tree->code_root, clean_cnt);
+                }
+            } else {
+                if(recomp_tree->ovl_root != NULL) {
+                    treeForceCleanNodes(cpu, recomp_tree->ovl_root, clean_cnt);
+                }
+            }
+
+            recomp_tree->unk_0x78 ^= 1;
+        } while(1);
+
+        code_p = code;
+        if(ref_size != 0) {
+            unk_node_0x18 *unk18;
+            node->unk_0x18 = (unk_node_0x18*)((char*)code_p + code_size);
+            unk18 = node->unk_0x18;
+            for(i = 0; i < ref_cnt; i++) {
+                unk18[i].unk_0x00 = 0;
+                unk18[i].unk_0x04 = 0;
+            }
+        }
+
+        cpu->unk_0x1221C = 0x20000000;
+        cpu->unk_0x12220 = 0;
+        node->unk_0x1C = 0;
+        node->state = 22;
+        cpu->unk_0x12294 = 0;
+        cpu->unk_0x12274 = 0;
+        cpu->unk_0x12280 = 0;
+        pos = 0;
+        cur_addr = node->n64_start_addr;
+        while(cur_addr <= node->n64_end_addr) {
+            if(!cpuGetPPC(cpu, &cur_addr, node, code_p, &pos, 0)) {
+                return 0;
+            }
+        }
+
+        if(pos > total_inst) {
+            return 0;
+        }
+
+        while(pos < total_inst) {
+            code_p[pos++] = 0x60000000; // nop;
+        }
+
+        node->state = 33;
+        node->recompiled_func = (recomp_func_t*)code_p;
+        DCStoreRange(node->recompiled_func, pos * 4);
+        ICInvalidateRange(node->recompiled_func, pos * 4);
+        if(node->unk_0x08 > 0) {
+            if(node->unk_0x08 >= 0x400) {
+                return 0;
+            }
+
+            node->unk_0x0C = (unk_node_0x0C*)((char*)code + code_size + ref_size);
+            for(i = 0; i < node->unk_0x08; i++) {
+                node->unk_0x0C[i] = unk0xC[i];
+            }
+        } else {
+            node->unk_0x0C = NULL;
+        }
+
+        node->size = alloc_size;
+        cpu->recomp_tree->total_size += alloc_size;
+        func_80031D4C(cpu, node, 0);
+    }
+
+    if(out_node != NULL) {
+        *out_node = node;
+    }
+
+    return  1;
+}
+#else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuMakeFunction.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_80032248.s")
 
@@ -516,6 +1859,8 @@ inline s32 checkRetrace() {
     return 1;
 }
 
+
+#ifdef NON_MATCHING
 inline unkFrameSet(u32 rom_id, u32 *frame, u32 addr) {
     if(rom_id == 'NKTJ') {
         if(addr == 0x802A4118) {
@@ -540,9 +1885,6 @@ inline unkFrameSet(u32 rom_id, u32 *frame, u32 addr) {
         }
     }
 }
-
-
-
 inline cpu_dev_t *get_dev(cpu_dev_t **devs, u8 *idxs, u32 addr) {
     return devs[idxs[(addr >> 0x10)]];
 }
@@ -566,9 +1908,9 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
     u32 ea;
 
     if(cpu->unk_0x24 != 0) {
-        cpu->unk_0x00 |= 8;
+        cpu->status |= 8;
     } else {
-        cpu->unk_0x00 &= ~8;
+        cpu->status &= ~8;
     }
 
     unkFrameSet(gSystem->rom_id, gSystem->frame, addr);
@@ -830,7 +2172,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                     if(cpu->gpr[MIPS_RS(inst)].sw[1] < 0) {
                         cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
                     } else {
-                        cpu->unk_0x00 |= 4;
+                        cpu->status |= 4;
                         cpu->pc += 4;
                     }
                     break;
@@ -838,7 +2180,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                     if(cpu->gpr[MIPS_RS(inst)].sw[1] >= 0) {
                         cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
                     } else {
-                        cpu->unk_0x00 |= 4;
+                        cpu->status |= 4;
                         cpu->pc += 4;
                     }
                     break;
@@ -889,7 +2231,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                         cpu->gpr[0x1F].sw[1] = cpu->pc + 4;
                         cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
                     } else {
-                        cpu->unk_0x00 |= 4;
+                        cpu->status |= 4;
                         cpu->pc += 4;
                     }
                     break;
@@ -898,7 +2240,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                         cpu->gpr[0x1F].sw[1] = cpu->pc + 4;
                         cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
                     } else {
-                        cpu->unk_0x00 |= 4;
+                        cpu->status |= 4;
                         cpu->pc += 4;
                     }
                     break;
@@ -987,7 +2329,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                     cpu->cp0[5].d = cpu->unk_0x248[cpu->cp0[0].w[1] & 0x3F].unk_0x18.d;
                     break;
                 case 2: // TLBWI
-                    func_8000D6EC(cpu, cpu->cp0[0].w[1] & 0x3F);
+                    cpuSetTLB(cpu, cpu->cp0[0].w[1] & 0x3F);
                     break;
                 case 5: // TLBWR
                     {
@@ -998,7 +2340,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                         }
 
                         cpu->cp0[1].sd = val;
-                        func_8000D6EC(cpu, val);
+                        cpuSetTLB(cpu, val);
                     }
                     break;
                 case 8: // TLBP
@@ -1023,14 +2365,14 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                         cpu->pc = cpu->cp0[14].w[1];
                         cpu->cp0[12].d &= ~2;
                     }
-                    cpu->unk_0x00 |= 0x24;
+                    cpu->status |= 0x24;
                     break;
                 case 0:
                 default:
                     switch((inst >> 0x15) & 0x1F) {
                         case 0: // MFC0
                             {
-                                if(!func_8000E2B0(cpu, (inst >> 0xB) & 0x1F, &tmp.w[1])) {
+                                if(!cpuGetRegisterCP0(cpu, (inst >> 0xB) & 0x1F, &tmp.w[1])) {
                                     break;
                                 }
 
@@ -1039,7 +2381,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                             break;
                         case 1: // DMFC0
                             {
-                                if(!func_8000E2B0(cpu, (inst >> 0xB) & 0x1F, &tmp.w[0])) {
+                                if(!cpuGetRegisterCP0(cpu, (inst >> 0xB) & 0x1F, &tmp.w[0])) {
                                     break;
                                 }
 
@@ -1116,7 +2458,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                         if(!(cpu->fscr[0x1F] & 0x800000)) {
                             cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
                         } else {
-                            cpu->unk_0x00 |= 4;
+                            cpu->status |= 4;
                             cpu->pc += 4;
                         }
                         break;
@@ -1124,7 +2466,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                         if(cpu->fscr[0x1F] & 0x800000) {
                             cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
                         } else {
-                            cpu->unk_0x00 |= 4;
+                            cpu->status |= 4;
                             cpu->pc += 4;
                         }
                         break;
@@ -1183,23 +2525,6 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                         case 15: // FLOOR.W.S
                             cpu->fpr[(inst >> 6) & 0x1F].sw[1] = floor(cpu->fpr[(inst >> 0xB) & 0x1F].f[1]);
                             break;
-                        case 16:
-                        case 17:
-                        case 18:
-                        case 19:
-                        case 20:
-                        case 21:
-                        case 22:
-                        case 23:
-                        case 24:
-                        case 25:
-                        case 26:
-                        case 27:
-                        case 28:
-                        case 29:
-                        case 30:
-                        case 31:
-                            break;
                         case 32: // CVT.S.S
                             cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
                             break;
@@ -1214,17 +2539,6 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                             break;
                         case 38: // CVT.L.S
                             cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
-                            break;
-                        case 39:
-                        case 40:
-                        case 41:
-                        case 42:
-                        case 43:
-                        case 44:
-                        case 45:
-                        case 46:
-                        case 47:
-                        case 48:
                             break;
                         case 49: // C.F.S
                             cpu->fscr[0x1F] &= ~0x00800000;
@@ -1378,48 +2692,17 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                         case 16: // FLOOR.W.D
                             cpu->fpr[(inst >> 6) & 0x1F].sw[1] = floor(cpu->fpr[(inst >> 0xB) & 0x1F].fd);
                             break;
-                        case 17:
-                        case 18:
-                        case 19:
-                        case 20:
-                        case 21:
-                        case 22:
-                        case 23:
-                        case 24:
-                        case 25:
-                        case 26:
-                        case 27:
-                        case 28:
-                        case 29:
-                        case 30:
-                        case 31:
-                        case 32:
-                            break;
                         case 33: // CVT.S.D
                             cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
                             break;
                         case 34: // CVT.D.D
                             cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
                             break;
-                        case 35:
-                        case 36:
-                            break;
                         case 37: // CVT.W.D
                             cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
                             break;
                         case 38: // CVT.L.D
                             cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
-                            break;
-                        case 39:
-                        case 40:
-                        case 41:
-                        case 42:
-                        case 43:
-                        case 44:
-                        case 45:
-                        case 46:
-                        case 47:
-                        case 48:
                             break;
                         case 49: // C.F.D
                             cpu->fscr[0x1F] &= ~0x00800000;
@@ -1573,48 +2856,17 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                         case 15: // FLOOR.W.W
                             cpu->fpr[(inst >> 6) & 0x1F].sw[1] = floor(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1]);
                             break;
-                        case 16:
-                        case 17:
-                        case 18:
-                        case 19:
-                        case 20:
-                        case 21:
-                        case 22:
-                        case 23:
-                        case 24:
-                        case 25:
-                        case 26:
-                        case 27:
-                        case 28:
-                        case 29:
-                        case 30:
-                        case 31:
-                            break;
                         case 32: // CVT.S.W
                             cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
                             break;
                         case 33: // CVT.D.W
                             cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
                             break;
-                        case 34:
-                        case 35:
-                            break;
                         case 37: // CVT.W.W
                             cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
                             break;
                         case 38: // CVT.L.W
                             cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
-                            break;
-                        case 39:
-                        case 40:
-                        case 41:
-                        case 42:
-                        case 43:
-                        case 44:
-                        case 45:
-                        case 46:
-                        case 47:
-                        case 48:
                             break;
                         case 49: // C.F.W
                             cpu->fscr[0x1F] &= ~0x00800000;
@@ -1768,48 +3020,17 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                         case 15: // FLOOR.W.L
                             cpu->fpr[(inst >> 6) & 0x1F].sw[1] = floor(cpu->fpr[(inst >> 0xB) & 0x1F].sd);
                             break;
-                        case 16:
-                        case 17:
-                        case 18:
-                        case 19:
-                        case 20:
-                        case 21:
-                        case 22:
-                        case 23:
-                        case 24:
-                        case 25:
-                        case 26:
-                        case 27:
-                        case 28:
-                        case 29:
-                        case 30:
-                        case 31:
-                            break;
                         case 32: // CVT.S.L
                             cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
                             break;
                         case 33: // CVT.D.L
                             cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
                             break;
-                        case 34:
-                        case 35:
-                            break;
                         case 37: // CVT.W.L
                             cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
                             break;
                         case 38: // CVT.L.L
                             cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
-                            break;
-                        case 39:
-                        case 40:
-                        case 41:
-                        case 42:
-                        case 43:
-                        case 44:
-                        case 45:
-                        case 46:
-                        case 47:
-                        case 48:
                             break;
                         case 49: // C.F.L
                             cpu->fscr[0x1F] &= ~0x00800000;
@@ -1919,7 +3140,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
             if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] == cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
                 cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
             } else {
-                cpu->unk_0x00 |= 4;
+                cpu->status |= 4;
                 cpu->pc += 4;
             }
             break;
@@ -1927,7 +3148,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
             if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] != cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
                 cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
             } else {
-                cpu->unk_0x00 |= 4;
+                cpu->status |= 4;
                 cpu->pc += 4;
             }
             break;
@@ -1935,7 +3156,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
             if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] <= 0) {
                 cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
             } else {
-                cpu->unk_0x00 |= 4;
+                cpu->status |= 4;
                 cpu->pc += 4;
             }
             break;
@@ -1943,7 +3164,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
             if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] > 0) {
                 cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
             } else {
-                cpu->unk_0x00 |= 4;
+                cpu->status |= 4;
                 cpu->pc += 4;
             }
             break;
@@ -2306,12 +3527,14 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
     }
 
     cpu->unk_0x24 = -1;
-    cpu->unk_0x38 = OSGetTick();
+    cpu->tick = OSGetTick();
 
     return ret;
 }
-
-//#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecuteOpcode.s")
+#else
+void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret);
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecuteOpcode.s")
+#endif
 
 s32 videoForceRetrace(void *);
 s32 cpuExecuteUpdate(cpu_class_t *cpu, u32 **, u32);
@@ -2325,15 +3548,15 @@ void *cpuExecuteIdle(cpu_class_t *cpu, u32 r4, u32 addr, u32 *ret) {
     tick = OSGetTick();
 
     if(cpu->unk_0x24 != 0) {
-        cpu->unk_0x00 |= 8;
+        cpu->status |= 8;
     } else {
-        cpu->unk_0x00 &= ~8;
+        cpu->status &= ~8;
     }
 
     cpu->pc = addr;
-    cpu->unk_0x00 |= 0x80;
+    cpu->status |= 0x80;
 
-    if(!(cpu->unk_0x00 & 0x40) && !rom->unk_19A34) {
+    if(!(cpu->status & 0x40) && !rom->unk_19A34) {
         videoForceRetrace(gSystem->video);
     }
 
@@ -2341,11 +3564,12 @@ void *cpuExecuteIdle(cpu_class_t *cpu, u32 r4, u32 addr, u32 *ret) {
         return NULL;
     }
 
-    cpu->unk_0x38 = OSGetTick();
+    cpu->tick = OSGetTick();
     
     return ret;
 }
 #else
+void *cpuExecuteIdle(cpu_class_t *cpu, u32 r4, u32 addr, u32 *ret);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecuteIdle.s")
 #endif
 
@@ -2353,29 +3577,29 @@ void *cpuExecuteJump(cpu_class_t *cpu, u32 r4, u32 addr, u32 *ret) {
     u32 tick = OSGetTick();
 
     if(cpu->unk_0x24 != 0) {
-        cpu->unk_0x00 |= 8;
+        cpu->status |= 8;
     } else {
-        cpu->unk_0x00 &= ~8;
+        cpu->status &= ~8;
     }
 
     cpu->pc = addr;
-    cpu->unk_0x00 |= 4;
+    cpu->status |= 4;
     if(!cpuExecuteUpdate(cpu, &ret, tick)) {
         return NULL;
     }
 
-    cpu->unk_0x38 = OSGetTick();
+    cpu->tick = OSGetTick();
 
     return ret;
 }
 
-#ifdef NON_MATCHING
-inline void tf(cpu_class_t *cpu, s32 addr, u32 *ret) {
+inline void findUnk0x18(cpu_class_t *cpu, s32 addr, u32 *ret) {
     s32 i;
     recomp_node_t *node;
     unk_node_0x18 *unk_0x18;
     u32 *ret_p = ret - 1;
     
+    cpu->unk_0x34++;
     cpuFindFunction(cpu, cpu->unk_0x30 - 8, &node);
 
     unk_0x18 = node->unk_0x18;
@@ -2389,39 +3613,37 @@ inline void tf(cpu_class_t *cpu, s32 addr, u32 *ret) {
     }
 }
 
-void *cpuExecuteCall(cpu_class_t *cpu, u32 arg1, u32 addr, u32 *ret) {
-    u32 tick = OSGetTick();
+void *cpuExecuteCall(cpu_class_t *cpu, u32 arg1, s32 addr, u32 *ret) {
     recomp_node_t *node;
     s32 i;
     s32 flg;
+    u32 offset;
     u32 *ret_p;
-    u32 *ret_p2;
+    u32 tick = OSGetTick();
 
     if(cpu->unk_0x24 != 0) {
-        cpu->unk_0x00 |= 8;
+        cpu->status |= 8;
     } else {
-        cpu->unk_0x00 &= ~8;
+        cpu->status &= ~8;
     }
 
-    cpu->unk_0x00 |= 4;
+    cpu->status |= 4;
     cpu->pc = addr;
-    cpu->gpr[0x1F].w[1] = (u32)ret;
-    cpu->unk_0x34++;
+    cpu->gpr[MREG_RA].w[1] = (u32)ret;
 
-    tf(cpu, addr, ret);
+    findUnk0x18(cpu, addr, ret);
 
-    flg = ((lbl_80170B68[31] >> 8) & 1) != 0;
+    flg = (reg_map[MREG_RA] & 0x100) != 0;
     ret_p = ret - (!!flg + 3);
     if(flg) {
-        ret_p[0] = ((u32)ret >> 0x10) | 0x3CA00000;
-        ret_p[1] = ((u32)ret & 0xFFFF) | 0x60A50000;
+        ret_p[0] = ((u32)ret >> 0x10) | (5 << 0x15) | (0 << 0x10) | 0x3C000000;
+        ret_p[1] = ((u32)ret & 0xFFFF) |(5 << 0x15) | (5 << 0x10) | 0x60000000;
         DCStoreRange(ret_p, 8);
         ICInvalidateRange(ret_p, 8);
     } else {
-        u32 rs = lbl_80170B68[31] << 0x15;
-        u32 ra = lbl_80170B68[31] << 0x10;
-        ret_p[0] = 0x3C000000 | rs | ((u32)ret >> 0x10);
-        ret_p[1] = 0x60000000 | rs | ra | ((u32)ret & 0xFFFF);
+        u32 reg = reg_map[MREG_RA];
+        ret_p[0] = ((u32)ret >> 0x10) | (reg << 0x15) | (0 << 0x10) | 0x3C000000;
+        ret_p[1] = ((u32)ret & 0xFFFF) | (reg << 0x15) | 0x60000000 | (reg << 0x10);  
         DCStoreRange(ret_p, 8);
         ICInvalidateRange(ret_p, 8);
     }
@@ -2430,33 +3652,33 @@ void *cpuExecuteCall(cpu_class_t *cpu, u32 arg1, u32 addr, u32 *ret) {
         return NULL;
     }
 
+    offset = (u32)ret - (u32)&ret_p[3];
     if(flg) {
-        ret_p[3] = 0x48000000 | (((u32)ret - (u32)&ret_p[3]) & 0x3FFFFFC);
+        ret_p[3] = (offset & 0x3FFFFFC) | 0x48000000;
         DCStoreRange(ret_p, 16);
         ICInvalidateRange(ret_p, 16);
     } else {
-        ret_p[2] = 0x48000000 | (((u32)ret - (u32)&ret_p[3]) & 0x3FFFFFC);
+        ret_p[2] = (offset & 0x3FFFFFC) | 0x48000000;
         DCStoreRange(ret_p, 12);
         ICInvalidateRange(ret_p, 12);
     }
 
-    cpu->unk_0x38 = OSGetTick();
+    cpu->tick = OSGetTick();
 
     return ret;
 }
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecuteCall.s")
-#endif
 
+void *cpuExecuteLoadStore(cpu_class_t *cpu, u32 r4, u32 addr, u32 *ret);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecuteLoadStore.s")
 
+void *cpuExecuteLoadStoreF(cpu_class_t *cpu, u32 r4, u32 addr, u32 *ret);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecuteLoadStoreF.s")
 
 int cpuMakeLink(cpu_class_t *cpu, u32 **link_code, void *handler) {
     u32 *code;
     s32 i;
     u32 paddr;
-    s32 cnt = sizeof(lbl_80170B68) / sizeof(*lbl_80170B68);
+    s32 cnt = sizeof(reg_map) / sizeof(*reg_map);
     
     if(!xlHeapTake((void**)&code, 0x30000200)) {
         return 0;
@@ -2466,9 +3688,9 @@ int cpuMakeLink(cpu_class_t *cpu, u32 **link_code, void *handler) {
     *code++ = 0x7CC802A6; // mflr r6
 
     for(i = 1; i < 32; i++) {
-        if(!(lbl_80170B68[i] & 0x100)) {
+        if(!(reg_map[i] & 0x100)) {
             *code++ = (((u32)&cpu->gpr[i] - (u32)cpu) + 4) |
-                      (lbl_80170B68[i] << 0x15) |
+                      (reg_map[i] << 0x15) |
                       0x90030000;                               // stw rx, off(r3)
         }
     }
@@ -2498,13 +3720,13 @@ int cpuMakeLink(cpu_class_t *cpu, u32 **link_code, void *handler) {
                   0x61080000;                                   // ori r8, r8, dram@l
     }
 
-    *code++ = (lbl_80170B68[0] << 0x15) |
+    *code++ = (reg_map[0] << 0x15) |
               0x38000000;                                       // li r10, 0
 
     for(i = 1; i < 32; i++) {
-        if(!(lbl_80170B68[i] & 0x100)) {
+        if(!(reg_map[i] & 0x100)) {
             *code++ = (((u32)&cpu->gpr[i] - (u32)cpu) + 4) |
-                      (lbl_80170B68[i] << 0x15) |
+                      (reg_map[i] << 0x15) |
                       0x80030000;                               // lwz rx, off(r3)
         }
     }
@@ -2517,7 +3739,339 @@ int cpuMakeLink(cpu_class_t *cpu, u32 **link_code, void *handler) {
     return 1;
 }
 
+#ifdef NON_MATCHING
+extern void (*lbl_8025CFE8)(u32);
+
+inline s32 __free(void **ptr) {
+    void *tmp = ptr;
+    if(!xlHeapFree(&tmp)) {
+        return 0;
+    }
+
+    *ptr = NULL;
+    return 1;
+}
+
+void *VISetPostRetraceCallback(void*);
+
+s32 cpuExecute(cpu_class_t *cpu) {
+    u32 *dadd_buf;
+    u32 *daddu_buf;
+    u32 *dsub_buf;
+    u32 *dsubu_buf;
+    u32 *round_w_buf;
+    u32 *trunc_w_buf;
+    u32 *entry_buf;
+    u32 *entry_p;
+    s32 entry_pos;
+    recomp_node_t *entry_node;
+    u32 ram;
+    s32 i;
+
+    if(cpu->unk_0x12224 & 0x1000) {
+        cpu->unk_0x12224 |= 0x100;
+    }
+
+    if(!cpuMakeLink(cpu, (u32**)&cpu->execute_opcode, cpuExecuteOpcode)) {
+        return 0;
+    }
+
+    if(!cpuMakeLink(cpu, (u32**)&cpu->execute_jump, cpuExecuteJump)) {
+        return 0;
+    }
+
+    if(!cpuMakeLink(cpu, (u32**)&cpu->execute_call, cpuExecuteCall)) {
+        return 0;
+    }
+
+    if(!cpuMakeLink(cpu, (u32**)&cpu->execute_idle, cpuExecuteIdle)) {
+        return 0;
+    }
+
+    if(!cpuMakeLink(cpu, (u32**)&cpu->execute_loadstore, cpuExecuteLoadStore)) {
+        return 0;
+    }
+
+    if(!cpuMakeLink(cpu, (u32**)&cpu->execute_loadstoref, cpuExecuteLoadStoreF)) {
+        return 0;
+    }
+
+    cpuCompile_DSLLV(cpu, &cpuCompile_DSLLV_function);
+    cpuCompile_DSRLV(cpu, &cpuCompile_DSRLV_function);
+    cpuCompile_DSRAV(cpu, &cpuCompile_DSRAV_function);
+    cpuCompile_DMULT(cpu, &cpuCompile_DMULT_function);
+    cpuCompile_DMULTU(cpu, &cpuCompile_DMULTU_function);
+    cpuCompile_DDIV(cpu, &cpuCompile_DDIV_function);
+    cpuCompile_DDIVU(cpu, &cpuCompile_DDIVU_function);
+
+    if(xlHeapTake((void**)&dadd_buf, 0x3000000C)) {
+        cpuCompile_DADD_function = dadd_buf;
+        dadd_buf[0] = 0x7CA53814; // addc r5, r5, r7
+        dadd_buf[1] = 0x7CC64114; // adde r6, r6, r8
+        dadd_buf[2] = 0x4E800020; // blr
+        DCStoreRange(dadd_buf, 12);
+        ICInvalidateRange(dadd_buf, 12);
+    }
+
+    if(xlHeapTake((void**)&daddu_buf, 0x3000000C)) {
+        cpuCompile_DADDU_function = daddu_buf;
+        daddu_buf[0] = 0x7CA53814; // addc r5, r5, r7
+        daddu_buf[1] = 0x7CC64114; // adde r6, r6, r8
+        daddu_buf[2] = 0x4E800020; // blr
+        DCStoreRange(daddu_buf, 12);
+        ICInvalidateRange(daddu_buf, 12);
+    }
+
+    if(xlHeapTake((void**)&dsub_buf, 0x3000000C)) {
+        cpuCompile_DSUB_function = dsub_buf;
+        dsub_buf[0] = 0x7CA53814; // adde r5, r7, r6
+        dsub_buf[1] = 0x7CC64114; // addc r6, r8, r6
+        dsub_buf[2] = 0x4E800020; // blr
+        DCStoreRange(dsub_buf, 12);
+        ICInvalidateRange(dsub_buf, 12);
+    }
+
+    if(xlHeapTake((void**)&dsubu_buf, 0x3000000C)) {
+        cpuCompile_DSUBU_function = dsubu_buf;
+        dsubu_buf[0] = 0x7CA53814; // adde r5, r7, r6
+        dsubu_buf[1] = 0x7CC64114; // addc r6, r8, r6
+        dsubu_buf[2] = 0x4E800020; // blr
+        DCStoreRange(dsubu_buf, 12);
+        ICInvalidateRange(dsubu_buf, 12);
+    }
+
+    cpuCompile_S_SQRT(cpu, &cpuCompile_S_SQRT_function);
+    cpuCompile_D_SQRT(cpu, &cpuCompile_D_SQRT_function);
+    cpuCompile_W_CVT_SD(cpu, &cpuCompile_W_CVT_SD_function);
+    cpuCompile_L_CVT_SD(cpu, &cpuCompile_L_CVT_SD_function);
+    cpuCompile_CEIL_W(cpu, &cpuCompile_CEIL_W_function);
+    cpuCompile_FLOOR_W(cpu, &cpuCompile_FLOOR_W_function);
+
+    if(xlHeapTake((void**)&round_w_buf, 0x3000000C)) {
+        cpuCompile_ROUND_W_function = round_w_buf;
+        round_w_buf[0] = 0xFC00081C; // fctiw f0, f1
+        round_w_buf[1] = 0x7C051FAE; // stfiwx f0, r5, r3
+        round_w_buf[2] = 0x4E800020; // blr
+        DCStoreRange(round_w_buf, 12);
+        ICInvalidateRange(round_w_buf, 12);
+    }
+
+    if(xlHeapTake((void**)&trunc_w_buf, 0x3000000C)) {
+        cpuCompile_TRUNC_W_function = trunc_w_buf;
+        trunc_w_buf[0] = 0xFC00081E; // fctiwz f0, f1
+        trunc_w_buf[1] = 0x7C051FAE; // stfiwx f0, r5, r3
+        trunc_w_buf[2] = 0x4E800020; // blr
+        DCStoreRange(trunc_w_buf, 12);
+        ICInvalidateRange(trunc_w_buf, 12);
+    }
+
+    cpuCompile_LB(cpu, &cpuCompile_LB_function);
+    cpuCompile_LH(cpu, &cpuCompile_LH_function);
+    cpuCompile_LW(cpu, &cpuCompile_LW_function);
+    cpuCompile_LBU(cpu, &cpuCompile_LBU_function);
+    cpuCompile_LHU(cpu, &cpuCompile_LHU_function);
+    cpuCompile_SB(cpu, &cpuCompile_SB_function);
+    cpuCompile_SH(cpu, &cpuCompile_SH_function);
+    cpuCompile_SW(cpu, &cpuCompile_SW_function);
+    cpuCompile_LDC(cpu, &cpuCompile_LDC_function);
+    cpuCompile_SDC(cpu, &cpuCompile_SDC_function);
+    cpuCompile_LWL(cpu, &cpuCompile_LWL_function);
+    cpuCompile_LWR(cpu, &cpuCompile_LWR_function);
+
+    if(cpuMakeFunction(cpu, &entry_node, cpu->pc)) {
+        if(!xlHeapTake((void**)&entry_buf, 0x30000100)) {
+            return 0;
+        }
+
+        entry_pos = 0;
+        entry_p = entry_buf;
+        *entry_p++ = 0x3c600000 | ((u32)cpu >> 16);
+        *entry_p++ = 0x60630000 | ((u32)cpu & 0xFFFFF);
+        *entry_p++ = 0x80830000 | ((u32)&cpu->unk_0x34 - (u32)cpu);
+        ram = (u32)gSystem->ram->dram - 0x80000000;
+        *entry_p++ = 0x3d000000 | (ram >> 16);
+        *entry_p++ = 0x61080000 | (ram & 0xFFFF);
+        if(cpu->unk_0x12224 & 0x100) {
+            *entry_p++ = 0x3D20DFFF;
+            *entry_p++ = 0x6129FFFF;
+        } else {
+            if(cpu->unk_0x12224 & 1) {
+                *entry_p++ = 0x39230000 | ((u32)cpu->mem_hi_map - (u32)cpu);
+            }
+        }
+
+        for(i = 0; i < sizeof(reg_map) / sizeof(*reg_map); i++) {
+            if(!(reg_map[i] & 0x100)) {
+                *entry_p++ = 0x80030000 | ((u32)&cpu->gpr[i] - (u32)cpu + 4) | (reg_map[i] << 0x15);
+            }
+        }
+        *entry_p++ = 0x48000000 | ((u32)entry_node->recompiled_func - (u32)entry_p);
+        DCStoreRange(entry_buf, 0x100);
+        ICInvalidateRange(entry_buf, 0x100);
+        cpu->unk_0x40 = 0;
+        cpu->unk_0x3C = 0;
+        VIWaitForRetrace();
+        lbl_8025CFE8 = VISetPostRetraceCallback(func_80032B74);
+        ((void(*)())entry_buf)(); // Does not return normally.
+        if(!xlHeapFree((void**)&entry_buf)) {
+            return 0;
+        }
+
+        if(!__free((void**)&cpu->execute_idle)) {
+            return 0;
+        }
+
+        if(!__free((void**)&cpu->execute_call)) {
+   
+        }         return 0;
+
+        if(!__free((void**)&cpu->execute_jump)) {
+            return 0;
+        }
+
+        if(!__free((void**)&cpu->execute_opcode)) {
+            return 0;
+        }
+
+        if(!__free((void**)&cpu->execute_loadstore)) {
+            return 0;
+        }
+
+        if(!__free((void**)&cpu->execute_loadstoref)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_DSLLV_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_DSRLV_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_DSRAV_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_DMULT_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_DMULTU_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_DDIV_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_DDIVU_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_DADD_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_DADDU_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_DSUB_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_DSUBU_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_S_SQRT_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_D_SQRT_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_W_CVT_SD_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_L_CVT_SD_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_CEIL_W_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_FLOOR_W_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_TRUNC_W_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_ROUND_W_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_LB_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_LH_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_LW_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_LBU_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_LHU_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_SB_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_SH_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_SW_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_LDC_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_SDC_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_LWL_function)) {
+            return 0;
+        }
+
+        if(!xlHeapFree((void**)&cpuCompile_LWR_function)) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+#else
+s32 cpuExecute(cpu_class_t *cpu);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecute.s")
+#endif
 
 int cpuMapObject(cpu_class_t *cpu, void *dev, u32 address_start, u32 address_end, u32 param_5){
     u32 size = address_end - address_start + 1;
@@ -2598,7 +4152,7 @@ int cpuReset(cpu_class_t *cpu) {
     int i;
     cpu->unk_0x04 = 0;
     cpu->hack_cnt = 0;
-    cpu->unk_0x00 = 0x40;
+    cpu->status = 0x40;
     cpu->execute_opcode = NULL;
 
     for(i = 0; i < 0x30; i++) {
@@ -2643,7 +4197,7 @@ int cpuReset(cpu_class_t *cpu) {
     cpu->unk_0x18 = 0;
 
     if(func_8000CB1C(cpu)) {
-        cpu->unk_0x00 |= 0x10;
+        cpu->status |= 0x10;
     }
 
 
@@ -2718,7 +4272,7 @@ int cpuSetXPC(cpu_class_t *cpu, u32 r4, u64 pc, u64 lo, u64 hi) {
     }
     
     cpu->pc = pc;
-    cpu->unk_0x00 |= 4;
+    cpu->status |= 4;
     cpu->lo.d = lo;
     cpu->hi.d = hi;
 
@@ -2779,6 +4333,8 @@ int cpuInvalidateCache(cpu_class_t *cpu, u32 param_2, s32 param_3) {
 }
 
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuGetFunctionChecksum.s")
+
+int cpuHeapTake(char **code, cpu_class_t *cpu, recomp_node_t *func, int size);
 
 #ifdef NON_MATCHING
 int cpuHeapTake(char **code, cpu_class_t *cpu, recomp_node_t *func, int size) {
@@ -2914,8 +4470,53 @@ int cpuHeapFree(cpu_class_t *cpu, recomp_node_t *func) {
     return 0;
 }
 
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuTreeTake.s")
+#ifdef NON_MATCHING
+// swapped operands in and. and add instructions
+s32 cpuTreeTake(recomp_node_t **node, u32 *node_pos, size_t size) {
+    s32 node_found = 0;
+    s32 i;
+    s32 j;
+    u32 *node_status = gSystem->cpu->tree_blk_status;
 
+    for(i = 0; i < 125; i++) {
+        if(node_status[i] != 0xFFFFFFFF) {
+            u32 mask = (1 << 1) - 1;
+
+            j = 32;
+            do {
+                if(!(node_status[i] & mask)) {
+                    node_found = 1;
+                    node_status[i] |= mask;
+                    *node_pos = (i * 32) + (32 - j);
+                    *node_pos |= 0x10000;
+                    break;
+                }
+                mask <<= 1;
+                j--;
+            } while(j != 0);
+        }
+
+        if(node_found) {
+            break;
+        }
+    }
+
+    if(!node_found) {
+        *node_pos = 0xFFFFFFFF;
+        return 0;
+    }
+
+    *node = &gSystem->cpu->recomp_tree_nodes[*node_pos & 0xFFFF];
+
+    return 1;
+}
+#else
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuTreeTake.s")
+#endif
+
+extern u8 lbl_801709C0[64];
+extern u8 lbl_80170A00[32];
+extern u8 lbl_80170980[64];
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuFindFunction.s")
 
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8003E604.s")

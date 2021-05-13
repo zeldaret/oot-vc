@@ -1,3 +1,35 @@
+.data
+glabel lbl_801717D8
+	.incbin "00000001.app", 0x16D8D8, 0x100
+
+glabel lbl_801718D8
+	.incbin "00000001.app", 0x16D9D8, 0x100
+
+glabel lbl_801719D8
+	.incbin "00000001.app", 0x16DAD8, 0x100
+
+glabel lbl_80171AD8
+	.incbin "00000001.app", 0x16DBD8, 0x100
+
+glabel lbl_80171BD8
+	.incbin "00000001.app", 0x16DCD8, 0x1C
+
+glabel lbl_80171BF4
+	.incbin "00000001.app", 0x16DCF4, 0x24
+
+glabel lbl_80171C18
+	.incbin "00000001.app", 0x16DD18, 0x64
+
+glabel lbl_80171C7C
+	.incbin "00000001.app", 0x16DD7C, 0x50
+
+glabel lbl_80171CCC
+	.incbin "00000001.app", 0x16DDCC, 0x100
+
+glabel lbl_80171DCC
+	.incbin "00000001.app", 0x16DECC, 0x100
+
+.text
 glabel cpuExecuteOpcode
 /* 80035850 00030E10  94 21 FF 90 */	stwu r1, -0x70(r1)
 /* 80035854 00030E14  7C 08 02 A6 */	mflr r0
@@ -1227,7 +1259,7 @@ lbl_800368C0:
 /* 80036B20 000320E0  80 1A 0A 4C */	lwz r0, 0xa4c(r26)
 /* 80036B24 000320E4  7F 43 D3 78 */	mr r3, r26
 /* 80036B28 000320E8  54 04 06 BE */	clrlwi r4, r0, 0x1a
-/* 80036B2C 000320EC  4B FD 6B C1 */	bl func_8000D6EC
+/* 80036B2C 000320EC  4B FD 6B C1 */	bl cpuSetTLB
 /* 80036B30 000320F0  48 00 30 98 */	b lbl_80039BC8
 /* 80036B34 000320F4  38 00 00 08 */	li r0, 8
 /* 80036B38 000320F8  38 80 00 00 */	li r4, 0
@@ -1272,7 +1304,7 @@ lbl_80036BA8:
 /* 80036BB8 00032178  90 9A 0A 54 */	stw r4, 0xa54(r26)
 /* 80036BBC 0003217C  7F 43 D3 78 */	mr r3, r26
 /* 80036BC0 00032180  90 1A 0A 50 */	stw r0, 0xa50(r26)
-/* 80036BC4 00032184  4B FD 6B 29 */	bl func_8000D6EC
+/* 80036BC4 00032184  4B FD 6B 29 */	bl cpuSetTLB
 /* 80036BC8 00032188  48 00 30 00 */	b lbl_80039BC8
 /* 80036BCC 0003218C  80 7A 0A 4C */	lwz r3, 0xa4c(r26)
 /* 80036BD0 00032190  3C 00 80 00 */	lis r0, 0x8000
@@ -1394,7 +1426,7 @@ lbl_80036D5C:
 /* 80036D80 00032340  7F 43 D3 78 */	mr r3, r26
 /* 80036D84 00032344  56 C4 AE FE */	rlwinm r4, r22, 0x15, 0x1b, 0x1f
 /* 80036D88 00032348  38 A1 00 20 */	addi r5, r1, 0x20
-/* 80036D8C 0003234C  4B FD 75 25 */	bl func_8000E2B0
+/* 80036D8C 0003234C  4B FD 75 25 */	bl cpuGetRegisterCP0
 /* 80036D90 00032350  2C 03 00 00 */	cmpwi r3, 0
 /* 80036D94 00032354  41 82 2E 34 */	beq lbl_80039BC8
 /* 80036D98 00032358  80 81 00 24 */	lwz r4, 0x24(r1)
@@ -1409,7 +1441,7 @@ lbl_80036D5C:
 /* 80036DBC 0003237C  7F 43 D3 78 */	mr r3, r26
 /* 80036DC0 00032380  56 C4 AE FE */	rlwinm r4, r22, 0x15, 0x1b, 0x1f
 /* 80036DC4 00032384  38 A1 00 20 */	addi r5, r1, 0x20
-/* 80036DC8 00032388  4B FD 74 E9 */	bl func_8000E2B0
+/* 80036DC8 00032388  4B FD 74 E9 */	bl cpuGetRegisterCP0
 /* 80036DCC 0003238C  2C 03 00 00 */	cmpwi r3, 0
 /* 80036DD0 00032390  41 82 2D F8 */	beq lbl_80039BC8
 /* 80036DD4 00032394  56 C0 9E 38 */	rlwinm r0, r22, 0x13, 0x18, 0x1c

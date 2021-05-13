@@ -1,3 +1,11 @@
+.data
+glabel lbl_80170BE8
+	.incbin "00000001.app", 0x16CCE8, 0x64
+
+glabel lbl_80170C4C
+	.incbin "00000001.app", 0x16CD4C, 0x60
+
+.text
 glabel cpuCheckDelaySlot
 /* 8000E524 00009AE4  2C 03 00 00 */	cmpwi r3, 0
 /* 8000E528 00009AE8  38 A0 00 00 */	li r5, 0

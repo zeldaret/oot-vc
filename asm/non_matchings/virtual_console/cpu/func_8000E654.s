@@ -1,4 +1,4 @@
-glabel func_8000E654
+glabel cpuNOPFill
 /* 8000E654 00009C14  2C 03 00 00 */	cmpwi r3, 0
 /* 8000E658 00009C18  40 82 00 14 */	bne lbl_8000E66C
 /* 8000E65C 00009C1C  80 04 00 00 */	lwz r0, 0(r4)

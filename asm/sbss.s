@@ -10,97 +10,97 @@ glabel gSystem
 glabel lbl_8025CFE8
 	.skip 0x4
 
-glabel lbl_8025CFEC
+glabel cpuCompile_LWR_function
 	.skip 0x4
 
-glabel lbl_8025CFF0
+glabel cpuCompile_LWL_function
 	.skip 0x4
 
-glabel lbl_8025CFF4
+glabel cpuCompile_SDC_function
 	.skip 0x4
 
-glabel lbl_8025CFF8
+glabel cpuCompile_LDC_function
 	.skip 0x4
 
-glabel lbl_8025CFFC
+glabel cpuCompile_SW_function
 	.skip 0x4
 
-glabel lbl_8025D000
+glabel cpuCompile_SH_function
 	.skip 0x4
 
-glabel lbl_8025D004
+glabel cpuCompile_SB_function
 	.skip 0x4
 
-glabel lbl_8025D008
+glabel cpuCompile_LHU_function
 	.skip 0x4
 
-glabel lbl_8025D00C
+glabel cpuCompile_LBU_function
 	.skip 0x4
 
-glabel lbl_8025D010
+glabel cpuCompile_LW_function
 	.skip 0x4
 
-glabel lbl_8025D014
+glabel cpuCompile_LH_function
 	.skip 0x4
 
-glabel lbl_8025D018
+glabel cpuCompile_LB_function
 	.skip 0x4
 
-glabel lbl_8025D01C
+glabel cpuCompile_TRUNC_W_function
 	.skip 0x4
 
-glabel lbl_8025D020
+glabel cpuCompile_ROUND_W_function
 	.skip 0x4
 
-glabel lbl_8025D024
+glabel cpuCompile_FLOOR_W_function
 	.skip 0x4
 
-glabel lbl_8025D028
+glabel cpuCompile_CEIL_W_function
 	.skip 0x4
 
-glabel lbl_8025D02C
+glabel cpuCompile_L_CVT_SD_function
 	.skip 0x4
 
-glabel lbl_8025D030
+glabel cpuCompile_W_CVT_SD_function
 	.skip 0x4
 
-glabel lbl_8025D034
+glabel cpuCompile_D_SQRT_function
 	.skip 0x4
 
-glabel lbl_8025D038
+glabel cpuCompile_S_SQRT_function
 	.skip 0x4
 
-glabel lbl_8025D03C
+glabel cpuCompile_DSUBU_function
 	.skip 0x4
 
-glabel lbl_8025D040
+glabel cpuCompile_DSUB_function
 	.skip 0x4
 
-glabel lbl_8025D044
+glabel cpuCompile_DADDU_function
 	.skip 0x4
 
-glabel lbl_8025D048
+glabel cpuCompile_DADD_function
 	.skip 0x4
 
-glabel lbl_8025D04C
+glabel cpuCompile_DDIVU_function
 	.skip 0x4
 
-glabel lbl_8025D050
+glabel cpuCompile_DDIV_function
 	.skip 0x4
 
-glabel lbl_8025D054
+glabel cpuCompile_DMULTU_function
 	.skip 0x4
 
-glabel lbl_8025D058
+glabel cpuCompile_DMULT_function
 	.skip 0x4
 
-glabel lbl_8025D05C
+glabel cpuCompile_DSRAV_function
 	.skip 0x4
 
-glabel lbl_8025D060
+glabel cpuCompile_DSRLV_function
 	.skip 0x4
 
-glabel lbl_8025D064
+glabel cpuCompile_DSLLV_function
 	.skip 0x4
 
 glabel lbl_8025D068

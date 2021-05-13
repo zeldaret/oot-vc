@@ -3,14 +3,14 @@
 
 #include "tree.h"
 
-typedef s32 (*lb_func_t)(void* obj, s32 addr, s8* dst);
-typedef s32 (*lh_func_t)(void* obj, s32 addr, s16* dst);
-typedef s32 (*lw_func_t)(void* obj, s32 addr, s32* dst);
-typedef s32 (*ld_func_t)(void* obj, s32 addr, s64* dst);
-typedef s32 (*sb_func_t)(void* obj, s32 addr, s8* src);
-typedef s32 (*sh_func_t)(void* obj, s32 addr, s16* src);
-typedef s32 (*sw_func_t)(void* obj, s32 addr, s32* src);
-typedef s32 (*sd_func_t)(void* obj, s32 addr, s64* src);
+typedef s32 (*lb_func_t)(void* obj, u32 addr, s8* dst);
+typedef s32 (*lh_func_t)(void* obj, u32 addr, s16* dst);
+typedef s32 (*lw_func_t)(void* obj, u32 addr, s32* dst);
+typedef s32 (*ld_func_t)(void* obj, u32 addr, s64* dst);
+typedef s32 (*sb_func_t)(void* obj, u32 addr, s8* src);
+typedef s32 (*sh_func_t)(void* obj, u32 addr, s16* src);
+typedef s32 (*sw_func_t)(void* obj, u32 addr, s32* src);
+typedef s32 (*sd_func_t)(void* obj, u32 addr, s64* src);
 
 typedef struct {
     /* 0x0000 */ u32 unk_0;
@@ -58,21 +58,28 @@ typedef struct {
 } cpu_hack_t;
 
 typedef struct {
-    /* 0x00000 */ s32 unk_0x00;
+    s32 n64_addr;
+    void *recomp_addr;
+    recomp_node_t *node;
+} recomp_cache_t;
+
+typedef struct {
+    /* 0x00000 */ s32 status;
     /* 0x00004 */ s32 unk_0x04;
     /* 0x00008 */ reg64_t lo;
     /* 0x00010 */ reg64_t hi;
-    /* 0x00018 */ s32 unk_0x18;
+    /* 0x00018 */ s32 cache_cnt;
     /* 0x0001C */ s32 unk_0x1C;
     /* 0x00020 */ u32 pc;
-    /* 0x00024 */ s32 unk_0x24;
+    /* 0x00024 */ u32 unk_0x24;
     /* 0x00028 */ s32 unk_0x28;
     /* 0x0002C */ recomp_node_t *running_node;
     /* 0x00030 */ s32 unk_0x30;
     /* 0x00034 */ s32 unk_0x34; // timer?
-    /* 0x00038 */ s32 unk_0x38;
+    /* 0x00038 */ s32 tick;
     /* 0x0003C */ s32 unk_0x3C;
-    /* 0x00040 */ char unk_0x40[0x8];
+    /* 0x00040 */ s32 unk_0x40;
+    /* 0x00044 */ char unk_0x44[0x4]; // maybe pad?
     /* 0x00048 */ reg64_t gpr[32];
     /* 0x00148 */ reg64_t fpr[32];
     /* 0x00248 */ unk_cpu_0x248 unk_0x248[0x30];
@@ -93,10 +100,12 @@ typedef struct {
     /* 0x1129C */ recomp_node_t *recomp_tree_nodes;
     /* 0x112A0 */ u32 tree_blk_status[TREE_BLK_CNT];
     /* 0x11494 */ recomp_tree_t* recomp_tree;
-    /* 0x11498 */ char unk_0x11498[0xC00];
+    /* 0x11498 */ recomp_cache_t recomp_cache[256];
     /* 0x12098 */ s32 hack_cnt;
     /* 0x1209C */ cpu_hack_t hacks[4];
-    /* 0x120CC */ char unk_0x120CC[0x158];
+    /* 0x120CC */ char unk_0x120CC[0x150];
+    /* 0x1221C */ s32 unk_0x1221C;
+    /* 0x12220 */ s32 unk_0x12220;
     /* 0x12224 */ s32 unk_0x12224;
     /* 0x12228 */ s32 unk_0x12228;
     /* 0x1222C */ s32 unk_0x1222C;

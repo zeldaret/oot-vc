@@ -57,5 +57,6 @@ typedef struct {
 } recomp_tree_t; // size = 0x84;
 
 int treeKill(void *cpu);
+int treeSearchNode(recomp_node_t *tree, s32 addr, recomp_node_t **out_node);
 
 #endif
