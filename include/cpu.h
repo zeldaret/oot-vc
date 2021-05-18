@@ -15,7 +15,7 @@ typedef s32 (*sd_func_t)(void* obj, u32 addr, s64* src);
 typedef struct {
     /* 0x0000 */ u32 unk_0;
     /* 0x0004 */ void *unk_4;
-    /* 0x0008 */ s32 unk_8;
+    /* 0x0008 */ u32 unk_8;
     /* 0x000C */ lb_func_t lb;
     /* 0x0010 */ lh_func_t lh;
     /* 0x0014 */ lw_func_t lw;
@@ -25,7 +25,10 @@ typedef struct {
     /* 0x0024 */ sw_func_t sw;
     /* 0x0028 */ sd_func_t sd;
     /* 0x002C */ void *unk_0x2C;
-    /* 0x0030 */ char unk_0x30[0x10];
+    /* 0x0030 */ s32 unk_0x30;
+    /* 0x0034 */ s32 unk_0x34;
+    /* 0x0038 */ s32 unk_0x38;
+    /* 0x003C */ s32 unk_0x3C;
 } cpu_dev_t; // size = 0x40
 
 #define SM_BLK_CNT 192
@@ -41,13 +44,24 @@ typedef union {
     f64 fd;
 } reg64_t;
 
-typedef struct {
-    reg64_t unk_0x00;
-    reg64_t unk_0x08;
-    reg64_t unk_0x10;
-    reg64_t unk_0x18;
-    reg64_t unk_0x20;
+typedef union {
+    struct {
+        reg64_t unk_0x00;
+        reg64_t unk_0x08;
+        reg64_t unk_0x10;
+        reg64_t unk_0x18;
+        reg64_t unk_0x20;
+    };
+    reg64_t regs[5];
+    u32 regs32[10];
 } unk_cpu_0x248;
+
+typedef struct {
+    /* 0x0000 */ reg64_t entry_lo[2];
+    /* 0x0010 */ reg64_t entry_hi;
+    /* 0x0018 */reg64_t page_mask;
+    /* 0x0020 */reg64_t unk_0x20;
+} cpu_tlb_t; // size = 0x28
 
 typedef void *(*cpu_execute_func_t)();
 
@@ -82,7 +96,13 @@ typedef struct {
     /* 0x00044 */ char unk_0x44[0x4]; // maybe pad?
     /* 0x00048 */ reg64_t gpr[32];
     /* 0x00148 */ reg64_t fpr[32];
+    union {
     /* 0x00248 */ unk_cpu_0x248 unk_0x248[0x30];
+        u32 unk_0x248regs[480];
+        u32 unk_0x248da[48][10];
+        reg64_t unk_0x248r[48][5];
+        cpu_tlb_t tlb[48];
+    };
     /* 0x009C8 */ u32 fscr[32];
     /* 0x00A48 */ reg64_t cp0[32];
     /* 0x00B48 */ cpu_execute_func_t execute_opcode;

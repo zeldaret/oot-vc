@@ -3,7 +3,7 @@ glabel lbl_80170A68
 	.incbin "00000001.app", 0x16CB68, 0x80
 
 .text
-glabel func_8000E0E8
+glabel cpuSetRegisterCP0
 /* 8000E0E8 000096A8  94 21 FF E0 */	stwu r1, -0x20(r1)
 /* 8000E0EC 000096AC  7C 08 02 A6 */	mflr r0
 /* 8000E0F0 000096B0  90 01 00 24 */	stw r0, 0x24(r1)
@@ -69,7 +69,7 @@ lbl_8000E1BC:
 /* 8000E1D8 00009798  80 84 00 64 */	lwz r4, 0x64(r4)
 /* 8000E1DC 0000979C  7C A5 00 38 */	and r5, r5, r0
 /* 8000E1E0 000097A0  7C C6 20 38 */	and r6, r6, r4
-/* 8000E1E4 000097A4  4B FF FE 71 */	bl func_8000E054
+/* 8000E1E4 000097A4  4B FF FE 71 */	bl cpuSetCP0Status
 /* 8000E1E8 000097A8  48 00 00 78 */	b lbl_8000E260
 /* 8000E1EC 000097AC  54 C0 05 EF */	rlwinm. r0, r6, 0, 0x17, 0x17
 /* 8000E1F0 000097B0  80 6D 89 20 */	lwz r3, gSystem-_SDA_BASE_(r13)

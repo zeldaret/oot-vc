@@ -1,4 +1,4 @@
-glabel func_8003D47C
+glabel cpuGetOffsetAddress
 /* 8003D47C 00038A3C  94 21 FF D0 */	stwu r1, -0x30(r1)
 /* 8003D480 00038A40  7C 08 02 A6 */	mflr r0
 /* 8003D484 00038A44  90 01 00 34 */	stw r0, 0x34(r1)

@@ -1,4 +1,4 @@
-glabel func_8000DF58
+glabel cpuGetSize
 /* 8000DF58 00009518  94 21 FF E0 */	stwu r1, -0x20(r1)
 /* 8000DF5C 0000951C  7C 08 02 A6 */	mflr r0
 /* 8000DF60 00009520  2C 06 00 00 */	cmpwi r6, 0
