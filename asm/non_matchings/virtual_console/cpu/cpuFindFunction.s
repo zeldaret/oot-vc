@@ -1,3 +1,11 @@
+.data
+glabel lbl_80171F48
+	.incbin "00000001.app", 0x16E048, 0x64
+
+glabel lbl_80171FAC
+	.incbin "00000001.app", 0x16E0AC, 0xC4
+
+.text
 glabel cpuFindFunction
 /* 8003DC4C 0003920C  94 21 FF A0 */	stwu r1, -0x60(r1)
 /* 8003DC50 00039210  7C 08 02 A6 */	mflr r0
@@ -5,13 +13,13 @@ glabel cpuFindFunction
 /* 8003DC58 00039218  39 61 00 60 */	addi r11, r1, 0x60
 /* 8003DC5C 0003921C  48 11 51 C9 */	bl _savegpr_14
 /* 8003DC60 00039220  3C C3 00 01 */	addis r6, r3, 1
-/* 8003DC64 00039224  3F E0 80 17 */	lis r31, lbl_80170780@ha
+/* 8003DC64 00039224  3F E0 80 17 */	lis r31, get_cp0_reg_mask@ha
 /* 8003DC68 00039228  80 E6 14 94 */	lwz r7, 0x1494(r6)
 /* 8003DC6C 0003922C  7C 6F 1B 78 */	mr r15, r3
 /* 8003DC70 00039230  90 81 00 08 */	stw r4, 8(r1)
 /* 8003DC74 00039234  7C B0 2B 78 */	mr r16, r5
 /* 8003DC78 00039238  2C 07 00 00 */	cmpwi r7, 0
-/* 8003DC7C 0003923C  3B FF 07 80 */	addi r31, r31, lbl_80170780@l
+/* 8003DC7C 0003923C  3B FF 07 80 */	addi r31, r31, get_cp0_reg_mask@l
 /* 8003DC80 00039240  3A C0 00 00 */	li r22, 0
 /* 8003DC84 00039244  3A A0 00 00 */	li r21, 0
 /* 8003DC88 00039248  3A 60 00 00 */	li r19, 0

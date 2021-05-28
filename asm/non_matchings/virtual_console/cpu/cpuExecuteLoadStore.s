@@ -5,17 +5,7 @@ glabel lbl_80171ECC
 glabel lbl_80171EFC
 	.incbin "00000001.app", 0x16DFFC, 0x3C
 
-glabel lbl_80171F38
-	.incbin "00000001.app", 0x16E038, 0x10
-
-glabel lbl_80171F48
-	.incbin "00000001.app", 0x16E048, 0x64
-
-glabel lbl_80171FAC
-	.incbin "00000001.app", 0x16E0AC, 0xC4
-
 .text
-
 glabel cpuExecuteLoadStore
 /* 80039FE4 000355A4  94 21 FF C0 */	stwu r1, -0x40(r1)
 /* 80039FE8 000355A8  7C 08 02 A6 */	mflr r0
@@ -781,7 +771,7 @@ lbl_8003AB04:
 /* 8003AB38 000360F8  7C 79 01 2E */	stwx r3, r25, r0
 /* 8003AB3C 000360FC  48 00 00 48 */	b lbl_8003AB84
 lbl_8003AB40:
-/* 8003AB40 00036100  48 04 51 91 */	bl func_8007FCD0
+/* 8003AB40 00036100  48 04 51 91 */	bl invalidInst
 /* 8003AB44 00036104  48 00 00 40 */	b lbl_8003AB84
 lbl_8003AB48:
 /* 8003AB48 00036108  56 E3 84 3E */	srwi r3, r23, 0x10

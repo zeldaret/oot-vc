@@ -396,7 +396,7 @@ s32 romEvent(void* obj, event_t event, void* arg) {
             }
             break;
         case 0x1002:
-            switch (cpu_dev->unk_0) {
+            switch (cpu_dev->create_arg) {
                 case 0:
                     if (!cpuSetGetBlock(gSystem->cpu, cpu_dev, romGetBlock)) {
                         return 0;

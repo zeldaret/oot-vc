@@ -1,4 +1,4 @@
-glabel func_80032248
+glabel cpuFindAddress
 /* 80032248 0002D808  94 21 FF D0 */	stwu r1, -0x30(r1)
 /* 8003224C 0002D80C  7C 08 02 A6 */	mflr r0
 /* 80032250 0002D810  90 01 00 34 */	stw r0, 0x34(r1)

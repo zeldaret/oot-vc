@@ -24,4 +24,6 @@ typedef struct {
 
 extern system_class_t* gSystem;
 
+s32 systemCheckInterrupts(system_class_t *sys);
+
 #endif

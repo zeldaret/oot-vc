@@ -1,4 +1,4 @@
-glabel func_8000DEBC
+glabel cpuGetMode
 /* 8000DEBC 0000947C  54 80 07 BD */	rlwinm. r0, r4, 0, 0x1e, 0x1e
 /* 8000DEC0 00009480  38 C0 00 00 */	li r6, 0
 /* 8000DEC4 00009484  38 E0 00 02 */	li r7, 2

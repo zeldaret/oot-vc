@@ -182,11 +182,70 @@
 #define CP0_TAGHI 29
 #define CP0_ERROREPC 30
 
+#define STATUS_KM64 (1 << 7)
+#define STATUS_SM64 (1 << 6)
+#define STATUS_UM64 (1 << 5)
 #define STATUS_IE (1 << 0)
 #define STATUS_EXL (1 << 1)
 #define STATUS_ERL (1 << 2)
 
+#define CPU_MODE_USER 2
+#define CPU_MODE_SUPERVISOR 1
+#define CPU_MODE_KERNEL 0
+
 #define CAUSE_BD (1 << 31)
+
+#define TLB_PGSZ_MASK 0x01FFE000
+#define TLB_PGSZ_4K 0
+#define TLB_PGSZ_16K 0x6000
+#define TLB_PGSZ_64K 0x1E000
+#define TLB_PGSZ_256K 0x7E000
+#define TLB_PGSZ_1M 0x1FE000
+#define TLB_PGSZ_4M 0x7FE000
+#define TLB_PGSZ_16M 0x1FFE000
+
+#define TLB_LO_GLBL (1 << 0)
+#define TLB_LO_VALD (1 << 1)
+#define TLB_LO_DRTY (1 << 2)
+#define TLB_PFN_MASK 0x3FFFFC0
+
+#define TLB_HI_ASID_MASK 0xFF
+#define TLB__HIVPN2_MASK 0xFFFFE000
+
+#define CP0_EX_NONE -1
+#define CP0_EX_INTERRUPT 0
+#define CP0_EX_TLBMOD 1
+#define CP0_EX_TLBMISS_LD 2
+#define CP0_EX_TLBMISS_ST 3
+#define CP0_EX_ADDRERR_LD 4
+#define CP0_EX_ADDRERR_ST 5
+#define CP0_EX_BUSERR_INS 6
+#define CP0_EX_BUSERR_DATA 7
+#define CP0_EX_SYSCALL 8
+#define CP0_EX_BREAK 9
+#define CP0_EX_RSVD_INS 10
+#define CP0_EX_COP_UNUSE 11
+#define CP0_EX_OVERFLOW 12
+#define CP0_EX_TRAP 13
+#define CP0_EX_RFU14 14
+#define CP0_EX_FP 15
+#define CP0_EX_RFU16 16
+#define CP0_EX_RFU17 17
+#define CP0_EX_RFU18 18
+#define CP0_EX_RFU19 19
+#define CP0_EX_RFU20 20
+#define CP0_EX_RFU21 21
+#define CP0_EX_RFU22 22
+#define CP0_EX_WATCH 23
+#define CP0_EX_RFU24 24
+#define CP0_EX_RFU25 25
+#define CP0_EX_RFU26 26
+#define CP0_EX_RFU27 27
+#define CP0_EX_RFU28 28
+#define CP0_EX_RFU29 29
+#define CP0_EX_RFU30 30
+#define CP0_EX_RFU31 31
+
 
 #define MREG_R0 0
 #define MREG_AT 1

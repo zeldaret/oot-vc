@@ -40,13 +40,13 @@ s32 treeInitNode(recomp_node_t** out_node, recomp_node_t* parent, u32 n64_start_
 
     new_node->n64_start_addr = n64_start_addr;
     new_node->n64_end_addr = n64_end_addr;
-    new_node->unk_0x18 = NULL;
-    new_node->unk_0x1C = 0;
+    new_node->ext_calls = NULL;
+    new_node->ext_call_cnt = 0;
     new_node->state = 0x21; // todo: create enum
     new_node->unk_0x00 = 0;
     new_node->recompiled_func = NULL;
-    new_node->unk_0x08 = 0;
-    new_node->unk_0x0C = NULL;
+    new_node->branch_cnt = 0;
+    new_node->branches = NULL;
     new_node->checksum = 0;
     new_node->unk_0x28 = 1;
     new_node->size = 0;
@@ -239,10 +239,10 @@ s32 treeAdjustRoot(cpu_class_t* cpu, u32 n64_start_addr, u32 n64_end_addr) {
                 node->recompiled_func = NULL;
             }
 
-            node2->unk_0x08 = node->unk_0x08;
-            if (node->unk_0x0C != NULL) {
-                node2->unk_0x0C = node->unk_0x0C;
-                node->unk_0x0C = NULL;
+            node2->branch_cnt = node->branch_cnt;
+            if (node->branches != NULL) {
+                node2->branches = node->branches;
+                node->branches = NULL;
             }
 
             node2->checksum = node->checksum;
@@ -300,7 +300,7 @@ s32 treeTimerCheck(cpu_class_t* cpu) {
     s32 end;
     recomp_tree_t* tree;
 
-    if (cpu->unk_0x34 > 0x7FFFF000) {
+    if (cpu->call_cnt > 0x7FFFF000) {
         tree = cpu->recomp_tree;
         if (tree->unk_0x70 != 0) {
             return 0;
@@ -325,7 +325,7 @@ s32 treeTimerCheck(cpu_class_t* cpu) {
             treePrintNode(cpu, tree->ovl_root, 0x1000, &start, &end);
         }
 
-        cpu->unk_0x34 -= start;
+        cpu->call_cnt -= start;
         return 1;
     }
 

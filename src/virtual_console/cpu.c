@@ -3,35 +3,22 @@
 #include "rom.h"
 #include "xlHeap.h"
 #include "system.h"
+#include "stddef.h"
+#include "math.h"
+#include "cache.h"
+#include "os.h"
 
-int cpuGetAddressBuffer(cpu_class_t *cpu, void **buffer, u32 addr);
-int cpuFreeCachedAddress(cpu_class_t *cpu, s32, s32);
-int func_8003E604(cpu_class_t *cpu, s32, s32);
-int rspGetBuffer(void *, void **, u32, void *);
-int func_8000CB1C(cpu_class_t *cpu);
-int cpuMakeDevice(cpu_class_t *cpu, u32*, void *, u32, u32, u32, u32);
-void DCStoreRange(void *, size_t);
-void ICInvalidateRange(void *, size_t);
-double sqrt(double in);
-double ceil(double in);
-double floor(double in);
+s32 func_8003E604(cpu_class_t *cpu, s32, s32);
+s32 rspGetBuffer(void *, void **, u32, void *);
+s32 cpuEvent(void *obj, s32 event, void *arg);
+s32 cpuFindFunction(cpu_class_t *cpu, u32 addr, recomp_node_t **out_node);
+s32 libraryTestFunction(void *library, recomp_node_t *node);
+void invalidInst();
+s32 rspUpdate(void *, s32);
+s32 videoForceRetrace(void *);
+void *VISetPostRetraceCallback(void*);
 
-inline s32 unk248_func(cpu_class_t *cpu) {
-    s32 val = 0;
-    s32 i;
-
-    for(i = 0; i < sizeof(cpu->tlb) / sizeof(*cpu->tlb); i++) {
-        if(cpu->tlb[i].entry_hi.w[1] & 2) {
-            continue;
-        }
-        val = val + 1;
-    }
-
-    return val;
-}
-
-extern class_t lbl_80171F38;
-extern u32 reg_map[32];
+extern char cpu_class_name[];
 extern void (*lbl_8025CFE8)();
 extern u32 *cpuCompile_DSLLV_function;
 extern u32 *cpuCompile_DSRLV_function;
@@ -65,7 +52,7 @@ extern u32 *cpuCompile_SDC_function;
 extern u32 *cpuCompile_LWL_function;
 extern u32 *cpuCompile_LWR_function;
 
-u64 lbl_80170780[] = { 
+u64 get_cp0_reg_mask[] = { 
     0x000000008000003F, 0x000000000000003F, 0x000000003FFFFFFF, 0x000000003FFFFFFF,
     0xFFFFFFFFFFFFFFF0, 0x0000000001FFE000, 0x000000000000001F, 0x0000000000000000,
     0xFFFFFFFFFFFFFFFF, 0x00000000FFFFFFFF, 0x00000000FFFFE0FF, 0x00000000FFFFFFFF,
@@ -76,7 +63,7 @@ u64 lbl_80170780[] = {
     0x00000000FFFFFFFF, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF, 0x0000000000000000
 };
 
-u64 lbl_80170880[] = {
+u64 set_cp0_reg_mask[] = {
     0x000000000000003F, 0x000000000000003F, 0x000000003FFFFFFF, 0x000000003FFFFFFF,
     0xFFFFFFFFFFFFFFF0, 0x0000000001FFE000, 0x000000000000001F, 0x0000000000000000,
     0xFFFFFFFFFFFFFFFF, 0x00000000FFFFFFFF, 0x00000000FFFFE0FF, 0x00000000FFFFFFFF,
@@ -107,22 +94,88 @@ u8 lbl_80170A00[] = {
 };
 
 u32 lbl_80170A20[] = {
-    0x8F480018, 0x11000014, 0x00000000, 0x4448F800,
-    0x00000000, 0x8CBB0018, 0x1360000A, 0x00000000,
-    0x445BF800, 0x00000000, 0x13600009, 0xACBF011C,
-    0x445BF800, 0x8F5B0018, 0x13600013, 0x00000000,
-    0x8F5B012C, 0x44DBF800
+    0x8F480018, 0x11000014, 0x00000000, 0x4448F800, 0x00000000
 };
 
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000CB1C.s")
+u32 lbl_80170A20_2[] = {
+    0x8CBB0018, 0x1360000A, 0x00000000, 0x445BF800, 0x00000000
+};
 
-int cpuFreeCachedAddress(cpu_class_t *cpu, s32 addr_start, s32 addr_end) {
+u32 lbl_80170A20_3[] = {
+    0x13600009, 0xACBF011C, 0x445BF800
+};
+
+u32 lbl_80170A20_4[] = {
+    0x8F5B0018, 0x13600013, 0x00000000, 0x8F5B012C, 0x44DBF800
+};
+
+s32 cpuHackHandler(cpu_class_t *cpu) {
+    s32 tmp1 = 0;
+    s32 tmp2 = 0;
+    s32 tmp3 = 0;
+    u32 *buf;
+    s32 ram_size;
+    s32 i;
+
+    if(xlObjectTest(gSystem->ram, &gClassRAM) && ramGetBuffer(gSystem->ram, (void**)&buf, 0, NULL)) {
+        if(!ramGetSize(gSystem->ram, &ram_size)) {
+            return 0;
+        }
+
+        for(i = 0; i < ram_size >> 2 && (tmp1 != -1 || tmp2 != -1 || tmp3 != -1); i++) {
+            if(tmp1 != -1) {
+                if(buf[i] == lbl_80170A20[tmp1]) {
+                    tmp1++;
+                    if(tmp1 == 5U) {
+                        buf[i - 3] = 0;
+                        tmp1 = -1;
+                    }
+                } else {
+                    tmp1 = 0;
+                }
+            }
+
+            if(tmp2 != -1) {
+                if(buf[i] == lbl_80170A20_2[tmp2]) {
+                    tmp2++;
+                    if(tmp2 == 5U) {
+                        buf[i - 3] = 0;
+                        tmp2 = -1;
+                    }
+                } else if(buf[i] == lbl_80170A20_3[tmp2]) {
+                    tmp2++;
+                    if(tmp2 == 3U) {
+                        buf[i - 2] = 0;
+                        tmp2 = -1;
+                    }
+                } else {
+                    tmp2 = 0;
+                }
+            }
+
+            if(tmp3 != -1) {
+                if(buf[i] == lbl_80170A20_4[tmp3]) {
+                    tmp3++;
+                    if(tmp3 == 5U) {
+                        buf[i - 3] = 0;
+                        tmp3 = -1;
+                    }
+                } else {
+                    tmp3 = 0;
+                }
+            }
+        }
+    }
+
+    return tmp1 == -1 && tmp2 == -1 && tmp3 == -1;
+}
+
+s32 cpuFreeCachedAddress(cpu_class_t *cpu, s32 addr_start, s32 addr_end) {
     s32 i;
     s32 j;
     recomp_cache_t *recomp_cache = cpu->recomp_cache;
 
-    i = 0;
-    while(i < cpu->cache_cnt) {
+    for(i = 0;i < cpu->cache_cnt;) {
         if(addr_start <= recomp_cache[i].n64_addr && recomp_cache[i].n64_addr <= addr_end) {
             for(j = i; j < cpu->cache_cnt - 1; j++) {
                 recomp_cache[j] = recomp_cache[j + 1];
@@ -136,58 +189,379 @@ int cpuFreeCachedAddress(cpu_class_t *cpu, s32 addr_start, s32 addr_end) {
     return 1;
 }
 
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuFindCachedAddress.s")
+s32 cpuFindCachedAddress(cpu_class_t *cpu, s32 addr, u32 **code) {
+    s32 i;
+    s32 j;
+    recomp_cache_t *cache = cpu->recomp_cache;
 
+    for(i = 0; i < cpu->cache_cnt; i++) {
+        if(addr == cache[i].n64_addr) {
+            
+            if(i > 128) {
+                recomp_cache_t found = cache[i];
+                while(i > 0) {
+                    cache[i] = cache[i - 1];
+                    i--;
+                }
+                cache[i] = found;
+            }
+
+            if(cache[i].node->unk_0x28 > 0) {
+                cache[i].node->unk_0x28 = cpu->call_cnt;
+            }
+
+            *code = cache[i].recomp_addr;
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+#ifdef NON_MATCHING
+s32 cpuTestInterrupt(cpu_class_t *cpu, s32 intr) {
+    cpu->cp0[CP0_CAUSE].sd |= ((intr & 0xFF) << 8);
+
+    if(cpu->cp0[CP0_STATUS].d & 6) {
+        return 0;
+    }
+
+    if(!(cpu->cp0[CP0_STATUS].d & 1)) {
+        return 0;
+    }
+
+    if(((cpu->cp0[CP0_STATUS].sd & 0xFF00) >> 8) & (intr & 0xFF)) {
+        return 1;
+    }
+
+    return 0;
+}
+#else
+s32 cpuTestInterrupt(cpu_class_t *cpu, s32 intr);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuTestInterrupt.s")
+#endif
 
+#ifdef NON_MATCHING
+inline s32 cpuTestInterruptInl(cpu_class_t *cpu, s32 intr) {
+    cpu->cp0[CP0_CAUSE].sd |= ((intr & 0xFF) << 8);
+
+    if(cpu->cp0[CP0_STATUS].d & 6) {
+        return 0;
+    }
+
+    if(!(cpu->cp0[CP0_STATUS].d & 1)) {
+        return 0;
+    }
+
+    if(((cpu->cp0[CP0_STATUS].sd & 0xFF00) >> 8) & (intr & 0xFF)) {
+        return 1;
+    }
+
+    return 0;
+}
+
+s32 cpuException(cpu_class_t *cpu, s32 ex, u32 intr) {
+    if(cpu->cp0[CP0_STATUS].w[1] & (STATUS_ERL | STATUS_EXL)) {
+        return 0;
+    }
+
+    if(ex == CP0_EX_NONE) {
+        return 0;
+    }
+
+    if((ex >= CP0_EX_RFU16 && ex <= CP0_EX_RFU22) || (ex >= CP0_EX_RFU24 && ex <= CP0_EX_RFU30)) {
+        return 0;
+    }
+
+    if(ex == CP0_EX_RSVD_INS) {
+        return 0;
+    }
+
+    if(ex == CP0_EX_INTERRUPT) {
+        if(!cpuTestInterruptInl(cpu, intr)) {
+            return 0;
+        }
+    } else {
+        cpu->pc -= 4;
+        cpu->status |= 4;
+    }
+
+    cpu->status &= ~8;
+    if(!(cpu->status & 0x10)) {
+        cpuHackHandler(cpu);
+        cpu->status |= 0x10;
+    }
+
+    if(cpu->unk_0x24 != -1) {
+        cpu->unk_0x24 = -1;
+        cpu->cp0[CP0_EPC].d = cpu->pc - 4;
+        cpu->cp0[CP0_CAUSE].d |= CAUSE_BD;
+    } else {
+        cpu->cp0[CP0_EPC].d = cpu->pc;
+    }
+
+    cpu->status &= ~0x80;
+    cpu->cp0[CP0_STATUS].w[1] |= 2;
+    cpu->cp0[CP0_CAUSE].sd = (cpu->cp0[CP0_CAUSE].sd & ~0x7C) | (ex << 2);
+
+    if(ex < 4) {
+        cpu->pc = 0x80000000;
+    } else {
+        cpu->pc = 0x80000180;
+    }
+
+    cpu->status |= 0x24;
+
+    if(!func_8005D614(gSystem->unk_0x0058, cpu, -1)) {
+        return 0;
+    }
+
+    return 1;
+}
+#else
+s32 cpuException(cpu_class_t *cpu, s32 ex, u32 intr);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuException.s")
+#endif
 
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuMakeDevice.s")
+/**
+ * @brief Creates a new device and registers memory space for that device.
+ * 
+ * @param cpu The emulated VR4300.
+ * @param new_dev_idx A pointer to the index in the cpu->devices array which the device was created.
+ * @param dev_obj The object which will handle reuqests for this device.
+ * @param vaddr Starting address of the device's address space.
+ * @param paddr Starting physical address of the device's address space.
+ * @param size Size of the device's memory space.
+ * @param create_arg An argument which will be passed back to the device's event handler.
+ * @return s32 1 on success, 0 otherwise.
+ */
+s32 cpuMakeDevice(cpu_class_t *cpu, u32 *new_dev_idx, void *dev_obj, u32 vaddr, u32 paddr, u32 size, u32 create_arg) {
+    s32 i;
+    s32 j;
+    cpu_dev_t *new_dev;
+    u32 addr;
 
-s32 func_8000D580(cpu_class_t *cpu, u32 *arg1, s32 arg2, u32 arg3, s32 arg4) {
+    for(i = ((create_arg >> 8) & 1) ? 128 : 0; i < 256; i++) {
+        if(cpu->devices[i] == NULL) {
+            if (new_dev_idx != NULL) {
+                *new_dev_idx = i;
+            }
+
+            if(!xlHeapTake((void**)&new_dev, 0x40)) {
+                return 0;
+            }
+
+            cpu->devices[i] = new_dev;
+            new_dev->create_arg = create_arg;
+            new_dev->dev_obj = dev_obj;
+            new_dev->addr_offset = paddr - vaddr;
+            if(size == 0) {
+                new_dev->paddr_start = 0;
+                new_dev->vaddr_start = 0;
+                new_dev->paddr_end = 0xFFFFFFFF;
+                new_dev->vaddr_end = 0xFFFFFFFF;
+                for(j = 0; j < 0x10000; j++) {
+                    cpu->mem_hi_map[j] = i;
+                }
+            } else {
+                new_dev->vaddr_start = vaddr;
+                new_dev->vaddr_end = vaddr + size - 1;
+                new_dev->paddr_start = paddr;
+                new_dev->paddr_end = paddr + size - 1;
+
+                for(j = size; j > 0; vaddr += 0x10000, j -= 0x10000) {
+                    cpu->mem_hi_map[vaddr >> 16] = i;
+                }
+            }
+
+            return !!xlObjectEvent(dev_obj, 0x1002, (void*)new_dev);
+        }
+    }
+
+    return 0;
+}
+
+s32 cpuCreateTLBDevice(cpu_class_t *cpu, s32 *new_dev_idx, u32 vaddr, u32 paddr, u32 page_size) {
     s32 dev;
     u32 new_dev;
 
     for(dev = 0x80; dev < 256; dev++) {
-        if(dev != cpu->unk_0x1C) {
-            if(cpu->devices[dev] != NULL && cpu->devices[dev]->unk_0x38 <= arg3 && arg3 <= cpu->devices[dev]->unk_0x3C) {
-                break;
+        if(dev != cpu->mem_dev_idx) {
+            if(cpu->devices[dev] != NULL) {
+                if(cpu->devices[dev]->paddr_start <= paddr && paddr <= cpu->devices[dev]->paddr_end) {
+                    break;
+                }
             }
         }
     }
     if(dev == 256) {
-        dev = cpu->unk_0x1C;
+        dev = cpu->mem_dev_idx;
     }
 
-    if(!cpuMakeDevice(cpu, &new_dev, cpu->devices[dev]->unk_4, arg2, arg3, arg4, cpu->devices[dev]->unk_0)) {
+    if(!cpuMakeDevice(cpu, &new_dev, cpu->devices[dev]->dev_obj, vaddr, paddr, page_size, cpu->devices[dev]->create_arg)) {
         return 0;
     }
 
-    if(arg1 != NULL) {
-        *arg1 = new_dev;
+    if(new_dev_idx != NULL) {
+        *new_dev_idx = new_dev;
     }
 
     return 1;
 }
 
-s32 cpuSetTLB(cpu_class_t *cpu, s32 arg1);
+#ifdef NON_MATCHING
+s32 cpuSetTLB(cpu_class_t *cpu, s32 index) {
+    cpu_tlb_t *tlb = &cpu->tlb[index];
+    s32 i;
+    s32 page_size;
+    s32 tmp;
+    u32 vpn2;
+    u32 pfn;
+
+    tlb->page_mask.d = cpu->cp0[CP0_PAGEMASK].d & TLB_PGSZ_MASK;
+    tlb->entry_hi.d = cpu->cp0[CP0_ENTRYHI].d;
+    tlb->entry_lo0.d = cpu->cp0[CP0_ENTRYLO0].d;
+    tlb->entry_lo1.d = cpu->cp0[CP0_ENTRYLO1].d;
+    if(tlb->entry_lo0.w[1] & TLB_LO_VALD || tlb->entry_lo1.w[1] & TLB_LO_VALD) {
+        // page size
+        switch(tlb->page_mask.d) {
+            case TLB_PGSZ_4K:
+                page_size = 4 * 1024;
+                break;
+            case TLB_PGSZ_16K:
+                page_size = 16 * 1024;
+                break;
+            case TLB_PGSZ_64K:
+                page_size = 64 * 1024;
+                break;
+            case TLB_PGSZ_256K:
+                page_size = 256 * 1024;
+                break;
+            case TLB_PGSZ_1M:
+                page_size = 1 * 1024 * 1024;
+                break;
+            case TLB_PGSZ_4M:
+                page_size = 4 * 1024 * 1024;
+                break;
+            case TLB_PGSZ_16M:
+                page_size = 16 * 1024 * 1024;
+                break;
+            default:
+                page_size = 0;
+                break;
+        }
+
+        vpn2 = tlb->entry_hi.w[1] & 0xFFFFE000;
+        if(tlb->entry_lo0.w[1] & 2) {
+            tmp = (tlb->dev_status.w[1] >> (0 * 16)) & 0xFF;
+
+            if(!xlHeapFree((void**)&cpu->devices[tmp])) {
+                return 0;
+            }
+
+            cpu->devices[tmp] = NULL;
+
+            for(i = 0; i < 0x10000; i++) {
+                if(cpu->mem_hi_map[i] == tmp) {
+                    cpu->mem_hi_map[i] = cpu->mem_dev_idx;
+                }
+            }
+
+            if(!cpuCreateTLBDevice(cpu, &tmp, vpn2, pfn, page_size)) {
+                return 0;
+            }
+
+            tlb->dev_status.sd = (tmp & 0xFF) | (tlb->dev_status.sd & ~0xFF);
+        }
+
+        if(tlb->entry_lo1.w[1] & 2) {
+            pfn = (tlb->entry_lo1.w[1] & 0x3FFFFC0) << 6;
+            tmp = (tlb->dev_status.w[1] >> 16) & 0xFF;
+
+            if(!xlHeapFree((void**)&cpu->devices[tmp])) {
+                return 0;
+            }
+
+            cpu->devices[tmp] = NULL;
+
+            for(i = 0; i < 0x10000; i++) {
+                if(cpu->mem_hi_map[i] == tmp) {
+                    cpu->mem_hi_map[i] = cpu->mem_dev_idx;
+                }
+            }
+
+            if(!cpuCreateTLBDevice(cpu, &tmp, vpn2 + page_size, pfn, page_size)) {
+                return 0;
+            }
+
+            tlb->dev_status.sd = ((tmp & 0xFF) << 16) | (tlb->dev_status.sd & ~0xFF00);
+        }
+    } else {
+        tmp = tlb->dev_status.w[1] & 0xFF;
+
+        if(!xlHeapFree((void**)&cpu->devices[tmp])) {
+            return 0;
+        }
+
+        cpu->devices[tmp] = NULL;
+
+        for(i = 0; i < 0x10000; i++) {
+            if(cpu->mem_hi_map[i] == tmp) {
+                cpu->mem_hi_map[i] = cpu->mem_dev_idx;
+            }
+        }
+
+        tmp = (tlb->dev_status.w[1] >> 16) & 0xFF;
+
+        if(!xlHeapFree((void**)&cpu->devices[tmp])) {
+            return 0;
+        }
+
+        cpu->devices[tmp] = NULL;
+
+        for(i = 0; i < 0x10000; i++) {
+            if(cpu->mem_hi_map[i] == tmp) {
+                cpu->mem_hi_map[i] = cpu->mem_dev_idx;
+            }
+        }
+
+        tlb->dev_status.sd = -1;
+    }
+
+    return 1;
+}
+#else
+s32 cpuSetTLB(cpu_class_t *cpu, s32 index);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuSetTLB.s")
+#endif
 
 #ifdef NON_MATCHING
-s32 func_8000DEBC(u64 arg0, u32 *arg1) {
-    if(arg0 & 2) {
-        *arg1 = 2;
+/**
+ * @brief Gets the operating mode of the VR4300
+ * 
+ * @param status The status bits to determine the mode for.
+ * @param mode A pointer to the mode determined.
+ * @return s32 1 on success, 0 otherwse.
+ */
+s32 cpuGetMode(u64 status, u32 *mode) {
+    u32 kmode = 2;
+    u32 smode = 1;
+    u32 umode = 0;
+    u32 setmode;
+
+    if(status & STATUS_EXL) {
+        *mode = kmode;
         return 1;
-    } else if(!(arg0 & 4)) {
-        switch(arg0 & 0x18) {
+    } else if(!(status & STATUS_ERL)) {
+        switch(status & 0x18) {
             case 0x10:
-                *arg1 = 0;
+                *mode = umode;
                 break;
             case 8:
-                *arg1 = 1;
+                *mode = smode;
                 break;
             case 0:
-                *arg1 = 2;
+                *mode = kmode;
                 break;
             default:
                 return 0;
@@ -199,48 +573,56 @@ s32 func_8000DEBC(u64 arg0, u32 *arg1) {
     return 0;
 }
 #else
-s32 func_8000DEBC(u64 arg0, u32 *arg1);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000DEBC.s")
+s32 cpuGetMode(u64 status, u32 *mode);
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuGetMode.s")
 #endif
 
-s32 cpuGetSize(u64 arg0, s32 *arg2, s32 *arg3) {
-    u32 narg2;
+/**
+ * @brief Determines the register size that the VR4300 is using.
+ * 
+ * @param status Status bits for determining the register size.
+ * @param enabled 1 if 64-bits are enabled for registers, 0 for 32-bit registers.
+ * @param out_mode The operating mode of the VR4300.
+ * @return s32 
+ */
+s32 cpuGetSize(u64 status, s32 *enabled, s32 *out_mode) {
+    u32 mode;
     s32 res;
 
-    *arg2 = -1;
-    if(arg3 != NULL) {
-        *arg3 = -1;
+    *enabled = -1;
+    if(out_mode != NULL) {
+        *out_mode = -1;
     }
 
-    if(func_8000DEBC(arg0, &narg2)) {
-        switch(narg2) {
+    if(cpuGetMode(status, &mode)) {
+        switch(mode) {
             case 0:
                 res = 0;
-                if(arg0 & 0x20) {
+                if(status & 0x20) {
                     res = 1;
                 }
-                *arg2 = res;
+                *enabled = res;
                 break;
             case 1: 
                 res = 0;
-                if(arg0 & 0x40) {
+                if(status & 0x40) {
                     res = 1;
                 }
-                *arg2 = res;
+                *enabled = res;
                 break;
             case 2:
                 res = 0;
-                if(arg0 & 0x80) {
+                if(status & 0x80) {
                     res = 1;
                 }
-                *arg2 = res;
+                *enabled = res;
                 break;
             default:
                 return 0;
         }
 
-        if(arg3 != NULL) {
-            *arg3 = narg2;
+        if(out_mode != NULL) {
+            *out_mode = mode;
         }
 
         return 1;
@@ -249,20 +631,30 @@ s32 cpuGetSize(u64 arg0, s32 *arg2, s32 *arg3) {
     return 0;
 }
 
-s32 cpuSetCP0Status(cpu_class_t *cpu, u32 status, u64 arg2, u32 arg3) {
-    s32 narg3;
-    s32 narg32;
-    s32 narg2;
-    s32 narg22;
-    if(!cpuGetSize(arg2, &narg2, &narg3)) { 
+/**
+ * @brief Sets the status bits of the VR4300
+ * 
+ * @param cpu The emulated VR4300
+ * @param mask Unused mask bits for the status register.
+ * @param status New status.
+ * @param arg3 Unused.
+ * @return s32 1 on success, 0 otherwise.
+ */
+s32 cpuSetCP0Status(cpu_class_t *cpu, u32 mask, u64 status, u32 arg3) {
+    s32 new_status_mode;
+    s32 prev_status_mode;
+    s32 new_status_64enabled;
+    s32 prev_status_64enabled;
+
+    if(!cpuGetSize(status, &new_status_64enabled, &new_status_mode)) { 
         return 0;
     }
 
-    if(!cpuGetSize(cpu->cp0[CP0_STATUS].d, &narg22, &narg32)) {
+    if(!cpuGetSize(cpu->cp0[CP0_STATUS].d, &prev_status_64enabled, &prev_status_mode)) {
         return 0;
     }
 
-    cpu->cp0[CP0_STATUS].d = arg2;
+    cpu->cp0[CP0_STATUS].d = status;
     return 1;
 }
 
@@ -271,13 +663,13 @@ s32 cpuSetRegisterCP0(cpu_class_t *cpu, s32 reg, u64 val) {
     s32 set_reg = 0;
 
     switch(reg) {
-        case 0:
-            cpu->cp0[CP0_INDEX].d = (cpu->cp0[CP0_INDEX].d & 0x80000000) | (val & lbl_80170880[0]);
+        case CP0_INDEX:
+            cpu->cp0[CP0_INDEX].d = (cpu->cp0[CP0_INDEX].d & 0x80000000) | (val & set_cp0_reg_mask[0]);
             break;
-        case 1:
+        case CP0_RANDOM:
         case 7:
-        case 8:
-        case 15:
+        case CP0_BADVADDR:
+        case CP0_PRID:
         case 21:
         case 22:
         case 23:
@@ -286,13 +678,13 @@ s32 cpuSetRegisterCP0(cpu_class_t *cpu, s32 reg, u64 val) {
         case 27:
         case 31:
             break;
-        case 9:
+        case CP0_COUNT:
             set_reg = 1;
             break;
-        case 11:
+        case CP0_COMPARE:
             set_reg = 1;
             xlObjectEvent(gSystem, 0x1001, (void*)3);
-            if(cpu->status & 1 || !(val & lbl_80170880[11])) {
+            if(cpu->status & 1 || !(val & set_cp0_reg_mask[11])) {
                 cpu->status &= ~1;
             } else {
                 cpu->status |= 1;
@@ -300,18 +692,18 @@ s32 cpuSetRegisterCP0(cpu_class_t *cpu, s32 reg, u64 val) {
 
             break;
         case CP0_STATUS:
-            cpuSetCP0Status(cpu, lbl_80170880[12], val & lbl_80170880[12], 0);
+            cpuSetCP0Status(cpu, set_cp0_reg_mask[12], val & set_cp0_reg_mask[12], 0);
             break;
-        case 13:
+        case CP0_CAUSE:
             xlObjectEvent(gSystem, val & 0x100 ? 0x1000 : 0x1001, (void*) 0);
             xlObjectEvent(gSystem, val & 0x200 ? 0x1000 : 0x1001, (void*) 0);
             set_reg = 1;
             break;
-        case 14:
+        case CP0_EPC:
             set_reg = 1;
             break;
-        case 16:
-            cpu->cp0[0x10].d = (u32)(val & lbl_80170880[0x10]);
+        case CP0_CONFIG:
+            cpu->cp0[0x10].d = (u32)(val & set_cp0_reg_mask[0x10]);
             break;
         default:
             set_reg = 1;
@@ -319,36 +711,40 @@ s32 cpuSetRegisterCP0(cpu_class_t *cpu, s32 reg, u64 val) {
     }
 
     if(set_reg) {
-        cpu->cp0[reg].d = val & lbl_80170880[reg];
+        cpu->cp0[reg].d = val & set_cp0_reg_mask[reg];
     }
 
     return 1;
 }
 #else
+s32 cpuSetRegisterCP0(cpu_class_t *cpu, s32 reg, u64 val);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuSetRegisterCP0.s")
 #endif
 
 #ifdef NON_MATCHING
+inline s32 checkflg(cpu_class_t *cpu) {
+    s32 i;
+    s32 val = 0;
+
+    for(i = 0; i < sizeof(cpu->tlb) / sizeof(*cpu->tlb); i++) {
+        if(!(cpu->tlb[i].entry_hi.w[1] & 2)) {
+            val += 1;
+        }
+    }
+
+    return val;
+}
+
 s32 cpuGetRegisterCP0(cpu_class_t *cpu, s32 reg, u64 *dest) {
     s32 i;
     s32 res;
     s32 set_reg = 0;
 
     switch(reg) {
-        case 1: // RANDOM
-            res = 0;
-            for(i = 0; i < 48; ++i) {
-                if(!(cpu->tlb[i].entry_hi.w[1] & 2)) {
-                    res++;
-                }
-            }
+        case 1:
+            res = checkflg(cpu);
+
             *dest = res;
-            break;
-        case 7: // rsvd?
-            *dest = 0;
-            break;
-        case 8:
-            set_reg = 1;
             break;
         case 9:
             set_reg = 1;
@@ -357,6 +753,12 @@ s32 cpuGetRegisterCP0(cpu_class_t *cpu, s32 reg, u64 *dest) {
             set_reg = 1;
             break;
         case 14:
+            set_reg = 1;
+            break;
+        case 7: // rsvd?
+            *dest = 0;
+            break;
+        case 8:
             set_reg = 1;
             break;
         case 21:
@@ -367,8 +769,11 @@ s32 cpuGetRegisterCP0(cpu_class_t *cpu, s32 reg, u64 *dest) {
             break;
         case 23:
             *dest = 0;
-            break;
+            break;  
         case 24:
+            *dest = 0;
+            break;
+        case 25:
             *dest = 0;
             break;
         case 31:
@@ -379,15 +784,22 @@ s32 cpuGetRegisterCP0(cpu_class_t *cpu, s32 reg, u64 *dest) {
     }
 
     if(set_reg) {
-        *dest = cpu->cp0[reg].d & lbl_80170780[reg];
+        *dest = cpu->cp0[reg].d & get_cp0_reg_mask[reg];
     }
 
     return 1;
 }
 #else
+s32 cpuGetRegisterCP0(cpu_class_t *cpu, s32 reg, u64 *dest);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuGetRegisterCP0.s")
 #endif
+#undef NON_MATCHING
 
+/**
+ * @brief Mapping of VR4300 to PPC registers.  
+ * If bit 0x100 is set the VR4300 register is not directly mapped to any PPC register,
+ * Instead the register will use the emulated VR4300 object for saving/loading register values.
+ */
 u32 reg_map[] = {
     10,     // r0 -> r10
     11,     // at -> r11
@@ -423,7 +835,13 @@ u32 reg_map[] = {
     0x11F   // ra -> gpr[31] (no ppc reg)
 };
 
-int __cpuERET(cpu_class_t *cpu) {
+/**
+ * @brief Sets CP0 values for returnning from an exception.
+ * 
+ * @param cpu The emulated VR4300.
+ * @return s32 1 on success, 0 otherwise.
+ */
+s32 __cpuERET(cpu_class_t *cpu) {
     if(cpu->cp0[CP0_STATUS].d & STATUS_ERL) {
         cpu->pc = cpu->cp0[CP0_ERROREPC].d;
         cpu->cp0[CP0_STATUS].d &= ~STATUS_ERL;
@@ -436,34 +854,41 @@ int __cpuERET(cpu_class_t *cpu) {
     return 1;
 }
 
-int __cpuBreak(cpu_class_t *cpu) {
+/**
+ * @brief Sets flags for handling cpu breakpoints.
+ * 
+ * @param cpu The emulated VR4300.
+ * @return s32 1 on success, 0 otherwise.
+ */
+s32 __cpuBreak(cpu_class_t *cpu) {
     cpu->status |= 2;
     return 1;
 }
 
-#ifdef NON_MATCHING
-s32 func_8000E4B8(cpu_class_t *cpu, recomp_node_t *node, s32 *arg2, s32 addr, u32 *code) {
+s32 cpuGetBranchDistance(cpu_class_t *cpu, recomp_node_t *node, s32 *branch_dist, s32 addr, u32 *code) {
     s32 i;
 
     if(code == NULL) {
-        *arg2 = 0;
+        *branch_dist = 0;
         return 1;
     }
 
-    for(i = 0; i < node->unk_0x08; i++) {
-        if(addr == node->unk_0x0C[i].unk_0x00) {
-            *arg2 = node->unk_0x0C[i].unk_0x04;
+    for(i = 0; i < node->branch_cnt; i++) {
+        if(addr == node->branches[i].n64_target) {
+            *branch_dist = node->branches[i].branch_dist;
             return 1;
         }
     }
 
     return 0;
 }
-#else
-s32 func_8000E4B8(cpu_class_t *cpu, recomp_node_t *node, s32 *arg2, s32 addr, u32 *code);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000E4B8.s")
-#endif
 
+/**
+ * @brief Checks the type of delay an instruction has.
+ * 
+ * @param inst The instruction to determine the delay type for.
+ * @return s32 The type of delay the instruction has.
+ */
 s32 cpuCheckDelaySlot(u32 inst) {
     s32 ret = 0;
 
@@ -560,6 +985,13 @@ s32 cpuCheckDelaySlot(u32 inst) {
     return ret;
 }
 
+/**
+ * @brief Filles a code section of NOPs
+ * 
+ * @param code Pointer to fill nops to.
+ * @param pos Position in @code to start filling.
+ * @param cnt The amount of NOPs to fill.
+ */
 void cpuNOPFill(u32 *code, s32 *pos, s32 cnt) {
     if(code == NULL) {
         *pos += cnt;
@@ -605,7 +1037,7 @@ s32 func_8000E81C(cpu_class_t *cpu, u32 inst, u32 prev_inst, u32 next_inst, s32 
         // sw s0, 0x0008(a0)
         if(inst == 0xAC9F0004 && prev_inst == 0xAC9D0000 && next_inst == 0xAC900008) {
             if(code != NULL) {
-                code[(*pos)++] = 0x80A30000 + ((u32)&cpu->unk_0x30 - (u32)cpu); // addic r0, r0, 0xA380
+                code[(*pos)++] = 0x80A30000 + ((u32)&cpu->n64_ra - (u32)cpu); // addic r0, r0, 0xA380
             } else {
                 (*pos)++;
             }
@@ -631,8 +1063,8 @@ s32 func_8000E81C(cpu_class_t *cpu, u32 inst, u32 prev_inst, u32 next_inst, s32 
         // sw s0, 0x0018(sp)
         if(inst == 0xAFBF003C && prev_inst == 0x0080A025 && next_inst == 0xAFB00018) {
             if(code != NULL) {
-                // addic r0, r0, offset(cpu_class_t, unk_0x30)
-                code[(*pos)++] = 0x80A30000 + ((u32)&cpu->unk_0x30 - (u32)cpu);
+                // addic r0, r0, offset(cpu_class_t, n64_ra)
+                code[(*pos)++] = 0x80A30000 + ((u32)&cpu->n64_ra - (u32)cpu);
             } else {
                 (*pos)++;
             }
@@ -664,6 +1096,17 @@ s32 func_8000E81C(cpu_class_t *cpu, u32 inst, u32 prev_inst, u32 next_inst, s32 
 #endif
 
 #ifdef NON_MATCHING
+/**
+ * @brief The main MIPS->PPC Dynamic recompiler.
+ * Largely unfinished.
+ * @param cpu The emulated VR4300.
+ * @param inst_addr The address to recompile.
+ * @param node The function that is being recompiled.
+ * @param code Pointer to the recompiled code.
+ * @param pos Pointer to the current position in the recompiled code.
+ * @param delay 1 if we are recompiling a delay slot.
+ * @return s32 1 on success, 0 otherwise.
+ */
 s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, s32 *pos, s32 delay) {
     u32 *mips_buf;
     u32 prev_inst;
@@ -799,8 +1242,8 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
                                 if(code == NULL) {
                                     (*pos)++;
                                 } else {
-                                    // mr r6, cpu->unk_0x1227C
-                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                    // mr r6, cpu->tmp_ppc_dest_reg
+                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
                                 }
                             } else {
                                 if(code == NULL) {
@@ -828,8 +1271,8 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
 
                         if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
                             cpu->unk_0x12274 = 2;
-                            cpu->unk_0x12278 = MIPS_RD(cur_inst);
-                            cpu->unk_0x1227C = rA;
+                            cpu->tmp_mips_dest_reg = MIPS_RD(cur_inst);
+                            cpu->tmp_ppc_dest_reg = rA;
                             if(code != NULL) {
                                 // stw r5, cpu->gpr[rd]
                                 code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
@@ -853,8 +1296,8 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
                                 if(code == NULL) {
                                     (*pos)++;
                                 } else {
-                                    // mr r6, cpu->unk_0x1227C
-                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                    // mr r6, cpu->tmp_ppc_dest_reg
+                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
                                 }
                             } else {
                                 if(code == NULL) {
@@ -882,8 +1325,8 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
 
                         if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
                             cpu->unk_0x12274 = 2;
-                            cpu->unk_0x12278 = MIPS_RD(cur_inst);
-                            cpu->unk_0x1227C = rA;
+                            cpu->tmp_mips_dest_reg = MIPS_RD(cur_inst);
+                            cpu->tmp_ppc_dest_reg = rA;
                             if(code != NULL) {
                                 // stw r5, cpu->gpr[rd]
                                 code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
@@ -907,8 +1350,8 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
                                 if(code == NULL) {
                                     (*pos)++;
                                 } else {
-                                    // mr r6, cpu->unk_0x1227C
-                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                    // mr r6, cpu->tmp_ppc_dest_reg
+                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
                                 }
                             } else {
                                 if(code == NULL) {
@@ -929,8 +1372,8 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
 
                         if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
                             cpu->unk_0x12274 = 2;
-                            cpu->unk_0x12278 = MIPS_RD(cur_inst);
-                            cpu->unk_0x1227C = rA;
+                            cpu->tmp_mips_dest_reg = MIPS_RD(cur_inst);
+                            cpu->tmp_ppc_dest_reg = rA;
                             if(code != NULL) {
                                 // stw r5, cpu->gpr[rd]
                                 code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
@@ -954,8 +1397,8 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
                                 if(code == NULL) {
                                     (*pos)++;
                                 } else {
-                                    // mr r6, cpu->unk_0x1227C
-                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                    // mr r6, cpu->tmp_ppc_dest_reg
+                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
                                 }
                             } else {
                                 if(code == NULL) {
@@ -974,8 +1417,8 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
                                 if(code == NULL) {
                                     (*pos)++;
                                 } else {
-                                    // mr r6, cpu->unk_0x1227C
-                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                    // mr r6, cpu->tmp_ppc_dest_reg
+                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
                                 }
                             } else {
                                 if(code == NULL) {
@@ -1003,8 +1446,8 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
 
                         if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
                             cpu->unk_0x12274 = 2;
-                            cpu->unk_0x12278 = MIPS_RD(cur_inst);
-                            cpu->unk_0x1227C = rA;
+                            cpu->tmp_mips_dest_reg = MIPS_RD(cur_inst);
+                            cpu->tmp_ppc_dest_reg = rA;
                             if(code != NULL) {
                                 // stw r5, cpu->gpr[rd]
                                 code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
@@ -1028,8 +1471,8 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
                                 if(code == NULL) {
                                     (*pos)++;
                                 } else {
-                                    // mr r6, cpu->unk_0x1227C
-                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                    // mr r6, cpu->tmp_ppc_dest_reg
+                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
                                 }
                             } else {
                                 if(code == NULL) {
@@ -1048,8 +1491,8 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
                                 if(code == NULL) {
                                     (*pos)++;
                                 } else {
-                                    // mr r6, cpu->unk_0x1227C
-                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                    // mr r6, cpu->tmp_ppc_dest_reg
+                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
                                 }
                             } else {
                                 if(code == NULL) {
@@ -1077,8 +1520,8 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
 
                         if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
                             cpu->unk_0x12274 = 2;
-                            cpu->unk_0x12278 = MIPS_RD(cur_inst);
-                            cpu->unk_0x1227C = rA;
+                            cpu->tmp_mips_dest_reg = MIPS_RD(cur_inst);
+                            cpu->tmp_ppc_dest_reg = rA;
                             if(code != NULL) {
                                 // stw r5, cpu->gpr[rd]
                                 code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
@@ -1102,8 +1545,8 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
                                 if(code == NULL) {
                                     (*pos)++;
                                 } else {
-                                    // mr r6, cpu->unk_0x1227C
-                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                    // mr r6, cpu->tmp_ppc_dest_reg
+                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
                                 }
                             } else {
                                 if(code == NULL) {
@@ -1122,8 +1565,8 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
                                 if(code == NULL) {
                                     (*pos)++;
                                 } else {
-                                    // mr r6, cpu->unk_0x1227C
-                                    code[(*pos)++] = 0x7C060378 | (cpu->unk_0x1227C << 0xB) | (cpu->unk_0x1227C << 0x15);
+                                    // mr r6, cpu->tmp_ppc_dest_reg
+                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
                                 }
                             } else {
                                 if(code == NULL) {
@@ -1151,8 +1594,8 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
 
                         if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
                             cpu->unk_0x12274 = 2;
-                            cpu->unk_0x12278 = MIPS_RD(cur_inst);
-                            cpu->unk_0x1227C = rA;
+                            cpu->tmp_mips_dest_reg = MIPS_RD(cur_inst);
+                            cpu->tmp_ppc_dest_reg = rA;
                             if(code != NULL) {
                                 // stw r5, cpu->gpr[rd]
                                 code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
@@ -1247,7 +1690,7 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
                         (*pos) += 7;
 
                         if(code != NULL) {
-                            // stw r7, cpu->unk_0x30
+                            // stw r7, cpu->n64_ra
                             code[*pos] = 0x90E30030;
                         }
 
@@ -1593,25 +2036,31 @@ s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, 
     }
 }
 #else
+s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, s32 *pos, s32 delay);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuGetPPC.s")
 #endif
 
-int func_80031D4C(cpu_class_t *cpu, recomp_node_t *node, s32 arg2) {
+s32 func_80031D4C(cpu_class_t *cpu, recomp_node_t *node, s32 arg2) {
     return 0;
 }
 
-s32 cpuFindFunction(cpu_class_t *cpu, u32 addr, recomp_node_t **out_node);
-s32 libraryTestFunction(void *library, recomp_node_t *node);
-
 #ifdef NON_MATCHING
+/**
+ * @brief Creates a new recompiled function block.
+ * 
+ * @param cpu The emulated VR4300.
+ * @param out_node A pointer to an already recompiled function, or one that has been created.
+ * @param addr The n64 address of the function to find or create.
+ * @return s32 1 on success, 0 otherwise.
+ */
 s32 cpuMakeFunction(cpu_class_t *cpu, recomp_node_t **out_node, s32 addr) {
     s32 success = 1;
-    unk_node_0x0C unk0xC[0x400];
+    branch_t branches[0x400];
     s32 pos;
     s32 total_inst;
     s32 i;
     size_t code_size;
-    size_t ref_size;
+    size_t ext_call_size;
     size_t alloc_size;
     u32 *code;
     u32 *code_p;
@@ -1632,8 +2081,8 @@ s32 cpuMakeFunction(cpu_class_t *cpu, recomp_node_t **out_node, s32 addr) {
 
     if(node->recompiled_func == NULL) {
         libraryTestFunction(gSystem->unk_0x0058, node);
-        node->unk_0x08 = 0;
-        node->unk_0x0C = unk0xC;
+        node->branch_cnt = 0;
+        node->branches = branches;
         cpu->unk_0x1221C = 0x20000000;
         cpu->unk_0x12220 = 0;
         node->unk_0x1C = 0;
@@ -1650,15 +2099,15 @@ s32 cpuMakeFunction(cpu_class_t *cpu, recomp_node_t **out_node, s32 addr) {
         total_inst = pos;
         code_size = pos * 4;
         alloc_size = code_size;
-        if(node->unk_0x1C != 0) {
-            ref_size = node->unk_0x1C * 8;
-            alloc_size += ref_size;
+        if(node->ext_call_cnt != 0) {
+            ext_call_size = node->ext_call_cnt * sizeof(*node->ext_calls);
+            alloc_size += ext_call_size;
         } else {
-            ref_size = 0;
+            ext_call_size = 0;
         }
 
-        if(node->unk_0x08 > 0) {
-            alloc_size += node->unk_0x08 * sizeof(*node->unk_0x0C);
+        if(node->branch_cnt > 0) {
+            alloc_size += node->branch_cnt * sizeof(*node->branches);
         }
 
         do {
@@ -1671,20 +2120,20 @@ s32 cpuMakeFunction(cpu_class_t *cpu, recomp_node_t **out_node, s32 addr) {
             recomp_tree = cpu->recomp_tree;
             if(success) {
                 success = 0;
-                clean_cnt = cpu->unk_0x34 - 300;
+                clean_cnt = cpu->call_cnt - 300;
                 continue;
             }
 
             clean_cnt += 95;
-            if(clean_cnt > (cpu->unk_0x34 - 10)) {
-                clean_cnt = cpu->unk_0x34 - 10;
+            if(clean_cnt > (cpu->call_cnt - 10)) {
+                clean_cnt = cpu->call_cnt - 10;
             }
 
             recomp_tree->unk_0x70 = 0;
             recomp_tree->unk_0x7C = NULL;
             recomp_tree->unk_0x80 = 0;
             if(node != NULL && node->unk_0x28 > 0) {
-                node->unk_0x28 = cpu->unk_0x34;
+                node->unk_0x28 = cpu->call_cnt;
             }
 
             if(recomp_tree->unk_0x78 == 0) {
@@ -1701,13 +2150,13 @@ s32 cpuMakeFunction(cpu_class_t *cpu, recomp_node_t **out_node, s32 addr) {
         } while(1);
 
         code_p = code;
-        if(ref_size != 0) {
-            unk_node_0x18 *unk18;
-            node->unk_0x18 = (unk_node_0x18*)((char*)code_p + code_size);
-            unk18 = node->unk_0x18;
+        if(ext_call_size != 0) {
+            ext_call_t *ext_call;
+            node->ext_call = (ext_call_t*)((char*)code_p + code_size);
+            ext_call = node->ext_call;
             for(i = 0; i < ref_cnt; i++) {
-                unk18[i].unk_0x00 = 0;
-                unk18[i].unk_0x04 = 0;
+                ext_call[i].n64_addr = 0;
+                ext_call[i].vc_addr = 0;
             }
         }
 
@@ -1738,17 +2187,17 @@ s32 cpuMakeFunction(cpu_class_t *cpu, recomp_node_t **out_node, s32 addr) {
         node->recompiled_func = (recomp_func_t*)code_p;
         DCStoreRange(node->recompiled_func, pos * 4);
         ICInvalidateRange(node->recompiled_func, pos * 4);
-        if(node->unk_0x08 > 0) {
-            if(node->unk_0x08 >= 0x400) {
+        if(node->branch_cnt > 0) {
+            if(node->branch_cnt >= 0x400) {
                 return 0;
             }
 
-            node->unk_0x0C = (unk_node_0x0C*)((char*)code + code_size + ref_size);
-            for(i = 0; i < node->unk_0x08; i++) {
-                node->unk_0x0C[i] = unk0xC[i];
+            node->branches = (branch_t*)((char*)code + code_size + ext_call_size);
+            for(i = 0; i < node->branch_cnt; i++) {
+                node->branches[i] = branches[i];
             }
         } else {
-            node->unk_0x0C = NULL;
+            node->branches = NULL;
         }
 
         node->size = alloc_size;
@@ -1766,13 +2215,117 @@ s32 cpuMakeFunction(cpu_class_t *cpu, recomp_node_t **out_node, s32 addr) {
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuMakeFunction.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_80032248.s")
+#ifdef NON_MATCHING
+inline void setCache(cpu_class_t *cpu, u32 *code, recomp_node_t *node, s32 addr) {
+    recomp_cache_t *cache;
+    s32 cnt = cpu->cache_cnt;
+    recomp_cache_t *cache_start = cpu->recomp_cache;
 
-inline s32 find_in_node_unk_0xC(recomp_node_t *node, s32 pc) {
-    int i;
+    if(cnt == 256) {
+        cnt--;
+    } else {
+        cpu->cache_cnt++;
+    }
 
-    for(i = 0; i < node->unk_0x08; i++) {
-        if(pc == node->unk_0x0C[i].unk_0x04) {
+    cache = &cache_start[cnt];
+
+    while(cnt > 0) {
+        *cache = cache[-1];
+        cache--;
+        cnt--;
+    }
+
+    cache_start->n64_addr = addr;
+    cache_start->recomp_addr = code;
+    cache_start->node = node;
+}
+
+/**
+ * @brief Searches the recompiled block cache for an address, or creates a new block if one cannot be found.
+ * 
+ * @param cpu The emulated VR4300.
+ * @param addr N64 code address to search for.
+ * @param code A pointer to set the found PPC code to.
+ * @return s32 1 on success, 0 otherwise.
+ */
+s32 cpuFindAddress(cpu_class_t *cpu, s32 addr, u32 **code) {
+    s32 pos;
+    s32 cur_addr;
+    s32 i;
+    s32 j;
+    recomp_node_t *node;
+    branch_t *branch;
+    s32 cont;
+
+    if(cpu->status & 0x20) {
+        cpu->status &= ~0x20;
+    }
+
+    if(cpuFindCachedAddress(cpu, addr, code)) {
+        return 1;
+    }
+
+    node = cpu->running_node;
+
+    if(node == NULL || addr < node->n64_start_addr || node->n64_end_addr < addr) {
+        if(!cpuMakeFunction(cpu, &node, addr)) {
+            return 0;
+        }
+    }
+
+    for(i = 0; i < node->branch_cnt; i++) {
+        if(addr != node->branches[i].n64_target) {
+            continue;
+        }
+
+        *code = &node->recompiled_func[node->branches[i].branch_dist];
+
+        if(node->unk_0x28 > 0) {
+            node->unk_0x28 = cpu->call_cnt;
+        }
+
+        setCache(cpu, *code, node, addr);
+        return 1;
+    }
+
+    cpu->unk_0x1221C = 0x20000000;
+    cpu->unk_0x12220 = 0;
+    node->state = 33;
+    pos = 0;
+    if(node->n64_start_addr != addr) {
+        node->unk_0x28 = 0;
+    }
+
+    cur_addr = node->n64_start_addr;
+    while(cur_addr <= node->n64_end_addr) {
+        if(cur_addr == addr) {
+            *code = (u32*)((u32)node->recompiled_func + (pos * 4));
+            if(node->unk_0x28 > 0) {
+                node->unk_0x28 = cpu->call_cnt;
+            }
+
+            setCache(cpu, *code, node, addr);
+
+            return 1;
+        }
+
+        if(!cpuGetPPC(cpu, &cur_addr, node, NULL, &pos, 0)) {
+            return 0;
+        }
+    }
+
+    return 0;
+}
+#else
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuFindAddress.s")
+#endif
+#undef NON_MATCHING
+
+inline s32 find_in_branches(recomp_node_t *node, s32 pc) {
+    s32 i;
+
+    for(i = 0; i < node->branch_cnt; i++) {
+        if(pc == node->branches[i].n64_target) {
             return 0;
         }
     }
@@ -1780,7 +2333,7 @@ inline s32 find_in_node_unk_0xC(recomp_node_t *node, s32 pc) {
     return 1;
 }
 
-int func_800326D0(cpu_class_t *cpu, s32 pc, s32 r5) {
+s32 func_800326D0(cpu_class_t *cpu, s32 pc, s32 r5) {
     if(!cpu->unk_0x12270) {
         return 0;
     }
@@ -1789,11 +2342,11 @@ int func_800326D0(cpu_class_t *cpu, s32 pc, s32 r5) {
         return 0;
     }
 
-    if(r5 != cpu->unk_0x12278) {
+    if(r5 != cpu->tmp_mips_dest_reg) {
         return 0;
     }
 
-    if(!find_in_node_unk_0xC(cpu->running_node, pc)) {
+    if(!find_in_branches(cpu->running_node, pc)) {
         cpu->unk_0x12274 = 0;
         return 0;
     }
@@ -1802,7 +2355,7 @@ int func_800326D0(cpu_class_t *cpu, s32 pc, s32 r5) {
     return 1;
 }
 
-int func_80032780(cpu_class_t *cpu, s32 pc, s32 r5) {
+s32 func_80032780(cpu_class_t *cpu, s32 pc, s32 r5) {
     if(!cpu->unk_0x12270) {
         return 0;
     }
@@ -1815,7 +2368,7 @@ int func_80032780(cpu_class_t *cpu, s32 pc, s32 r5) {
         return 0;
     }
 
-    if(!find_in_node_unk_0xC(cpu->running_node, pc)) {
+    if(!find_in_branches(cpu->running_node, pc)) {
         cpu->unk_0x12280 = 0;
         return 0;
     }
@@ -1824,7 +2377,7 @@ int func_80032780(cpu_class_t *cpu, s32 pc, s32 r5) {
     return 1;
 }
 
-int func_80032830(cpu_class_t *cpu, s32 pc, u32 *code, s32 base, s32 rt) {
+s32 func_80032830(cpu_class_t *cpu, s32 pc, u32 *code, s32 base, s32 rt) {
     s32 i;
 
     if(code == NULL) {
@@ -1835,7 +2388,7 @@ int func_80032830(cpu_class_t *cpu, s32 pc, u32 *code, s32 base, s32 rt) {
         return 0;
     }
 
-    if(!find_in_node_unk_0xC(cpu->running_node, pc)) {
+    if(!find_in_branches(cpu->running_node, pc)) {
         return 0;
     }
 
@@ -1854,15 +2407,11 @@ int func_80032830(cpu_class_t *cpu, s32 pc, u32 *code, s32 base, s32 rt) {
     return 1;
 }
 
-void func_8007FCD0();
-
-#ifdef NON_MATCHING
-int func_800328EC(cpu_class_t *cpu, u32 addr, s32 inst, u32 *code, u32 *pos) {
+s32 cpuNextInstruction(cpu_class_t *cpu, u32 addr, s32 inst, u32 *code, u32 *pos) {
     if(code == NULL) {
         return 0;
     }
-
-    if(cpu->unk_0x12270 == 0) {
+   if(cpu->unk_0x12270 == 0) {
         return 0;
     }
 
@@ -1873,58 +2422,159 @@ int func_800328EC(cpu_class_t *cpu, u32 addr, s32 inst, u32 *code, u32 *pos) {
     
     cpu->unk_0x12294 = 0;
 
-    if(!find_in_node_unk_0xC(cpu->running_node, addr)) {
+    if(!find_in_branches(cpu->running_node, addr)) {
         return 0;
     }
 
     switch(inst >> 0x1A) {
-        case 0xD:
-            if(cpu->unk_0x12278 == ((inst >> 0x15) & 0x1F) && ((inst >> 0x15) & 0x1F) == ((inst >> 0x10) & 0x1F)) {
+        case OPC_ORI:
+            if(cpu->tmp_mips_dest_reg == MIPS_RS(inst) && MIPS_RS(inst) == MIPS_RT(inst)) {
                 if(cpu->unk_0x12290 != 1000) {
                     return 0;
                 }
+                /**
+                 * nop
+                 * ori tmp_dest, tmp_dest, imm
+                 * nop
+                 */
                 code[*pos - 1] = 0x60000000;
-                code[(*pos)++] = (inst & 0xFFFF) | (cpu->unk_0x1227C << 0x10) | (cpu->unk_0x1227C << 0x15) | 0x60000000;
+                code[(*pos)++] = (0x60000000 | (cpu->tmp_ppc_dest_reg << 0x15) | (cpu->tmp_ppc_dest_reg << 0x10)) | (inst & 0xFFFF);
                 code[(*pos)++] = 0x60000000;
-                code[(*pos)++] = (((inst >> 0x10) & 0x1F) * 8) + ((cpu->unk_0x1227C << 0x15) | 0x90030000) + ((u32)&cpu->gpr[0] - (u32)cpu);
+                code[(*pos)++] = ((cpu->tmp_ppc_dest_reg << 0x15) | 0x90030000) + ((u32)&cpu->gpr[MIPS_RT(inst)] - (u32)cpu + 4);
                 cpu->unk_0x12274 = 2;
                 return 1;
             }
             return 0;
-        case 9:
-            if(cpu->unk_0x12278 == ((inst >> 0x15) & 0x1F) && ((inst >> 0x15) & 0x1F) == ((inst >> 0x10) & 0x1F)) {
+        case OPC_ADDIU:
+            if(cpu->tmp_mips_dest_reg == MIPS_RS(inst) && MIPS_RS(inst) == MIPS_RT(inst)) {
                 if(cpu->unk_0x12290 != 1000) {
                     return 0;
                 }
 
+                /**
+                 * nop
+                 * addi tmp_dest, tmp_dest, imm
+                 * nop
+                 */
                 code[*pos - 1] = 0x60000000;
-                code[(*pos)++] = (inst & 0xFFFF) | (cpu->unk_0x1227C << 0x10) | (cpu->unk_0x1227C << 0x15) | 0x38000000;
+                code[(*pos)++] = (inst & 0xFFFF) | (cpu->tmp_ppc_dest_reg << 0x10) | (cpu->tmp_ppc_dest_reg << 0x15) | 0x38000000;
                 code[(*pos)++] = 0x60000000;
-                code[(*pos)++] = (((inst >> 0x10) & 0x1F) * 8) + ((cpu->unk_0x1227C << 0x15) | 0x90030000) + ((u32)&cpu->gpr[0] - (u32)cpu);
+                code[(*pos)++] = ((cpu->tmp_ppc_dest_reg << 0x15) | 0x90030000) + ((u32)&cpu->gpr[MIPS_RT(inst)] - (u32)cpu + 4);
                 cpu->unk_0x12274 = 2;
                 return 1;
             }
             return 0;
         default:
-            func_8007FCD0();
+            invalidInst();
             return 0;
     }
 
     return 0;
-
 }
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_800328EC.s")
-#endif
 
 void func_80032B74(u32 arg0) {
     gSystem->cpu->unk_0x3C = arg0;
     if(lbl_8025CFE8 != NULL) {
-        lbl_8025CFE8();
+        lbl_8025CFE8(arg0);
     }
 }
 
+#ifdef NON_MATCHING
+inline s32 treeCheck(cpu_class_t *cpu, recomp_tree_t *tree) {
+    s32 iVar1;
+
+    if(cpu->call_cnt < 300) {
+        return 0;
+    }
+
+    if(cpu->call_cnt == 300) {
+        tree->unk_0x70 = 1;
+        return 1;
+    }
+
+    
+    if(cpu->call_cnt - cpu->call_cnt / 400 * 400 == 0) {
+        if((cpu->recomp_tree != NULL ? cpu->recomp_tree->total_size : 0) > 0x319750) {
+            tree->unk_0x70 = cpu->call_cnt - 200;
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+s32 cpuExecuteUpdate(cpu_class_t *cpu, u32 **code_p, u32 tick) {
+    recomp_tree_t *tree;
+    u32 cpu_tick;
+    s32 val;
+
+    if(!romUpdate(gSystem->rom)) {
+        return 0;
+    }
+
+
+    if(!rspUpdate(gSystem->rsp, cpu->status & 0x80 && gSystem->unk_0x00 == 0 ? 1 : 0)) {
+        return 0;
+    }
+
+    tree = cpu->recomp_tree;
+    treeTimerCheck(cpu);
+    if(cpu->unk_0x3C == cpu->unk_0x40 && tree->unk_0x74 < 12) {
+        if(treeCheck(cpu, tree)) {
+            cpu->unk_0x34++;
+        }
+
+        if(tree->unk_0x70 != 0) {
+            treeCleanup(cpu, tree);
+        }
+    }
+
+    cpu_tick = cpu->tick;
+
+    if(tick > cpu_tick) {
+        cpu_tick = (float)((tick - cpu_tick) * 4);
+    } else {
+        cpu_tick = (float)(((-1 - cpu_tick) + tick) * 4);
+    }
+
+    if(cpu->status & 0x40 && cpu->unk_0x40 != cpu->unk_0x3C && videoForceRetrace(gSystem->video)) {
+        if(__abs(cpu->unk_0x3C - cpu->unk_0x40) < 4) {
+            cpu->unk_0x40++;
+        } else {
+            cpu->unk_0x40 = cpu->unk_0x3C;
+        }
+    }
+
+
+    if(cpu->status & 1) {
+        if (((cpu->cp0[CP0_COMPARE].w[1] <= cpu->cp0[CP0_COUNT].w[1]) && (cpu->cp0[CP0_COUNT].w[1] + cpu_tick >= cpu->cp0[CP0_COMPARE].w[1])) ||
+        ((cpu->cp0[CP0_COUNT].w[1] >= cpu->cp0[CP0_COMPARE].w[1] && ((cpu->cp0[CP0_COUNT].w[1] + cpu_tick >= cpu->cp0[CP0_COMPARE].w[1] && (cpu->cp0[CP0_COUNT].w[1] + cpu_tick < cpu->cp0[CP0_COUNT].w[1])))))) {
+            cpu->status &= ~1;
+            xlObjectEvent(gSystem, 0x1000, (void*)3);
+        }
+
+        cpu->cp0[CP0_COUNT].sd += cpu_tick;
+    }
+
+    if(cpu->status & 8 && !(cpu->status & 4) && gSystem->unk_0x00 != 0) {
+        if(!systemCheckInterrupts(gSystem)) {
+            return 0;
+        }
+    }
+
+    if(cpu->status & 4) {
+        cpu->status &= ~0x84;
+        if(!cpuFindAddress(cpu, cpu->pc, code_p)) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+#else
+s32 cpuExecuteUpdate(cpu_class_t *cpu, u32 **code_p, u32 tick);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecuteUpdate.s")
+#endif
 
 #ifdef NON_MATCHING
 s32 cpuCompile_DSLLV(cpu_class_t *cpu, u32 **out_func) {
@@ -1978,9 +2628,79 @@ s32 cpuCompile_DSLLV(cpu_class_t *cpu, u32 **out_func) {
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_DSLLV.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_DSRLV.s")
+#ifdef NON_MATCHING
+s32 cpuCompile_DSRLV(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+    u32 pos;
 
+    if(!xlHeapTake((void**)&buf, 0x30000040)) {
+        return 0;
+    }
+
+    *code = buf;
+
+    buf[0] = 0x9421ffe8;
+    buf[1] = 0x70e7003f;
+    buf[2] = 0x91210010;
+    buf[3] = 0x21270020;
+    buf[4] = 0x91010008;
+    buf[5] = 0x7cc63c30;
+    buf[6] = 0x7ca84830;
+    buf[7] = 0x7cc64378;
+    buf[8] = 0x3927ffe0;
+    buf[9] = 0x7ca84c30;
+    buf[10] = 0x7cc64378;
+    buf[11] = 0x7ca53c30;
+    buf[12] = 0x81010008;
+    buf[13] = 0x81210010;
+    buf[14] = 0x38210018;
+    buf[15] = 0x4E800020;
+
+    DCStoreRange(buf, 0x40);
+    ICInvalidateRange(buf, 0x40);
+
+    return 1;
+}
+#else
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_DSRLV.s")
+#endif
+
+#ifdef NON_MATCHING
+s32 cpuCompile_DSRAV(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x30000044)) {
+        return 0;
+    }
+
+    *code = buf;
+
+    buf[0] = 0x9421ffe8;
+    buf[1] = 0x70e7003f;
+    buf[2] = 0x91210010;
+    buf[3] = 0x21270020;
+    buf[4] = 0x91010008;
+    buf[5] = 0x7cc63c30;
+    buf[6] = 0x7ca84830;
+    buf[7] = 0x7cc64378;
+    buf[8] = 0x3527ffe0;
+    buf[9] = 0x7ca84e30;
+    buf[10] = 0x40810008;
+    buf[11] = 0x61060000;
+    buf[12] = 0x7ca53e30;
+    buf[13] = 0x81010008;
+    buf[14] = 0x81210010;
+    buf[15] = 0x38210018;
+    buf[16] = 0x4E800020;
+
+    DCStoreRange(buf, 0x44);
+    ICInvalidateRange(buf, 0x44);
+    
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_DSRAV.s")
+#endif
 
 #ifdef NON_MATCHING
 s32 cpuCompile_DMULT(cpu_class_t *cpu, u32 **code) {
@@ -2056,21 +2776,485 @@ s32 cpuCompile_DMULT(cpu_class_t *cpu, u32 **code) {
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_DMULT.s")
 #endif
 
+#ifdef NON_MATCHING
+s32 cpuCompile_DMULTU(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x30000070)) {
+        return 0;
+    }
+
+    *code = buf;
+
+    buf[0] = 0x39200000;
+    buf[1] = 0x39400000;
+    buf[2] = 0x39800040;
+    buf[3] = 0x710b0001;
+    buf[4] = 0x41820018;
+    buf[5] = 0x39600000;
+    buf[6] = 0x7d4a3014;
+    buf[7] = 0x7d292914;
+    buf[8] = 0x7d6b5914;
+    buf[9] = 0x42800008;
+    buf[10] = 0x39600000;
+    buf[11] = 0x5508f87e;
+    buf[12] = 0x50e8f800;
+    buf[13] = 0x54e7f87e;
+    buf[14] = 0x5147f800;
+    buf[15] = 0x554af87e;
+    buf[16] = 0x512af800;
+    buf[17] = 0x5529f87e;
+    buf[18] = 0x5169f800;
+    buf[19] = 0x556bf87e;
+    buf[20] = 0x398cffff;
+    buf[21] = 0x2c0c0000;
+    buf[22] = 0x4082ffb4;
+    buf[23] = 0x91030000 + ((u32)&cpu->lo - (u32)cpu + 4);
+    buf[24] = 0x90e30000 + ((u32)&cpu->lo - (u32)cpu);
+    buf[25] = 0x91430000 + ((u32)&cpu->hi - (u32)cpu + 4);
+    buf[26] = 0x91230000 + ((u32)&cpu->hi - (u32)cpu);
+    buf[27] = 0x4e800020;
+
+    DCStoreRange(buf, 0x70);
+    ICInvalidateRange(buf, 0x70);
+
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_DMULTU.s")
+#endif
 
+#ifdef NON_MATCHING
+s32 cpuCompile_DDIV(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x30000100)) {
+        return 0;
+    }
+
+    *code = buf;
+
+    buf[0] = 0x38a00040;
+    buf[1] = 0x38c00000;
+    buf[2] = 0x38e00000;
+    buf[3] = 0x39800001;
+    buf[4] = 0x2c080000;
+    buf[5] = 0x40800014;
+    buf[6] = 0x7d2948f8;
+    buf[7] = 0x7d0840f8;
+    buf[8] = 0x7d296014;
+    buf[9] = 0x7d083114;
+    buf[10] = 0x2c0a0000;
+    buf[11] = 0x40800014;
+    buf[12] = 0x7d6b58f8;
+    buf[13] = 0x7d4a50f8;
+    buf[14] = 0x7d6b6014;
+    buf[15] = 0x7d4a3114;
+    buf[16] = 0x3d80ffff;
+    buf[17] = 0x618cfffe;
+    buf[18] = 0x2c060000;
+    buf[19] = 0x4180002c;
+    buf[20] = 0x54c6083c;
+    buf[21] = 0x50e60ffe;
+    buf[22] = 0x54e7083c;
+    buf[23] = 0x51070ffe;
+    buf[24] = 0x5508083c;
+    buf[25] = 0x51280ffe;
+    buf[26] = 0x5529083c;
+    buf[27] = 0x7ceb3810;
+    buf[28] = 0x7cca3110;
+    buf[29] = 0x42800028;
+    buf[30] = 0x54c6083c;
+    buf[31] = 0x50e60ffe;
+    buf[32] = 0x54e7083c;
+    buf[33] = 0x51070ffe;
+    buf[34] = 0x5508083c;
+    buf[35] = 0x51280ffe;
+    buf[36] = 0x5529083c;
+    buf[37] = 0x7ce75814;
+    buf[38] = 0x7cc65114;
+    buf[39] = 0x2c060000;
+    buf[40] = 0x4180000c;
+    buf[41] = 0x61290001;
+    buf[42] = 0x42800008;
+    buf[43] = 0x7d296038;
+    buf[44] = 0x38a5ffff;
+    buf[45] = 0x2c050000;
+    buf[46] = 0x4082ff90;
+    buf[47] = 0x2c060000;
+    buf[48] = 0x4080000c;
+    buf[49] = 0x7ce75814;
+    buf[50] = 0x7cc65114;
+    buf[51] = 0x39800001;
+    buf[52] = 0x7dce7a78;
+    buf[53] = 0x2c0e0000;
+    buf[54] = 0x40800014;
+    buf[55] = 0x7d2948f8;
+    buf[56] = 0x7d0840f8;
+    buf[57] = 0x7d296014;
+    buf[58] = 0x7d082914;
+    buf[59] = 0x91030000 + ((u32)&cpu->lo - (u32)cpu);
+    buf[60] = 0x91230000 + ((u32)&cpu->lo - (u32)cpu + 4);
+    buf[61] = 0x90c30000 + ((u32)&cpu->hi - (u32)cpu);
+    buf[62] = 0x90e30000 + ((u32)&cpu->hi - (u32)cpu + 4);
+    buf[63] = 0x4E800020;
+
+    DCStoreRange(buf, 0x100);
+    ICInvalidateRange(buf, 0x100);
+
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_DDIV.s")
+#endif
 
+#ifdef NON_MATCHING
+s32 cpuCompile_DDIVU(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x300000AC)) {
+        return 0;
+    }
+
+    *code = buf;
+
+    buf[0] = 0x38a00040;
+    buf[1] = 0x38c00000;
+    buf[2] = 0x38e00000;
+    buf[3] = 0x3d80ffff;
+    buf[4] = 0x618cfffe;
+    buf[5] = 0x2c060000;
+    buf[6] = 0x4180002c;
+    buf[7] = 0x54c6083c;
+    buf[8] = 0x50e60ffe;
+    buf[9] = 0x54e7083c;
+    buf[10] = 0x51070ffe;
+    buf[11] = 0x5508083c;
+    buf[12] = 0x51280ffe;
+    buf[13] = 0x5529083c;
+    buf[14] = 0x7ceb3810;
+    buf[15] = 0x7cca3110;
+    buf[16] = 0x42800028;
+    buf[17] = 0x54c6083c;
+    buf[18] = 0x50e60ffe;
+    buf[19] = 0x54e7083c;
+    buf[20] = 0x51070ffe;
+    buf[21] = 0x5508083c;
+    buf[22] = 0x51280ffe;
+    buf[23] = 0x5529083c;
+    buf[24] = 0x7ce75814;
+    buf[25] = 0x7cc65114;
+    buf[26] = 0x2c060000;
+    buf[27] = 0x4180000c;
+    buf[28] = 0x61290001;
+    buf[29] = 0x42800008;
+    buf[30] = 0x7d296038;
+    buf[31] = 0x38a5ffff;
+    buf[32] = 0x2c050000;
+    buf[33] = 0x4082ff90;
+    buf[34] = 0x2c060000;
+    buf[35] = 0x4080000c;
+    buf[36] = 0x7ce75814;
+    buf[37] = 0x7cc65114;
+    buf[38] = 0x91030000 + ((u32)&cpu->lo - (u32)cpu);
+    buf[39] = 0x91230000 + ((u32)&cpu->lo - (u32)cpu + 4);
+    buf[40] = 0x90c30000 + ((u32)&cpu->hi - (u32)cpu);
+    buf[41] = 0x90e30000 + ((u32)&cpu->hi - (u32)cpu + 4);
+    buf[42] = 0x4E800020;
+
+    DCStoreRange(buf, 0xAC);
+    ICInvalidateRange(buf, 0xAC);
+
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_DDIVU.s")
+#endif
 
+#ifdef NON_MATCHING
+s32 cpuCompile_S_SQRT(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x30000090)) {
+        return 0;
+    }
+
+    *code = buf;
+
+    buf[0] = 0xc0030000 + ((u32)cpu->gpr - (u32)cpu + 4);
+    buf[1] = 0xfc010040;
+    buf[2] = 0x40810078;
+    buf[3] = 0xfc400834;
+    buf[4] = 0x3ca03fe0;
+    buf[5] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu);
+    buf[6] = 0xc8830000 + ((u32)cpu->gpr - (u32)cpu);
+    buf[7] = 0x3ca04008;
+    buf[8] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu);
+    buf[9] = 0xc8630000 + ((u32)cpu->gpr - (u32)cpu);
+    buf[10] = 0xfca400b2;
+    buf[11] = 0xfcc200b2;
+    buf[12] = 0xfcc101b2;
+    buf[13] = 0xfcc33028;
+    buf[14] = 0xfc4501b2;
+    buf[15] = 0xfca400b2;
+    buf[16] = 0xfcc200b2;
+    buf[17] = 0xfcc101b2;
+    buf[18] = 0xfcc33028;
+    buf[19] = 0xfc4501b2;
+    buf[20] = 0xfca400b2;
+    buf[21] = 0xfcc200b2;
+    buf[22] = 0xfcc101b2;
+    buf[23] = 0xfcc33028;
+    buf[24] = 0xfc4501b2;
+    buf[25] = 0xfca400b2;
+    buf[26] = 0xfcc200b2;
+    buf[27] = 0xfcc101b2;
+    buf[28] = 0xfcc33028;
+    buf[29] = 0xfc4501b2;
+    buf[30] = 0xfcc100b2;
+    buf[31] = 0xfc203018;
+    buf[32] = 0x38a00000;
+    buf[33] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu + 4);
+    buf[34] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu);
+    buf[35] = 0x4e800020;
+
+    DCStoreRange(buf, 0x90);
+    ICInvalidateRange(buf, 0x90);
+
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_S_SQRT.s")
+#endif
 
+#ifdef NON_MATCHING
+s32 cpuCompile_D_SQRT(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+    
+    if(!xlHeapTake((void**)&buf, 0x300000C0)) {
+        return 0;
+    }
+
+    *code = buf;
+
+    buf[0] = 0xc80300 + ((u32)cpu->gpr - (u32)cpu);
+    buf[1] = 0xfc010040;
+    buf[2] = 0x40810068;
+    buf[3] = 0xfc400834;
+    buf[4] = 0x3ca03fe0;
+    buf[5] = 0x90a300 + ((u32)cpu->gpr - (u32)cpu);
+    buf[6] = 0xc88300 + ((u32)cpu->gpr - (u32)cpu);
+    buf[7] = 0x3ca04008;
+    buf[8] = 0x90a300 + ((u32)cpu->gpr - (u32)cpu);
+    buf[9] = 0xc86300 + ((u32)cpu->gpr - (u32)cpu);
+    buf[10] = 0xfc0200b2;
+    buf[0xb] = 0xfc4400b2;
+    buf[0xc] = 0xfc01183c;
+    buf[0xd] = 0xfc420032;
+    buf[0xe] = 0xfc0200b2;
+    buf[0xf] = 0xfc4400b2;
+    buf[0x10] = 0xfc01183c;
+    buf[0x11] = 0xfc420032;
+    buf[0x12] = 0xfc0200b2;
+    buf[0x13] = 0xfc4400b2;
+    buf[0x14] = 0xfc01183c;
+    buf[0x15] = 0xfc420032;
+    buf[0x16] = 0xfc0200b2;
+    buf[0x17] = 0xfc4400b2;
+    buf[0x18] = 0xfc01183c;
+    buf[0x19] = 0xfc020032;
+    buf[0x1a] = 0xfc210032;
+    buf[0x1b] = 0x42800044;
+    buf[0x1c] = 0xfc010000;
+    buf[0x1d] = 0x4082000c;
+    buf[0x1e] = 0xfc200090;
+    buf[0x1f] = 0x42800034;
+    buf[0x20] = 0xfc010000;
+    buf[0x21] = 0x41820020;
+    buf[0x22] = 0x3ca07fff;
+    buf[0x23] = 0x60a5ffff;
+    buf[0x24] = 0x90a300 + ((u32)cpu->gpr - (u32)cpu);
+    buf[0x25] = 0x3ca0e000;
+    buf[0x26] = 0x90a3004c;
+    buf[0x27] = 0xc02300 + ((u32)cpu->gpr - (u32)cpu);
+    buf[0x28] = 0x42800010;
+    buf[0x29] = 0x3ca07ff0;
+    buf[0x2a] = 0x90a300 + ((u32)cpu->gpr - (u32)cpu);
+    buf[0x2b] = 0xc02300 + ((u32)cpu->gpr - (u32)cpu);
+    buf[0x2c] = 0x38a00000;
+    buf[0x2d] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu + 4);
+    buf[0x2e] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu);
+    buf[0x2f] = 0x48E00020;
+
+    DCStoreRange(buf, 0xC0);
+    ICInvalidateRange(buf, 0xC0);
+
+    return 1;
+
+}
+#else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_D_SQRT.s")
+#endif
 
+#ifdef NON_MATCHING
+s32 cpuCompile_W_CVT_SD(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x30000038)) {
+        return 0;
+    }
+
+    *code = buf;
+
+    /**
+     * xoris r5, r5, 0x8000
+     * lis r6, 0x4330
+     * stw r5, cpu->gpr[0].w[1]
+     * stw r6, cpu->gpr[0].w[0]
+     * lfd f0, cpu->gpr[0].fd
+     * stw r6, cpu->gpr[0].w[0]
+     * lis r5, 0x8000
+     * stw r5, cpu->gpr[0].w[1]
+     * lfd f1, cpu->gpr[0].fd
+     * fsub f1, f0, f1
+     * li r5, 0
+     * stw r5, cpu->gpr[0].w[0]
+     * stw r5, cpu->gpr[0].w[1]
+     * blr
+     */
+
+    buf[0] = 0x6ca58000; 
+    buf[1] = 0x3cc04330;
+    buf[2] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu + 4);
+    buf[3] = 0x90c30000 + ((u32)cpu->gpr - (u32)cpu);
+    buf[4] = 0xc8030000 + ((u32)cpu->gpr - (u32)cpu);
+    buf[5] = 0x90c30000 + ((u32)cpu->gpr - (u32)cpu);
+    buf[6] = 0x3ca08000;
+    buf[7] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu + 4);
+    buf[8] = 0xc8230000 + ((u32)cpu->gpr - (u32)cpu);
+    buf[9] = 0xfc200828;
+    buf[10] = 0x38a00000;
+    buf[11] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu);
+    buf[12] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu + 4);
+    buf[13] = 0x4E800020;
+
+    DCStoreRange(buf, 0x38);
+    ICInvalidateRange(buf, 0x38);
+
+    return 1;
+
+}
+#else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_W_CVT_SD.s")
+#endif
 
+#ifdef NON_MATCHING
+s32 cpuCompile_L_CVT_SD(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x300000E0)) {
+        return 0;
+    }
+
+    *code = buf;
+
+    buf[0] = 0x9421ffd0;
+    buf[1] = 0x91010008;
+    buf[2] = 0x91210010;
+    buf[3] = 0x91410018;
+    buf[4] = 0x91610020;
+    buf[5] = 0x91810028;
+    buf[6] = 0x9421fff0;
+    buf[7] = 0x54a70001;
+    buf[8] = 0x4182000c;
+    buf[9] = 0x20c60000;
+    buf[10] = 0x7ca50190;
+    buf[0xb] = 0x7ca93379;
+    buf[0xc] = 0x39000000;
+    buf[0xd] = 0x41820080;
+    buf[0xe] = 0x7ca90034;
+    buf[0xf] = 0x7cca0034;
+    buf[0x10] = 0x552bd008;
+    buf[0x11] = 0x7d6bfe70;
+    buf[0x12] = 0x7d6b5038;
+    buf[0x13] = 0x7d295a14;
+    buf[0x14] = 0x21490020;
+    buf[0x15] = 0x3169ffe0;
+    buf[0x16] = 0x7ca54830;
+    buf[0x17] = 0x7ccc5430;
+    buf[0x18] = 0x7ca56378;
+    buf[0x19] = 0x7ccc5830;
+    buf[0x1a] = 0x7ca56378;
+    buf[0x1b] = 0x7cc64830;
+    buf[0x1c] = 0x7d094050;
+    buf[0x1d] = 0x54c9057e;
+    buf[0x1e] = 0x2c090400;
+    buf[0x1f] = 0x3908043e;
+    buf[0x20] = 0x4180001c;
+    buf[0x21] = 0x4181000c;
+    buf[0x22] = 0x54c90529;
+    buf[0x23] = 0x41820010;
+    buf[0x24] = 0x30c60800;
+    buf[0x25] = 0x7ca50194;
+    buf[0x26] = 0x7d080194;
+    buf[0x27] = 0x54c6a83e;
+    buf[0x28] = 0x50a6a814;
+    buf[0x29] = 0x54a5ab3e;
+    buf[0x2a] = 0x5508a016;
+    buf[0x2b] = 0x7d052b78;
+    buf[0x2c] = 0x7ce52b78;
+    buf[0x2d] = 0x90a10008;
+    buf[0x2e] = 0x90c1000c;
+    buf[0x2f] = 0xc8210008;
+    buf[0x30] = 0x38210010;
+    buf[0x31] = 0x81010008;
+    buf[0x32] = 0x81210010;
+    buf[0x33] = 0x81410018;
+    buf[0x34] = 0x81610020;
+    buf[0x35] = 0x81810028;
+    buf[0x36] = 0x38210030;
+    buf[0x37] = 0x48E00020;
+
+    DCStoreRange(buf, 0xE0);
+    ICInvalidateRange(buf, 0xE0);
+
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_L_CVT_SD.s")
+#endif
 
+#ifdef NON_MATCHING
+s32 cpuCompile_CEIL_W(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x30000034)) {
+        return 0;
+    }
+
+    *code = buf;
+    buf[0] = 0x9421ffe0;
+    buf[1] = 0xc8030000 + ((u32)cpu->fpr - (u32)cpu) & 0xFFFF;
+    buf[2] = 0xfc010040;
+    buf[3] = 0x4081000c;
+    buf[4] = 0x38c00001;
+    buf[5] = 0x42800008;
+    buf[6] = 0x38c00000;
+    buf[7] = 0xfc20081e;
+    buf[8] = 0xd8210010;
+    buf[9] = 0x80a10014;
+    buf[10] = 0x7ca62a14;
+    buf[0xb] = 0x38210020;
+    buf[0xc] = 0x4E800020;
+
+    DCStoreRange(buf, 0x34);
+    ICInvalidateRange(buf, 0x34);
+
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_CEIL_W.s")
+#endif
 
 #ifdef NON_MATCHING
 s32 cpuCompile_FLOOR_W(cpu_class_t *cpu, u32 **code) {
@@ -2122,8 +3306,43 @@ s32 cpuCompile_FLOOR_W(cpu_class_t *cpu, u32 **code) {
 #endif
 
 #ifdef NON_MATCHING
-int cpuCompile_LB(cpu_class_t *cpu, void **code) {
+
+inline s32 rlwinm(u32 *code, u32 ra, u32 rs, u32 sh, u32 mb, u32 me) {
+    *code = (21 << 26) | (rs << 21) | (ra << 16) | (sh << 11) | (mb << 6) | (me << 1);
+
+}
+
+inline s32 addi(u32 *code, u32 rt, u32 ra, u32 imm) {
+    *code = ((14 << 26) | (rt << 21) | (ra << 16)) + imm;
+}
+
+inline s32 lwzx(u32 *code, u32 rt, u32 ra, u32 rb) {
+    *code = (31 << 26) | (rt << 21) | (ra << 16) | (rb << 11) | (23 << 1);
+}
+
+inline s32 lwz(u32 *code, u32 rt, u32 ra, u32 d) {
+    *code = ((32 << 26) | (rt << 21) | (ra << 16)) + d;
+}
+
+inline s32 add(u32 *code, u32 rt, u32 ra, u32 rb) {
+    *code= (31 << 26) | (rt << 21) | (ra << 16) | (rb << 11) | (266 << 1);
+}
+
+inline s32 lbzx(u32 *code, u32 rt, u32 ra, u32 rb) {
+    *code = (31 << 26) | (rt << 21) | (ra << 16) | (rb << 11) | (87 << 1);
+}
+
+inline s32 extsb(u32 *code,  u32 ra, u32 rs) {
+    *code = (31 << 26) | (rs << 21) | (ra << 16) | (954 << 1);
+}
+
+inline void blr(u32 *code) {
+    *code = (19 << 26) | (20 << 21) | (16 << 1);
+}
+
+s32 cpuCompile_LB(cpu_class_t *cpu, void **code) {
     u32 *buf;
+    s32 pos;
 
     if(!xlHeapTake((void**)&buf, 0x3000002C)) {
         return 0;
@@ -2131,39 +3350,99 @@ int cpuCompile_LB(cpu_class_t *cpu, void **code) {
 
     *code = buf;
 
-    // rlwinm r6, r6, 2, 0, 29
-    // addi r7, r3 (offsetOf devices)
-    // lwzx r6, r6, r7
-    // lwz r7, 0x0008(r6)
-    // add r5, r5, r7
-    // lwz r7, 0x0004(r6)
-    // lwz r7, 0x0004(r7)
+    // r3 = cpu
+    // r5 = address
+    // r6 = dev_idx
+    // rlwinm r6, r6, 2, 0, 29; r6 = (dev_idx * 4) & 0xC
+    // addi r7, r3 (offsetOf devices); r7 = cpu->devices;
+    // lwzx r6, r6, r7; r6 = cpu->devices[dev_idx]
+    // lwz r7, 0x0008(r6); r7 = cpu->devices[dev_idx].addr_offset
+    // add r5, r5, r7; r5 = address + cpu->devices[dev_idx].addr_offset
+    // lwz r7, 0x0004(r6); r7 = cpu->devices[dev_idx].dev_obj
+    // lwz r7, 0x0004(r7); r7 cpu->devices[dev_idx].dev_obj + 4
     // lbzx r5, r5, r7
     // extsb r5, r5
     // blr
-    buf[0] = 0x54c6103a;
-    buf[1] = 0x38e30000 | ((u32)cpu->devices - (u32)cpu);
-    buf[2] = 0x7cc6382e;;
-    buf[3] = 0x80e60008;
-    buf[4] = 0x7ca53a14;
-    buf[5] = 0x80e60004;
-    buf[6] = 0x80e70004;
-    buf[7] = 0x7ca538ae;
-    buf[8] = 0x7ca50774;
-    buf[9] = 0x4e800020;
 
-    DCStoreRange(buf, 0x28);
-    ICInvalidateRange(buf, 0x28);
+    pos = 0;
+
+    rlwinm(&buf[pos++], 6, 6, 2, 0, 29);
+    addi(&buf[pos++], 7, 3, ((s32)&cpu->devices[0] - (s32)cpu));
+    lwzx(&buf[pos++], 6, 6, 7);
+    lwz(&buf[pos++], 7, 6, offsetof(cpu_dev_t, addr_offset));
+    add(&buf[pos++], 5, 5, 7);
+    lwz(&buf[pos++], 7, 6, offsetof(cpu_dev_t, dev_obj));
+    lwz(&buf[pos++], 7, 7, offsetof(ram_class_t, dram));
+    lbzx(&buf[pos++], 5, 5, 7);
+    extsb(&buf[pos++], 5, 5);
+    blr(&buf[pos++]);
+
+    DCStoreRange(buf, pos * sizeof(*buf));
+    ICInvalidateRange(buf, pos * sizeof(*buf));
 
     return 1;
 }
 #else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_LB.s")
 #endif
+#undef NON_MATCHING
 
+#ifdef NON_MATCHING
+s32 cpuCompile_LH(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+    if(!xlHeapTake((void**)&buf, 0x3000002C)) {
+        return 0;
+    }
+
+    *code = buf;
+    buf[0] = 0x54c6103a;
+    buf[1] = 0x38e30000 + ((u32)cpu->devices - (u32)cpu);
+    buf[2] = 0x7cc6382e;
+    buf[3] = 0x80e60008;
+    buf[4] = 0x7ca53a14;
+    buf[5] = 0x80e60004;
+    buf[6] = 0x80e70004;
+    buf[7] = 0x7ca53a2e;
+    buf[8] = 0x7ca50734;
+    buf[9] = 0x4E800020;
+
+    DCStoreRange(buf, 0x28);
+    ICInvalidateRange(buf, 0x28);
+    
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_LH.s")
+#endif
 
+#ifdef NON_MATCHING
+s32 cpuCompile_LW(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x30000028)) {
+        return 0;
+    }
+
+    *code = buf;
+
+    buf[0] = 0x54c6103a; 
+    buf[1] = 0x38e30000 + ((u32)cpu->devices - (u32)cpu);
+    buf[2] = 0x7cc6382e;
+    buf[3] = 0x80e60000 + offsetof(cpu_dev_t, addr_offset);
+    buf[4] = 0x7ca53a14;
+    buf[5] = 0x80e60000 + offsetof(cpu_dev_t, dev_obj);
+    buf[6] = 0x80e70000 + offsetof(ram_class_t, dram);
+    buf[7] = 0x7ca5382e;
+    buf[8] = 0x4E800020;
+
+    DCStoreRange(buf, 0x24);
+    ICInvalidateRange(buf, 0x24);
+
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_LW.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_LBU.s")
 
@@ -2216,14 +3495,71 @@ s32 cpuCompile_SW(cpu_class_t *cpu, u32 **code) {
 
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_SDC.s")
 
+#ifdef NON_MATCHING
+s32 cpuCompile_LWL(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x30000030)) {
+        return 0;
+    }
+
+    *code = buf;
+
+    buf[0] = 0x38c00018;
+    buf[1] = 0x88a70000;
+    buf[2] = 0x7ca53030;
+    buf[3] = 0x394000ff;
+    buf[4] = 0x7d4a3030;
+    buf[5] = 0x7d295078;
+    buf[6] = 0x7d292b78;
+    buf[7] = 0x38c6fff8;
+    buf[8] = 0x54e507bf;
+    buf[9] = 0x38e70001;
+    buf[10] = 0x4082ffdc;
+    buf[11] = 0x4e800020;
+
+    DCStoreRange(buf, 0x30);
+    ICInvalidateRange(buf, 0x30);
+
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_LWL.s")
+#endif
 
+#ifdef NON_MATCHING
+s32 cpuCompile_LWR(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x30000030)) {
+        return 0;
+    }
+
+    *code = buf;
+
+    buf[0] = 0x38c00000;
+    buf[1] = 0x88a70000;
+    buf[2] = 0x7ca53030;
+    buf[3] = 0x394000ff;
+    buf[4] = 0x7d4a3030;
+    buf[5] = 0x7d295078;
+    buf[6] = 0x7d292b78;
+    buf[7] = 0x38c60008;
+    buf[8] = 0x54e507bf;
+    buf[9] = 0x38e7ffff;
+    buf[10] = 0x4082ffdc;
+    buf[11] = 0x4e800020;
+
+    DCStoreRange(buf, 0x30);
+    ICInvalidateRange(buf, 0x30);
+
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_LWR.s")
+#endif
 
-u32 OSGetTick(void);
-s32 systemCheckInterrupts(system_class_t *sys);
-s32 cpuGetRegisterCP0(cpu_class_t *, s32, u64*);
-s32 cpuSetRegisterCP0(cpu_class_t *, s32, u64);
+#ifdef NON_MATCHING
 inline s32 checkRetrace() {
     if(gSystem->unk_0x00 != 0) {
         if(!systemCheckInterrupts(gSystem)) {
@@ -2236,7 +3572,6 @@ inline s32 checkRetrace() {
     return 1;
 }
 
-#ifdef NON_MATCHING
 inline unkFrameSet(u32 rom_id, u32 *frame, u32 addr) {
     if(rom_id == 'NKTJ') {
         if(addr == 0x802A4118) {
@@ -2261,8 +3596,24 @@ inline unkFrameSet(u32 rom_id, u32 *frame, u32 addr) {
         }
     }
 }
+
 inline cpu_dev_t *get_dev(cpu_dev_t **devs, u8 *idxs, u32 addr) {
     return devs[idxs[(addr >> 0x10)]];
+}
+
+inline void setCP0Random(cpu_class_t *cpu) {
+    s32 val;
+    s32 i;
+
+    for(val = 0, i = 0; i < 48; i++) {
+        if(!(cpu->tlb[i].entry_hi.sw[1] & 2)) {
+            val++;
+        }
+    }
+
+    cpu->cp0[CP0_RANDOM].sd = val;
+
+    cpuSetTLB(cpu, cpu->cp0[CP0_RANDOM].sw[1]);
 }
 
 void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
@@ -2302,7 +3653,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
     cpu->pc = addr + 4;
     if(inst == 0xACBF011C) {
         prev_ra = cpu->gpr[MREG_RA].d;
-        cpu->gpr[MREG_RA].w[1] = cpu->unk_0x30;
+        cpu->gpr[MREG_RA].w[1] = cpu->n64_ra;
         save_ra = 1;
     }
 
@@ -2689,8 +4040,8 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
         case OPC_CP0: // CP0
             switch(inst & 0x3F) {
                 case 1: // TLBR
-                    cpu->cp0[CP0_ENTRYLO0].d = cpu->tlb[cpu->cp0[CP0_INDEX].w[1] & 0x3F].entry_lo[0].d;
-                    cpu->cp0[CP0_ENTRYLO1].d = cpu->tlb[cpu->cp0[CP0_INDEX].w[1] & 0x3F].entry_lo[1].d;
+                    cpu->cp0[CP0_ENTRYLO0].d = cpu->tlb[cpu->cp0[CP0_INDEX].w[1] & 0x3F].entry_lo0.d;
+                    cpu->cp0[CP0_ENTRYLO1].d = cpu->tlb[cpu->cp0[CP0_INDEX].w[1] & 0x3F].entry_lo1.d;
                     cpu->cp0[CP0_ENTRYHI].d = cpu->tlb[cpu->cp0[CP0_INDEX].w[1] & 0x3F].entry_hi.d;
                     cpu->cp0[CP0_PAGEMASK].d = cpu->tlb[cpu->cp0[CP0_INDEX].w[1] & 0x3F].page_mask.d;
                     break;
@@ -2699,9 +4050,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                     break;
                 case 5: // TLBWR
                     {
-                        cpu->cp0[CP0_RANDOM].d = unk248_func(cpu);
-
-                        cpuSetTLB(cpu, cpu->cp0[CP0_RANDOM].d);
+                        setCP0Random(cpu);
                     }
                     break;
                 case 8: // TLBP
@@ -2709,7 +4058,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                         cpu->cp0[CP0_INDEX].d |= 0x80000000;
 
                         for(i = 0; i < 48; i++) {
-                            if(cpu->tlb[i].entry_lo[0].w[1] & 2) {
+                            if(cpu->tlb[i].entry_lo0.w[1] & 2) {
                                 if(!(cpu->cp0[CP0_ENTRYHI].d ^ cpu->tlb[i].entry_hi.d)) {
                                     cpu->cp0[CP0_INDEX].d = i;
                                     break;
@@ -2737,7 +4086,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                                     break;
                                 }
 
-                                cpu->gpr[(inst >> 0x10) & 0x1F].d = tmp.d & 0xFFFFFFFFUL;
+                                cpu->gpr[(inst >> 0x10) & 0x1F].sd = tmp.sd & 0xFFFFFFFFULL;
                             }
                             break;
                         case 1: // DMFC0
@@ -3544,7 +4893,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[MIPS_RS(inst)].sd + MIPS_IMM(inst);
                 do {
                     dev = get_dev(devs, dev_idx, ea);
-                    if(dev->lb(dev->unk_4, ea + dev->unk_8, (s8*)&byteBuf)) {
+                    if(dev->lb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf)) {
                         tmp.d = (u64)byteBuf << (u64)(sh);
                         cpu->gpr[(inst >> 0x10) & 0x1F].d = tmp.d | (cpu->gpr[(inst >> 0x10) & 0x1F].d & ~((u64)0xFF << (sh)));
                     }
@@ -3561,7 +4910,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[(inst >> 0x15) & 0x1F].sd + MIPS_IMM(inst);
 
                 do {
-                    if(devs[dev_idx[ea >> 0x10]]->lb(devs[dev_idx[ea >> 0x10]]->unk_4, ea + devs[dev_idx[ea >> 0x10]]->unk_8, (s8*)&byteBuf)) {
+                    if(devs[dev_idx[ea >> 0x10]]->lb(devs[dev_idx[ea >> 0x10]]->dev_obj, ea + devs[dev_idx[ea >> 0x10]]->addr_offset, (s8*)&byteBuf)) {
                         tmp.d = (u64)byteBuf << sh;
                         cpu->gpr[(inst >> 0x10) & 0x1F].d = tmp.d | (cpu->gpr[(inst >> 0x10) & 0x1F].d & ~((u64)0xFF << sh));
                     }
@@ -3575,7 +4924,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[(inst >> 0x15) & 0x1F].sd + MIPS_IMM(inst);
                 dev = devs[dev_idx[ea >> 0x10]];
 
-                if(dev->lw(dev->unk_4, ea + dev->unk_8, (s32*)&wordBuf)) {
+                if(dev->lw(dev->dev_obj, ea + dev->addr_offset, (s32*)&wordBuf)) {
                     cpu->gpr[(inst >> 0x10) & 0x1F].d = wordBuf;
                 }
             }
@@ -3585,7 +4934,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
 
-                if(dev->lb(dev->unk_4, ea + dev->unk_8, (s8*)&byteBuf)) {
+                if(dev->lb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf)) {
                     cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = (s8)byteBuf;
                 }
             }
@@ -3595,7 +4944,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
 
-                if(dev->lh(dev->unk_4, ea + dev->unk_8, (s16*)&halfBuf)) {
+                if(dev->lh(dev->dev_obj, ea + dev->addr_offset, (s16*)&halfBuf)) {
                     cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = (s16)halfBuf;
                 }
             }
@@ -3607,7 +4956,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
 
                 do {
                     dev = get_dev(devs, dev_idx, ea);
-                    if(dev->lb(dev->unk_4, ea + dev->unk_8, (s8*)&byteBuf)) {
+                    if(dev->lb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf)) {
                         wordBuf = (u32)byteBuf << sh;
                         cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = wordBuf | (cpu->gpr[(inst >> 0x10) & 0x1F].w[1] & ~((u32)0xFF << sh));
                     }
@@ -3621,7 +4970,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
 
-                if(dev->lw(dev->unk_4, ea + dev->unk_8, (s32*)&wordBuf)) {
+                if(dev->lw(dev->dev_obj, ea + dev->addr_offset, (s32*)&wordBuf)) {
                     cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = wordBuf;
                 }
             }
@@ -3631,7 +4980,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
 
-                if(dev->lb(dev->unk_4, ea + dev->unk_8, (s8*)&byteBuf)) {
+                if(dev->lb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf)) {
                     cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = byteBuf;
                 }
             }
@@ -3647,7 +4996,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 
                 dev = get_dev(devs, dev_idx, ea);
 
-                if(dev->lh(dev->unk_4, ea + dev->unk_8, (s16*)&halfBuf)) {
+                if(dev->lh(dev->dev_obj, ea + dev->addr_offset, (s16*)&halfBuf)) {
                     cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = halfBuf;
                 }
             }
@@ -3659,7 +5008,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
 
                 do {
                     dev = get_dev(devs, dev_idx, ea);
-                    if(dev->lb(dev->unk_4, ea + dev->unk_8, (s8*)&byteBuf)) {
+                    if(dev->lb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf)) {
                         wordBuf = (u32)byteBuf << sh;
                         cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = wordBuf | (cpu->gpr[(inst >> 0x10) & 0x1F].w[1] & ~((u32)0xFF << sh));
                     }
@@ -3673,7 +5022,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
 
-                dev->sb(dev->unk_4, ea + dev->unk_8, (s8*)&cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]);
+                dev->sb(dev->dev_obj, ea + dev->addr_offset, (s8*)&cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]);
             }
             break;
         case 41: // SH
@@ -3681,7 +5030,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
 
-                dev->sh(dev->unk_4, ea + dev->unk_8, (s16*)&cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]);
+                dev->sh(dev->dev_obj, ea + dev->addr_offset, (s16*)&cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]);
             }
             break;
         case 42: // SWL
@@ -3692,7 +5041,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 do {
                     byteBuf = cpu->gpr[(inst >> 0x10) & 0x1F].w[1] >> sh;
                     dev = get_dev(devs, dev_idx, ea);
-                    dev->sb(dev->unk_4, ea + dev->unk_8, (s8*)&byteBuf);
+                    dev->sb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf);
                     ea++;
                     sh -= 8;
                 } while((ea - 1) & 3);
@@ -3703,7 +5052,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
 
-                dev->sw(dev->unk_4, ea + dev->unk_8, &cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]);
+                dev->sw(dev->dev_obj, ea + dev->addr_offset, &cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]);
             }
             break;
         case 44: // SDL
@@ -3714,7 +5063,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 do {
                     byteBuf = cpu->gpr[(inst >> 0x10) & 0x1F].d >> sh;
                     dev = get_dev(devs, dev_idx, ea);
-                    dev->sb(dev->unk_4, ea + dev->unk_8, (s8*)&byteBuf);
+                    dev->sb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf);
                     ea++;
                     sh -= 8;
                 } while((ea - 1) & 7);
@@ -3728,7 +5077,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 do {
                     byteBuf = cpu->gpr[(inst >> 0x10) & 0x1F].d >> sh;
                     dev = get_dev(devs, dev_idx, ea);
-                    dev->sb(dev->unk_4, ea + dev->unk_8, (s8*)&byteBuf);
+                    dev->sb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf);
                     ea--;
                     sh += 8;
                 } while((ea + 1) & 7);
@@ -3742,7 +5091,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 do {
                     byteBuf = cpu->gpr[(inst >> 0x10) & 0x1F].w[1] >> sh;
                     dev = get_dev(devs, dev_idx, ea);
-                    dev->sb(dev->unk_4, ea + dev->unk_8, (s8*)&byteBuf);
+                    dev->sb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf);
                     ea--;
                     sh += 8;
                 } while((ea + 1) & 3);
@@ -3753,7 +5102,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
 
-                if(dev->lw(dev->unk_4, ea + dev->unk_8, (s32*)&wordBuf)) {
+                if(dev->lw(dev->dev_obj, ea + dev->addr_offset, (s32*)&wordBuf)) {
                     cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = wordBuf;
                 }
             }
@@ -3763,7 +5112,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[MIPS_RS(inst)].w[1] + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
 
-                if(dev->lw(dev->unk_4, ea + dev->unk_8, (s32*)&wordBuf)) {
+                if(dev->lw(dev->dev_obj, ea + dev->addr_offset, (s32*)&wordBuf)) {
                     if(MIPS_RT(inst) & 1) {
 
                         cpu->fpr[MIPS_FT(inst) - 1].d = cpu->fpr[MIPS_FT(inst) - 1].d & 0xFFFFFFFF;
@@ -3779,7 +5128,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[(inst >> 0x15) & 0x1F].sd + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
 
-                if(dev->ld(dev->unk_4, ea + dev->unk_8, &tmp.sd)) {
+                if(dev->ld(dev->dev_obj, ea + dev->addr_offset, &tmp.sd)) {
                     cpu->gpr[(inst >> 0x10) & 0x1F].d = tmp.sd;
                 }
             }
@@ -3789,7 +5138,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
 
-                if(dev->ld(dev->unk_4, ea + dev->unk_8, &tmp.sd)) {
+                if(dev->ld(dev->dev_obj, ea + dev->addr_offset, &tmp.sd)) {
                     cpu->fpr[(inst >> 0x10) & 0x1F].d = tmp.sd;
                 }
             }
@@ -3799,7 +5148,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
 
-                if(dev->ld(dev->unk_4, ea + dev->unk_8, &tmp.sd)) {
+                if(dev->ld(dev->dev_obj, ea + dev->addr_offset, &tmp.sd)) {
                     cpu->gpr[(inst >> 0x10) & 0x1F].d = tmp.sd;
                 }
             }
@@ -3810,7 +5159,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[MIPS_RS(inst)].w[1] + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
                 
-                cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = !!dev->sw(dev->unk_4, ea + dev->unk_8, (s32*)&wordBuf);
+                cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = !!dev->sw(dev->dev_obj, ea + dev->addr_offset, (s32*)&wordBuf);
             }
             break;
         case 57: // SWC1
@@ -3824,7 +5173,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 }
 
                 dev = get_dev(devs, dev_idx, ea);
-                dev->sw(dev->unk_4, ea + dev->unk_8, (s32*)&wordBuf);
+                dev->sw(dev->dev_obj, ea + dev->addr_offset, (s32*)&wordBuf);
             }
             break;
         case 60: // SCD
@@ -3833,7 +5182,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[MIPS_RS(inst)].sd + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
                 
-                cpu->gpr[(inst >> 0x10) & 0x1F].sd = !!dev->sd(dev->unk_4, ea + dev->unk_8, &tmp.sd);
+                cpu->gpr[(inst >> 0x10) & 0x1F].sd = !!dev->sd(dev->dev_obj, ea + dev->addr_offset, &tmp.sd);
             }
             break;
         case 61: // SDC1
@@ -3842,7 +5191,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
 
-                dev->sd(dev->unk_4, ea + dev->unk_8, (s64*)&tmp.d);
+                dev->sd(dev->dev_obj, ea + dev->addr_offset, (s64*)&tmp.d);
             }
             break;
         case OPC_SD:
@@ -3851,7 +5200,7 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
                 ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
                 dev = get_dev(devs, dev_idx, ea);
 
-                dev->sd(dev->unk_4, ea + dev->unk_8, (s64*)&tmp.d);
+                dev->sd(dev->dev_obj, ea + dev->addr_offset, (s64*)&tmp.d);
             }
             break;
 
@@ -3876,16 +5225,10 @@ void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret);
 #endif
 #undef NON_MATCHING
 
-s32 videoForceRetrace(void *);
-s32 cpuExecuteUpdate(cpu_class_t *cpu, u32 **, u32);
-
 #ifdef NON_MATCHING
-void *cpuExecuteIdle(cpu_class_t *cpu, u32 r4, u32 addr, u32 *ret) {
-    rom_class_t *rom;
-    u32 tick;
-
-    rom = gSystem->rom;
-    tick = OSGetTick();
+void *cpuExecuteIdle(cpu_class_t *cpu, u32 arg1, u32 addr, u32 *ret) {
+    rom_class_t *rom = gSystem->rom;
+    u32 tick = OSGetTick();
 
     if(cpu->unk_0x24 != 0) {
         cpu->status |= 8;
@@ -3933,26 +5276,35 @@ void *cpuExecuteJump(cpu_class_t *cpu, u32 r4, u32 addr, u32 *ret) {
     return ret;
 }
 
-inline void findUnk0x18(cpu_class_t *cpu, s32 addr, u32 *ret) {
+inline void findExternalCall(cpu_class_t *cpu, s32 addr, u32 *ret) {
     s32 i;
     recomp_node_t *node;
-    unk_node_0x18 *unk_0x18;
+    ext_call_t *ext_call;
     u32 *ret_p = ret - 1;
     
-    cpu->unk_0x34++;
-    cpuFindFunction(cpu, cpu->unk_0x30 - 8, &node);
+    cpu->call_cnt++;
+    cpuFindFunction(cpu, cpu->n64_ra - 8, &node);
 
-    unk_0x18 = node->unk_0x18;
-    for(i = 0; i < node->unk_0x1C; unk_0x18++, i++) {
-        if(addr == unk_0x18->unk_0x00) {
-            if(unk_0x18->unk_0x04 == NULL) {
-                node->unk_0x18[i].unk_0x04 = ret_p;
+    ext_call = node->ext_calls;
+    for(i = 0; i < node->ext_call_cnt; ext_call++, i++) {
+        if(addr == ext_call->n64_addr) {
+            if(ext_call->vc_addr == NULL) {
+                node->ext_calls[i].vc_addr = ret_p;
                 return;
             }
         }
     }
 }
 
+/**
+ * @brief Executes a call from the dyanrec environment
+ * 
+ * @param cpu The emulated VR4300.
+ * @param arg1 
+ * @param addr Address of the call.
+ * @param ret Return address after the call has completed.
+ * @return void* A pointer to the recompiled called function.
+ */
 void *cpuExecuteCall(cpu_class_t *cpu, u32 arg1, s32 addr, u32 *ret) {
     recomp_node_t *node;
     s32 i;
@@ -3971,19 +5323,27 @@ void *cpuExecuteCall(cpu_class_t *cpu, u32 arg1, s32 addr, u32 *ret) {
     cpu->pc = addr;
     cpu->gpr[MREG_RA].w[1] = (u32)ret;
 
-    findUnk0x18(cpu, addr, ret);
+    findExternalCall(cpu, addr, ret);
 
     flg = (reg_map[MREG_RA] & 0x100) != 0;
     ret_p = ret - (!!flg + 3);
     if(flg) {
-        ret_p[0] = ((u32)ret >> 0x10) | (5 << 0x15) | (0 << 0x10) | 0x3C000000;
-        ret_p[1] = ((u32)ret & 0xFFFF) |(5 << 0x15) | (5 << 0x10) | 0x60000000;
+        /**
+         * lis r5, hi(ret)
+         * ori r5, r5, lo(ret)
+         */
+        ret_p[0] = (15 << 26) | ((u32)ret >> 0x10) | (5 << 0x15) | (0 << 0x10);
+        ret_p[1] = (24 << 26) | ((u32)ret & 0xFFFF) |(5 << 0x15) | (5 << 0x10);
         DCStoreRange(ret_p, 8);
         ICInvalidateRange(ret_p, 8);
     } else {
         u32 reg = reg_map[MREG_RA];
-        ret_p[0] = ((u32)ret >> 0x10) | (reg << 0x15) | (0 << 0x10) | 0x3C000000;
-        ret_p[1] = ((u32)ret & 0xFFFF) | (reg << 0x15) | 0x60000000 | (reg << 0x10);  
+        /**
+         * lis rA, hi(ret)
+         * ori rA, rA, lo(ret)
+         */
+        ret_p[0] = (15 << 26) | ((u32)ret >> 0x10) | (reg << 0x15) | (0 << 0x10);
+        ret_p[1] = (24 << 26) | ((u32)ret & 0xFFFF) | (reg << 0x15) | (reg << 0x10);  
         DCStoreRange(ret_p, 8);
         ICInvalidateRange(ret_p, 8);
     }
@@ -3994,10 +5354,16 @@ void *cpuExecuteCall(cpu_class_t *cpu, u32 arg1, s32 addr, u32 *ret) {
 
     offset = (u32)ret - (u32)&ret_p[3];
     if(flg) {
+        /**
+         * b ret
+         */
         ret_p[3] = (offset & 0x3FFFFFC) | 0x48000000;
         DCStoreRange(ret_p, 16);
         ICInvalidateRange(ret_p, 16);
     } else {
+        /**
+         * b ret
+         */
         ret_p[2] = (offset & 0x3FFFFFC) | 0x48000000;
         DCStoreRange(ret_p, 12);
         ICInvalidateRange(ret_p, 12);
@@ -4008,13 +5374,616 @@ void *cpuExecuteCall(cpu_class_t *cpu, u32 arg1, s32 addr, u32 *ret) {
     return ret;
 }
 
-void *cpuExecuteLoadStore(cpu_class_t *cpu, u32 r4, u32 addr, u32 *ret);
+
+#ifdef NON_MATCHING
+// very minor regalloc
+/**
+ * @brief Recompiles a VR4300 load/store instruction
+ * 
+ * @param cpu The emulated VR4300.
+ * @param arg1 
+ * @param addr The address of the Load/Store instruction.
+ * @param ret A pointer to the location where recompiled code should be stored.
+ * @return void* The location where the dynarec block should continue executing.
+ */
+void *cpuExecuteLoadStore(cpu_class_t *cpu, u32 arg1, u32 addr, u32 *ret) {
+    s32 pos = 0;
+    s32 tmp3 = 0;
+    s32 tmp1 = 0;
+    u32 *buf;
+    u32 rt;
+    u32 base;
+    s32 i;
+    u8 dev_idx;
+    u32 *tmp2;
+    u32 *puVar2;
+    s32 inst_search = 0x90C30000 + ((u32)&cpu->unk_0x24 - (u32)cpu);
+    u32 *ret_p;
+    u32 ea;
+
+    if(!cpuGetAddressBuffer(cpu, (void**)&buf, addr)) {
+        return 0;
+    }
+
+    ea = cpu->gpr[MIPS_RS(*buf)].sw[1] + MIPS_IMM(*buf);
+    dev_idx = cpu->mem_hi_map[ea >> 16];
+    if(cpu->unk_0x12224 & 0x100) {
+        ret_p = &ret[-3];
+        puVar2 = ret + 3;
+        tmp2 =  &ret_p[-2];
+    } else {
+        ret_p = &ret[-3];
+        puVar2 = ret + 2;
+        tmp2 = &ret_p[-2];  
+    }
+
+    if((ea >> 0x1C) < 8) {
+        tmp1 = 1;
+    }
+
+    if(!tmp1 && dev_idx >= 128) {
+        switch(MIPS_OP(*buf)) {
+            case OPC_LB:
+                rt = reg_map[MIPS_RT(*buf)];
+                if(rt & 0x100) {
+                    rt = 5;
+                }
+
+                base = reg_map[MIPS_RS(*buf)];
+                if(base & 0x100) {
+                    base = 6;
+
+                    ret_p[pos++] = 0x80c30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+                }
+
+                if(cpu->unk_0x12224 & 0x100) {
+                    if(cpu->unk_0x12224 & 0x1000) {
+                        ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                    } else {
+                        if((ea >> 0x1C) >= 10) {
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                        }
+                    }
+                }
+
+                ret_p[pos++] = 0x7CE04214 | (base << 16);
+                ret_p[pos++] = 0x88070000 | (rt << 21) | (*buf & 0xFFFF);
+                ret_p[pos++] = 0x7C000774 | (rt << 21) | (rt << 16);
+
+                if(reg_map[MIPS_RT(*buf)] & 0x100) {
+                    ret_p[pos++] = 0x90A30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                }
+
+                break;
+            case OPC_LBU:
+                rt = reg_map[MIPS_RT(*buf)];
+                if(rt & 0x100) {
+                    rt = 5;
+                }
+
+                base = reg_map[MIPS_RS(*buf)];
+                if(base & 0x100) {
+                    base = 6;
+
+                    ret_p[pos++] = 0x80c30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+                }
+
+                if(cpu->unk_0x12224 & 0x100) {
+                    if(cpu->unk_0x12224 & 0x1000) {
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                    } else {
+                        if((ea >> 0x1C) >= 10) {
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                        }
+                    }
+                }
+
+                ret_p[pos++] = 0x7CE04214 | (base << 16);
+                ret_p[pos++] = 0x88070000 | (rt << 21) | (*buf & 0xFFFF);
+
+                if(reg_map[MIPS_RT(*buf)] & 0x100) {
+                    ret_p[pos++] = 0x90A30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                }
+
+                break;
+            case OPC_LH:
+                rt = reg_map[MIPS_RT(*buf)];
+                if(rt & 0x100) {
+                    rt = 5;
+                }
+
+                base = reg_map[MIPS_RS(*buf)];
+                if(base & 0x100) {
+                    base = 6;
+
+                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] -(u32)cpu + 4);
+                }
+
+                if(cpu->unk_0x12224 & 0x100) {
+                    if(cpu->unk_0x12224 & 0x1000) {
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                    } else {
+                        if((ea >> 0x1C) >= 10) {
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                        }
+                    }
+                }
+
+                ret_p[pos++] = 0x7CE04214 | (base << 16);
+                ret_p[pos++] = 0xA0070000 | (rt << 21) | (*buf & 0xFFFF);
+                ret_p[pos++] = 0x7C000734 | (rt << 21) | (rt << 16);
+
+                if(reg_map[MIPS_RT(*buf)] & 0x100) {
+                    ret_p[pos++] = 0x90A30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                }
+
+                break;
+
+            case OPC_LHU:
+                rt = reg_map[MIPS_RT(*buf)];
+                if(rt & 0x100) {
+                    rt = 5;
+                }
+
+                base = reg_map[MIPS_RS(*buf)];
+                if(base & 0x100) {
+                    base = 6;
+
+                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] -(u32)cpu + 4);
+                }
+
+                if(cpu->unk_0x12224 & 0x100) {
+                    if(cpu->unk_0x12224 & 0x1000) {
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                    } else {
+                        if((ea >> 0x1C) >= 10) {
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                        }
+                    }
+                }
+
+                ret_p[pos++] = 0x7CE04214 | (base << 16);
+                ret_p[pos++] = 0xA0070000 | (rt << 21) | (*buf & 0xFFFF);
+
+                if(reg_map[MIPS_RT(*buf)] & 0x100) {
+                    ret_p[pos++] = 0x90A30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                }
+
+                break;
+            case OPC_LW:
+                rt = reg_map[MIPS_RT(*buf)];
+                if(rt & 0x100) {
+                    rt = 5;
+                }
+
+                base = reg_map[MIPS_RS(*buf)];
+                if(base & 0x100) {
+                    base = 6;
+
+                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+                }
+
+                if(cpu->unk_0x12224 & 0x100) {
+                    if(cpu->unk_0x12224 & 0x1000) {
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                    } else {
+                        if((ea >> 0x1C) >= 10) {
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                        }
+                    }
+                }
+
+                ret_p[pos++] = 0x7CE04214 | (base << 16);
+                ret_p[pos++] = 0x80070000 | (rt << 21) | (*buf & 0xFFFF);
+
+                if(reg_map[MIPS_RT(*buf)] & 0x100) {
+                    ret_p[pos++] = 0x90A30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                }
+
+                break;
+            case OPC_SB:
+                rt = reg_map[MIPS_RT(*buf)];
+                if(rt & 0x100) {
+                    rt = 6;
+                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                }
+
+                base = reg_map[MIPS_RS(*buf)];
+                if(base & 0x100) {
+                    base = 7;
+                    ret_p[pos++] = 0x80E30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+                }
+
+                if(cpu->unk_0x12224 & 0x100) {
+                    if(cpu->unk_0x12224 & 0x1000) { 
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                    } else {
+                        if((ea >> 0x1C) >= 10) {
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                        }
+                    }
+                }
+
+                ret_p[pos++] = 0x7CE04214 | (base << 16);
+                ret_p[pos++] = 0x98070000 | (rt << 21) | (*buf & 0xFFFF);
+                break;
+            case OPC_SH:
+                rt = reg_map[MIPS_RT(*buf)];
+                if(rt & 0x100) {
+                    rt = 6;
+                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                }
+
+                base = reg_map[MIPS_RS(*buf)];
+                if(base & 0x100) {
+                    base = 7;
+                    ret_p[pos++] = 0x80E30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+                }
+
+                if(cpu->unk_0x12224 & 0x100) {
+                    if(cpu->unk_0x12224 & 0x1000) { 
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                    } else {
+                        if((ea >> 0x1C) >= 10) {
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                        }
+                    }
+                }
+
+                ret_p[pos++] = 0x7CE04214 | (base << 16);
+                ret_p[pos++] = 0xB0070000 | (rt << 21) | (*buf & 0xFFFF);
+                break;
+            case OPC_SW:
+                rt = reg_map[MIPS_RT(*buf)];
+                if(rt & 0x100) {
+                    rt = 6;
+                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                }
+
+                base = reg_map[MIPS_RS(*buf)];
+                if(base & 0x100) {
+                    base = 7;
+                    ret_p[pos++] = 0x80E30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+                }
+
+                if(cpu->unk_0x12224 & 0x100) {
+                    if(cpu->unk_0x12224 & 0x1000) { 
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                    } else {
+                        if((ea >> 0x1C) >= 10) {
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                        }
+                    }
+                }
+
+                ret_p[pos++] = 0x7CE04214 | (base << 16);
+                ret_p[pos++] = 0x90070000 | (rt << 21) | (*buf & 0xFFFF);
+                break;
+            default:
+                invalidInst();
+                break;
+        }   
+    } else {
+        // regalloc is here, the or of 0x3CA00000 and hi bits of addr are placed in r4 instead of r3
+        tmp1 = 1;
+        ret_p[pos++] = 0x3CA00000 | (addr >> 0x10);
+        ret_p[pos++] = 0x60A50000 | (addr & 0xFFFF);
+        ret_p[pos++] = 0x48000001 | (((u32)cpu->execute_opcode - (u32)&ret_p[pos]) & 0x3FFFFFC);
+    }
+
+    if(cpu->unk_0x12224 & 0x100) {
+        if((6 - pos) >= 2) {
+            tmp3 = pos;
+            ret_p[pos++] = 0x48000000 | (u16)((u32)&ret_p[6] - (u32)&ret_p[pos]);
+        }
+
+        while(pos <= 5) {
+            ret_p[pos++] = 0x60000000;
+        }
+
+        pos = 6;
+    } else {
+        if((5 - pos) >= 2) {
+            tmp3 = pos;
+            ret_p[pos++] = 0x48000000 | (u16)((u32)&ret_p[5] - (u32)&ret_p[pos]);
+        }
+
+        while(pos <= 4) {
+            ret_p[pos++] = 0x60000000;
+        }
+
+        pos = 5;
+    }
+
+    if(!tmp1 && tmp2[0] == 0x38C00000 && (s32)tmp2[1] == inst_search) {
+        s32 pos2 = 0;
+        tmp2[pos2++] = 0x48000000 | (u16)((u32)&tmp2[2] - (u32)tmp2);
+        tmp2[pos2++] = 0x60000000;
+        DCStoreRange(tmp2, pos2 * sizeof(*tmp2));
+        ICInvalidateRange(tmp2, pos2 * sizeof(*tmp2));
+        if(tmp3 != 0) {
+            ret_p[tmp3] = 0x48000000 | (u16)((u32)&puVar2[2] - (u32)&ret_p[tmp3]);
+        }
+
+        puVar2[0] = 0x60000000;
+        puVar2[1] = 0x60000000;
+        cpu->unk_0x24 = -1;
+        pos += 2;
+    }
+
+    DCStoreRange(ret_p, pos * 4);
+    ICInvalidateRange(ret_p, pos * 4);
+
+    return ret_p;
+}
+#else
+void *cpuExecuteLoadStore(cpu_class_t *cpu, u32 arg1, u32 addr, u32 *ret);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecuteLoadStore.s")
+#endif
+#undef NON_MATCHING
 
-void *cpuExecuteLoadStoreF(cpu_class_t *cpu, u32 r4, u32 addr, u32 *ret);
+
+#ifdef NON_MATCHING
+/**
+ * @brief Recompiles a VR4300 load/store instruction on COP1 or doubleword load/store.
+ * 
+ * @param cpu The emulated VR4300.
+ * @param arg1 
+ * @param addr The address of the Load/Store instruction.
+ * @param ret A pointer to the location where recompiled code should be stored.
+ * @return void* The location where the dynarec block should continue executing.
+ */
+void *cpuExecuteLoadStoreF(cpu_class_t *cpu, u32 arg1, u32 addr, u32 *ret) {
+    u32 tmp3;
+    u32 tmp1;
+    s32 inst_search = 0x90C30000 + ((u32)&cpu->unk_0x24 - (u32)cpu);
+    u32 *tmp2;
+    u32 *puVar2;
+    u32 *ret_p;
+    s32 pos;
+    u32 ea;
+    u8 dev_idx;
+    u32 *buf;
+    u32 rt;
+    u32 base;
+    s32 ft;
+
+    pos = 0;
+    tmp3 = 0;
+    tmp1 = 0;
+    if(!cpuGetAddressBuffer(cpu, (void**)&buf, addr)) {
+        return NULL;
+    }
+
+    ea = cpu->gpr[MIPS_RS(*buf)].sw[1] + MIPS_IMM(*buf);
+    dev_idx = cpu->mem_hi_map[ea >> 16];
+    if(cpu->unk_0x12224 & 0x100) {
+        ret_p = &ret[-3];
+        puVar2 = ret + 4;
+        tmp2 = &ret_p[-2];
+    } else {
+        ret_p = &ret[-3];
+        puVar2 = ret + 3;
+        tmp2 = &ret_p[-2];
+    }
+
+    if((ea >> 0x1C) < 8) {
+        tmp1 = 1;
+    }
+
+    if(!tmp1 && dev_idx >= 128) {
+        ft = MIPS_FT(*buf);
+        switch(MIPS_OP(*buf)) {
+            case OPC_LWC1:
+                base = reg_map[MIPS_RS(*buf)];
+                if(base & 0x100) {
+                    base = 6;
+                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+                }
+
+                if(cpu->unk_0x12224 & 0x100 && ((ea >> 0x1C) >= 10)) {
+                    ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                }
+
+                ret_p[pos++] = 0x7CE04214 | (base << 16);
+
+                if((ft % 2) == 1) {
+                    ret_p[pos++] = 0x80A70000 | (*buf & 0xFFFF);
+                    ret_p[pos++] = 0x90A30000 + ((u32)&cpu->fpr[ft - 1] - (u32)cpu);
+                } else {
+                    ret_p[pos++] = 0x80A70000 | (*buf & 0xFFFF);
+                    ret_p[pos++] = 0x90A30000 + ((u32)&cpu->fpr[ft] - (u32)cpu + 4);
+                }
+                break;
+            case OPC_SWC1:
+                base = reg_map[MIPS_RS(*buf)];
+                if(base & 0x100) {
+                    base = 6;
+                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+                }
+
+                if(cpu->unk_0x12224 & 0x100 && ((ea >> 0x1C) >= 10)) {
+                    ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                }
+
+                ret_p[pos++] = 0x7CE04214 | (base << 16);
+                if((ft % 2) == 1){  
+                    ret_p[pos++] = 0x80A30000 + ((u32)&cpu->fpr[ft - 1] - (u32)cpu);
+                } else {
+                    ret_p[pos++] = 0x80A30000 + ((u32)&cpu->fpr[ft] - (u32)cpu + 4);
+                }
+
+                ret_p[pos++] = 0x90A70000 | (*buf & 0xFFFF);
+                break;
+            case OPC_LDC1:
+                base = reg_map[MIPS_RS(*buf)];
+                if(base & 0x100) {
+                    base = 6;
+                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+                }
+
+                if(cpu->unk_0x12224 & 0x100 && ((ea >> 0x1C) >= 10)) {
+                    ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                }
+
+                ret_p[pos++] = 0x7CE04214 | (base << 16);
+                ret_p[pos++] = 0x80A70000 | (*buf & 0xFFFF);
+                ret_p[pos++] = 0x90A30000 + ((u32)&cpu->fpr[ft] - (u32)cpu);
+                ret_p[pos++] = 0x80A70000 | ((*buf & 0xFFFF) + 4);
+                ret_p[pos++] = 0x90A30000 + ((u32)&cpu->fpr[ft] - (u32)cpu + 4);
+                break;
+            case OPC_SDC1:
+                base = reg_map[MIPS_RS(*buf)];
+                if(base & 0x100) {
+                    base = 6;
+                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+                }
+
+                if(cpu->unk_0x12224 & 0x100 && ((ea >> 0x1C) >= 10)) {
+                    ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                }
+
+                ret_p[pos++] = 0x7CE04214 | (base << 16);
+                ret_p[pos++] = 0x80A30000 + ((u32)&cpu->fpr[ft] - (u32)cpu);
+                ret_p[pos++] = 0x90A70000 | (*buf & 0xFFFF);
+                ret_p[pos++] = 0x80A30000 + ((u32)&cpu->fpr[ft] - (u32)cpu + 4);
+                ret_p[pos++] = 0x90A70000 | ((*buf & 0xFFFF) + 4);
+                break;
+            case OPC_LD:
+                rt = reg_map[MIPS_RT(*buf)];
+                if(rt & 0x100) {
+                    rt = 5;
+                }
+
+                base = reg_map[MIPS_RS(*buf)];
+                if(base & 0x100) {
+                    base = 6;
+                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+                }
+
+                if(cpu->unk_0x12224 & 0x100) {
+                    if(cpu->unk_0x12224 & 0x1000) {
+                        ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                    } else {
+                        if((ea >> 0x1C) >= 10) {
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                        }
+                    }
+                }
+
+                ret_p[pos++] = 0x7CE04214 | (base << 16);
+                ret_p[pos++] = 0x80A70000 | (*buf & 0xFFFF);
+                ret_p[pos++] = 0x90A30000  + ((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu);
+                ret_p[pos++] = 0x80070000 | (rt << 21) | ((*buf & 0xFFFF) + 4);
+                ret_p[pos++] = (0x90030000 | (rt << 21)) + ((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                break;
+            case OPC_SD:
+                base = reg_map[MIPS_RS(*buf)];
+                if(base & 0x100) {
+                    base = 7;
+                    ret_p[pos++] = 0x80E30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+                }
+
+                if(cpu->unk_0x12224 & 0x100) {
+                    if(cpu->unk_0x12224 & 0x1000) {
+                        ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                    } else {
+                        if((ea >> 0x1C) >= 10) {
+                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                        }
+                    }
+                }
+
+                ret_p[pos++] = 0x7CE04214 | (base << 16);
+                ret_p[pos++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu);
+                ret_p[pos++] = 0x90C70000 | (*buf & 0xFFFF);
+                rt = reg_map[MIPS_RT(*buf)];
+                if(rt & 0x100) {
+                    rt = 6;
+                    ret_p[pos++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                }
+
+                ret_p[pos++] = 0x90070000 | (rt << 21) | ((*buf & 0xFFFF) + 4);
+                break;
+            default:
+                invalidInst();
+                break;
+        }
+    } else {
+        tmp1 = 1;
+        ret_p[pos++] = 0x3CA00000 | (addr >> 0x10);
+        ret_p[pos++] = 0x60A50000 | (addr & 0xFFFF);
+        ret_p[pos++] = 0x48000001 | (((u32)cpu->execute_opcode - (u32)&ret_p[pos]) & 0x3FFFFFC);
+    }
+
+    if(cpu->unk_0x12224 & 0x100) {
+        if((7 - pos) >= 2) {
+            tmp3 = pos;
+            ret_p[pos++] = 0x48000000 | (u16)((u32)&ret_p[7] - (u32)&ret_p[pos]);
+        }
+
+        while(pos <= 6) {
+            ret_p[pos++] = 0x60000000;
+        }
+
+        pos = 7;
+    } else {
+        if((6 - pos) >= 2) {
+            tmp3 = pos;
+            ret_p[pos++] = 0x48000000 | (u16)((u32)&ret_p[6] - (u32)&ret_p[pos]);
+        }
+
+        while(pos <= 5) {
+            ret_p[pos++] = 0x60000000;
+        }
+
+        pos = 6;
+    }
+
+    if(!tmp1 && tmp2[0] == 0x38C00000 && (s32)tmp2[1] == inst_search) {
+        s32 pos2 = 0;
+        tmp2[pos2++] = 0x48000000 | (u16)((u32)&tmp2[2] - (u32)tmp2);
+        tmp2[pos2++] = 0x60000000;
+        DCStoreRange(tmp2, pos2 * sizeof(*tmp2));
+        ICInvalidateRange(tmp2, pos2 * sizeof(*tmp2));
+        if(tmp3 != 0) {
+            ret_p[tmp3] = 0x48000000 | (u16)((u32)&puVar2[2] - (u32)&ret_p[tmp3]);
+        }
+
+        puVar2[0] = 0x60000000;
+        puVar2[1] = 0x60000000;
+        cpu->unk_0x24 = -1;
+        pos += 2;
+    }
+
+    DCStoreRange(ret_p, pos * sizeof(*ret_p));
+    ICInvalidateRange(ret_p, pos * sizeof(*ret_p));
+
+    return ret_p;
+}
+#else
+void *cpuExecuteLoadStoreF(cpu_class_t *cpu, u32 arg1, u32 addr, u32 *ret);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecuteLoadStoreF.s")
+#endif
+#undef NON_MATCHING
 
-int cpuMakeLink(cpu_class_t *cpu, u32 **link_code, void *handler) {
+class_t gClassCPU = {
+    cpu_class_name,
+    sizeof(cpu_class_t),
+    0,
+    cpuEvent
+};
+
+/**
+ * @brief Generates a call to a virtual-console function from within the dynarec envrionment
+ * Dedicated PPC registers are saved to the cpu object, and restored once the virtual-console function has finished.
+ * Jump to the return value of the virtual-console function
+ * @param cpu The emulated VR4300.
+ * @param link_code A pointer to store the gneerated PPC code.
+ * @param handler The virtual-console function to call.
+ * @return s32 1 on success, 0 otherwise.
+ */
+s32 cpuMakeLink(cpu_class_t *cpu, u32 **link_code, void *handler) {
     u32 *code;
     s32 i;
     u32 paddr;
@@ -4025,53 +5994,65 @@ int cpuMakeLink(cpu_class_t *cpu, u32 **link_code, void *handler) {
     }
 
     *link_code = code;
-    *code++ = 0x7CC802A6; // mflr r6
+
+    // mflr r6
+    *code++ = 0x7CC802A6;
 
     for(i = 1; i < 32; i++) {
         if(!(reg_map[i] & 0x100)) {
-            *code++ = (((u32)&cpu->gpr[i] - (u32)cpu) + 4) |
-                      (reg_map[i] << 0x15) |
-                      0x90030000;                               // stw rx, off(r3)
+            // stw rx, off(r3)
+            *code++ = (((u32)&cpu->gpr[i] - (u32)cpu) + 4) | (reg_map[i] << 0x15) | 0x90030000;
         }
     }
 
-    *code++ = (((u32)handler - (u32)code) & 0x3FFFFFC) |
-              0x48000001;                                       // bl handler
-    *code++ = 0x7C6803A6;                                       // mtlr r3
-    *code++ = ((u32)cpu >> 0x10) |
-              0x3C600000;                                       // lis r3, cpu@h
-    *code++ = ((u32)cpu & 0xFFFF) |
-              0x60630000;                                       // ori r3, r3, cpu@l
-    *code++ = (((s32)&cpu->unk_0x34 - (s32)cpu)) +
-              0x80830000;                                       // lwz r4, 0x34(r3)
+    /**
+     * bl handler
+     * mtlr r3
+     * lis r3, hi(cpu)
+     * ori r3, lo(cpu)
+     * lwz r4, cpu->call_cntz
+     */
+    *code++ = (((u32)handler - (u32)code) & 0x3FFFFFC) | 0x48000001;
+    *code++ = 0x7C6803A6;
+    *code++ = ((u32)cpu >> 0x10) | 0x3C600000;
+    *code++ = ((u32)cpu & 0xFFFF) | 0x60630000;
+    *code++ = (((s32)&cpu->call_cnt - (s32)cpu)) + 0x80830000;
 
     paddr = (u32)gSystem->ram->dram - 0x80000000;
-    *code++ = (paddr >> 0x10) |
-              0x3D000000;                                       // lui r8, dram@h
+
+    // lui r8, hi(dram)
+    *code++ = (paddr >> 0x10) | 0x3D000000;
     if(cpu->unk_0x12224 & 0x100) {
-        *code++ = 0x3D20DFFF;                                   // lis r9, 0xDFFF
-        *code++ = (paddr & 0xFFFF) |
-                  0x61080000;                                   // ori r8, r8, dram@l
-        *code++ = 0x6129FFFF;                                   // ori r9, r9, 0xFFFF
+        /**
+         * lis r9, 0xDFFF
+         * ori r8, r8, lo(dram)
+         * ori r9, r9, 0xFFFF
+         */
+        *code++ = 0x3D20DFFF;
+        *code++ = (paddr & 0xFFFF) | 0x61080000;
+        *code++ = 0x6129FFFF;
     } else if(cpu->unk_0x12224 & 1) {
-        *code++ = (((u32)cpu->mem_hi_map - (u32)cpu)) +
-                  0x39230000;                                   // addi r9, r3, 0xF60
-        *code++ = (paddr & 0xFFFF) |
-                  0x61080000;                                   // ori r8, r8, dram@l
+        /**
+         * addi r9, r3, 0xF60
+         * ori r8, r8, lo(dram)
+         */
+        *code++ = (((u32)cpu->mem_hi_map - (u32)cpu)) + 0x39230000;                                   
+        *code++ = (paddr & 0xFFFF) | 0x61080000;
     }
 
-    *code++ = (reg_map[0] << 0x15) |
-              0x38000000;                                       // li r10, 0
+
+    // li r10, 0
+    *code++ = (reg_map[0] << 0x15) | 0x38000000;
 
     for(i = 1; i < 32; i++) {
         if(!(reg_map[i] & 0x100)) {
-            *code++ = (((u32)&cpu->gpr[i] - (u32)cpu) + 4) |
-                      (reg_map[i] << 0x15) |
-                      0x80030000;                               // lwz rx, off(r3)
+            // lwz rx, off(r3)
+            *code++ = (((u32)&cpu->gpr[i] - (u32)cpu) + 4) | (reg_map[i] << 0x15) | 0x80030000;
         }
     }
 
-    *code++ = 0x4E800020;                                       // blr
+    // blr
+    *code++ = 0x4E800020;
 
     DCStoreRange(*link_code, 0x200);
     ICInvalidateRange(*link_code, 0x200);
@@ -4083,17 +6064,123 @@ int cpuMakeLink(cpu_class_t *cpu, u32 **link_code, void *handler) {
 extern void (*lbl_8025CFE8)(u32);
 
 inline s32 __free(void **ptr) {
-    void *tmp = ptr;
-    if(!xlHeapFree(&tmp)) {
+    void ***tmp = &ptr;
+    if(!xlHeapFree((void**)tmp)) {
         return 0;
     }
 
-    *ptr = NULL;
+    **tmp = NULL;
     return 1;
 }
 
-void *VISetPostRetraceCallback(void*);
+inline s32 cpuCompile_DADD(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
 
+    if(!xlHeapTake((void**)&buf, 0x3000000C)) {
+        return 0;
+    }
+
+    *code = buf;
+    buf[0] = 0x7CA53814; // addc r5, r5, r7
+    buf[1] = 0x7CC64114; // adde r6, r6, r8
+    buf[2] = 0x4E800020; // blr
+    DCStoreRange(buf, 12);
+    ICInvalidateRange(buf, 12);
+
+    return 1;
+}
+
+inline s32 cpuCompile_DADDU(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x3000000C)) {
+        return 0;
+    }
+
+    *code = buf;
+    buf[0] = 0x7CA53814; // addc r5, r5, r7
+    buf[1] = 0x7CC64114; // adde r6, r6, r8
+    buf[2] = 0x4E800020; // blr
+    DCStoreRange(buf, 12);
+    ICInvalidateRange(buf, 12);
+
+    return 1;
+}
+
+inline s32 cpuCompile_DSUB(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x3000000C)) {
+        return 0;
+    }
+
+    *code = buf;
+    buf[0] = 0x7CA53814; // addc r5, r5, r7
+    buf[1] = 0x7CC64114; // adde r6, r6, r8
+    buf[2] = 0x4E800020; // blr
+    DCStoreRange(buf, 12);
+    ICInvalidateRange(buf, 12);
+
+    return 1;
+}
+
+inline s32 cpuCompile_DSUBU(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x3000000C)) {
+        return 0;
+    }
+
+    *code = buf;
+    buf[0] = 0x7CA53814; // addc r5, r5, r7
+    buf[1] = 0x7CC64114; // adde r6, r6, r8
+    buf[2] = 0x4E800020; // blr
+    DCStoreRange(buf, 12);
+    ICInvalidateRange(buf, 12);
+
+    return 1;
+}
+
+inline s32 cpuCompile_ROUND_W(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x3000000C)) {
+        return 0;
+    }
+
+    *code = buf;
+    buf[0] = 0xFC00081C; // addc r5, r5, r7
+    buf[1] = 0x7C051FAE; // adde r6, r6, r8
+    buf[2] = 0x4E800020; // blr
+    DCStoreRange(buf, 12);
+    ICInvalidateRange(buf, 12);
+
+    return 1;
+}
+
+inline s32 cpuCompile_TRUNC_W(cpu_class_t *cpu, u32 **code) {
+    u32 *buf;
+
+    if(!xlHeapTake((void**)&buf, 0x3000000C)) {
+        return 0;
+    }
+
+    *code = buf;
+    buf[0] = 0xFC00081C; // addc r5, r5, r7
+    buf[1] = 0x7C051FAE; // adde r6, r6, r8
+    buf[2] = 0x4E800020; // blr
+    DCStoreRange(buf, 12);
+    ICInvalidateRange(buf, 12);
+
+    return 1;
+}
+
+/**
+ * @brief Begins execution of the emulated VR4300
+ * 
+ * @param cpu The emulated VR4300
+ * @return s32 1 on success, 0 otherwise.
+ */
 s32 cpuExecute(cpu_class_t *cpu) {
     u32 *dadd_buf;
     u32 *daddu_buf;
@@ -4144,41 +6231,11 @@ s32 cpuExecute(cpu_class_t *cpu) {
     cpuCompile_DDIV(cpu, &cpuCompile_DDIV_function);
     cpuCompile_DDIVU(cpu, &cpuCompile_DDIVU_function);
 
-    if(xlHeapTake((void**)&dadd_buf, 0x3000000C)) {
-        cpuCompile_DADD_function = dadd_buf;
-        dadd_buf[0] = 0x7CA53814; // addc r5, r5, r7
-        dadd_buf[1] = 0x7CC64114; // adde r6, r6, r8
-        dadd_buf[2] = 0x4E800020; // blr
-        DCStoreRange(dadd_buf, 12);
-        ICInvalidateRange(dadd_buf, 12);
-    }
-
-    if(xlHeapTake((void**)&daddu_buf, 0x3000000C)) {
-        cpuCompile_DADDU_function = daddu_buf;
-        daddu_buf[0] = 0x7CA53814; // addc r5, r5, r7
-        daddu_buf[1] = 0x7CC64114; // adde r6, r6, r8
-        daddu_buf[2] = 0x4E800020; // blr
-        DCStoreRange(daddu_buf, 12);
-        ICInvalidateRange(daddu_buf, 12);
-    }
-
-    if(xlHeapTake((void**)&dsub_buf, 0x3000000C)) {
-        cpuCompile_DSUB_function = dsub_buf;
-        dsub_buf[0] = 0x7CA53814; // adde r5, r7, r6
-        dsub_buf[1] = 0x7CC64114; // addc r6, r8, r6
-        dsub_buf[2] = 0x4E800020; // blr
-        DCStoreRange(dsub_buf, 12);
-        ICInvalidateRange(dsub_buf, 12);
-    }
-
-    if(xlHeapTake((void**)&dsubu_buf, 0x3000000C)) {
-        cpuCompile_DSUBU_function = dsubu_buf;
-        dsubu_buf[0] = 0x7CA53814; // adde r5, r7, r6
-        dsubu_buf[1] = 0x7CC64114; // addc r6, r8, r6
-        dsubu_buf[2] = 0x4E800020; // blr
-        DCStoreRange(dsubu_buf, 12);
-        ICInvalidateRange(dsubu_buf, 12);
-    }
+    // inlined
+    cpuCompile_DADD(cpu, &cpuCompile_DADD_function);
+    cpuCompile_DADDU(cpu, &cpuCompile_DADDU_function);
+    cpuCompile_DADDU(cpu, &cpuCompile_DSUB_function);
+    cpuCompile_DADDU(cpu, &cpuCompile_DSUBU_function);
 
     cpuCompile_S_SQRT(cpu, &cpuCompile_S_SQRT_function);
     cpuCompile_D_SQRT(cpu, &cpuCompile_D_SQRT_function);
@@ -4187,23 +6244,9 @@ s32 cpuExecute(cpu_class_t *cpu) {
     cpuCompile_CEIL_W(cpu, &cpuCompile_CEIL_W_function);
     cpuCompile_FLOOR_W(cpu, &cpuCompile_FLOOR_W_function);
 
-    if(xlHeapTake((void**)&round_w_buf, 0x3000000C)) {
-        cpuCompile_ROUND_W_function = round_w_buf;
-        round_w_buf[0] = 0xFC00081C; // fctiw f0, f1
-        round_w_buf[1] = 0x7C051FAE; // stfiwx f0, r5, r3
-        round_w_buf[2] = 0x4E800020; // blr
-        DCStoreRange(round_w_buf, 12);
-        ICInvalidateRange(round_w_buf, 12);
-    }
-
-    if(xlHeapTake((void**)&trunc_w_buf, 0x3000000C)) {
-        cpuCompile_TRUNC_W_function = trunc_w_buf;
-        trunc_w_buf[0] = 0xFC00081E; // fctiwz f0, f1
-        trunc_w_buf[1] = 0x7C051FAE; // stfiwx f0, r5, r3
-        trunc_w_buf[2] = 0x4E800020; // blr
-        DCStoreRange(trunc_w_buf, 12);
-        ICInvalidateRange(trunc_w_buf, 12);
-    }
+    // inlined
+    cpuCompile_ROUND_W(cpu, &cpuCompile_ROUND_W_function);
+    cpuCompile_TRUNC_W(cpu, &cpuCompile_TRUNC_W_function);
 
     cpuCompile_LB(cpu, &cpuCompile_LB_function);
     cpuCompile_LH(cpu, &cpuCompile_LH_function);
@@ -4227,7 +6270,7 @@ s32 cpuExecute(cpu_class_t *cpu) {
         entry_p = entry_buf;
         *entry_p++ = 0x3c600000 | ((u32)cpu >> 16);
         *entry_p++ = 0x60630000 | ((u32)cpu & 0xFFFFF);
-        *entry_p++ = 0x80830000 | ((u32)&cpu->unk_0x34 - (u32)cpu);
+        *entry_p++ = 0x80830000 | ((u32)&cpu->call_cnt - (u32)cpu);
         ram = (u32)gSystem->ram->dram - 0x80000000;
         *entry_p++ = 0x3d000000 | (ram >> 16);
         *entry_p++ = 0x61080000 | (ram & 0xFFFF);
@@ -4245,7 +6288,7 @@ s32 cpuExecute(cpu_class_t *cpu) {
                 *entry_p++ = 0x80030000 | ((u32)&cpu->gpr[i] - (u32)cpu + 4) | (reg_map[i] << 0x15);
             }
         }
-        *entry_p++ = 0x48000000 | ((u32)entry_node->recompiled_func - (u32)entry_p);
+        *entry_p++ = 0x48000000 | (((u32)entry_node->recompiled_func - (u32)entry_p) & 0x3FFFFFC);
         DCStoreRange(entry_buf, 0x100);
         ICInvalidateRange(entry_buf, 0x100);
         cpu->unk_0x40 = 0;
@@ -4262,8 +6305,8 @@ s32 cpuExecute(cpu_class_t *cpu) {
         }
 
         if(!__free((void**)&cpu->execute_call)) {
-   
-        }         return 0;
+            return 0;
+        }
 
         if(!__free((void**)&cpu->execute_jump)) {
             return 0;
@@ -4412,23 +6455,34 @@ s32 cpuExecute(cpu_class_t *cpu) {
 s32 cpuExecute(cpu_class_t *cpu);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecute.s")
 #endif
+#undef NON_MATCHING
 
-int cpuMapObject(cpu_class_t *cpu, void *dev, u32 address_start, u32 address_end, u32 param_5){
+/**
+ * @brief Maps an object to a cpu device.
+ * 
+ * @param cpu The emulated VR4300.
+ * @param dev The device that will handle requests for this memory space.
+ * @param address_start The start of the memory space for which the device will be responsible.
+ * @param address_end The end of the memory space for which the device will be responsible.
+ * @param create_arg An argument which will be passed back to the device on creation.
+ * @return s32 1 on success, 0 otherwise.
+ */
+s32 cpuMapObject(cpu_class_t *cpu, void *dev, u32 address_start, u32 address_end, u32 create_arg){
     u32 size = address_end - address_start + 1;
     u32 dev_idx;
 
     if(address_start == 0 && address_end == 0xFFFFFFFF) {
-        if(!cpuMakeDevice(cpu, &dev_idx, dev, 0, 0, size, param_5)) {
+        if(!cpuMakeDevice(cpu, &dev_idx, dev, 0, 0, size, create_arg)) {
             return 0;
         }
 
-        cpu->unk_0x1C = dev_idx;
+        cpu->mem_dev_idx = dev_idx;
     } else {
-        if(!cpuMakeDevice(cpu, &dev_idx, dev, address_start | 0x80000000, address_start, size, param_5)) {
+        if(!cpuMakeDevice(cpu, &dev_idx, dev, address_start | 0x80000000, address_start, size, create_arg)) {
             return 0;
         }
 
-        if(!cpuMakeDevice(cpu, &dev_idx, dev, address_start | 0xA0000000, address_start, size, param_5)) {
+        if(!cpuMakeDevice(cpu, &dev_idx, dev, address_start | 0xA0000000, address_start, size, create_arg)) {
             return 0;
         }
     }
@@ -4436,14 +6490,54 @@ int cpuMapObject(cpu_class_t *cpu, void *dev, u32 address_start, u32 address_end
     return 1;
 }
 
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8003C708.s")
+s32 cpuGetBlock(cpu_class_t *cpu, cpu_blk_req_t *req) {
+    u32 dev_addr;
+    cpu_dev_t *dev;
+    s32 i;
+    
+    dev_addr = req->dev_addr;
+    if(dev_addr < 0x4000000) {
+        dev_addr = req->dst_phys_ram;
+    }
+    
+    i = 1;
+    while(cpu->devices[i] != NULL) {
+        dev = cpu->devices[i];
+        if(dev->paddr_start <= dev_addr && dev_addr <= dev->paddr_end) {
+            if(dev->get_blk != NULL) {
+                return dev->get_blk(dev->dev_obj, req);
+            }
 
-s32 cpuSetGetBlock(cpu_class_t* cpu, cpu_dev_t* dev, void* arg2) {
-    dev->unk_0x2C = arg2;
+            return 0;
+        }
+        i++;
+    }
+
+    dev = cpu->devices[cpu->mem_dev_idx];
+    if(dev != NULL && dev->get_blk != NULL) {
+        return dev->get_blk(dev->dev_obj, req);
+    }
+
+    return 0;
+}
+
+s32 cpuSetGetBlock(cpu_class_t* cpu, cpu_dev_t* dev, void* get_blk) {
+    dev->get_blk = get_blk;
 
     return 1;
 }
 
+/**
+ * @brief Sets load handlers for a device.
+ * 
+ * @param cpu The emulated VR4300.
+ * @param dev The device which handles the load operations.
+ * @param lb byte handler.
+ * @param lh halfword handler.
+ * @param lw word handler.
+ * @param ld doubleword handler.
+ * @return s32 1 on success, 0 otherwise.
+ */
 s32 cpuSetDeviceGet(cpu_class_t* cpu, cpu_dev_t* dev, lb_func_t lb, lh_func_t lh, lw_func_t lw, ld_func_t ld)  {
     dev->lb = lb;
     dev->lh = lh;
@@ -4453,6 +6547,17 @@ s32 cpuSetDeviceGet(cpu_class_t* cpu, cpu_dev_t* dev, lb_func_t lb, lh_func_t lh
     return 1;
 }
 
+/**
+ * @brief Sets store handlers for a device.
+ * 
+ * @param cpu The emulated VR4300.
+ * @param dev The device which handles the store operations.
+ * @param lb byte handler.
+ * @param lh halfword handler.
+ * @param lw word handler.
+ * @param ld doubleword handler.
+ * @return s32 1 on success, 0 otherwise.
+*/
 s32 cpuSetDevicePut(cpu_class_t* cpu, cpu_dev_t* dev, sb_func_t sb, sh_func_t sh, sw_func_t sw, sd_func_t sd)  {
     dev->sb = sb;
     dev->sh = sh;
@@ -4462,8 +6567,8 @@ s32 cpuSetDevicePut(cpu_class_t* cpu, cpu_dev_t* dev, sb_func_t sb, sh_func_t sh
     return 1;
 }
 
-int func_8003C7E0(cpu_class_t *cpu, u32 addr, u32 repl, s32 end) {
-    int i;
+s32 cpuSetCodeHack(cpu_class_t *cpu, u32 addr, u32 repl, s32 end) {
+    s32 i;
 
     for(i = 0; i < cpu->hack_cnt; i++) {
         if(addr == cpu->hacks[i].addr) {
@@ -4497,29 +6602,29 @@ s32 cpuReset(cpu_class_t *cpu) {
 
     for(i = 0; i < 48; i += 4) {
         // Maybe fake?  Could be manual un rolling
-        cpu->tlb[i + 0].entry_lo[0].d = 0;
-        cpu->tlb[i + 0].entry_lo[1].d = 0;
+        cpu->tlb[i + 0].entry_lo0.d = 0;
+        cpu->tlb[i + 0].entry_lo1.d = 0;
         cpu->tlb[i + 0].entry_hi.d = 0;
         cpu->tlb[i + 0].page_mask.d = 0;
-        cpu->tlb[i + 0].unk_0x20.d = -1;
+        cpu->tlb[i + 0].dev_status.d = -1;
 
-        cpu->tlb[i + 1].entry_lo[0].d = 0;
-        cpu->tlb[i + 1].entry_lo[1].d = 0;
+        cpu->tlb[i + 1].entry_lo0.d = 0;
+        cpu->tlb[i + 1].entry_lo1.d = 0;
         cpu->tlb[i + 1].entry_hi.d = 0;
         cpu->tlb[i + 1].page_mask.d = 0;
-        cpu->tlb[i + 1].unk_0x20.d = -1;
+        cpu->tlb[i + 1].dev_status.d = -1;
 
-        cpu->tlb[i + 2].entry_lo[0].d = 0;
-        cpu->tlb[i + 2].entry_lo[1].d = 0;
+        cpu->tlb[i + 2].entry_lo0.d = 0;
+        cpu->tlb[i + 2].entry_lo1.d = 0;
         cpu->tlb[i + 2].entry_hi.d = 0;
         cpu->tlb[i + 2].page_mask.d = 0;
-        cpu->tlb[i + 2].unk_0x20.d = -1;
+        cpu->tlb[i + 2].dev_status.d = -1;
         
-        cpu->tlb[i + 3].entry_lo[0].d = 0;
-        cpu->tlb[i + 3].entry_lo[1].d = 0;
+        cpu->tlb[i + 3].entry_lo0.d = 0;
+        cpu->tlb[i + 3].entry_lo1.d = 0;
         cpu->tlb[i + 3].entry_hi.d = 0;
         cpu->tlb[i + 3].page_mask.d = 0;
-        cpu->tlb[i + 3].unk_0x20.d = -1;
+        cpu->tlb[i + 3].dev_status.d = -1;
     }
 
     cpu->lo.d = 0;
@@ -4555,7 +6660,7 @@ s32 cpuReset(cpu_class_t *cpu) {
     cpu->cp0[0x10].d = 0x6E463;
     cpu->cache_cnt = 0;
 
-    if(func_8000CB1C(cpu)) {
+    if(cpuHackHandler(cpu)) {
         cpu->status |= 0x10;
     }
 
@@ -4605,28 +6710,28 @@ s32 cpuReset(cpu_class_t *cpu);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuReset.s")
 #endif
 
-int cpuGetXPC(cpu_class_t *cpu, u64 *param_2, u64 *param_3, u64 *param_4) {
-    if(!xlObjectTest(cpu, &lbl_80171F38)) {
+s32 cpuGetXPC(cpu_class_t *cpu, u64 *pc, u64 *lo, u64 *hi) {
+    if(!xlObjectTest(cpu, &gClassCPU)) {
         return 0;
     }
 
-    if(param_2 != NULL) {
-        *param_2 = cpu->pc;
+    if(pc != NULL) {
+        *pc = cpu->pc;
     }
 
-    if(param_3 != NULL) {
-        *param_3 = cpu->lo.d;
+    if(lo != NULL) {
+        *lo = cpu->lo.d;
     }
 
-    if(param_4 != NULL) {
-        *param_4 = cpu->hi.d;
+    if(hi != NULL) {
+        *hi = cpu->hi.d;
     }
 
     return 1;
 }
 
-int cpuSetXPC(cpu_class_t *cpu, u32 r4, u64 pc, u64 lo, u64 hi) {
-    if(!xlObjectTest(cpu, &lbl_80171F38)) {
+s32 cpuSetXPC(cpu_class_t *cpu, u32 r4, u64 pc, u64 lo, u64 hi) {
+    if(!xlObjectTest(cpu, &gClassCPU)) {
         return 0;
     }
     
@@ -4648,7 +6753,7 @@ inline s32 cpuClearDevice(cpu_class_t *cpu, s32 i) {
 
         for(j = 0; j < 0x10000; j++) {
             if(cpu->mem_hi_map[j] == i) {
-                cpu->mem_hi_map[j] = cpu->unk_0x1C;
+                cpu->mem_hi_map[j] = cpu->mem_dev_idx;
             }
         }
         ret = 1;
@@ -4657,7 +6762,8 @@ inline s32 cpuClearDevice(cpu_class_t *cpu, s32 i) {
     return ret;
 }
 
-s32 cpuEvent(cpu_class_t *cpu, s32 event, void *arg) {
+s32 cpuEvent(void* obj, s32 event, void *arg) {
+    cpu_class_t *cpu = obj;
     s32 i;
 
     switch(event) {
@@ -4702,33 +6808,31 @@ s32 cpuEvent(cpu_class_t *cpu, s32 event, void *arg) {
     return 1;
 }
 
-int func_8003D344(cpu_class_t *cpu, u32 *buffer, u32 addr) {
+s32 cpuGetAddressOffset(cpu_class_t *cpu, u32 *buffer, u32 addr) {
     if(addr >= 0x80000000 && addr < 0xC0000000) {
         *buffer = addr & 0x7FFFFF;
+    } else if(cpu->devices[cpu->mem_hi_map[addr >> 0x10]]->create_arg & 0x100) {
+        *buffer = addr + cpu->devices[cpu->mem_hi_map[addr >> 0x10]]->addr_offset & 0x7FFFFF;
     } else {
-        if(cpu->devices[cpu->mem_hi_map[addr >> 0x10]]->unk_0 & 0x100) {
-            *buffer = addr + cpu->devices[cpu->mem_hi_map[addr >> 0x10]]->unk_8 & 0x7FFFFF;
-        } else {
-            return 0;
-        }
+        return 0;
     }
 
     return 1;
 }
 
-int cpuGetAddressBuffer(cpu_class_t *cpu, void **buffer, u32 addr) {
+s32 cpuGetAddressBuffer(cpu_class_t *cpu, void **buffer, u32 addr) {
     cpu_dev_t *dev = cpu->devices[cpu->mem_hi_map[addr >> 0x10]];
 
-    if(dev->unk_4 == gSystem->ram) {
-        if(!ramGetBuffer((ram_class_t*)dev->unk_4, buffer, addr + dev->unk_8, NULL)) {
+    if(dev->dev_obj == gSystem->ram) {
+        if(!ramGetBuffer((ram_class_t*)dev->dev_obj, buffer, addr + dev->addr_offset, NULL)) {
             return 0;
         }
-    } else if(dev->unk_4 == gSystem->rom) {
-        if(!romGetBuffer(dev->unk_4, buffer, addr + dev->unk_8, NULL)) {
+    } else if(dev->dev_obj == gSystem->rom) {
+        if(!romGetBuffer(dev->dev_obj, buffer, addr + dev->addr_offset, NULL)) {
             return 0;
         }
-    } else if(dev->unk_4 == gSystem->rsp) {
-        if(!rspGetBuffer(dev->unk_4, buffer, addr + dev->unk_8, NULL)) {
+    } else if(dev->dev_obj == gSystem->rsp) {
+        if(!rspGetBuffer(dev->dev_obj, buffer, addr + dev->addr_offset, NULL)) {
             return 0;
         }
     } else {
@@ -4739,50 +6843,50 @@ int cpuGetAddressBuffer(cpu_class_t *cpu, void **buffer, u32 addr) {
 }
 
 #ifdef NON_MATCHING
-s32 cpuGetOffsetAddress(cpu_class_t *cpu, u32 *arg1, u32 *arg2, u32 arg3, u32 arg4) {
+// Some minor reordering at the start
+s32 cpuGetOffsetAddress(cpu_class_t *cpu, s32 *arg1, s32 *arg2, s32 paddr, s32 len) {
+    u32 page_size;
+    u32 page_mask;
     s32 i;
-    s32 iVar4;
-    s32 iVar3 = 8;
-    u32 uVar1;
-    s32 uVar5;
-    u32 uVar2 = 0;
+    s32 uVar2 = 0;
+    u32 tmp2;
 
-    arg2[uVar2++] = 0x80000000 | arg3;
-    arg2[uVar2++] = 0xA0000000 | arg3;
-
-    for(i = 0; i < 0x30; i++) {
-        uVar5 = cpu->tlb[i].entry_lo[0].w[1];
-        if(uVar5 & 2) {
-            uVar1 = cpu->tlb[i].page_mask.w[1] | 0x1FFF;
-            switch(uVar1) {
+    arg1[uVar2++] = paddr | 0x80000000;
+    arg1[uVar2++] = paddr | 0xA0000000;
+    
+    for(i = 0; i < 48; i++) {
+        if(cpu->tlb[i].entry_lo0.d & 2) {
+            page_mask = cpu->tlb[i].page_mask.d | 0x1FFF;
+            switch(page_mask) {
                 case 0x1FFF:
-                    iVar4 = 0x1000;
+                    page_size = 4 * 1024;
                     break;
                 case 0x7FFF:
-                    iVar4 = 0x4000;
+                    page_size = 16 * 1024;
                     break;
                 case 0x1FFFF:
-                    iVar4 = 0x10000;
+                    page_size = 64 * 1024;
                     break;
                 case 0x7FFFF:
-                    iVar4 = 0x40000;
+                    page_size = 256 * 1024;
                     break;
                 case 0x1FFFFF:
-                    iVar4 = 0x100000;
+                    page_size = 1 * 1024 * 1024;
                     break;
                 case 0x7FFFFF:
-                    iVar4 = 0x400000;
+                    page_size = 4 * 1024 * 1024;
                     break;
                 case 0x1FFFFFF:
-                    iVar4 = 0x1000000;
+                    page_size = 16 * 1024 * 1024;
                     break;
                 default:
                     return 0;
             }
-
-            uVar5 = ((uVar5 & 0xFFFFFFC0) << 6) + (arg3 & uVar1);
-            if(uVar5 < (arg3 + arg4) && arg3 <= (uVar5 + iVar4) - 1) {
-                arg1[uVar2++] = cpu->tlb[i].entry_hi.w[1] & ~(0xFFFFE000 & uVar1) | (arg3 & uVar1);
+            
+            tmp2 = ((u32)((cpu->tlb[i].entry_lo0.d & 0xFFFFFFC0) << 6) + (paddr & page_mask));
+            if(tmp2 < (paddr + len - 1) && (tmp2 + page_size - 1) >= paddr) {
+                tmp2 = (cpu->tlb[i].entry_hi.d & 0xFFFFE000);
+                arg1[uVar2++] = (tmp2 & ~page_mask) | (paddr & page_mask);
             }
         }
     }
@@ -4794,7 +6898,7 @@ s32 cpuGetOffsetAddress(cpu_class_t *cpu, u32 *arg1, u32 *arg2, u32 arg3, u32 ar
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuGetOffsetAddress.s")
 #endif
 
-int cpuInvalidateCache(cpu_class_t *cpu, u32 param_2, s32 param_3) {
+s32 cpuInvalidateCache(cpu_class_t *cpu, u32 param_2, s32 param_3) {
     if((param_2 & 0xF0000000) == 0xA0000000) {
         return 1;
     }
@@ -4807,23 +6911,56 @@ int cpuInvalidateCache(cpu_class_t *cpu, u32 param_2, s32 param_3) {
     return 1;
 }
 
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuGetFunctionChecksum.s")
+s32 cpuGetFunctionChecksum(cpu_class_t *cpu, s32 *cs_out, recomp_node_t *node) {
+    u32 *buf;
+    s32 i;
+    s32 size;
+    s32 cs;
+    u32 tmp;
 
-int cpuHeapTake(char **code, cpu_class_t *cpu, recomp_node_t *func, int size);
+    if(node->checksum != 0) {
+        *cs_out = node->checksum;
+        return 1;
+    }
+
+    if(cpuGetAddressBuffer(cpu, (void**)&buf, node->n64_start_addr)) {
+        cs = 0;
+        size = ((node->n64_end_addr - node->n64_start_addr) >> 2) + 1;
+        
+        while(size > 0) {
+            size--;
+            tmp = *buf;
+            tmp = tmp >> 0x1A;
+            tmp = tmp << ((size % 5) * 6);
+            cs += tmp;
+            buf++;
+        }
+
+        *cs_out = cs;
+        node->checksum = cs;
+
+        return 1;
+    }
+
+    return 0;
+}
 
 #ifdef NON_MATCHING
-int cpuHeapTake(char **code, cpu_class_t *cpu, recomp_node_t *func, int size) {
+s32 cpuHeapTake(char **code, cpu_class_t *cpu, recomp_node_t *func, s32 size) {
     s32 smblk_needed = (size + (0x200 - 1)) / 0x200;
     s32 lgblk_needed = (size + (0xA00 - 1)) / 0xA00;
-    int type_swapped = 0;
-    int chunk_found = 0;
-    int blk_cnt;
+    s32 type_swapped = 0;
+    s32 chunk_found = 0;
+    s32 blk_cnt;
     u32 *blks;
     s32 blks_needed;
-    int i;
-    int j;
+    s32 i;
+    s32 i2;
+    s32 jstart;
+    s32 j;
+    u32 mask;
 
-    while(!type_swapped) {
+    do {
         if(func->alloc_type == -1) {
             if(size > 0x3200) {
                 func->alloc_type = 2;
@@ -4861,20 +6998,22 @@ int cpuHeapTake(char **code, cpu_class_t *cpu, recomp_node_t *func, int size) {
             return !!xlHeapTake((void**)code, size);
         }
         
-        for(i = 0; i != blk_cnt; i++) {
-            u32 mask = (1 << blks_needed) - 1;
+        for(i = 0, i2 = 0; i < blk_cnt; blks++, i++, i2 += 32) {
 
-            if(blks[i] != 0xFFFFFFFF) {
-                for(j = 0; j < 33 - blks_needed; j++) {
-                    if((blks[i] & mask) == 0) {
+            if(*blks != 0xFFFFFFFF) {
+                j = jstart = 33 - blks_needed;
+                mask = (1 << blks_needed) - 1;
+                do {
+                    if(!(*blks & mask)) {
                         chunk_found = 1;
-                        blks[i] |= mask;
-                        func->unk_0x34 = (blks_needed << 0x10) | ((i * 32) + j);
+                        *blks |= mask;
+                        func->unk_0x34 = (blks_needed << 0x10) | (i2 + (jstart - j));
                         break;
                     }
 
                     mask <<= 1;
-                }
+                    j--;
+                } while(j != 0);
 
                 if(chunk_found) {
                     break;
@@ -4892,7 +7031,7 @@ int cpuHeapTake(char **code, cpu_class_t *cpu, recomp_node_t *func, int size) {
             return 1;
         }
 
-    }
+    } while (!type_swapped);
 
     if(type_swapped) {
         func->alloc_type = -1;
@@ -4902,10 +7041,11 @@ int cpuHeapTake(char **code, cpu_class_t *cpu, recomp_node_t *func, int size) {
     return 0;
 }
 #else
+s32 cpuHeapTake(char **code, cpu_class_t *cpu, recomp_node_t *func, s32 size);
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuHeapTake.s")
 #endif
 
-int cpuHeapFree(cpu_class_t *cpu, recomp_node_t *func) {
+s32 cpuHeapFree(cpu_class_t *cpu, recomp_node_t *func) {
     u32 mask;
     u32 blk_idx;
     u32 *blk;
@@ -4945,25 +7085,24 @@ int cpuHeapFree(cpu_class_t *cpu, recomp_node_t *func) {
     return 0;
 }
 
-#ifdef NON_MATCHING
-// swapped operands in and. and add instructions
 s32 cpuTreeTake(recomp_node_t **node, u32 *node_pos, size_t size) {
+    u32 *node_status = gSystem->cpu->tree_blk_status;
+    u32 i2;
     s32 node_found = 0;
     s32 i;
     s32 j;
-    u32 *node_status = gSystem->cpu->tree_blk_status;
+    u32 mask;
 
-    for(i = 0; i < 125; i++) {
-        if(node_status[i] != 0xFFFFFFFF) {
-            u32 mask = (1 << 1) - 1;
+    for(i = 0, i2 = 0; i < 125; node_status++, i++, i2 += 32) {
+        if(*node_status != 0xFFFFFFFF) {
+            mask = 1;
 
             j = 32;
             do {
-                if(!(node_status[i] & mask)) {
+                if(!(*node_status & mask)) {
                     node_found = 1;
-                    node_status[i] |= (mask);
-                    *node_pos = (i * 32) + (32 - j);
-                    *node_pos |= 0x10000;
+                    *node_status |= mask;
+                    *node_pos = 0x10000 | (i2 + (32 - j));
                     break;
                 }
                 mask <<= 1;
@@ -4985,9 +7124,6 @@ s32 cpuTreeTake(recomp_node_t **node, u32 *node_pos, size_t size) {
 
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuTreeTake.s")
-#endif
 
 #ifdef NON_MATCHING
 inline s32 search_both_roots(recomp_tree_t *tree, s32 addr, recomp_node_t **out_node) {
@@ -5049,7 +7185,7 @@ s32 cpuFindFunction(cpu_class_t *cpu, u32 addr, recomp_node_t **out_node) {
     fwd_branch = 0;
     do {
         dev = devs[dev_idxs[addr >> 0x10]];
-        dev->lw(dev->unk_4, cur_addr + dev->unk_8, (s32*)&inst);
+        dev->lw(dev->dev_obj, cur_addr + dev->addr_offset, (s32*)&inst);
         bVar2 = 1;
         if(!tree_was_init) {
             if(inst != 0 && start_addr == 0) {
@@ -5142,13 +7278,13 @@ s32 cpuFindFunction(cpu_class_t *cpu, u32 addr, recomp_node_t **out_node) {
 
                     no_branch_addr = cur_addr + 8;
                     dev = devs[dev_idxs[no_branch_addr >> 0x10]];
-                    dev->lw(dev->unk_4, no_branch_addr + dev->unk_8, (s32*)&inst);
+                    dev->lw(dev->dev_obj, no_branch_addr + dev->addr_offset, (s32*)&inst);
                     if(inst == 0) {
                         do {
                             cur_addr = no_branch_addr;
                             no_branch_addr += 4;
                             dev = devs[dev_idxs[no_branch_addr >> 0x10]];
-                            dev->lw(dev->unk_4, no_branch_addr + dev->unk_8, (s32*)&inst);
+                            dev->lw(dev->dev_obj, no_branch_addr + dev->addr_offset, (s32*)&inst);
                          } while(inst == 0);
 
                         if(MIPS_OP(inst) != OPC_LW) {
@@ -5271,7 +7407,7 @@ s32 cpuFindFunction(cpu_class_t *cpu, u32 addr, recomp_node_t **out_node) {
 
                 while(1) {
                     dev = devs[dev_idxs[branch_target >> 0x10]];
-                    dev->lw(dev->unk_4, branch_target + dev->unk_8, (s32*)&inst);
+                    dev->lw(dev->dev_obj, branch_target + dev->addr_offset, (s32*)&inst);
                     if(MIPS_OP(inst) == OPC_SW && MIPS_RT(inst) == MREG_RA) {
                         break;
                     }
@@ -5282,7 +7418,7 @@ s32 cpuFindFunction(cpu_class_t *cpu, u32 addr, recomp_node_t **out_node) {
                     next_addr = branch_target;
                     branch_target -= 4;
                     dev = devs[dev_idxs[branch_target >> 16]];
-                    dev->lw(dev->unk_4, branch_target + dev->unk_8, (s32*)&inst);
+                    dev->lw(dev->dev_obj, branch_target + dev->addr_offset, (s32*)&inst);
                     if(inst != 0) {
                         fwd_branch = next_addr - 8;
 
@@ -5397,8 +7533,6 @@ s32 cpuFindFunction(cpu_class_t *cpu, u32 addr, recomp_node_t **out_node) {
 #else
 #pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuFindFunction.s")
 #endif
-
-s32 treeKillRange(cpu_class_t*,recomp_node_t*,s32,s32);
 
 s32 func_8003E604(cpu_class_t *cpu, s32 arg1, s32 arg2) {
     recomp_tree_t *tree = cpu->recomp_tree;
