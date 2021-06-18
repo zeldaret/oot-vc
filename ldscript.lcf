@@ -25,6 +25,7 @@ SECTIONS {
     
     .text : { 
         code_80007020.o(.text)
+        cpu.o(.text)
         tree.o(.text)
         code_80040B24.o(.text)
         ram.o(.text)
@@ -58,6 +59,7 @@ SECTIONS {
 
     .data : {
         data.o(.data)
+        cpu.o(.data)
         ram.o(.data)
         data2.o(.data)
         *(.data)

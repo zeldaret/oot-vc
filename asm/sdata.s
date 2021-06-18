@@ -47,5 +47,10 @@ glabel lbl_8025C704
 	.incbin "00000001.app", 0x19CE04, 0x8
 
 glabel lbl_8025C70C
-	.incbin "00000001.app", 0x19CE0C, 0x54
+	.incbin "00000001.app", 0x19CE0C, 0x44
 
+glabel cpu_class_name
+	.incbin "00000001.app", 0x19CE50, 0x8
+
+glabel lbl_8025C758
+	.incbin "00000001.app", 0x19CE58, 0x8

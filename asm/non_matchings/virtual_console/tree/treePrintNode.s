@@ -14,9 +14,9 @@ glabel treePrintNode
 /* 800409A4 0003BF64  38 60 00 00 */	li r3, 0
 /* 800409A8 0003BF68  48 00 01 64 */	b lbl_80040B0C
 lbl_800409AC:
-/* 800409AC 0003BF6C  3C 60 80 17 */	lis r3, lbl_80170B68@ha
+/* 800409AC 0003BF6C  3C 60 80 17 */	lis r3, reg_map@ha
 /* 800409B0 0003BF70  7E DA B3 78 */	mr r26, r22
-/* 800409B4 0003BF74  38 63 0B 68 */	addi r3, r3, lbl_80170B68@l
+/* 800409B4 0003BF74  38 63 0B 68 */	addi r3, r3, reg_map@l
 /* 800409B8 0003BF78  54 BE 07 FE */	clrlwi r30, r5, 0x1f
 /* 800409BC 0003BF7C  80 03 00 7C */	lwz r0, 0x7c(r3)
 /* 800409C0 0003BF80  54 BD 06 F6 */	rlwinm r29, r5, 0, 0x1b, 0x1b

@@ -344,7 +344,7 @@ s32 romGetImage(rom_class_t* rom, char* buf) {
     return 1;
 }
 
-s32 func_80043E0C(rom_class_t* rom, void** param_2, u32 addr, s32* param_4) {
+s32 romGetBuffer(rom_class_t* rom, void** param_2, u32 addr, s32* param_4) {
     if (rom->unk_21C == 1) {
         addr &= 0x7ffffff;
 
@@ -396,7 +396,7 @@ s32 romEvent(void* obj, event_t event, void* arg) {
             }
             break;
         case 0x1002:
-            switch (cpu_dev->unk_0) {
+            switch (cpu_dev->create_arg) {
                 case 0:
                     if (!cpuSetGetBlock(gSystem->cpu, cpu_dev, romGetBlock)) {
                         return 0;
