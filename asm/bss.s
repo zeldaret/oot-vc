@@ -88,7 +88,7 @@ glabel lbl_801C96A8
 glabel gListList
 	.skip 0x10
 
-glabel lbl_801C96C8
+glabel gapHeapBlockCache
 	.skip 0xB00
 
 glabel lbl_801CA1C8

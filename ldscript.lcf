@@ -22,8 +22,8 @@ SECTIONS {
 
     extab_ : { *(extab_) }
     extabindex_ : { *(extabindex_) }
-    
-    .text : { 
+
+    .text : {
         code_80007020.o(.text)
         cpu.o(.text)
         tree.o(.text)
@@ -39,7 +39,7 @@ SECTIONS {
         code_80082074.o(.text)
         xlObject.o(.text)
         code_800825B0.o(.text)
-        *(.text) 
+        *(.text)
     }
 
     .ctors : {
@@ -79,6 +79,8 @@ SECTIONS {
 
     .sbss : {
         sbss.o(.sbss)
+        xlHeap.o(.sbss)
+        sbss_2.o(.sbss)
         *(.sbss)
     }
 
