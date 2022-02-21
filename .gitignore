@@ -4,6 +4,8 @@ mwcc_compiler/
 # Tool artifacts
 __pycache__/
 tools/elf2dol
+/ctx.c
+/ctx.c.m2c
 
 # Build artifacts
 tools/asm_processor/tmp/
