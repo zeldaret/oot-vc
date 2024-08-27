@@ -190,7 +190,7 @@ def EmulatorLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
 def RevolutionLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
-        "mw_version": "GC/3.0a5", # from strings, note: dvd is using a different version
+        "mw_version": "GC/3.0a5",
         "cflags": [*cflags_base, "-O4,p", "-ipa file"],
         "host": False,
         "objects": objects,
@@ -221,120 +221,120 @@ config.libs = [
     EmulatorLib(
         "emulator",
         [
-            Object(LinkedFor("vc-j"), "emulator/vc64_RVL.c"),
+            Object(NotLinked, "emulator/vc64_RVL.c"),
             Object(NotLinked, "emulator/system.c"),
-            Object(LinkedFor("vc-j"), "emulator/ai.c"),
-            Object(LinkedFor("vc-j"), "emulator/vi.c"),
-            Object(LinkedFor("vc-j"), "emulator/si.c"),
-            Object(LinkedFor("vc-j"), "emulator/pi.c"),
-            Object(LinkedFor("vc-j"), "emulator/mi.c"),
-            Object(LinkedFor("vc-j"), "emulator/disk.c"),
+            Object(NotLinked, "emulator/ai.c"),
+            Object(NotLinked, "emulator/vi.c"),
+            Object(NotLinked, "emulator/si.c"),
+            Object(NotLinked, "emulator/pi.c"),
+            Object(NotLinked, "emulator/mi.c"),
+            Object(NotLinked, "emulator/disk.c"),
             Object(NotLinked, "emulator/cpu.c", asm_processor=True),
             Object(NotLinked, "emulator/pif.c"),
-            Object(LinkedFor("vc-j"), "emulator/ram.c"),
-            Object(LinkedFor("vc-j"), "emulator/rom.c"),
-            Object(LinkedFor("vc-j"), "emulator/rdb.c"),
-            Object(LinkedFor("vc-j"), "emulator/eeprom.c"),
-            Object(LinkedFor("vc-j"), "emulator/sram.c"),
-            Object(LinkedFor("vc-j"), "emulator/flash.c"),
+            Object(NotLinked, "emulator/ram.c"),
+            Object(NotLinked, "emulator/rom.c"),
+            Object(NotLinked, "emulator/rdb.c"),
+            Object(NotLinked, "emulator/eeprom.c"),
+            Object(NotLinked, "emulator/sram.c"),
+            Object(NotLinked, "emulator/flash.c"),
             Object(NotLinked, "emulator/_frameGCNcc.c"),
             Object(NotLinked, "emulator/_buildtev.c"),
             Object(NotLinked, "emulator/frame.c"),
             Object(NotLinked, "emulator/library.c"),
-            Object(LinkedFor("vc-j"), "emulator/codeGCN.c"),
+            Object(NotLinked, "emulator/codeGCN.c"),
             Object(NotLinked, "emulator/helpRVL.c"),
             Object(NotLinked, "emulator/soundGCN.c"),
-            Object(LinkedFor("vc-j"), "emulator/video.c"),
+            Object(NotLinked, "emulator/video.c"),
             Object(NotLinked, "emulator/store.c"),
             Object(NotLinked, "emulator/controller.c"),
             Object(NotLinked, "emulator/rsp.c"),
             Object(NotLinked, "emulator/rdp.c"),
-            Object(LinkedFor("vc-j"), "emulator/xlCoreRVL.c"),
-            Object(LinkedFor("vc-j"), "emulator/xlPostRVL.c"),
-            Object(LinkedFor("vc-j"), "emulator/xlFileRVL.c"),
-            Object(LinkedFor("vc-j"), "emulator/xlText.c"),
-            Object(LinkedFor("vc-j"), "emulator/xlList.c", extra_cflags=["-ipa file"]),
+            Object(NotLinked, "emulator/xlCoreRVL.c"),
+            Object(NotLinked, "emulator/xlPostRVL.c"),
+            Object(NotLinked, "emulator/xlFileRVL.c"),
+            Object(NotLinked, "emulator/xlText.c"),
+            Object(NotLinked, "emulator/xlList.c", extra_cflags=["-ipa file"]),
             Object(NotLinked, "emulator/xlHeap.c"),
-            Object(LinkedFor("vc-j"), "emulator/xlFile.c"),
-            Object(LinkedFor("vc-j"), "emulator/xlObject.c"),
+            Object(NotLinked, "emulator/xlFile.c"),
+            Object(NotLinked, "emulator/xlObject.c"),
         ]
     ),
     RevolutionLib(
         "base",
         [
-            Object(LinkedFor("vc-j"), "revolution/base/PPCArch.c"),
+            Object(NotLinked, "revolution/base/PPCArch.c"),
         ]
     ),
     RevolutionLib(
         "os",
         [
             Object(NotLinked, "revolution/os/OS.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSAlarm.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSAlloc.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSArena.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSAudioSystem.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSCache.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSContext.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSError.c"),
+            Object(NotLinked, "revolution/os/OSAlarm.c"),
+            Object(NotLinked, "revolution/os/OSAlloc.c"),
+            Object(NotLinked, "revolution/os/OSArena.c"),
+            Object(NotLinked, "revolution/os/OSAudioSystem.c"),
+            Object(NotLinked, "revolution/os/OSCache.c"),
+            Object(NotLinked, "revolution/os/OSContext.c"),
+            Object(NotLinked, "revolution/os/OSError.c"),
             Object(NotLinked, "revolution/os/OSExec.c", cflags=[*cflags_base, "-O4,p", "-ipa off"]),
             Object(NotLinked, "revolution/os/OSFatal.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSFont.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSInterrupt.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSLink.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSMessage.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSMemory.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSMutex.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSReboot.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSReset.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSRtc.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSSync.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSThread.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSTime.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSUtf.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSIpc.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSStateTM.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/time.dolphin.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSPlayRecord.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/OSStateFlags.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/__start.c"),
-            Object(LinkedFor("vc-j"), "revolution/os/__ppc_eabi_init.c"),
+            Object(NotLinked, "revolution/os/OSFont.c"),
+            Object(NotLinked, "revolution/os/OSInterrupt.c"),
+            Object(NotLinked, "revolution/os/OSLink.c"),
+            Object(NotLinked, "revolution/os/OSMessage.c"),
+            Object(NotLinked, "revolution/os/OSMemory.c"),
+            Object(NotLinked, "revolution/os/OSMutex.c"),
+            Object(NotLinked, "revolution/os/OSReboot.c"),
+            Object(NotLinked, "revolution/os/OSReset.c"),
+            Object(NotLinked, "revolution/os/OSRtc.c"),
+            Object(NotLinked, "revolution/os/OSSync.c"),
+            Object(NotLinked, "revolution/os/OSThread.c"),
+            Object(NotLinked, "revolution/os/OSTime.c"),
+            Object(NotLinked, "revolution/os/OSUtf.c"),
+            Object(NotLinked, "revolution/os/OSIpc.c"),
+            Object(NotLinked, "revolution/os/OSStateTM.c"),
+            Object(NotLinked, "revolution/os/time.dolphin.c"),
+            Object(NotLinked, "revolution/os/OSPlayRecord.c"),
+            Object(NotLinked, "revolution/os/OSStateFlags.c"),
+            Object(NotLinked, "revolution/os/__start.c"),
+            Object(NotLinked, "revolution/os/__ppc_eabi_init.c"),
         ]
     ),
     RevolutionLib(
         "exi",
         [
-            Object(LinkedFor("vc-j"), "revolution/exi/EXIBios.c", cflags=[*cflags_base, "-O3,p", "-ipa file"]),
-            Object(LinkedFor("vc-j"), "revolution/exi/EXIUart.c"),
-            Object(LinkedFor("vc-j"), "revolution/exi/EXICommon.c"),
+            Object(NotLinked, "revolution/exi/EXIBios.c", cflags=[*cflags_base, "-O3,p", "-ipa file"]),
+            Object(NotLinked, "revolution/exi/EXIUart.c"),
+            Object(NotLinked, "revolution/exi/EXICommon.c"),
         ]
     ),
     RevolutionLib(
         "si",
         [
-            Object(LinkedFor("vc-j"), "revolution/si/SIBios.c"),
-            Object(LinkedFor("vc-j"), "revolution/si/SISamplingRate.c"),
+            Object(NotLinked, "revolution/si/SIBios.c"),
+            Object(NotLinked, "revolution/si/SISamplingRate.c"),
         ]
     ),
     RevolutionLib(
         "db",
         [
-            Object(LinkedFor("vc-j"), "revolution/db/db.c"),
+            Object(NotLinked, "revolution/db/db.c"),
         ]
     ),
     RevolutionLib(
         "vi",
         [
             Object(NotLinked, "revolution/vi/vi.c"),
-            Object(LinkedFor("vc-j"), "revolution/vi/i2c.c"),
+            Object(NotLinked, "revolution/vi/i2c.c"),
             Object(NotLinked, "revolution/vi/vi3in1.c"),
         ]
     ),
     RevolutionLib(
         "mtx",
         [
-            Object(LinkedFor("vc-j"), "revolution/mtx/mtx.c"),
-            Object(LinkedFor("vc-j"), "revolution/mtx/mtxvec.c"),
-            Object(LinkedFor("vc-j"), "revolution/mtx/mtx44.c"),
+            Object(NotLinked, "revolution/mtx/mtx.c"),
+            Object(NotLinked, "revolution/mtx/mtxvec.c"),
+            Object(NotLinked, "revolution/mtx/mtx44.c"),
         ]
     ),
     RevolutionLib(
@@ -382,30 +382,30 @@ config.libs = [
     RevolutionLib(
         "ax",
         [
-            Object(LinkedFor("vc-j"), "revolution/ax/AX.c"),
-            Object(LinkedFor("vc-j"), "revolution/ax/AXAlloc.c"),
+            Object(NotLinked, "revolution/ax/AX.c"),
+            Object(NotLinked, "revolution/ax/AXAlloc.c"),
             Object(NotLinked, "revolution/ax/AXAux.c"),
             Object(NotLinked, "revolution/ax/AXCL.c"),
             Object(NotLinked, "revolution/ax/AXOut.c"),
             Object(NotLinked, "revolution/ax/AXSPB.c"),
             Object(NotLinked, "revolution/ax/AXVPB.c"),
-            Object(LinkedFor("vc-j"), "revolution/ax/AXComp.c"),
-            Object(LinkedFor("vc-j"), "revolution/ax/DSPCode.c"),
+            Object(NotLinked, "revolution/ax/AXComp.c"),
+            Object(NotLinked, "revolution/ax/DSPCode.c"),
             Object(NotLinked, "revolution/ax/AXProf.c"),
         ]
     ),
     RevolutionLib(
         "axfx",
         [
-            Object(NotLinked, "revolution/axfx/code_800AF5D8.c"), # TODO: figure this out
+            Object(NotLinked, "revolution/axfx/code_800AF5D8.c"),
         ]
     ),
     RevolutionLib(
         "dsp",
         [
-            Object(LinkedFor("vc-j"), "revolution/dsp/dsp.c"),
-            Object(LinkedFor("vc-j"), "revolution/dsp/dsp_debug.c"),
-            Object(LinkedFor("vc-j"), "revolution/dsp/dsp_task.c"),
+            Object(NotLinked, "revolution/dsp/dsp.c"),
+            Object(NotLinked, "revolution/dsp/dsp_debug.c"),
+            Object(NotLinked, "revolution/dsp/dsp_task.c"),
         ]
     ),
     RevolutionLib(
@@ -414,7 +414,7 @@ config.libs = [
             Object(NotLinked, "revolution/nand/nand.c"),
             Object(NotLinked, "revolution/nand/NANDOpenClose.c"),
             Object(NotLinked, "revolution/nand/NANDCore.c"),
-            Object(LinkedFor("vc-j"), "revolution/nand/NANDCheck.c"),
+            Object(NotLinked, "revolution/nand/NANDCheck.c"),
         ]
     ),
     RevolutionLib(
@@ -443,7 +443,7 @@ config.libs = [
     RevolutionLib(
         "fs",
         [
-            Object(LinkedFor("vc-j"), "revolution/fs/fs.c"),
+            Object(NotLinked, "revolution/fs/fs.c"),
         ]
     ),
     RevolutionLib(
@@ -466,11 +466,11 @@ config.libs = [
         "runtime",
         [
             Object(NotLinked, "runtime/__va_arg.c"),
-            Object(LinkedFor("vc-j"), "runtime/global_destructor_chain.c"),
+            Object(NotLinked, "runtime/global_destructor_chain.c"),
             Object(NotLinked, "runtime/code_8015263C.c"),
             Object(NotLinked, "runtime/ptmf.c"),
             Object(NotLinked, "runtime/runtime.c"),
-            Object(NotLinked, "runtime/__init_cpp_exceptions.cpp"), # TODO: matched but does not build OK
+            Object(NotLinked, "runtime/__init_cpp_exceptions.cpp"),
             Object(NotLinked, "runtime/Gecko_setjmp.c"),
             Object(NotLinked, "runtime/Gecko_ExceptionPPC.c"),
         ]
