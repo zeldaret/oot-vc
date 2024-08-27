@@ -614,6 +614,12 @@ runtime/global_destructor_chain.c:
 	.text       start:0x801525F4 end:0x8015263C
 	.sbss       start:0x8025DCD8 end:0x8025DCE0
 
+runtime/__mem.c:
+	.init       start:0x80004338 end:0x8000446C
+
+metrotrk/mem_TRK.c:
+	.init       start:0x8000446C end:0x800044C0
+
 runtime/code_8015263C.c:
 	extab       start:0x80006688 end:0x800066BC
 	extabindex  start:0x80006C1C end:0x80006C34
@@ -637,3 +643,6 @@ runtime/Gecko_setjmp.c:
 
 runtime/Gecko_ExceptionPPC.c:
 	.text       start:0x8015389C end:0x80153988
+
+metrotrk/dolphin_trk.c:
+	.init       start:0x800063F4 end:0x80006420

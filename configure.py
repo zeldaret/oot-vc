@@ -164,7 +164,6 @@ cflags_base = [
     "-nosyspath",
     "-RTTI off",
     "-str reuse",
-    "-enc SJIS",
     "-inline auto",
     "-nodefaults",
     "-msgstyle gcc",
@@ -182,7 +181,7 @@ def EmulatorLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/3.0a5",
-        "cflags": [*cflags_base, "-O4,p"],
+        "cflags": [*cflags_base, "-O4,p", "-enc SJIS"],
         "host": False,
         "objects": objects,
     }
@@ -191,15 +190,24 @@ def RevolutionLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/3.0a5",
-        "cflags": [*cflags_base, "-O4,p", "-ipa file"],
+        "cflags": [*cflags_base, "-O4,p", "-ipa file", "-enc SJIS"],
         "host": False,
         "objects": objects,
     }
 
-def GenericLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
+def RuntimeLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/3.0a3",
+        "cflags": [*cflags_base, "-O4,p", "-rostr", "-use_lmw_stmw on", "-lang c", "-enc SJIS"],
+        "host": False,
+        "objects": objects,
+    }
+
+def MetroTRKLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
+    return {
+        "lib": lib_name,
+        "mw_version": "GC/2.7",
         "cflags": [*cflags_base, "-O4,p", "-rostr", "-use_lmw_stmw on", "-lang c"],
         "host": False,
         "objects": objects,
@@ -462,17 +470,25 @@ config.libs = [
             Object(NotLinked, "revolution/wpad/debug_msg.c"),
         ]
     ),
-    GenericLib(
+    RuntimeLib(
         "runtime",
         [
+            Object(NotLinked, "runtime/__mem.c"),
             Object(NotLinked, "runtime/__va_arg.c"),
             Object(NotLinked, "runtime/global_destructor_chain.c"),
             Object(NotLinked, "runtime/code_8015263C.c"),
             Object(NotLinked, "runtime/ptmf.c"),
             Object(NotLinked, "runtime/runtime.c"),
-            Object(NotLinked, "runtime/__init_cpp_exceptions.cpp"),
+            Object(NotLinked, "runtime/__init_cpp_exceptions.cpp"), # TODO: matched but does not build OK
             Object(NotLinked, "runtime/Gecko_setjmp.c"),
             Object(NotLinked, "runtime/Gecko_ExceptionPPC.c"),
+        ]
+    ),
+    MetroTRKLib(
+        "metrotrk",
+        [
+            Object(NotLinked, "metrotrk/mem_TRK.c"),
+            Object(NotLinked, "metrotrk/dolphin_trk.c"),
         ]
     )
 ]
