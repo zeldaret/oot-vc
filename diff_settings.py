@@ -1,5 +1,5 @@
 def add_custom_arguments(parser):
-    parser.add_argument("-v", "--version", help="Emulator version to diff", default="vc-j")
+    parser.add_argument("-v", "--version", help="Emulator version to diff", default="oot-j")
 
 def apply(config, args):
     version = args.version

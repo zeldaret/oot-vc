@@ -1,9 +1,9 @@
 # See config.example.yml for documentation.
 name: oot-vc
-object: orig/vc-j/content1.app
+object: orig/oot-j/content1.app
 hash: 47546e48467ae14d712b8c207e911821586d1043
-symbols: config/vc-j/symbols.txt
-splits: config/vc-j/splits.txt
+symbols: config/oot-j/symbols.txt
+splits: config/oot-j/splits.txt
 
 # Change this to match the linker verison.
 # See config.example.yml for a list.

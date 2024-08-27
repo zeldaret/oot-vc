@@ -20,7 +20,7 @@ INCLUDE_DIRS = [
     Path("."),
     Path("include"),
     Path("libc"),
-    Path("build/vc-j/include"),
+    Path("build/oot-j/include"),
 ]
 COMPILER_NAME = "mwcc_42_60422"
 # We don't set -inline deferred because otherwise the reversed function order

@@ -103,15 +103,15 @@ config = ProjectConfig()
 
 # Only configure versions for which content1.app exists
 ALL_VERSIONS = [
-    "vc-j",
+    "oot-j",
 ]
 config.versions = [
     version
     for version in ALL_VERSIONS
     if (Path("orig") / version / "content1.app").exists()
 ]
-if "vc-j" in config.versions:
-    config.default_version = "vc-j"
+if "oot-j" in config.versions:
+    config.default_version = "oot-j"
 
 config.warn_missing_config = True
 config.warn_missing_source = False

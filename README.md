@@ -4,9 +4,9 @@ A work-in-progress decompilation of the N64 emulator used in the Wii Virtual Con
 
 Supported versions:
 
-- `vc-j`: Wii Virtual Console - Japan
+- `oot-j`: Wii Virtual Console - Japan
 
-Currently the decompilation mainly targets the `vc-j` version.
+Currently the decompilation mainly targets the `oot-j` version.
 
 ## Building
 
@@ -54,7 +54,7 @@ To get objdiff to work properly you also need to add the path to the folder cont
 
 2. Extract the following binary containing the N64 emulator from the wad of the version you want to build:
 
-  * `vc-j`: `content1.app`
+  * `oot-j`: `content1.app`
 
   Then, copy the app file and place it in the repo as `orig/<version>/content1.app`.
 
@@ -62,7 +62,7 @@ To get objdiff to work properly you also need to add the path to the folder cont
 
 3. Run `python3 configure.py` to generate the build. (Note: on Windows you might need to run ``python configure.py``.)
 
-4. Run `ninja` to build the `vc-j` version, or run `ninja <version>` to build another version.
+4. Run `ninja` to build the `oot-j` version, or run `ninja <version>` to build another version.
 
 ## Development Tools
 
@@ -86,7 +86,7 @@ mkdir expected
 cp -r build expected/
 ```
 
-Then run e.g. `./diff.py -mwo3 xlMain` to diff a function for `vc-j`, or e.g. `./diff.py -mwo3 xlMain -v VERSION` to diff a function for another version.
+Then run e.g. `./diff.py -mwo3 xlMain` to diff a function for `oot-j`, or e.g. `./diff.py -mwo3 xlMain -v VERSION` to diff a function for another version.
 
 ### decomp.me
 
