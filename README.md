@@ -1,10 +1,10 @@
 # oot-vc
 
-A work-in-progress decompilation of the N64 emulator used in the Wii Virtual Console releases of The Legend of Zelda: Ocarina of Time.
+A work-in-progress decompilation of the N64 emulator used in the Wii Virtual Console releases of N64 games like The Legend of Zelda: Ocarina of Time.
 
 Supported versions:
 
-- `oot-j`: Wii Virtual Console - Japan
+- `oot-j`: The Legend of Zelda: Ocarina of Time (Wii Virtual Console) - Japan
 
 Currently the decompilation mainly targets the `oot-j` version.
 
