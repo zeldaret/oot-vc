@@ -2,7 +2,7 @@
 
 # Wrapper for `dtk dol diff` to locate the first diff in the dol.
 # Usage: ./dol-diff [VERSION]
-# If VERSION is not provided, it defaults to ce-j.
+# If VERSION is not provided, it defaults to vc-j.
 
 set -euo pipefail
 

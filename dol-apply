@@ -2,7 +2,7 @@
 
 # Wrapper for `dtk dol apply` to automatically update dtk symbols from the elf.
 # Usage: ./dol-apply [VERSION]
-# If VERSION is not provided, it defaults to ce-j.
+# If VERSION is not provided, it defaults to vc-j.
 
 set -euo pipefail
 

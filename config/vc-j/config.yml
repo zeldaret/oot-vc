@@ -151,4 +151,4 @@ block_relocations:
 - source: 0x800097E4
 - source: 0x80009670
 - source: 0x8008A060
-- source: 0x8008A0d8
+- source: 0x8008A0D8

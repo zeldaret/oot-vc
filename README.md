@@ -86,7 +86,7 @@ mkdir expected
 cp -r build expected/
 ```
 
-Then run e.g. `./diff.py -mwo3 xlMain` to diff a function for `ce-j`, or e.g. `./diff.py -mwo3 xlMain -v mq-j` to diff a function for another version.
+Then run e.g. `./diff.py -mwo3 xlMain` to diff a function for `vc-j`, or e.g. `./diff.py -mwo3 xlMain -v VERSION` to diff a function for another version.
 
 ### decomp.me
 

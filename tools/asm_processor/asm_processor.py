@@ -944,8 +944,7 @@ def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc):
     # simplicity we pad with nops/.space so that addresses match exactly, so we
     # don't have to fix up relocations/symbol references.
     all_text_glabels = set()
-    # -inline deferred will reverse function order
-    for function in reversed(functions):
+    for function in functions:
         ifdefed = False
         for sectype, (temp_name, size) in function.data.items():
             if temp_name is None:
