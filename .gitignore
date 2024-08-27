@@ -1,0 +1,30 @@
+# Tools
+tools/binutils/**
+tools/mwcc_compiler/**
+tools/asm_processor/tmp/
+tools/elf2dol/elf2dol
+
+# Build artifacts
+build/
+build.ninja
+objdiff.json
+.ninja_*
+*.o
+*.obj
+*.dol
+*.elf
+*.exe
+*.map
+*.app
+
+# Python artifacts
+__pycache__/
+.venv/
+.mypy_cache
+
+# IDE artifacts
+.vscode/
+.idea
+
+# Permuter artifacts
+nonmatchings/
