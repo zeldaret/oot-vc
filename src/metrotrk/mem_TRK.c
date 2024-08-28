@@ -1,9 +1,9 @@
 #include "types.h"
 
-void func_80167898(void* p, s32 fill, size_t len);
+void TRK_fill_mem(void* p, s32 fill, size_t len);
 
 void* TRK_memset(void* p, s32 fill, size_t len) {
-    func_80167898(p, fill, len);
+    TRK_fill_mem(p, fill, len);
     return p;
 }
 
