@@ -23,10 +23,7 @@ INCLUDE_DIRS = [
     Path("build/oot-j/include"),
 ]
 COMPILER_NAME = "mwcc_42_60422"
-# We don't set -inline deferred because otherwise the reversed function order
-# would require manually deleting all previous function definitions from the
-# context.
-COMPILER_FLAGS = "-Cpp_exceptions off -proc gekko -fp hard -fp_contract on -enum int -O4,p -inline auto -nodefaults -msgstyle gcc"
+COMPILER_FLAGS = "-Cpp_exceptions off -proc gekko -fp hardware -fp_contract on -enum int -align powerpc -nosyspath -RTTI off -str reuse -inline auto -nodefaults -msgstyle gcc -sym on -O4,p -enc SJIS"
 
 INCLUDE_PATTERN = re.compile(r'^#include\s*[<"](.+?)[>"]')
 DEFINE_PATTERN = re.compile(r"^#define\s+(\w+)(?:\s+(.*))?")

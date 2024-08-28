@@ -58,7 +58,7 @@ To get objdiff to work properly you also need to add the path to the folder cont
 
   Then, copy the app file and place it in the repo as `orig/<version>/content1.app`.
 
-  You can use [gzinject](https://github.com/krimtonz/gzinject) to perform both of these extraction steps
+  You can use [gzinject](https://github.com/krimtonz/gzinject) to perform both of this extraction step.
 
 3. Run `python3 configure.py` to generate the build. (Note: on Windows you might need to run ``python configure.py``.)
 
@@ -105,8 +105,3 @@ path/to/permuter/permuter.py nonmatchings/cpuExecute -j 8
 
 Sometimes you may need to tweak the source in order for things to import
 correctly, for example by explicitly marking auto-inlined functions as `inline`.
-
-### Debug Info
-
-The files in the `debug/` directory contain a dump of the DWARF debugging information in the original ELF. Functions marked as `// Erased`
-were present at one time but have been stripped by the linker, because they were either unused or inlined at all call sites.
