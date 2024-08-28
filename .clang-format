@@ -5,8 +5,9 @@ ColumnLimit: 120
 PointerAlignment: Left
 BreakBeforeBraces: Attach
 SpaceAfterCStyleCast: false
-Cpp11BracedListStyle: false
+Cpp11BracedListStyle: true
 IndentCaseLabels: true
+IndentPPDirectives: None
 BinPackArguments: true
 BinPackParameters: true
 AlignAfterOpenBracket: Align
@@ -17,7 +18,8 @@ AllowShortBlocksOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: true
+AllowShortEnumsOnASingleLine: false
 AlignEscapedNewlines: Left
-AlignTrailingComments: true
-SortIncludes: false
+AlignTrailingComments: false
+SortIncludes: true
