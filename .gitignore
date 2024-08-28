@@ -1,20 +1,30 @@
-# Compiler binaries
-mwcc_compiler/
-
-# Tool artifacts
-__pycache__/
-tools/elf2dol
-/ctx.c
-/ctx.c.m2c
+# Tools
+tools/binutils/**
+tools/mwcc_compiler/**
+tools/asm_processor/tmp/
+tools/elf2dol/elf2dol
 
 # Build artifacts
-tools/asm_processor/tmp/
 build/
+build.ninja
+objdiff.json
+.ninja_*
 *.o
 *.obj
+*.dol
 *.elf
+*.exe
 *.map
 *.app
 
+# Python artifacts
+__pycache__/
+.venv/
+.mypy_cache
+
 # IDE artifacts
 .vscode/
+.idea
+
+# Permuter artifacts
+nonmatchings/

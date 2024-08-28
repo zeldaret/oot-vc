@@ -506,8 +506,12 @@ class GlobalAsmBlock:
             self.text_glabels.append(line.split()[1])
         if not line:
             pass # empty line
+        elif self.cur_section == '.data':
+            pass # Skip data section entirely (used for jumptables)
         elif line.startswith('glabel ') or (' ' not in line and line.endswith(':')):
             pass # label
+        elif line.startswith('.global'):
+            pass # global
         elif line.startswith('.section') or line in ['.text', '.init', '.data', '.rdata', '.rodata', '.sdata', '.sdata2', '.bss','.sbss', '.late_rodata']:
             # section change
             self.cur_section = '.rodata' if line == '.rdata' else line.split(',')[0].split()[-1]
@@ -582,7 +586,7 @@ class GlobalAsmBlock:
                 self.late_rodata_asm_conts.append(real_line)
                 if emitting_double:
                     self.late_rodata_asm_conts.append(".align 2")
-        else:
+        elif self.cur_section != '.data': # Ignore jump tables in .data
             self.asm_conts.append(real_line)
 
     def finish(self, state):
@@ -658,9 +662,12 @@ class GlobalAsmBlock:
                         # Don't let functions become too large. When a function reaches 284
                         # instructions, and -O2 -framepointer flags are passed, the IRIX
                         # compiler decides it is a great idea to start optimizing more.
+
+                        # Keep last function name for reversed function order due to -inline deferred
+                        text_name = state.make_name('large_func')  
                         fn_emitted = 0
                         fn_skipped = 0
-                        src[line] += '((volatile void *) 0); }} int {}(void) {{ return '.format(state.make_name('large_func'))
+                        src[line] += '((volatile void *) 0); }} int {}(void) {{ return '.format(text_name)
                     if fn_skipped < state.skip_instr_count:
                         fn_skipped += 1
                         tot_skipped += 1
@@ -699,9 +706,12 @@ class GlobalAsmBlock:
                         # Don't let functions become too large. When a function reaches 284
                         # instructions, and -O2 -framepointer flags are passed, the IRIX
                         # compiler decides it is a great idea to start optimizing more.
+                        
+                        # Keep last function name for reversed function order due to -inline deferred
+                        text_name = state.make_name('large_func')  
                         fn_emitted = 0
                         fn_skipped = 0
-                        src[line] += '((volatile void *) 0); }} int {}(void) {{ return '.format(state.make_name('large_func'))
+                        src[line] += '((volatile void *) 0); }} int {}(void) {{ return '.format(text_name)
                     if fn_skipped < state.skip_instr_count:
                         fn_skipped += 1
                         tot_skipped += 1
@@ -807,7 +817,9 @@ def parse_source(f, opt, framepointer, input_enc, output_enc, print_source=None)
 
     global_asm = None
     asm_functions = []
-    output_lines = []
+    output_lines = [
+        '#line 1 "' + f.name + '"'
+    ]
 
     is_cutscene_data = False
 
@@ -844,6 +856,18 @@ def parse_source(f, opt, framepointer, input_enc, output_enc, print_source=None)
                 output_lines[-1] = ''.join(src)
                 asm_functions.append(fn)
                 global_asm = None
+            elif line.startswith('#pragma INCBIN(') and line.endswith(')'):
+                args = line[line.index('(') + 1 : -1]
+                parts = args.split(',')
+                if len(parts) != 3:
+                    self.fail("expected 3 arguments to INCBIN", line)
+                filename = parts[0].strip()[1:-1]
+                start = int(parts[1].strip(), 0)
+                size = int(parts[2].strip(), 0)
+                with open(filename, 'rb') as f:
+                    f.seek(start)
+                    data = f.read(size)
+                output_lines[-1] = ', '.join(f'0x{b:02X}' for b in data)
             elif ((line.startswith('#include "')) and line.endswith('" EARLY')):
                 # C includes qualified with EARLY (i.e. #include "file.c" EARLY) will be
                 # processed recursively when encountered
@@ -880,7 +904,7 @@ def parse_source(f, opt, framepointer, input_enc, output_enc, print_source=None)
     return asm_functions
 
 def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc):
-    SECTIONS = ['.data', '.text', '.rodata', '.bss', '.sdata', '.sdata2', '.sbss']
+    SECTIONS = ['.data', '.text', '.rodata', '.bss', '.sdata', '.sdata2', '.sbss', '.debug']
 
     with open(objfile_name, 'rb') as f:
         objfile = ElfFile(f.read())
@@ -894,6 +918,7 @@ def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc):
         '.sdata2': 0,
         '.sbss': 0,
         #'.sbss2': 0,
+        '.debug': 0,
     }
     to_copy = {
         '.text': [],
@@ -904,6 +929,7 @@ def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc):
         '.sdata2': [],
         '.sbss': [],
         #'.sbss2': [],
+        '.debug': [],
     }
     asm = []
     all_late_rodata_dummy_bytes = []
@@ -911,6 +937,8 @@ def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc):
     late_rodata_asm = []
     late_rodata_source_name_start = None
     late_rodata_source_name_end = None
+
+    function_sizes = {function.text_glabels[0]: function.data['.text'][1] for function in functions}
 
     # Generate an assembly file with all the assembly we need to fill in. For
     # simplicity we pad with nops/.space so that addresses match exactly, so we
@@ -1107,6 +1135,8 @@ def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc):
                 if objfile.sections[s.st_shndx].name == '.rodata' and s.st_value in moved_late_rodata:
                     s.st_value = moved_late_rodata[s.st_value]
             s.st_name += strtab_adj
+            if s.name in function_sizes:
+                s.st_size = function_sizes[s.name]
             if is_local:
                 new_local_syms.append(s)
             else:
@@ -1131,9 +1161,14 @@ def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc):
                             sectype == '.rodata' and rel.r_offset in jtbl_rodata_positions) or sectype == ".sbss2":
                             # don't include relocations for late_rodata dummy code
                             continue
-                        # hopefully we don't have relocations for local or
-                        # temporary symbols, so new_index exists
-                        rel.sym_index = objfile.symtab.symbol_entries[rel.sym_index].new_index
+                        rel_name = objfile.symtab.symbol_entries[rel.sym_index].name
+                        if is_temp_name(rel_name):
+                            # arbitrarily relocate temp names to symbol 0. This should only happen for .debug,
+                            # which we don't care about.
+                            rel.sym_index = 0
+                        else:
+                            # hopefully we don't have relocations for local symbols, so new_index exists
+                            rel.sym_index = objfile.symtab.symbol_entries[rel.sym_index].new_index
                         nrels.append(rel)
                     reltab.relocations = nrels
                     reltab.data = b''.join(rel.to_bin() for rel in nrels)
