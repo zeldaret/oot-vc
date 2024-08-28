@@ -1,5 +1,21 @@
 #include "types.h"
 
+void* memcpy(void* dst, void* src, size_t len) {
+    u8* s;
+    u8* d;
+
+    if (src >= dst) {
+        for (s = (u8*)src - 1, d = (u8*)dst - 1, len++; --len;) {
+            *++d = *++s;
+        }
+    } else {
+        for (s = (u8*)src + len, d = (u8*)dst + len, len++; --len;) {
+            *--d = *--s;
+        }
+    }
+    return dst;
+}
+
 void __fill_mem(void* ptr, u32 fill, size_t len) {
     u32 i;
     u32* w_ptr;
@@ -52,4 +68,9 @@ void __fill_mem(void* ptr, u32 fill, size_t len) {
             *++c_ptr = val;
         } while (--len);
     }
+}
+
+void* memset(void* ptr, s32 fill, size_t len) {
+    __fill_mem(ptr, fill, len);
+    return ptr;
 }
