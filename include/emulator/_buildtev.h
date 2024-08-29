@@ -45,7 +45,7 @@ void BuildCycle(CombineModeTev* tvP, u8 (*stageValues)[4]);
 CombineModeTev* BuildCombineModeTev(u32 color1, u32 alpha1, u32 color2, u32 alpha2, u32 numCycles);
 
 extern GXTevAlphaArg gAlphaArgs[10];
-extern GXTevColorArg gColorArgs[16];
+extern GXTevColorArg gColorArgs[23];
 
 #ifdef __cplusplus
 }
