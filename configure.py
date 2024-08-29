@@ -241,7 +241,7 @@ config.libs = [
             Object(NotLinked, "emulator/pif.c"),
             Object(NotLinked, "emulator/ram.c"),
             Object(NotLinked, "emulator/rom.c"),
-            Object(NotLinked, "emulator/rdb.c"),
+            Object(LinkedFor("oot-j"), "emulator/rdb.c"),
             Object(NotLinked, "emulator/eeprom.c"),
             Object(NotLinked, "emulator/sram.c"),
             Object(NotLinked, "emulator/flash.c"),
