@@ -2,6 +2,8 @@
 #define _RVL_SDK_VI_VI3IN1_H
 
 #include "revolution/types.h"
+#include "revolution/vi/vitypes.h"
+#include "macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,6 +12,7 @@ extern "C" {
 void __VISetRGBModeImm(void);
 
 void __VISetRevolutionModeSimple(void);
+void __VISetYUVSEL(VIBool outsel) NO_INLINE;
 
 #ifdef __cplusplus
 }
