@@ -127,7 +127,6 @@ static bool flashGetBlock(Flash* pFLASH, CpuBlock* pBlock) {
 }
 
 bool fn_80045260(Flash* pFLASH, s32 arg1, void* arg2) {
-    //! TODO: fake match?
     if (pFLASH == NULL) {
         return false;
     }
@@ -140,7 +139,6 @@ bool fn_80045260(Flash* pFLASH, s32 arg1, void* arg2) {
 }
 
 bool fn_800452B0(Flash* pFLASH, s32 arg1, void* arg2) {
-    //! TODO: fake match?
     if (pFLASH == NULL) {
         return false;
     }
