@@ -121,6 +121,26 @@
 #define REGIMM_BLTZALL 18
 #define REGIMM_BGEZALL 19
 
+// MIPS instruction encoding:
+// R-type: opcode (6 bits) | rs (5 bits) | rt (5 bits) | rd (5 bits) | sa (5 bits) | funct (6 bits)
+// I-type: opcode (6 bits) | rs (5 bits) | rt (5 bits) | imm (16 bits)
+// J-type: opcode (6 bits) | target (26 bits)
+//  float: opcode (6 bits) | fmt (5 bits) | ft (5 bits) | fs (5 bits) | fd (5 bits) | funct (6 bits)
+#define MIPS_OP(inst) ((inst) >> 26)
+#define MIPS_RS(inst) (((inst) >> 21) & 0x1F)
+#define MIPS_RT(inst) (((inst) >> 16) & 0x1F)
+#define MIPS_RD(inst) (((inst) >> 11) & 0x1F)
+#define MIPS_SA(inst) (((inst) >> 6) & 0x1F)
+#define MIPS_FUNCT(inst) ((inst) & 0x3F)
+#define MIPS_IMM_S16(inst) ((s16)((inst) & 0xFFFF))
+#define MIPS_IMM_U16(inst) ((u16)((inst) & 0xFFFF))
+#define MIPS_TARGET(inst) ((inst) & 0x3FFFFFF)
+
+#define MIPS_FMT(inst) (((inst) >> 21) & 0x1F)
+#define MIPS_FT(inst) (((inst) >> 16) & 0x1F)
+#define MIPS_FS(inst) (((inst) >> 11) & 0x1F)
+#define MIPS_FD(inst) (((inst) >> 6) & 0x1F)
+
 #define MIPS_FDT(inst) ((inst >> 0) & 0x7FF)
 #define MIPS_FR(inst) ((inst >> 0x15) & 0x1F)
 #define MIPS_FSUB(inst) ((inst >> 0x15) & 0x1F)
@@ -182,6 +202,15 @@
 #define CPU_MODE_KERNEL 0
 
 #define CAUSE_BD (1 << 31)
+
+#define TLB_PGSZ_MASK 0x01FFE000
+#define TLB_PGSZ_4K 0
+#define TLB_PGSZ_16K 0x6000
+#define TLB_PGSZ_64K 0x1E000
+#define TLB_PGSZ_256K 0x7E000
+#define TLB_PGSZ_1M 0x1FE000
+#define TLB_PGSZ_4M 0x7FE000
+#define TLB_PGSZ_16M 0x1FFE000
 
 #define TLB_LO_GLBL (1 << 0)
 #define TLB_LO_VALD (1 << 1)
