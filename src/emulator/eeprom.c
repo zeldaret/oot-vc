@@ -106,7 +106,12 @@ static inline bool eepromEvent_UnknownInline(EEPROM* pEEPROM, void* pArgument) {
     }
 
     pEEPROM->unk_00 = var_r6;
-    return fn_80061770((void**)&pEEPROM->pStore, "PAK", gpSystem->eTypeROM, (void*)var_r6) ? true : false;
+
+    if (!fn_80061770((void**)&pEEPROM->pStore, "PAK", gpSystem->eTypeROM, (void*)var_r6)) {
+        return false;
+    }
+
+    return true;
 }
 
 bool eepromEvent(EEPROM* pEEPROM, s32 nEvent, void* pArgument) {

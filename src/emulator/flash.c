@@ -132,7 +132,11 @@ bool fn_80045260(Flash* pFLASH, s32 arg1, void* arg2) {
         return false;
     }
 
-    return fn_80061B88(pFLASH->pStore, arg2, (arg1 * 8) & 0x7F8, 8) ? true : false;
+    if (!fn_80061B88(pFLASH->pStore, arg2, (arg1 * 8) & 0x7F8, 8)) {
+        return false;
+    }
+
+    return true;
 }
 
 bool fn_800452B0(Flash* pFLASH, s32 arg1, void* arg2) {
@@ -141,7 +145,11 @@ bool fn_800452B0(Flash* pFLASH, s32 arg1, void* arg2) {
         return false;
     }
 
-    return fn_80061BC0(pFLASH->pStore, arg2, (arg1 * 8) & 0x7F8, 8) ? true : false;
+    if (!fn_80061BC0(pFLASH->pStore, arg2, (arg1 * 8) & 0x7F8, 8)) {
+        return false;
+    }
+
+    return true;
 }
 
 bool fn_80045300(Flash* pFLASH, s32* arg1) {
@@ -162,7 +170,12 @@ static inline bool flashEvent_UnknownInline(Flash* pFLASH, void* pArgument) {
     }
 
     pFLASH->unk_00 = (u32)pArgument;
-    return fn_80061770((void**)&pFLASH->pStore, "EEP", gpSystem->eTypeROM, pArgument) ? true : false;
+
+    if (!fn_80061770((void**)&pFLASH->pStore, "EEP", gpSystem->eTypeROM, pArgument)) {
+        return false;
+    }
+
+    return true;
 }
 
 bool flashEvent(Flash* pFLASH, s32 nEvent, void* pArgument) {
