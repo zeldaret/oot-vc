@@ -1,399 +1,369 @@
-#include "types.h"
-#include "xlHeap.h"
-#include "xlObject.h"
-#include "cpu.h"
-#include "ram.h"
-#include "system.h"
+#include "emulator/ram.h"
+#include "emulator/cpu.h"
+#include "emulator/system.h"
+#include "emulator/vc64_RVL.h"
+#include "emulator/xlHeap.h"
 
-static char class_name[8] = "RAM";
+static bool ramPutControl8(Ram* pRAM, u32 nAddress, s8* pData) { return false; }
 
-/* RDRAM Interface Registers */
-#define RI_MODE 0x00
-#define RI_CONFIG 0x04
-#define RI_CURRENT_LOAD 0x08
-#define RI_SELECT 0x0C
-#define RI_REFRESH 0x10
-#define RI_LATENCY 0x14
-#define RI_RERROR 0x18
-#define RI_WERROR 0x1C
+static bool ramPutControl16(Ram* pRAM, u32 nAddress, s16* pData) { return false; }
 
-/* RDRAM Control Registers */
-#define RDRAM_CONFIG 0x00
-#define RDRAM_DEVICE_ID 0x04
-#define RDRAM_DELAY 0x08
-#define RDRAM_MODE 0x0C
-#define RDRAM_REF_INTERVAL 0x10
-#define RDRAM_REF_NOW 0x14
-#define RDRAM_RAS_INTERVAL 0x18
-#define RDRAM_MIN_INTERVAL 0x1C
-#define RDRAM_ADDR_SELECT 0x20
-#define RDRAM_DEVICE_MANUF 0x24
-
-s32 ramPutControl8(void* obj, u32 addr, s8* src) {
-    return 0;
-}
-
-s32 ramPutControl16(void* obj, u32 addr, s16* src) {
-    return 0;
-}
-
-s32 ramPutControl32(void* obj, u32 addr, s32* src) {
-    ram_class_t* ram = (ram_class_t*)obj;
-    switch (addr & 0x3F) {
+static bool ramPutControl32(Ram* pRAM, u32 nAddress, s32* pData) {
+    switch (nAddress & 0x3F) {
         case RDRAM_CONFIG:
-            ram->RDRAM_CONFIG_REG = *src;
+            pRAM->RDRAM_CONFIG_REG = *pData;
             break;
         case RDRAM_DEVICE_ID:
-            ram->RDRAM_DEVICE_ID_REG = *src;
+            pRAM->RDRAM_DEVICE_ID_REG = *pData;
             break;
         case RDRAM_DELAY:
-            ram->RDRAM_DELAY_REG = *src;
+            pRAM->RDRAM_DELAY_REG = *pData;
             break;
         case RDRAM_MODE:
-            ram->RDRAM_MODE_REG = *src;
+            pRAM->RDRAM_MODE_REG = *pData;
             break;
         case RDRAM_REF_INTERVAL:
-            ram->RDRAM_REF_INTERVAL_REG = *src;
+            pRAM->RDRAM_REF_INTERVAL_REG = *pData;
             break;
         case RDRAM_REF_NOW:
-            ram->RDRAM_REF_ROW_REG = *src;
+            pRAM->RDRAM_REF_ROW_REG = *pData;
             break;
         case RDRAM_RAS_INTERVAL:
-            ram->RDRAM_RAS_INTERVAL_REG = *src;
+            pRAM->RDRAM_RAS_INTERVAL_REG = *pData;
             break;
         case RDRAM_MIN_INTERVAL:
-            ram->RDRAM_MIN_INTERVAL_REG = *src;
+            pRAM->RDRAM_MIN_INTERVAL_REG = *pData;
             break;
         case RDRAM_ADDR_SELECT:
-            ram->RDRAM_ADDR_SELECT_REG = *src;
+            pRAM->RDRAM_ADDR_SELECT_REG = *pData;
             break;
         case RDRAM_DEVICE_MANUF:
-            ram->RDRAM_DEVICE_MANUF_REG = *src;
+            pRAM->RDRAM_DEVICE_MANUF_REG = *pData;
             break;
         default:
-            return 0;
+            return false;
     }
-    return 1;
+
+    return true;
 }
 
-s32 ramPutControl64(void* obj, u32 addr, s64* src) {
-    return 0;
-}
+static bool ramPutControl64(Ram* pRAM, u32 nAddress, s64* pData) { return false; }
 
-s32 ramGetControl8(void* obj, u32 addr, s8* dst) {
-    return 0;
-}
+static bool ramGetControl8(Ram* pRAM, u32 nAddress, s8* pData) { return false; }
 
-s32 ramGetControl16(void* obj, u32 addr, s16* dst) {
-    return 0;
-}
+static bool ramGetControl16(Ram* pRAM, u32 nAddress, s16* pData) { return false; }
 
-s32 ramGetControl32(void* obj, u32 addr, s32* dst) {
-    ram_class_t* ram = (ram_class_t*)obj;
-    *dst = 0;
-    switch (addr & 0x3F) {
+static bool ramGetControl32(Ram* pRAM, u32 nAddress, s32* pData) {
+    *pData = 0;
+
+    switch (nAddress & 0x3F) {
         case RDRAM_CONFIG:
-            *dst = ram->RDRAM_CONFIG_REG;
+            *pData = pRAM->RDRAM_CONFIG_REG;
             break;
         case RDRAM_DEVICE_ID:
-            *dst = ram->RDRAM_DEVICE_ID_REG;
+            *pData = pRAM->RDRAM_DEVICE_ID_REG;
             break;
         case RDRAM_DELAY:
-            *dst = ram->RDRAM_DELAY_REG;
+            *pData = pRAM->RDRAM_DELAY_REG;
             break;
         case RDRAM_MODE:
-            *dst = ram->RDRAM_MODE_REG;
+            *pData = pRAM->RDRAM_MODE_REG;
             break;
         case RDRAM_REF_INTERVAL:
-            *dst = ram->RDRAM_REF_INTERVAL_REG;
+            *pData = pRAM->RDRAM_REF_INTERVAL_REG;
             break;
         case RDRAM_REF_NOW:
-            *dst = ram->RDRAM_REF_ROW_REG;
+            *pData = pRAM->RDRAM_REF_ROW_REG;
             break;
         case RDRAM_RAS_INTERVAL:
-            *dst = ram->RDRAM_RAS_INTERVAL_REG;
+            *pData = pRAM->RDRAM_RAS_INTERVAL_REG;
             break;
         case RDRAM_MIN_INTERVAL:
-            *dst = ram->RDRAM_MIN_INTERVAL_REG;
+            *pData = pRAM->RDRAM_MIN_INTERVAL_REG;
             break;
         case RDRAM_ADDR_SELECT:
-            *dst = ram->RDRAM_ADDR_SELECT_REG;
+            *pData = pRAM->RDRAM_ADDR_SELECT_REG;
             break;
         case RDRAM_DEVICE_MANUF:
-            *dst = ram->RDRAM_DEVICE_MANUF_REG;
+            *pData = pRAM->RDRAM_DEVICE_MANUF_REG;
             break;
         default:
-            return 0;
+            return false;
     }
-    return 1;
+
+    return true;
 }
 
-s32 ramGetControl64(void* obj, u32 addr, s64* dst) {
-    return 0;
-}
+static bool ramGetControl64(Ram* pRAM, u32 nAddress, s64* pData) { return false; }
 
-s32 ramPutRI8(void* obj, u32 addr, s8* src) {
-    return 0;
-}
+static bool ramPutRI8(Ram* pRAM, u32 nAddress, s8* pData) { return false; }
 
-s32 ramPutRI16(void* obj, u32 addr, s16* src) {
-    return 0;
-}
+static bool ramPutRI16(Ram* pRAM, u32 nAddress, s16* pData) { return false; }
 
-s32 ramPutRI32(void* obj, u32 addr, s32* src) {
-    ram_class_t* ram = (ram_class_t*)obj;
-    switch (addr & 0x1F) {
+static bool ramPutRI32(Ram* pRAM, u32 nAddress, s32* pData) {
+    switch (nAddress & 0x1F) {
         case RI_MODE:
-            ram->RI_MODE_REG = *src & 0xF;
+            pRAM->RI_MODE_REG = *pData & 0xF;
             break;
         case RI_CONFIG:
-            ram->RI_CONFIG_REG = *src & 0x7F;
+            pRAM->RI_CONFIG_REG = *pData & 0x7F;
         case RI_CURRENT_LOAD:
         case RI_RERROR:
         case RI_WERROR:
             break;
         case RI_SELECT:
-            ram->RI_SELECT_REG = *src & 0x7;
+            pRAM->RI_SELECT_REG = *pData & 0x7;
             break;
         case RI_REFRESH:
-            ram->RI_REFRESH_REG = *src;
+            pRAM->RI_REFRESH_REG = *pData;
             break;
         case RI_LATENCY:
-            ram->RI_LATENCY_REG = *src & 0xF;
+            pRAM->RI_LATENCY_REG = *pData & 0xF;
             break;
         default:
-            return 0;
+            return false;
     }
-    return 1;
+
+    return true;
 }
 
-s32 ramPutRI64(void* obj, u32 addr, s64* src) {
-    return 0;
-}
+static bool ramPutRI64(Ram* pRAM, u32 nAddress, s64* pData) { return false; }
 
-s32 ramGetRI8(void* obj, u32 addr, s8* dst) {
-    return 0;
-}
+static bool ramGetRI8(Ram* pRAM, u32 nAddress, s8* pData) { return false; }
 
-s32 ramGetRI16(void* obj, u32 addr, s16* dst) {
-    return 0;
-}
+static bool ramGetRI16(Ram* pRAM, u32 nAddress, s16* pData) { return false; }
 
-s32 ramGetRI32(void* obj, u32 addr, s32* dst) {
-    ram_class_t* ram = (ram_class_t*)obj;
-    switch (addr & 0x1F) {
+static bool ramGetRI32(Ram* pRAM, u32 nAddress, s32* pData) {
+    switch (nAddress & 0x1F) {
         case RI_MODE:
-            *dst = ram->RI_MODE_REG & 0xF;
+            *pData = pRAM->RI_MODE_REG & 0xF;
             break;
         case RI_CONFIG:
-            *dst = ram->RI_CONFIG_REG & 0x7F;
+            *pData = pRAM->RI_CONFIG_REG & 0x7F;
             break;
         case RI_CURRENT_LOAD:
         case RI_WERROR:
             break;
         case RI_SELECT:
-            *dst = ram->RI_SELECT_REG & 7;
+            *pData = pRAM->RI_SELECT_REG & 7;
             break;
         case RI_REFRESH:
-            *dst = ram->RI_REFRESH_REG;
+            *pData = pRAM->RI_REFRESH_REG;
             break;
         case RI_LATENCY:
-            *dst = ram->RI_LATENCY_REG & 0xF;
+            *pData = pRAM->RI_LATENCY_REG & 0xF;
             break;
         case RI_RERROR:
-            *dst = 0;
+            *pData = 0;
             break;
         default:
-            return 0;
+            return false;
     }
-    return 1;
+
+    return true;
 }
 
-s32 ramGetRI64(void* obj, u32 addr, s64* dst) {
-    return 0;
-}
+static bool ramGetRI64(Ram* pRAM, u32 nAddress, s64* pData) { return false; }
 
-s32 ramPut8(void* obj, u32 addr, s8* src) {
-    ram_class_t* ram = (ram_class_t*)obj;
-    addr = addr & 0x3FFFFFF;
-    if (addr < ram->dram_size) {
-        ram->dram[addr] = *src;
+static bool ramPut8(Ram* pRAM, u32 nAddress, s8* pData) {
+    nAddress &= 0x03FFFFFF;
+
+    if (nAddress < pRAM->nSize) {
+        pRAM->pBuffer[nAddress] = *pData;
     }
-    return 1;
+
+    return true;
 }
 
-s32 ramPut16(void* obj, u32 addr, s16* src) {
-    ram_class_t* ram = (ram_class_t*)obj;
-    addr = addr & 0x3FFFFFF;
-    if (addr < ram->dram_size) {
-        *(u16*)&ram->dram[addr & ~1] = *src;
+static bool ramPut16(Ram* pRAM, u32 nAddress, s16* pData) {
+    nAddress &= 0x03FFFFFF;
+
+    if (nAddress < pRAM->nSize) {
+        *((u16*)pRAM->pBuffer + (nAddress >> 1)) = *pData;
     }
-    return 1;
+
+    return true;
 }
 
-s32 ramPut32(void* obj, u32 addr, s32* src) {
-    ram_class_t* ram = (ram_class_t*)obj;
-    addr = addr & 0x3FFFFFF;
-    if (addr < ram->dram_size) {
-        *(u32*)&ram->dram[addr & ~3] = *src;
+static bool ramPut32(Ram* pRAM, u32 nAddress, s32* pData) {
+    nAddress &= 0x03FFFFFF;
+
+    if (nAddress < pRAM->nSize) {
+        *((s32*)pRAM->pBuffer + (nAddress >> 2)) = *pData;
     }
-    return 1;
+
+    return true;
 }
 
-s32 ramPut64(void* obj, u32 addr, s64* src) {
-    ram_class_t* ram = (ram_class_t*)obj;
-    addr = addr & 0x3FFFFFF;
-    if (addr < ram->dram_size) {
-        *(s64*)&ram->dram[addr & ~7] = *src;
+static bool ramPut64(Ram* pRAM, u32 nAddress, s64* pData) {
+    nAddress &= 0x03FFFFFF;
+
+    if (nAddress < pRAM->nSize) {
+        *((s64*)pRAM->pBuffer + (nAddress >> 3)) = *pData;
     }
-    return 1;
+
+    return true;
 }
 
-s32 ramGet8(void* obj, u32 addr, s8* dst) {
-    ram_class_t* ram = (ram_class_t*)obj;
-    addr = addr & 0x3FFFFFF;
-    if (addr < ram->dram_size) {
-        *dst = ram->dram[addr];
+static bool ramGet8(Ram* pRAM, u32 nAddress, s8* pData) {
+    nAddress &= 0x03FFFFFF;
+
+    if (nAddress < pRAM->nSize) {
+        *pData = pRAM->pBuffer[nAddress];
     } else {
-        *dst = 0;
+        *pData = 0;
     }
-    return 1;
+
+    return true;
 }
 
-s32 ramGet16(void* obj, u32 addr, s16* dst) {
-    ram_class_t* ram = (ram_class_t*)obj;
-    addr = addr & 0x3FFFFFF;
-    if (addr < ram->dram_size) {
-        *dst = *(s16*)&ram->dram[addr & ~1];
+static bool ramGet16(Ram* pRAM, u32 nAddress, s16* pData) {
+    nAddress &= 0x03FFFFFF;
+
+    if (nAddress < pRAM->nSize) {
+        *pData = *((s16*)pRAM->pBuffer + (nAddress >> 1));
     } else {
-        *dst = 0;
+        *pData = 0;
     }
-    return 1;
+
+    return true;
 }
 
-s32 ramGet32(void* obj, u32 addr, s32* dst) {
-    ram_class_t* ram = (ram_class_t*)obj;
-    addr = addr & 0x3FFFFFF;
-    if (addr < ram->dram_size) {
-        *dst = *(s32*)&ram->dram[addr & ~3];
+static bool ramGet32(Ram* pRAM, u32 nAddress, s32* pData) {
+    nAddress &= 0x03FFFFFF;
+
+    if (nAddress < pRAM->nSize) {
+        *pData = *((s32*)pRAM->pBuffer + (nAddress >> 2));
     } else {
-        *dst = 0;
+        *pData = 0;
     }
-    return 1;
+
+    return true;
 }
 
-s32 ramGet64(void* obj, u32 addr, s64* dst) {
-    ram_class_t* ram = (ram_class_t*)obj;
-    addr = addr & 0x3FFFFFF;
-    if (addr < ram->dram_size) {
-        *dst = *(s64*)&ram->dram[addr & ~7];
+static bool ramGet64(Ram* pRAM, u32 nAddress, s64* pData) {
+    nAddress &= 0x03FFFFFF;
+
+    if (nAddress < pRAM->nSize) {
+        *pData = *((s64*)pRAM->pBuffer + (nAddress >> 3));
     } else {
-        *dst = 0;
+        *pData = 0;
     }
-    return 1;
+
+    return true;
 }
 
-typedef struct unk_func_80041C90_s unk_func_80041C90_t;
-
-struct unk_func_80041C90_s {
-    char unk_0x00[0x8];
-    s32 (*unk_0x08)(unk_func_80041C90_t*, s32);
-};
-
-s32 func_80041C90(ram_class_t* ram, unk_func_80041C90_t* arg1) {
-    if (arg1->unk_0x08 != NULL) {
-        if (!arg1->unk_0x08(arg1, 1)) {
-            return 0;
+static bool ramGetBlock(Ram* pRAM, CpuBlock* pBlock) {
+    if (pBlock->pfUnknown != NULL) {
+        if (!pBlock->pfUnknown(pBlock, 1)) {
+            return false;
         }
     }
 
-    return 1;
+    return true;
 }
 
-s32 ramGetBuffer(ram_class_t* ram, void** buffer, u32 addr, s32* len) {
-    u32 dram_size = ram->dram_size;
-    addr = addr & 0x3FFFFFF;
-    if (dram_size == 0) {
-        return 0;
+bool ramGetBuffer(Ram* pRAM, void** ppRAM, u32 nOffset, u32* pnSize) {
+    s32 nSize;
+
+    nOffset &= 0x03FFFFFF;
+
+    if (pRAM->nSize == 0) {
+        return false;
     }
 
-    if ((len != NULL) && (addr + *len >= dram_size)) {
-        *len = dram_size - addr;
-        if (*len < 0) {
-            *len = 0;
+    if ((pnSize != NULL) && ((u32)(nOffset + *pnSize) >= pRAM->nSize)) {
+        nSize = pRAM->nSize - nOffset;
+        *pnSize = nSize;
+
+        if (nSize < 0) {
+            *pnSize = 0;
         }
     }
 
-    *buffer = ram->dram + addr;
-    return 1;
+    *((u8**)ppRAM) = (u8*)pRAM->pBuffer + nOffset;
+    return true;
 }
 
-s32 ramWipe(ram_class_t* ram) {
-    if (ram->dram_size != 0 && !xlHeapFill32((u32*)ram->dram, ram->dram_size, 0x0)) {
-        return 0;
+bool ramWipe(Ram* pRAM) {
+    if (pRAM->nSize != 0 && !xlHeapFill32(pRAM->pBuffer, pRAM->nSize, 0)) {
+        return false;
     }
 
-    return 1;
+    return true;
 }
 
-s32 ramSetSize(ram_class_t* ram, u32 size) {
-    if (ram->dram != NULL) {
-        return 0;
+bool ramSetSize(Ram* pRAM, s32 nSize) {
+    s32 nSizeRAM;
+
+    if (pRAM->pBuffer != NULL) {
+        return false;
     }
 
-    size = (size + (0x400 - 1)) & ~(0x400 - 1);
-    if (!xlHeapTake((void**)&ram->dram, size | 0x30000000)) {
-        return 0;
+    nSizeRAM = (nSize + 0x3FF) & 0xFFFFFC00;
+
+    if (!xlHeapTake((void**)&pRAM->pBuffer, nSizeRAM | 0x30000000)) {
+        return false;
     }
 
-    ram->dram_size = size;
-    return 1;
+    pRAM->nSize = nSizeRAM;
+
+    return true;
 }
 
-s32 ramGetSize(ram_class_t* ram, s32* size) {
-    if (size != NULL) {
-        *size = ram->dram_size;
+bool ramGetSize(Ram* pRAM, s32* nSize) {
+    if (nSize != NULL) {
+        *nSize = pRAM->nSize;
     }
 
-    return 1;
+    return true;
 }
 
-s32 ramEvent(void* obj, s32 event, void* arg) {
-    ram_class_t* ram = (ram_class_t*)obj;
-    switch (event) {
-        case 0x2:
-            ram->dram_size = 0;
-            ram->dram = NULL;
+bool ramEvent(Ram* pRAM, s32 nEvent, void* pArgument) {
+    switch (nEvent) {
+        case 2:
+            pRAM->nSize = 0;
+            pRAM->pBuffer = NULL;
             break;
         case 0x1002:
-            switch (*(u32*)arg & 0xFF) {
+            switch (((CpuDevice*)pArgument)->nType & 0xFF) {
                 case 0:
-                    if (!cpuSetGetBlock(gSystem->cpu, arg, func_80041C90)) {
-                        return 0;
+                    if (!cpuSetGetBlock(SYSTEM_CPU(gpSystem), pArgument, (GetBlockFunc)ramGetBlock)) {
+                        return false;
                     }
-                    if (!cpuSetDevicePut(gSystem->cpu, arg, ramPut8, ramPut16, ramPut32, ramPut64)) {
-                        return 0;
+
+                    if (!cpuSetDevicePut(SYSTEM_CPU(gpSystem), pArgument, (Put8Func)ramPut8, (Put16Func)ramPut16,
+                                         (Put32Func)ramPut32, (Put64Func)ramPut64)) {
+                        return false;
                     }
-                    if (!cpuSetDeviceGet(gSystem->cpu, arg, ramGet8, ramGet16, ramGet32, ramGet64)) {
-                        return 0;
+
+                    if (!cpuSetDeviceGet(SYSTEM_CPU(gpSystem), pArgument, (Get8Func)ramGet8, (Get16Func)ramGet16,
+                                         (Get32Func)ramGet32, (Get64Func)ramGet64)) {
+                        return false;
                     }
                     break;
                 case 1:
-                    if (!cpuSetDevicePut(gSystem->cpu, arg, ramPutRI8, ramPutRI16, ramPutRI32, ramPutRI64)) {
-                        return 0;
+                    if (!cpuSetDevicePut(SYSTEM_CPU(gpSystem), pArgument, (Put8Func)ramPutRI8, (Put16Func)ramPutRI16,
+                                         (Put32Func)ramPutRI32, (Put64Func)ramPutRI64)) {
+                        return false;
                     }
-                    if (!cpuSetDeviceGet(gSystem->cpu, arg, ramGetRI8, ramGetRI16, ramGetRI32, ramGetRI64)) {
-                        return 0;
+
+                    if (!cpuSetDeviceGet(SYSTEM_CPU(gpSystem), pArgument, (Get8Func)ramGetRI8, (Get16Func)ramGetRI16,
+                                         (Get32Func)ramGetRI32, (Get64Func)ramGetRI64)) {
+                        return false;
                     }
                     break;
                 case 2:
-                    if (!cpuSetDevicePut(gSystem->cpu, arg, ramPutControl8, ramPutControl16, ramPutControl32,
-                                         ramPutControl64)) {
-                        return 0;
+                    if (!cpuSetDevicePut(SYSTEM_CPU(gpSystem), pArgument, (Put8Func)ramPutControl8,
+                                         (Put16Func)ramPutControl16, (Put32Func)ramPutControl32,
+                                         (Put64Func)ramPutControl64)) {
+                        return false;
                     }
-                    if (!cpuSetDeviceGet(gSystem->cpu, arg, ramGetControl8, ramGetControl16, ramGetControl32,
-                                         ramGetControl64)) {
-                        return 0;
+
+                    if (!cpuSetDeviceGet(SYSTEM_CPU(gpSystem), pArgument, (Get8Func)ramGetControl8,
+                                         (Get16Func)ramGetControl16, (Get32Func)ramGetControl32,
+                                         (Get64Func)ramGetControl64)) {
+                        return false;
                     }
                     break;
             }
@@ -406,14 +376,15 @@ s32 ramEvent(void* obj, s32 event, void* arg) {
         case 0x1007:
             break;
         default:
-            return 0;
+            return false;
     }
-    return 1;
+
+    return true;
 }
 
-class_t gClassRAM = {
-    class_name,
-    sizeof(ram_class_t),
-    0x00000000,
-    ramEvent,
+_XL_OBJECTTYPE gClassRAM = {
+    "RAM",
+    sizeof(Ram),
+    NULL,
+    (EventFunc)ramEvent,
 };
