@@ -6,12 +6,10 @@
 #include "emulator/vc64_RVL.h"
 #include "emulator/xlCoreRVL.h"
 #include "emulator/xlHeap.h"
+#include "emulator/rsp.h"
+#include "emulator/helpRVL.h"
 #include "macros.h"
 #include "revolution/os.h"
-
-//! TODO: document these
-void fn_80063D78(s32);
-bool fn_8005F5F4(void* arg0, void* arg1, s32 arg2, void* arg3);
 
 static bool romMakeFreeCache(Rom* pROM, s32* piCache, RomCacheType eType);
 static bool romSetBlockCache(Rom* pROM, s32 iBlock, RomCacheType eType);
