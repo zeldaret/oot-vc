@@ -1,143 +1,148 @@
-#include "xlObject.h"
-#include "xlList.h"
+#include "emulator/xlObject.h"
+#include "emulator/xlList.h"
 
-extern list_type_t* lbl_8025D1F8;
+static tXL_LIST* gpListData;
 
-typedef struct {
-    list_type_t* class_list;
-    class_t* class;
-} class_ent_t;
+static inline bool xlObjectFindData(__anon_0x5062** ppData, _XL_OBJECTTYPE* pType) {
+    void* pListNode;
 
-typedef struct class_item_s class_item_t;
-
-struct class_item_s {
-    class_item_t* next;
-    class_ent_t ent;
-};
-
-#ifdef NON_MATCHING
-// r3 being used instead of r4 in findClass (item_p)
-inline s32 findClass(class_ent_t** ent, class_t* class) {
-    class_item_t* item_p;
-    for (item_p = (class_item_t*)lbl_8025D1F8->first; item_p != NULL; item_p = item_p->next) {
-        *ent = &item_p->ent;
-        if (item_p->ent.class == class) {
-            return 1;
+    for (pListNode = gpListData->pNodeHead; pListNode != NULL; pListNode = NODE_NEXT(pListNode)) {
+        *ppData = (__anon_0x5062*)NODE_DATA(pListNode);
+        if ((*ppData)->pType == pType) {
+            return true;
         }
     }
-    return 0;
+
+    return false;
 }
 
-inline s32 newClass(class_ent_t** ent, class_t* class) {
-    if (!xlListMakeItem(lbl_8025D1F8, (void**)ent)) {
-        return 0;
+static inline bool xlObjectMakeData(__anon_0x5062** ppData, _XL_OBJECTTYPE* pType) {
+    if (!xlListMakeItem(gpListData, (void**)ppData)) {
+        return false;
     }
 
-    (*ent)->class = class;
+    (*ppData)->pType = pType;
 
-    return !!xlListMake((list_type_t**)*ent, class->size + 4);
+    if (!xlListMake((tXL_LIST**)*ppData, pType->nSizeObject + 4)) {
+        return false;
+    }
+
+    return true;
 }
 
-s32 xlObjectMake(void** dst, void* arg, class_t* class) {
-    s32 new_class;
-    list_item_t* list_item;
-    class_ent_t* ent;
-    if (!findClass(&ent, class)) {
-        if (!newClass(&ent, class)) {
-            return 0;
+bool xlObjectMake(void** ppObject, void* pArgument, _XL_OBJECTTYPE* pType) {
+    bool bFlag;
+    __anon_0x5062* pData;
+    void* temp1;
+    void* temp2;
+
+    if (!xlObjectFindData(&pData, pType)) {
+        if (!xlObjectMakeData(&pData, pType)) {
+            return false;
         }
-        new_class = 1;
+        bFlag = true;
     } else {
-        new_class = 0;
+        bFlag = false;
     }
 
-    if (!xlListMakeItem(ent->class_list, dst)) {
-        return 0;
+    if (!xlListMakeItem(pData->pList, ppObject)) {
+        return false;
     }
 
-    list_item = (list_item_t*)*dst;
-    list_item->next = (list_item_t*)ent;
-    *dst = list_item->data;
-    memset(*dst, 0, class->size);
+    temp1 = *ppObject;
+    NODE_NEXT(*ppObject) = pData;
+    *ppObject = NODE_DATA(temp1);
+    memset(*ppObject, 0, pType->nSizeObject);
 
-    if (new_class) {
-        class->callback(*dst, 0, NULL);
+    if (bFlag) {
+        pType->pfEvent(*ppObject, 0, NULL);
     }
 
-    return class->callback(*dst, 2, arg);
+    return pType->pfEvent(*ppObject, 2, pArgument);
 }
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlObject/xlObjectMake.s")
-#endif
 
-s32 xlObjectFree(void** obj) {
-    if (obj != NULL && *obj != NULL) {
-        class_ent_t* ent = *(class_ent_t**)((u8*)*obj - 4);
+bool xlObjectFree(void** ppObject) {
+    if (ppObject != NULL && *ppObject != NULL) {
+        __anon_0x5062* pData = *(__anon_0x5062**)((u8*)*ppObject - 4);
 
-        ent->class->callback(*obj, 3, NULL);
+        pData->pType->pfEvent(*ppObject, 3, NULL);
+        *ppObject = ((u8*)*ppObject - 4);
 
-        *obj = (void*)((u8*)*obj - 4);
-
-        if (!xlListFreeItem(ent->class_list, obj)) {
-            return 0;
+        if (xlListFreeItem(pData->pList, ppObject) == 0) {
+            return false;
         }
 
-        *obj = NULL;
-        return 1;
+        *ppObject = NULL;
+        return true;
     }
 
-    return 0;
+    return false;
 }
 
-s32 xlObjectTest(void* obj, class_t* class) {
-    class_ent_t* ent;
-    if (obj != NULL) {
-        ent = *(class_ent_t**)((u8*)obj - 4);
-        if (xlListTestItem(lbl_8025D1F8, ent) && ent->class == class) {
-            return 1;
+bool xlObjectTest(void* pObject, _XL_OBJECTTYPE* pType) {
+    __anon_0x5062* pData;
+
+    if (pObject != NULL) {
+        pData = *(__anon_0x5062**)((u8*)pObject - 4);
+
+        if (xlListTestItem(gpListData, pData) && pData->pType == pType) {
+            return true;
         }
     }
-    return 0;
+
+    return false;
 }
 
-inline s32 testClass(void* obj, class_ent_t* ent2) {
-    class_ent_t* ent;
-    class_t* class2 = ent2->class;
-    if (obj != NULL) {
-        ent = *(class_ent_t**)((u8*)obj - 4);
-        if (xlListTestItem(lbl_8025D1F8, ent)) {
-            if (ent->class == class2) {
-                return 1;
+static inline bool xlObjectFindType(void* pObject, _XL_OBJECTTYPE* pType) {
+    if (pObject != NULL) {
+        __anon_0x5062* pData = *(__anon_0x5062**)((u8*)pObject - 4);
+        if (xlListTestItem(gpListData, pData)) {
+            if (pData->pType == pType) {
+                return true;
             }
         }
     }
 
-    return 0;
+    return false;
 }
 
-s32 xlObjectEvent(void* obj, s32 event, void* arg) {
-    if (obj != NULL) {
-        class_ent_t* ent = *(class_ent_t**)((u8*)obj - 4);
-        if (xlListTestItem(lbl_8025D1F8, ent)) {
-            if (testClass(obj, ent)) {
-                return ent->class->callback(obj, event, arg);
+bool xlObjectEvent(void* pObject, s32 nEvent, void* pArgument) {
+    if (pObject != NULL) {
+        __anon_0x5062* pData = *(__anon_0x5062**)((u8*)pObject - 4);
+
+        if (xlListTestItem(gpListData, pData)) {
+            if (xlObjectFindType(pObject, pData->pType)) {
+                return pData->pType->pfEvent(pObject, nEvent, pArgument);
             }
         }
     }
-    return 0;
+
+    return false;
 }
 
-s32 xlObjectSetup(void) {
-    return !!xlListMake(&lbl_8025D1F8, 8);
-}
-
-s32 xlObjectReset(void) {
-    list_item_t* item_p;
-    for (item_p = lbl_8025D1F8->first; item_p != NULL; item_p = item_p->next) {
-        if (!xlListFree((list_type_t**)item_p->data)) {
-            return 0;
-        }
+bool xlObjectSetup(void) {
+    if (!xlListMake(&gpListData, 8)) {
+        return false;
     }
 
-    return !!xlListFree(&lbl_8025D1F8);
+    return true;
+}
+
+bool xlObjectReset(void) {
+    void* pListNode;
+
+    pListNode = gpListData->pNodeHead;
+
+    while (pListNode != NULL) {
+        if (!xlListFree((void*)((u8*)pListNode + 4))) {
+            return false;
+        }
+        pListNode = NODE_NEXT(pListNode);
+    }
+
+    if (!xlListFree(&gpListData)) {
+        return false;
+    }
+
+    return true;
 }

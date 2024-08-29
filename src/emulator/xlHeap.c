@@ -1,590 +1,645 @@
-#include "os.h"
-#include "xlHeap.h"
+#include "emulator/xlHeap.h"
+#include "macros.h"
 
-s32 gnSizeHeap[2];
-s32 gpHeap[2];
-void* gpHeapBlockFirst[2];
-void* gpHeapBlockLast[2];
-s32 gnHeapTakeCacheCount[2];
-s32 lbl_8025D1C8[2];
-u32 lbl_8025D1C0[2];
-void* gpHeapOS[2];
-extern u32 *gapHeapBlockCache[2][11][32];
+s32 gnSizeHeap[HEAP_COUNT];
+static u32* gpHeap[HEAP_COUNT];
+static u32* gapHeapBlockCache[HEAP_COUNT][11][32];
 
-#define ALIGN(v, a) (((u32)(v) + a - 1) & ~(a - 1))
-#define IS_FREE(v) ((v) & 0x1000000)
-#define IS_TAKEN(v) ((v) & 0x2000000)
-#define NUM_WORDS(v) ((s32)((v) & 0xFFFFFF))
-#define CHKSUM_HI(v) ((u32)(v) >> 0x1A)
-#define CHKSUM_LO(v) ((u32)(v) & 0x3F)
+static u32* gpHeapBlockFirst[HEAP_COUNT];
+static u32* gpHeapBlockLast[HEAP_COUNT];
+static s32 gnHeapTakeCount[HEAP_COUNT];
+static s32 gnHeapFreeCount[HEAP_COUNT];
+static s32 gnHeapTakeCacheCount[HEAP_COUNT];
+u32* gnHeapOS[HEAP_COUNT];
 
-s32 xlHeapBlockCacheGet(s32 heap, s32 arg1, u32** arg2, s32* arg3) {
-    s32 i;
-    s32 idx;
-    s32 cache_idx;
-    s32 uVar6;
+#define PADDING_MAGIC 0x1234ABCD
 
-    if(arg1 < 8) {
-        idx = 0;
-    } else if(arg1 < 16) {
-        idx = 1;
-    } else if(arg1 < 32) {
-        idx = 2;
-    } else if(arg1 < 64) {
-        idx = 3;
-    } else if(arg1 < 128) {
-        idx = 4;
-    } else if(arg1 < 256) {
-        idx = 5;
-    } else if(arg1 < 512) {
-        idx = 6;
-    } else if(arg1 < 1024) {
-        idx = 7;
-    } else if(arg1 < 4096) {
-        idx = 8;
-    } else if(arg1 < 8192) {
-        idx = 9;
+#define FLAG_FREE 0x01000000
+#define FLAG_TAKEN 0x02000000
+
+// Blocks have a 32-bit header:
+//   copy low bits of size (6 bits) | flags (2 bits) | size (26 bits)
+#define MAKE_BLOCK(size, flags) ((size) | ((size) << 26) | (flags))
+
+#define BLOCK_IS_FREE(v) ((v) & FLAG_FREE)
+#define BLOCK_IS_TAKEN(v) ((v) & FLAG_TAKEN)
+#define BLOCK_SIZE(v) ((s32)((v) & 0xFFFFFF))
+
+//! TODO: these need better names
+#define CHKSUM_HI(v) ((u32)((v) >> 26))
+#define CHKSUM_LO(v) ((u32)((v) & 0x3F))
+
+static bool __xlHeapGetFree(s32 iHeap, s32* pnFreeBytes) NO_INLINE;
+
+static bool xlHeapBlockCacheGet(s32 iHeap, s32 nSize, u32** ppBlock, s32* pnBlockSize) {
+    s32 nBlockCachedSize;
+    s32 nBlock;
+    s32 nBlockSize;
+    s32 nBlockBest;
+    s32 nBlockBestSize;
+    u32* pBlock;
+
+    if (nSize < 8) {
+        nBlockSize = 0;
+    } else if (nSize < 16) {
+        nBlockSize = 1;
+    } else if (nSize < 32) {
+        nBlockSize = 2;
+    } else if (nSize < 64) {
+        nBlockSize = 3;
+    } else if (nSize < 128) {
+        nBlockSize = 4;
+    } else if (nSize < 256) {
+        nBlockSize = 5;
+    } else if (nSize < 512) {
+        nBlockSize = 6;
+    } else if (nSize < 1024) {
+        nBlockSize = 7;
+    } else if (nSize < 4096) {
+        nBlockSize = 8;
+    } else if (nSize < 8192) {
+        nBlockSize = 9;
     } else {
-        idx = 10;
+        nBlockSize = 10;
     }
 
-    while(idx < 11) {
-        cache_idx = -1;
-        uVar6 = 0x1000000;
-        for(i = 0; i < 32; i++) {
-            if(gapHeapBlockCache[heap][idx][i] != NULL && NUM_WORDS(*gapHeapBlockCache[heap][idx][i]) < uVar6 &&
-                NUM_WORDS(*gapHeapBlockCache[heap][idx][i]) >= arg1)
-            {
-                cache_idx = i;
-                uVar6 = NUM_WORDS(*gapHeapBlockCache[heap][idx][i]);
+    for (; nBlockSize < 11; nBlockSize++) {
+        nBlockBest = -1;
+        nBlockBestSize = 0x1000000;
+        for (nBlock = 0; nBlock < 32; nBlock++) {
+            if ((pBlock = gapHeapBlockCache[iHeap][nBlockSize][nBlock]) != NULL) {
+                nBlockCachedSize = BLOCK_SIZE(*pBlock);
+                if (nBlockCachedSize < nBlockBestSize && nBlockCachedSize >= nSize) {
+                    nBlockBest = nBlock;
+                    nBlockBestSize = nBlockCachedSize;
+                }
             }
         }
 
-        if(cache_idx >= 0) {
-            *arg3 = uVar6;
-            *arg2 = gapHeapBlockCache[heap][idx][cache_idx];
-            gapHeapBlockCache[heap][idx][cache_idx] = NULL;
-            lbl_8025D1C0[heap]++;
+        if (nBlockBest >= 0) {
+            *pnBlockSize = nBlockBestSize;
+            *ppBlock = gapHeapBlockCache[iHeap][nBlockSize][nBlockBest];
+            gapHeapBlockCache[iHeap][nBlockSize][nBlockBest] = NULL;
 
-            return 1;
+            gnHeapTakeCacheCount[iHeap]++;
+            return true;
         }
-
-        idx++;
     }
 
-    *arg2 = NULL;
-    return 0;
-
+    *ppBlock = NULL;
+    return false;
 }
 
-#ifdef NON_MATCHING
-s32 xlHeapBlockCacheAdd(int heap, u32 *arg1) {
-    s32 i;
-    u32 idx;
+static s32 xlHeapBlockCacheAdd(s32 iHeap, u32* pBlock) {
+    s32 nSize;
+    s32 nBlock;
+    s32 nBlockSize;
+    s32 nBlockCachedSize;
+    u32* pBlockCached;
 
-    if(NUM_WORDS(*arg1) == 0) {
-        return 0;
+    nSize = BLOCK_SIZE(*pBlock);
+    if (nSize == 0) {
+        return false;
     }
 
-    if(NUM_WORDS(*arg1) < 8) {
-        idx = 0;
-    } else if(NUM_WORDS(*arg1) < 16) {
-        idx = 1;
-    } else if(NUM_WORDS(*arg1) < 32) {
-        idx = 2;
-    } else if(NUM_WORDS(*arg1) < 64) {
-        idx = 3;
-    } else if(NUM_WORDS(*arg1) < 128) {
-        idx = 4;
-    } else if(NUM_WORDS(*arg1) < 256) {
-        idx = 5;
-    } else if(NUM_WORDS(*arg1) < 512) {
-        idx = 6;
-    } else if(NUM_WORDS(*arg1) < 1024) {
-        idx = 7;
-    } else if(NUM_WORDS(*arg1) < 4096) {
-        idx = 8;
-    } else if(NUM_WORDS(*arg1) < 8192) {
-        idx = 9;
+    if (nSize < 8) {
+        nBlockSize = 0;
+    } else if (nSize < 16) {
+        nBlockSize = 1;
+    } else if (nSize < 32) {
+        nBlockSize = 2;
+    } else if (nSize < 64) {
+        nBlockSize = 3;
+    } else if (nSize < 128) {
+        nBlockSize = 4;
+    } else if (nSize < 256) {
+        nBlockSize = 5;
+    } else if (nSize < 512) {
+        nBlockSize = 6;
+    } else if (nSize < 1024) {
+        nBlockSize = 7;
+    } else if (nSize < 4096) {
+        nBlockSize = 8;
+    } else if (nSize < 8192) {
+        nBlockSize = 9;
     } else {
-        idx = 10;
+        nBlockSize = 10;
     }
 
-    for(i = 0; i < 32; i++) {
-        if(gapHeapBlockCache[heap][idx][i] == NULL || NUM_WORDS(*gapHeapBlockCache[heap][idx][i]) < NUM_WORDS(*arg1)) {
-            gapHeapBlockCache[heap][idx][i] = arg1;
-            return 1;
+    for (nBlock = 0; nBlock < 32; nBlock++) {
+        if ((pBlockCached = gapHeapBlockCache[iHeap][nBlockSize][nBlock]) == NULL ||
+            (nBlockCachedSize = BLOCK_SIZE(*pBlockCached)) < nSize) {
+            gapHeapBlockCache[iHeap][nBlockSize][nBlock] = pBlock;
+            return true;
         }
     }
 
-    return 0;
+    return false;
 }
+
+static bool xlHeapBlockCacheClear(s32 iHeap, u32* pBlock) {
+    s32 nSize;
+    s32 nBlock;
+    s32 nBlockSize;
+
+    nSize = BLOCK_SIZE(*pBlock);
+    if (nSize == 0) {
+        return false;
+    }
+
+    if (nSize < 8) {
+        nBlockSize = 0;
+    } else if (nSize < 16) {
+        nBlockSize = 1;
+    } else if (nSize < 32) {
+        nBlockSize = 2;
+    } else if (nSize < 64) {
+        nBlockSize = 3;
+    } else if (nSize < 128) {
+        nBlockSize = 4;
+    } else if (nSize < 256) {
+        nBlockSize = 5;
+    } else if (nSize < 512) {
+        nBlockSize = 6;
+    } else if (nSize < 1024) {
+        nBlockSize = 7;
+    } else if (nSize < 4096) {
+        nBlockSize = 8;
+    } else if (nSize < 8192) {
+        nBlockSize = 9;
+    } else {
+        nBlockSize = 10;
+    }
+
+    for (nBlock = 0; nBlock < 32; nBlock++) {
+        if (gapHeapBlockCache[iHeap][nBlockSize][nBlock] == pBlock) {
+            gapHeapBlockCache[iHeap][nBlockSize][nBlock] = NULL;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool xlHeapBlockCacheReset(s32 iHeap) {
+    s32 nBlockSize;
+    u32* pBlock;
+    u32 nBlock;
+
+    gnHeapTakeCacheCount[iHeap] = 0;
+    gnHeapFreeCount[iHeap] = 0;
+    gnHeapTakeCount[iHeap] = 0;
+
+    for (nBlockSize = 0; nBlockSize < 11; nBlockSize++) {
+        for (nBlock = 0; nBlock < 32; nBlock++) {
+            gapHeapBlockCache[iHeap][nBlockSize][nBlock] = NULL;
+        }
+    }
+
+    pBlock = gpHeapBlockFirst[iHeap];
+    while ((nBlockSize = BLOCK_SIZE(*pBlock)) != 0) {
+        if (BLOCK_IS_FREE(*pBlock)) {
+            xlHeapBlockCacheAdd(iHeap, pBlock);
+        }
+        pBlock += nBlockSize + 1;
+    }
+
+    return true;
+}
+
+static inline bool xlHeapFindUpperBlock(s32 iHeap, s32 nSize, u32** ppBlock, s32* pnBlockSize) {
+    s32 nBlockSize;
+    u32 nBlock;
+    u32* pBlock;
+    u32* pBlockBest;
+    u32* pBlockNext;
+
+    pBlockBest = NULL;
+    pBlock = gpHeapBlockFirst[iHeap];
+
+    while ((u32)pBlock < (u32)gpHeapBlockLast) {
+        nBlock = *pBlock;
+        nBlockSize = BLOCK_SIZE(nBlock) & 0xFFFFFF;
+        if (CHKSUM_LO(nBlock) != CHKSUM_HI(nBlock)) {
+            return false;
+        }
+        if (BLOCK_IS_FREE(nBlock) && nBlockSize >= nSize) {
+            pBlockBest = pBlock;
+        }
+        pBlock += nBlockSize + 1;
+    }
+
+    if (pBlockBest == NULL) {
+        return false;
+    }
+
+    nBlockSize = BLOCK_SIZE(*pBlockBest);
+    xlHeapBlockCacheClear(iHeap, pBlockBest);
+
+    if (nBlockSize > nSize + 0x20) {
+        pBlockNext = pBlockBest + ((nBlockSize - nSize) - 1);
+        *pBlockNext = MAKE_BLOCK(nSize, FLAG_FREE);
+        xlHeapBlockCacheAdd(iHeap, pBlockBest);
+        *ppBlock = pBlockNext;
+        *pnBlockSize = BLOCK_SIZE(*pBlockNext);
+    } else {
+        *ppBlock = pBlockBest;
+        *pnBlockSize = BLOCK_SIZE(*pBlockBest);
+    }
+    return true;
+}
+
+// https://decomp.me/scratch/2K9NF
+#ifndef NON_MATCHING
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapCompact.s")
 #else
-s32 xlHeapBlockCacheAdd(s32 heap, u32* blk);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapBlockCacheAdd.s")
-#endif
+bool xlHeapCompact(s32 iHeap) {
+    s32 nCount;
+    s32 nBlockLarge;
+    s32 nBlockSize;
+    s32 nBlockNextSize;
+    s32 anBlockLarge[6];
+    u32 nBlock;
+    u32* pBlock;
+    u32* pBlockPrevious;
+    u32 nBlockNext;
+    u32* pBlockNext;
 
-s32 xlHeapBlockCacheClear(s32 heap, u32 *arg1) {
-    s32 idx;
-    s32 i;
+    pBlockPrevious = NULL;
+    pBlock = gpHeapBlockFirst[iHeap];
+    while (nBlock = *pBlock, (nBlockSize = BLOCK_SIZE(*pBlock)) != 0) {
+        pBlockNext = pBlock + nBlockSize + 1;
+        nBlockNext = *pBlockNext;
 
-    if(NUM_WORDS(*arg1) == 0) {
-        return 0;
-    }
-
-    if(NUM_WORDS(*arg1) < 8) {
-        idx = 0;
-    } else if(NUM_WORDS(*arg1) < 16) {
-        idx = 1;
-    } else if(NUM_WORDS(*arg1) < 32) {
-        idx = 2;
-    } else if(NUM_WORDS(*arg1) < 64) {
-        idx = 3;
-    } else if(NUM_WORDS(*arg1) < 128) {
-        idx = 4;
-    } else if(NUM_WORDS(*arg1) < 256) {
-        idx = 5;
-    } else if(NUM_WORDS(*arg1) < 512) {
-        idx = 6;
-    } else if(NUM_WORDS(*arg1) < 1024) {
-        idx = 7;
-    } else if(NUM_WORDS(*arg1) < 4096) {
-        idx = 8;
-    } else if(NUM_WORDS(*arg1) < 8192) {
-        idx = 9;
-    } else {
-        idx = 10;
-    }
-
-    for(i = 0; i < 32; i++) {
-        if(gapHeapBlockCache[heap][idx][i] == arg1) {
-            gapHeapBlockCache[heap][idx][i] = NULL;
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-s32 xlHeapBlockCacheReset(int heap) {
-    int i;
-    int j;
-    u32 *tmp;
-
-    lbl_8025D1C0[heap] = 0;
-    lbl_8025D1C8[heap] = 0;
-    gnHeapTakeCacheCount[heap] = 0;
-
-    for(i = 0; i < 11; i++) {
-        for(j = 0; j < 32; j++) {
-            gapHeapBlockCache[heap][i][j] = NULL;
-        }
-    }
-
-    tmp = gpHeapBlockFirst[heap];
-
-    while(NUM_WORDS(*tmp)) {
-        s32 tmp2 = NUM_WORDS(*tmp);
-
-        if(IS_FREE(*tmp)) {
-            xlHeapBlockCacheAdd(heap, tmp);
-        }
-
-        tmp += tmp2 + 1;
-    }
-
-    return 1;
-}
-
-#ifdef NON_MATCHING
-s32 xlHeapCompact(s32 heap) {
-    s32 r8, r7, r6, r5, r4, r0;
-    u32 *cur = gpHeapBlockFirst[heap];
-    u32 *next;
-    u32 *prev = NULL;
-    s32 size;
-    u32 next_v;
-
-    while((size = *cur & 0xFFFFFF, size != 0)) {
-        next = cur + size + 1;
-        next_v = *next;
-
-        if(*cur & 0x1000000) {
-            if(r8 < size) {
-                r8 = size;
+        if (BLOCK_IS_FREE(nBlock)) {
+            for (nCount = 0; nCount < 6; nCount++) {
+                if (anBlockLarge[nCount] < nBlockSize) {
+                    anBlockLarge[nCount] = nBlockSize;
+                }
             }
 
-            if(r7 < size) {
-                r7 = size;
+            nBlockNextSize = BLOCK_SIZE(nBlockNext);
+            if (nBlockNextSize != 0 && BLOCK_IS_FREE(nBlockNext)) {
+                nBlockLarge = nBlockNextSize + 1;
+                nBlockSize += nBlockLarge;
+                pBlockNext += nBlockLarge;
             }
 
-            if(r6 < size) {
-                r6 = size;
-            }
-
-            if(r5 < size) {
-                r5 = size;
-            }
-
-            if(r4 < size) {
-                r4 = size;
-            }
-
-            if(r0 < size) {
-                r0 = size;
-            }
-
-            if((next_v & 0xFFFFFF) != 0 && (next_v & 0x1000000)) {
-                size += next_v + 1;
-                next = &next[(next_v & 0xFFFFFF) + 1];
-            }
-
-            if(prev != NULL && *prev & 0x1000000) {
-                u32 amt = (*prev & 0xFFFFFF) + size + 1;
-
-                *prev = (amt << 0x1A) | amt | 0x1000000;
+            if (pBlockPrevious != NULL && BLOCK_IS_FREE(*pBlockPrevious)) {
+                nBlockSize += BLOCK_SIZE(*pBlockPrevious) + 1;
+                *pBlockPrevious = MAKE_BLOCK(nBlockSize, FLAG_FREE);
             } else {
-                *cur = ((*cur & 0xFFFFFF) << 0x1A) | (*cur & 0xFFFFFF) | 0x1000000;
-                prev = cur;
+                *pBlock = MAKE_BLOCK(nBlockSize, FLAG_FREE);
+                pBlockPrevious = pBlock;
             }
         } else {
-            prev = cur;
+            pBlockPrevious = pBlock;
         }
-
-        cur = next;
+        pBlock = pBlockNext;
     }
 
-    xlHeapBlockCacheReset(heap);
-
-    return 1;
+    xlHeapBlockCacheReset(iHeap);
+    return true;
 }
-#else
-s32 xlHeapCompact(s32);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapCompact.s")
 #endif
 
-#ifdef NON_MATCHING
-s32 xlHeapTake(void **dst, size_t size) {
-    s32 block_found = 0;
-    s32 heap_idx = (size >> 30) & 1;
-    s32 align;
-    s32 words;
-    s32 stack_34;
-    u32 *new_block;
-    u32 i;
-    u32 uVar2;
-    u32 uVar5;
-    u32 *puVar6;
+bool xlHeapTake(void** ppHeap, s32 nByteCount) {
+    bool bValid;
+    s32 iHeap;
+    u32 nSizeExtra;
+    u32 iTry;
+    s32 nSize;
+    s32 nBlockSize;
+    s32 nBlockNextSize;
+    s32 nBlockNextNextSize;
+    u32 nBlock;
+    u32* pBlock;
+    u32* pBlockNext;
+    u32* pBlockNextNext;
 
-    *dst = NULL;
+    bValid = false;
+    iHeap = (nByteCount >> 30) & 1;
+    *ppHeap = NULL;
 
-    switch(size & 0x30000000) {
+    switch (nByteCount & 0x30000000) {
         case 0:
-            align = 3;
+            nSizeExtra = 3;
             break;
         case 0x10000000:
-            align = 7;
+            nSizeExtra = 7;
             break;
         case 0x20000000:
-            align = 15;
+            nSizeExtra = 15;
             break;
         case 0x30000000:
-            align = 31;
+            nSizeExtra = 31;
             break;
         default:
-            align = 0;
+            nSizeExtra = 0;
             break;
     }
 
-    words = ((size & 0x8FFFFFFF) + align) >> 2;
-
-    if(words < 1) {
-        return 0;
-    } else if(words > 0x1000000) {
-        return 0;
+    if ((nSize = ((nByteCount & 0x8FFFFFFF) + nSizeExtra) >> 2) < 1) {
+        return false;
+    }
+    if (nSize > 0x01000000) {
+        return false;
     }
 
-    i = 1;
-    do {
-        if(xlHeapBlockCacheGet(heap_idx, words, &new_block, &stack_34)) {
-            block_found = 1;
+    iTry = 0;
+    while (iTry++ < 8) {
+        if (xlHeapBlockCacheGet(iHeap, nSize, &pBlock, &nBlockSize)) {
+            bValid = true;
         } else {
-            void *last = gpHeapBlockLast[heap_idx];
-            new_block = gpHeapBlockFirst[heap_idx];
+            pBlock = gpHeapBlockFirst[iHeap];
+            while ((u32)pBlock < (u32)gpHeapBlockLast[iHeap]) {
+                nBlock = *pBlock;
+                nBlockSize = BLOCK_SIZE(nBlock);
 
-            while(new_block < last) {
-                if(CHKSUM_LO(*new_block) != CHKSUM_HI(*new_block)) {
-                    return 0;
+                if (CHKSUM_LO(nBlock) != CHKSUM_HI(nBlock)) {
+                    return false;
                 }
 
-                stack_34 = *new_block & 0xFFFFFF;
-
-                if(IS_FREE(*new_block) && stack_34 >= words) {
-                    block_found = 1;
+                if (BLOCK_IS_FREE(nBlock) && nBlockSize >= nSize) {
+                    bValid = true;
                     break;
                 }
 
-                new_block += stack_34 + 1;
+                pBlock += nBlockSize + 1;
             }
         }
 
-        if(block_found) {
-            if(words == stack_34 - 1) {
-                words++;
+        if (bValid) {
+            if (nSize == nBlockSize - 1) {
+                nSize++;
             }
 
-            if(words < stack_34) {
-                uVar2 = new_block[stack_34 + 1];
-                uVar5 = (stack_34 - words) - 1;
-                puVar6 = new_block + words + 1;
+            if (nSize < nBlockSize) {
+                pBlockNext = pBlock + nSize + 1;
+                nBlockNextSize = nBlockSize - nSize - 1;
 
-                if(NUM_WORDS(uVar2) && IS_FREE(uVar2)) {
-                    xlHeapBlockCacheClear(heap_idx, new_block + stack_34 + 1);
-                    uVar5 += NUM_WORDS(uVar2) + 1;
+                pBlockNextNext = pBlock + nBlockSize + 1;
+                if ((nBlockNextNextSize = BLOCK_SIZE(*pBlockNextNext)) != 0 && BLOCK_IS_FREE(*pBlockNextNext)) {
+                    xlHeapBlockCacheClear(iHeap, pBlockNextNext);
+                    nBlockNextSize += nBlockNextNextSize + 1;
                 }
 
-                *puVar6 = uVar5 << 0x1A | uVar5 | 0x1000000;
-                xlHeapBlockCacheAdd(heap_idx, puVar6);
+                *pBlockNext = MAKE_BLOCK(nBlockNextSize, FLAG_FREE);
+                xlHeapBlockCacheAdd(iHeap, pBlockNext);
             }
 
-            *new_block = (words << 0x1A) | words | 0x2000000;
-            gnHeapTakeCacheCount[heap_idx]++;
+            *pBlock = MAKE_BLOCK(nSize, FLAG_TAKEN);
+            gnHeapTakeCount[iHeap] += 1;
 
-            for(new_block = new_block + 1; ((u32)new_block & align) != 0; new_block++) {
-                *new_block = 0x1234abcd;
+            pBlock++;
+            while (((u32)pBlock & nSizeExtra) != 0) {
+                *pBlock++ = PADDING_MAGIC;
             }
 
-            *dst = new_block;
-            return 1;
+            *ppHeap = pBlock;
+            return true;
         }
 
-        if(!xlHeapCompact(heap_idx)) {
-            return 0;
+        if (!xlHeapCompact(iHeap)) {
+            return false;
         }
-    } while(i++ < 8);
+    }
 
-    return 0;
+    return false;
 }
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapTake.s")
-#endif
 
-#ifdef NON_MATCHING
-s32 xlHeapFree(void **ptr) {
-    s32 heap = 0;
-    s32 words, next_words;
-    u32 *p, *next;
+bool xlHeapFree(void** ppHeap) {
+    s32 iHeap;
+    s32 nBlockSize;
+    s32 nBlockNextSize;
+    u32* pBlock;
+    u32* pBlockNext;
 
-    for(heap = 0; heap < 2; heap++) {
-        if(gpHeapBlockFirst[heap] <= *ptr && gpHeapBlockLast[heap] >= *ptr) {
+    for (iHeap = 0; iHeap < 2; iHeap++) {
+        if ((u32)gpHeapBlockFirst[iHeap] <= (u32)*ppHeap && (u32)gpHeapBlockLast[iHeap] >= (u32)*ppHeap) {
             break;
         }
     }
 
-    if(heap == 2) {
-        return 0;
+    if (iHeap == 2) {
+        return false;
     }
 
-    p = (u32*)*ptr - 1;
-    while(*p == 0x1234abcd) {
-        p--;
+    pBlock = (u32*)*ppHeap - 1;
+    while (*pBlock == PADDING_MAGIC) {
+        pBlock--;
     }
 
-    words = NUM_WORDS(*p);
-    if(IS_FREE(*p)) {
-        return 0;
+    nBlockSize = BLOCK_SIZE(*pBlock);
+    if (BLOCK_IS_FREE(*pBlock)) {
+        return false;
     }
 
-    if(!IS_TAKEN(*p)) {
-        return 0;
+    if (!BLOCK_IS_TAKEN(*pBlock)) {
+        return false;
     }
 
-    if(CHKSUM_HI(*p) != CHKSUM_LO(*p)) {
-        return 0;
+    if (CHKSUM_HI(*pBlock) != CHKSUM_LO(nBlockSize)) {
+        return false;
     }
 
-    next = &p[words];
-    next_words = NUM_WORDS(*next);
-    if(next_words != 0 && IS_FREE(*next)) {
-        xlHeapBlockCacheClear(heap, next + 1);
-        words += next_words + 1;
+    pBlockNext = pBlock + nBlockSize + 1;
+    if ((nBlockNextSize = BLOCK_SIZE(*pBlockNext)) != 0 && BLOCK_IS_FREE(*pBlockNext)) {
+        xlHeapBlockCacheClear(iHeap, pBlockNext);
+        nBlockSize += nBlockNextSize + 1;
     }
 
-    *p = (words << 0x1A) | words | 0x1000000;
-    xlHeapBlockCacheAdd(heap, p);
-    lbl_8025D1C8[heap]++;
-    *ptr = NULL;
+    *pBlock = MAKE_BLOCK(nBlockSize, FLAG_FREE);
+    xlHeapBlockCacheAdd(iHeap, pBlock);
 
-    return 1;
+    gnHeapFreeCount[iHeap]++;
+    *ppHeap = NULL;
+
+    return true;
 }
+
+bool xlHeapCopy(void* pHeapTarget, void* pHeapSource, s32 nByteCount) {
+    u8* pSource8;
+    u8* pTarget8;
+    u32* pSource32;
+    u32* pTarget32;
+
+    pSource32 = (u32*)pHeapSource;
+    pTarget32 = (u32*)pHeapTarget;
+    if ((u32)pSource32 % 4 == 0 && (u32)pTarget32 % 4 == 0) {
+        for (; nByteCount >= 64; nByteCount -= 64) {
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+        }
+
+        for (; nByteCount >= 32; nByteCount -= 32) {
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+            *pTarget32++ = *pSource32++;
+        }
+
+        for (; nByteCount >= 4; nByteCount -= 4) {
+            *pTarget32++ = *pSource32++;
+        }
+    }
+
+    pSource8 = (u8*)pSource32;
+    pTarget8 = (u8*)pTarget32;
+    for (; nByteCount >= 16; nByteCount -= 16) {
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+    }
+
+    for (; nByteCount >= 8; nByteCount -= 8) {
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+        *pTarget8++ = *pSource8++;
+    }
+
+    for (; nByteCount > 0; nByteCount--) {
+        *pTarget8++ = *pSource8++;
+    }
+
+    return true;
+}
+
+bool xlHeapFill8(void* pHeap, s32 nByteCount, u32 nData) {
+    u8* pnTarget = pHeap;
+    s32 nWordCount = nByteCount;
+
+    for (; nWordCount > 16; nWordCount -= 16) {
+        pnTarget[0] = nData;
+        pnTarget[1] = nData;
+        pnTarget[2] = nData;
+        pnTarget[3] = nData;
+        pnTarget[4] = nData;
+        pnTarget[5] = nData;
+        pnTarget[6] = nData;
+        pnTarget[7] = nData;
+        pnTarget[8] = nData;
+        pnTarget[9] = nData;
+        pnTarget[10] = nData;
+        pnTarget[11] = nData;
+        pnTarget[12] = nData;
+        pnTarget[13] = nData;
+        pnTarget[14] = nData;
+        pnTarget[15] = nData;
+        pnTarget += 16;
+    }
+
+    for (; nWordCount > 0; nWordCount--) {
+        *pnTarget++ = nData;
+    }
+
+    return true;
+}
+
+bool xlHeapFill32(void* pHeap, s32 nByteCount, u32 nData) {
+    u32* pnTarget = pHeap;
+    s32 nWordCount = nByteCount >> 2;
+
+    for (; nWordCount > 16; nWordCount -= 16) {
+        pnTarget[0] = nData;
+        pnTarget[1] = nData;
+        pnTarget[2] = nData;
+        pnTarget[3] = nData;
+        pnTarget[4] = nData;
+        pnTarget[5] = nData;
+        pnTarget[6] = nData;
+        pnTarget[7] = nData;
+        pnTarget[8] = nData;
+        pnTarget[9] = nData;
+        pnTarget[10] = nData;
+        pnTarget[11] = nData;
+        pnTarget[12] = nData;
+        pnTarget[13] = nData;
+        pnTarget[14] = nData;
+        pnTarget[15] = nData;
+        pnTarget += 16;
+    }
+
+    for (; nWordCount > 0; nWordCount--) {
+        *pnTarget++ = nData;
+    }
+
+    return true;
+}
+
+static bool __xlHeapGetFree(s32 iHeap, s32* pnFreeBytes) {
+    s32 nBlockSize;
+    s32 nFree;
+    s32 nCount;
+    u32* pBlock;
+    u32 nBlock;
+
+    if (!xlHeapCompact(iHeap)) {
+        return false;
+    }
+
+    pBlock = gpHeapBlockFirst[iHeap];
+    nFree = 0;
+    while (pBlock < gpHeapBlockLast[iHeap]) {
+        nBlock = *pBlock;
+        nBlockSize = BLOCK_SIZE(nBlock);
+
+        if (CHKSUM_LO(nBlock) != CHKSUM_HI(nBlock)) {
+            return false;
+        }
+
+        if (BLOCK_IS_FREE(nBlock)) {
+            nFree += nBlockSize * 4;
+        }
+
+        pBlock += nBlockSize + 1;
+    }
+
+    *pnFreeBytes = nFree;
+    return true;
+}
+
+bool xlHeapGetFree(s32* pnFreeBytes) { return __xlHeapGetFree(0, pnFreeBytes); }
+
+#ifndef NON_MATCHING
+#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapSetup.s")
 #else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapFree.s")
-#endif
-
-s32 xlHeapCopy(void* dst, void* src, int len) {
-    if (((u32)src % 4) == 0 && ((u32)dst % 4) == 0) {
-        for (; len >= 0x40; len -= 0x40) {
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-        }
-
-        for (; len >= 0x20; len -= 0x20) {
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-            *((u32*)dst)++ = *((u32*)src)++;
-        }
-
-        for (; len >= 4; len -= 0x4) {
-            *((u32*)dst)++ = *((u32*)src)++;
-        }
-    }
-
-    for (; len >= 0x10; len -= 0x10) {
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-    }
-
-    for (; len >= 8; len -= 0x8) {
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-        *((u8*)dst)++ = *((u8*)src)++;
-    }
-
-    for (; len > 0; len--) {
-        *((u8*)dst)++ = *((u8*)src)++;
-    }
-
-    return 1;
-}
-
-s32 xlHeapFill(u8* src, s32 len, u8 fill) {
-    s32 cnt;
-    for (cnt = len; cnt > 0x10; cnt -= 0x10) {
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-    }
-
-    for (; cnt > 0; cnt--) {
-        *src++ = fill;
-    }
-
-    return 1;
-}
-
-s32 xlHeapFill32(u32* src, s32 len, u32 fill) {
-    s32 cnt;
-
-    for (cnt = len >> 2; cnt > 0x10; cnt -= 0x10) {
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-        *src++ = fill;
-    }
-
-    for (; cnt > 0; cnt--) {
-        *src++ = fill;
-    }
-
-    return 1;
-}
-
-s32 __xlHeapGetFree(s32 heap, u32* free) {
-    u32 total_free;
-    u32* hdr_p;
-    u32 hdr;
-    u32 blk_size;
-
-    if (!xlHeapCompact(heap)) {
-        return 0;
-    }
-
-    for (hdr_p = gpHeapBlockFirst[heap], total_free = 0; hdr_p < gpHeapBlockLast[heap];) {
-        hdr = *hdr_p;
-        blk_size = NUM_WORDS(hdr);
-
-        if (CHKSUM_LO(hdr) != CHKSUM_HI(hdr)) {
-            return 0;
-        }
-
-        if (IS_FREE(hdr)) {
-            total_free += blk_size * 4;
-        }
-
-        hdr_p += blk_size + 1;
-    }
-    *free = total_free;
-    return 1;
-}
-
-s32 xlHeapGetFree(u32* free) {
-    return __xlHeapGetFree(0, free);
-}
-
-#ifdef NON_MATCHING
 s32 xlHeapSetup(void) {
     s32 gpHeap_align[2];
     s32 new_lo[2];
@@ -628,12 +683,10 @@ s32 xlHeapSetup(void) {
 
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapSetup.s")
 #endif
 
-s32 xlHeapReset(void) {
-    OSSetArena1Lo(gpHeapOS[0]);
-    OSSetArena2Lo(gpHeapOS[1]);
-    return 1;
+bool xlHeapReset(void) {
+    OSSetMEM1ArenaLo(gnHeapOS[0]);
+    OSSetMEM2ArenaLo(gnHeapOS[1]);
+    return true;
 }
