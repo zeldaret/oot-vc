@@ -1,675 +1,1205 @@
-#include "cpu.h"
-#include "mips.h"
-#include "rom.h"
-#include "xlHeap.h"
-#include "system.h"
-#include "stddef.h"
+#include "emulator/cpu.h"
+#include "emulator/cpu_jumptable.h"
+#include "emulator/frame.h"
+#include "emulator/library.h"
+#include "emulator/ram.h"
+#include "emulator/rom.h"
+#include "emulator/rsp.h"
+#include "emulator/system.h"
+#include "emulator/vc64_RVL.h"
+#include "emulator/vi.h"
+#include "emulator/xlCoreRVL.h"
+#include "emulator/xlHeap.h"
+#include "emulator/xlObject.h"
+#include "emulator/xlPostRVL.h"
+#include "macros.h"
 #include "math.h"
-#include "cache.h"
-#include "os.h"
+#include "revolution/vi.h"
 
-s32 func_8003E604(cpu_class_t *cpu, s32, s32);
-s32 rspGetBuffer(void *, void **, u32, void *);
-s32 cpuEvent(void *obj, s32 event, void *arg);
-s32 cpuFindFunction(cpu_class_t *cpu, u32 addr, recomp_node_t **out_node);
-s32 libraryTestFunction(void *library, recomp_node_t *node);
-void invalidInst();
-s32 rspUpdate(void *, s32);
-s32 videoForceRetrace(void *);
-void *VISetPostRetraceCallback(void*);
+static inline bool cpuMakeCachedAddress(Cpu* pCPU, s32 nAddressN64, s32 nAddressHost, CpuFunction* pFunction);
+static bool cpuFindCachedAddress(Cpu* pCPU, s32 nAddressN64, s32* pnAddressHost);
+static bool cpuSetTLB(Cpu* pCPU, s32 iEntry);
+static bool cpuHeapReset(u32* array, s32 count);
+static bool cpuDMAUpdateFunction(Cpu* pCPU, s32 start, s32 end);
+static void treeCallerInit(CpuCallerID* block, s32 total);
+static bool treeInit(Cpu* pCPU, s32 root_address);
+static bool treeKill(Cpu* pCPU);
+static bool treeKillNodes(Cpu* pCPU, CpuFunction* tree);
+static bool treeAdjustRoot(Cpu* pCPU, s32 new_start, s32 new_end);
+static inline bool treeSearch(Cpu* pCPU, s32 target, CpuFunction** node);
+static bool treeSearchNode(CpuFunction* tree, s32 target, CpuFunction** node);
+bool treeInsert(Cpu* pCPU, s32 start, s32 end);
+static bool treeInsertNode(CpuFunction** tree, s32 start, s32 end, CpuFunction** ppFunction);
+static bool treeBalance(CpuTreeRoot* root);
+static bool treeKillReason(Cpu* pCPU, s32* value);
+static bool treeKillRange(Cpu* pCPU, CpuFunction* tree, s32 start, s32 end);
+static bool treeTimerCheck(Cpu* pCPU);
+static bool treeCleanUp(Cpu* pCPU, CpuTreeRoot* root);
+static bool treeCleanNodes(Cpu* pCPU, CpuFunction* top);
+static inline bool treeForceCleanUp(Cpu* pCPU, CpuFunction* tree, s32 kill_limit);
+static bool treeForceCleanNodes(Cpu* pCPU, CpuFunction* tree, s32 kill_limit);
+static bool treePrintNode(Cpu* pCPU, CpuFunction* tree, s32 print_flag, s32* left, s32* right);
+static inline s32 treeMemory(Cpu* pCPU);
 
-extern char cpu_class_name[];
-extern void (*lbl_8025CFE8)();
-extern u32 *cpuCompile_DSLLV_function;
-extern u32 *cpuCompile_DSRLV_function;
-extern u32 *cpuCompile_DSRAV_function;
-extern u32 *cpuCompile_DMULT_function;
-extern u32 *cpuCompile_DMULTU_function;
-extern u32 *cpuCompile_DDIV_function;
-extern u32 *cpuCompile_DDIVU_function;
-extern u32 *cpuCompile_DADD_function;
-extern u32 *cpuCompile_DADDU_function;
-extern u32 *cpuCompile_DSUB_function;
-extern u32 *cpuCompile_DSUBU_function;
-extern u32 *cpuCompile_S_SQRT_function;
-extern u32 *cpuCompile_D_SQRT_function;
-extern u32 *cpuCompile_W_CVT_SD_function;
-extern u32 *cpuCompile_L_CVT_SD_function;
-extern u32 *cpuCompile_CEIL_W_function;
-extern u32 *cpuCompile_FLOOR_W_function;
-extern u32 *cpuCompile_ROUND_W_function;
-extern u32 *cpuCompile_TRUNC_W_function;
-extern u32 *cpuCompile_LB_function;
-extern u32 *cpuCompile_LH_function;
-extern u32 *cpuCompile_LW_function;
-extern u32 *cpuCompile_LBU_function;
-extern u32 *cpuCompile_LHU_function;
-extern u32 *cpuCompile_SB_function;
-extern u32 *cpuCompile_SH_function;
-extern u32 *cpuCompile_SW_function;
-extern u32 *cpuCompile_LDC_function;
-extern u32 *cpuCompile_SDC_function;
-extern u32 *cpuCompile_LWL_function;
-extern u32 *cpuCompile_LWR_function;
-
-u64 get_cp0_reg_mask[] = { 
-    0x000000008000003F, 0x000000000000003F, 0x000000003FFFFFFF, 0x000000003FFFFFFF,
-    0xFFFFFFFFFFFFFFF0, 0x0000000001FFE000, 0x000000000000001F, 0x0000000000000000,
-    0xFFFFFFFFFFFFFFFF, 0x00000000FFFFFFFF, 0x00000000FFFFE0FF, 0x00000000FFFFFFFF,
-    0x00000000FFFFFFFF, 0x00000000F000FF7C, 0xFFFFFFFFFFFFFFFF, 0x000000000000FFFF,
-    0x00000000FFFFEFFF, 0x00000000FFFFFFFF, 0x00000000FFFFFFFB, 0x000000000000000F,
-    0x00000000FFFFFFF0, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
-    0x0000000000000000, 0x0000000000000000, 0x00000000000000FF, 0x00000000FFBFFFFF,
-    0x00000000FFFFFFFF, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF, 0x0000000000000000
+s64 ganMaskGetCP0[] = {
+    0x000000008000003F, 0x000000000000003F, 0x000000003FFFFFFF, 0x000000003FFFFFFF, 0xFFFFFFFFFFFFFFF0,
+    0x0000000001FFE000, 0x000000000000001F, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF, 0x00000000FFFFFFFF,
+    0x00000000FFFFE0FF, 0x00000000FFFFFFFF, 0x00000000FFFFFFFF, 0x00000000F000FF7C, 0xFFFFFFFFFFFFFFFF,
+    0x000000000000FFFF, 0x00000000FFFFEFFF, 0x00000000FFFFFFFF, 0x00000000FFFFFFFB, 0x000000000000000F,
+    0x00000000FFFFFFF0, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
+    0x0000000000000000, 0x00000000000000FF, 0x00000000FFBFFFFF, 0x00000000FFFFFFFF, 0x0000000000000000,
+    0xFFFFFFFFFFFFFFFF, 0x0000000000000000,
 };
 
-u64 set_cp0_reg_mask[] = {
-    0x000000000000003F, 0x000000000000003F, 0x000000003FFFFFFF, 0x000000003FFFFFFF,
-    0xFFFFFFFFFFFFFFF0, 0x0000000001FFE000, 0x000000000000001F, 0x0000000000000000,
-    0xFFFFFFFFFFFFFFFF, 0x00000000FFFFFFFF, 0x00000000FFFFE0FF, 0x00000000FFFFFFFF,
-    0x00000000FFFFFFFF, 0x0000000000000300, 0xFFFFFFFFFFFFFFFF, 0x000000000000FFFF,
-    0x00000000FFFFEFFF, 0x00000000FFFFFFFF, 0x00000000FFFFFFFB, 0x000000000000000F,
-    0x00000000FFFFFFF0, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
-    0x0000000000000000, 0x0000000000000000, 0x00000000000000FF, 0x00000000FFBFFFFF,
-    0x00000000FFFFFFFF, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF, 0x0000000000000000
+s64 ganMaskSetCP0[] = {
+    0x000000000000003F, 0x000000000000003F, 0x000000003FFFFFFF, 0x000000003FFFFFFF, 0xFFFFFFFFFFFFFFF0,
+    0x0000000001FFE000, 0x000000000000001F, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF, 0x00000000FFFFFFFF,
+    0x00000000FFFFE0FF, 0x00000000FFFFFFFF, 0x00000000FFFFFFFF, 0x0000000000000300, 0xFFFFFFFFFFFFFFFF,
+    0x000000000000FFFF, 0x00000000FFFFEFFF, 0x00000000FFFFFFFF, 0x00000000FFFFFFFB, 0x000000000000000F,
+    0x00000000FFFFFFF0, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
+    0x0000000000000000, 0x00000000000000FF, 0x00000000FFBFFFFF, 0x00000000FFFFFFFF, 0x0000000000000000,
+    0xFFFFFFFFFFFFFFFF, 0x0000000000000000,
 };
 
-u8 lbl_80170980[] = {
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+u8 Opcode[] = {
+    true, true, true, true,  true, true, true, true, true, true, true, true,  true,  true,  true,  true,
+    true, true, true, false, true, true, true, true, true, true, true, true,  false, false, false, true,
+    true, true, true, true,  true, true, true, true, true, true, true, true,  true,  true,  true,  true,
+    true, true, true, false, true, true, true, true, true, true, true, false, true,  true,  true,  true,
 };
 
-u8 lbl_801709C0[] = {
-    1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1,
-    1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1,
+u8 SpecialOpcode[] = {
+    true, false, true, true, true, false, true, true,  true,  true,  false, false, true, true,  false, true,
+    true, true,  true, true, true, false, true, true,  true,  true,  true,  true,  true, true,  true,  true,
+    true, true,  true, true, true, true,  true, true,  false, false, true,  true,  true, true,  true,  true,
+    true, true,  true, true, true, false, true, false, true,  false, true,  true,  true, false, true,  true,
 };
 
-u8 lbl_80170A00[] = {
-    1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-    1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+u8 RegimmOpcode[] = {
+    true, true, true, true, false, false, false, false, true,  true,  true,  true,  true,  false, true,  false,
+    true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false,
 };
 
-u32 lbl_80170A20[] = {
-    0x8F480018, 0x11000014, 0x00000000, 0x4448F800, 0x00000000
+s32 ganOpcodeSaveFP1[] = {
+    0x8F480018, 0x11000014, 0x00000000, 0x4448F800, 0x00000000,
 };
 
-u32 lbl_80170A20_2[] = {
-    0x8CBB0018, 0x1360000A, 0x00000000, 0x445BF800, 0x00000000
+s32 ganOpcodeSaveFP2_0[] = {
+    0x8CBB0018, 0x1360000A, 0x00000000, 0x445BF800, 0x00000000,
 };
 
-u32 lbl_80170A20_3[] = {
-    0x13600009, 0xACBF011C, 0x445BF800
+s32 ganOpcodeSaveFP2_1[] = {
+    0x13600009,
+    0xACBF011C,
+    0x445BF800,
 };
 
-u32 lbl_80170A20_4[] = {
-    0x8F5B0018, 0x13600013, 0x00000000, 0x8F5B012C, 0x44DBF800
+s32 ganOpcodeLoadFP[] = {
+    0x8F5B0018, 0x13600013, 0x00000000, 0x8F5B012C, 0x44DBF800,
 };
 
-s32 cpuHackHandler(cpu_class_t *cpu) {
-    s32 tmp1 = 0;
-    s32 tmp2 = 0;
-    s32 tmp3 = 0;
-    u32 *buf;
-    s32 ram_size;
-    s32 i;
+#ifndef NON_MATCHING
+void* jumptable_80170A68[] = {
+    &lbl_8000E130, &lbl_8000E260, &lbl_8000E25C, &lbl_8000E25C, &lbl_8000E25C, &lbl_8000E25C, &lbl_8000E25C,
+    &lbl_8000E260, &lbl_8000E260, &lbl_8000E164, &lbl_8000E25C, &lbl_8000E16C, &lbl_8000E1C8, &lbl_8000E1EC,
+    &lbl_8000E234, &lbl_8000E260, &lbl_8000E23C, &lbl_8000E25C, &lbl_8000E25C, &lbl_8000E25C, &lbl_8000E25C,
+    &lbl_8000E260, &lbl_8000E260, &lbl_8000E260, &lbl_8000E260, &lbl_8000E260, &lbl_8000E25C, &lbl_8000E260,
+    &lbl_8000E25C, &lbl_8000E25C, &lbl_8000E25C, &lbl_8000E260,
+};
+#else
+void* jumptable_80170A68[] = {0};
+#endif
 
-    if(xlObjectTest(gSystem->ram, &gClassRAM) && ramGetBuffer(gSystem->ram, (void**)&buf, 0, NULL)) {
-        if(!ramGetSize(gSystem->ram, &ram_size)) {
-            return 0;
+#ifndef NON_MATCHING
+void* jumptable_80170AE8[] = {
+    &lbl_8000E3F4, &lbl_8000E2D4, &lbl_8000E3F4, &lbl_8000E3F4, &lbl_8000E3F4, &lbl_8000E3F4, &lbl_8000E3F4,
+    &lbl_8000E37C, &lbl_8000E38C, &lbl_8000E364, &lbl_8000E3F4, &lbl_8000E36C, &lbl_8000E3F4, &lbl_8000E3F4,
+    &lbl_8000E374, &lbl_8000E3F4, &lbl_8000E3F4, &lbl_8000E3F4, &lbl_8000E3F4, &lbl_8000E3F4, &lbl_8000E3F4,
+    &lbl_8000E394, &lbl_8000E3A4, &lbl_8000E3B4, &lbl_8000E3C4, &lbl_8000E3D4, &lbl_8000E3F4, &lbl_8000E3F4,
+    &lbl_8000E3F4, &lbl_8000E3F4, &lbl_8000E3F4, &lbl_8000E3E4,
+};
+#else
+void* jumptable_80170AE8[] = {0};
+#endif
+
+s32 ganMapGPR[] = {
+    0x0000000A, 0x0000000B, 0x0000000C, 0x0000000E, 0x0000000F, 0x00000010, 0x00000011, 0x00000012,
+    0x00000013, 0x00000014, 0x00000015, 0x00000016, 0x00000017, 0x00000018, 0x00000019, 0x0000001A,
+    0x00000110, 0x00000111, 0x00000112, 0x00000113, 0x00000114, 0x00000115, 0x00000116, 0x00000117,
+    0x0000001B, 0x0000001C, 0x0000001D, 0x0000001E, 0x0000011C, 0x0000001F, 0x0000011E, 0x0000011F,
+};
+
+#ifndef NON_MATCHING
+void* jumptable_80170BE8[] = {
+    &lbl_8000E5DC, &lbl_8000E64C, &lbl_8000E64C, &lbl_8000E5DC, &lbl_8000E5DC, &lbl_8000E64C, &lbl_8000E5DC,
+    &lbl_8000E5DC, &lbl_8000E64C, &lbl_8000E5DC, &lbl_8000E5DC, &lbl_8000E5DC, &lbl_8000E5DC, &lbl_8000E5DC,
+    &lbl_8000E5DC, &lbl_8000E5DC, &lbl_8000E5DC, &lbl_8000E5DC, &lbl_8000E5DC, &lbl_8000E5DC, &lbl_8000E5DC,
+    &lbl_8000E5DC, &lbl_8000E5DC, &lbl_8000E5DC, &lbl_8000E64C,
+};
+#else
+void* jumptable_80170BE8[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80170C4C[] = {
+    &lbl_8000E55C, &lbl_8000E588, &lbl_8000E638, &lbl_8000E640, &lbl_8000E648, &lbl_8000E648,
+    &lbl_8000E648, &lbl_8000E648, &lbl_8000E64C, &lbl_8000E64C, &lbl_8000E64C, &lbl_8000E64C,
+    &lbl_8000E64C, &lbl_8000E64C, &lbl_8000E64C, &lbl_8000E64C, &lbl_8000E5B8, &lbl_8000E60C,
+    &lbl_8000E64C, &lbl_8000E64C, &lbl_8000E648, &lbl_8000E648, &lbl_8000E648, &lbl_8000E648,
+};
+#else
+void* jumptable_80170C4C[] = {0};
+#endif
+
+char lbl_80170CAC[] = "CALLED: ceil_w single (%p)\n";
+char lbl_80170CC8[] = "CALLED: floor_w single (%p)\n";
+char lbl_80170CE8[] = "CALLED: ceil_w double (%p)\n";
+char lbl_80170D04[] = "CALLED: floor_w double (%p)\n";
+char lbl_80170D28[] = "ERROR: CVT_S_D\n";
+char lbl_80170D38[] = "ERROR: ADD_W\n";
+char lbl_80170D48[] = "ERROR: SUB_W\n";
+char lbl_80170D58[] = "ERROR: MUL_W\n";
+char lbl_80170D68[] = "ERROR: DIV_W\n";
+char lbl_80170D78[] = "ERROR: SQRT_W\n";
+char lbl_80170D88[] = "ERROR: ABS_W\n";
+char lbl_80170D98[] = "ERROR: MOVE_W\n";
+char lbl_80170DA8[] = "ERROR: NEG_W\n";
+char lbl_80170DB8[] = "ERROR: ROUND_W_W\n";
+char lbl_80170DCC[] = "ERROR: TRUNC_W_W\n";
+char lbl_80170DE0[] = "ERROR: CEIL_W_W\n";
+char lbl_80170DF4[] = "ERROR: FLOOR_W_W\n";
+char lbl_80170E08[] = "ERROR: CVT_W_W\n";
+char lbl_80170E18[] = "ERROR: C.F_W\n";
+char lbl_80170E28[] = "ERROR: C.UN_W\n";
+char lbl_80170E38[] = "ERROR: C.EQ_W\n";
+char lbl_80170E48[] = "ERROR: C.UEQ_W\n";
+char lbl_80170E58[] = "ERROR: C.OLT_W\n";
+char lbl_80170E68[] = "ERROR: C.ULT_W\n";
+char lbl_80170E78[] = "ERROR: C.OLE_W\n";
+char lbl_80170E88[] = "ERROR: C.ULE_W\n";
+char lbl_80170E98[] = "ERROR: C.SF_W\n";
+char lbl_80170EA8[] = "ERROR: C.NGLE_W\n";
+char lbl_80170EC0[] = "ERROR: C.SEQ_W\n";
+char lbl_80170ED0[] = "ERROR: C.NGL_W\n";
+char lbl_80170EE0[] = "ERROR: C.LT_W\n";
+char lbl_80170EF0[] = "ERROR: C.NGE_W\n";
+char lbl_80170F00[] = "ERROR: C.LE_W\n";
+char lbl_80170F10[] = "ERROR: C.NGT_W\n";
+char lbl_80170F20[] = "ERROR: ADD_L\n";
+char lbl_80170F30[] = "ERROR: SUB_L\n";
+char lbl_80170F40[] = "ERROR: MUL_L\n";
+char lbl_80170F50[] = "ERROR: DIV_L\n";
+char lbl_80170F60[] = "ERROR: SQRT_L\n";
+char lbl_80170F70[] = "ERROR: ABS_L\n";
+char lbl_80170F80[] = "ERROR: MOVE_L\n";
+char lbl_80170F90[] = "ERROR: NEG_L\n";
+char lbl_80170FA0[] = "ERROR: ROUND_W_L\n";
+char lbl_80170FB4[] = "ERROR: TRUNC_W_L\n";
+char lbl_80170FC8[] = "ERROR: CEIL_W_L\n";
+char lbl_80170FDC[] = "ERROR: FLOOR_W_L\n";
+char lbl_80170FF0[] = "ERROR: CVT_W_L\n";
+char lbl_80171000[] = "ERROR: C.F_L\n";
+char lbl_80171010[] = "ERROR: C.UN_L\n";
+char lbl_80171020[] = "ERROR: C.EQ_L\n";
+char lbl_80171030[] = "ERROR: C.UEQ_L\n";
+char lbl_80171040[] = "ERROR: C.OLT_L\n";
+char lbl_80171050[] = "ERROR: C.ULT_L\n";
+char lbl_80171060[] = "ERROR: C.OLE_L\n";
+char lbl_80171070[] = "ERROR: C.ULE_L\n";
+char lbl_80171080[] = "ERROR: C.SF_L\n";
+char lbl_80171090[] = "ERROR: C.NGLE_L\n";
+char lbl_801710A8[] = "ERROR: C.SEQ_L\n";
+char lbl_801710B8[] = "ERROR: C.NGL_L\n";
+char lbl_801710C8[] = "ERROR: C.LT_L\n";
+char lbl_801710D8[] = "ERROR: C.NGE_L\n";
+char lbl_801710E8[] = "ERROR: C.LE_L\n";
+char lbl_801710F8[] = "ERROR: C.NGT_L\n";
+
+#ifndef NON_MATCHING
+void* jumptable_80171108[] = {
+    &lbl_80025B34, &lbl_80025B64, &lbl_80025B94, &lbl_80025BC4, &lbl_80025BF4, &lbl_80025C0C, &lbl_80025C3C,
+    &lbl_80025C54, &lbl_80031A30, &lbl_80031A30, &lbl_80031A30, &lbl_80031A30, &lbl_80025C84, &lbl_80025C9C,
+    &lbl_80025CB4, &lbl_80025CCC, &lbl_80025F88, &lbl_80025F88, &lbl_80025F88, &lbl_80025F88, &lbl_80025F88,
+    &lbl_80025F88, &lbl_80025F88, &lbl_80025F88, &lbl_80025F88, &lbl_80025F88, &lbl_80025F88, &lbl_80025F88,
+    &lbl_80025F88, &lbl_80025F88, &lbl_80025F88, &lbl_80025F88, &lbl_80031A30, &lbl_80025CE4, &lbl_80025F88,
+    &lbl_80025F88, &lbl_80025E08, &lbl_80031A30, &lbl_80025F88, &lbl_80025F88, &lbl_80025F88, &lbl_80025F88,
+    &lbl_80025F88, &lbl_80025F88, &lbl_80025F88, &lbl_80025F88, &lbl_80025F88, &lbl_80025F88, &lbl_80025E20,
+    &lbl_80025E30, &lbl_80025E40, &lbl_80025E58, &lbl_80025E70, &lbl_80025E88, &lbl_80025EA0, &lbl_80025EB8,
+    &lbl_80025ED0, &lbl_80025EE0, &lbl_80025EF8, &lbl_80025F10, &lbl_80025F28, &lbl_80025F40, &lbl_80025F58,
+    &lbl_80025F70,
+};
+#else
+void* jumptable_80171108[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171208[] = {
+    &lbl_800256F4, &lbl_80025724, &lbl_80025754, &lbl_80025784, &lbl_800257B4, &lbl_800257CC, &lbl_800257FC,
+    &lbl_80025814, &lbl_80031A30, &lbl_80031A30, &lbl_80031A30, &lbl_80031A30, &lbl_80025844, &lbl_8002585C,
+    &lbl_80025874, &lbl_8002588C, &lbl_80025B08, &lbl_80025B08, &lbl_80025B08, &lbl_80025B08, &lbl_80025B08,
+    &lbl_80025B08, &lbl_80025B08, &lbl_80025B08, &lbl_80025B08, &lbl_80025B08, &lbl_80025B08, &lbl_80025B08,
+    &lbl_80025B08, &lbl_80025B08, &lbl_80025B08, &lbl_80025B08, &lbl_80031A30, &lbl_800258A4, &lbl_80025B08,
+    &lbl_80025B08, &lbl_80025988, &lbl_80031A30, &lbl_80025B08, &lbl_80025B08, &lbl_80025B08, &lbl_80025B08,
+    &lbl_80025B08, &lbl_80025B08, &lbl_80025B08, &lbl_80025B08, &lbl_80025B08, &lbl_80025B08, &lbl_800259A0,
+    &lbl_800259B0, &lbl_800259C0, &lbl_800259D8, &lbl_800259F0, &lbl_80025A08, &lbl_80025A20, &lbl_80025A38,
+    &lbl_80025A50, &lbl_80025A60, &lbl_80025A78, &lbl_80025A90, &lbl_80025AA8, &lbl_80025AC0, &lbl_80025AD8,
+    &lbl_80025AF0,
+};
+#else
+void* jumptable_80171208[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171308[] = {
+    &lbl_80021CB8, &lbl_80021EBC, &lbl_800220B8, &lbl_800222BC, &lbl_800224B8, &lbl_800225EC, &lbl_80022744,
+    &lbl_800227D8, &lbl_80031A30, &lbl_80031A30, &lbl_80031A30, &lbl_80031A30, &lbl_80022930, &lbl_80022A68,
+    &lbl_80022BA0, &lbl_80022CE8, &lbl_800256C8, &lbl_800256C8, &lbl_800256C8, &lbl_800256C8, &lbl_800256C8,
+    &lbl_800256C8, &lbl_800256C8, &lbl_800256C8, &lbl_800256C8, &lbl_800256C8, &lbl_800256C8, &lbl_800256C8,
+    &lbl_800256C8, &lbl_800256C8, &lbl_800256C8, &lbl_800256C8, &lbl_80031A30, &lbl_80022E30, &lbl_800256C8,
+    &lbl_800256C8, &lbl_80022E48, &lbl_80031A30, &lbl_800256C8, &lbl_800256C8, &lbl_800256C8, &lbl_800256C8,
+    &lbl_800256C8, &lbl_800256C8, &lbl_800256C8, &lbl_800256C8, &lbl_800256C8, &lbl_800256C8, &lbl_80022F80,
+    &lbl_80023028, &lbl_800230D0, &lbl_80023398, &lbl_80023660, &lbl_8002392C, &lbl_80023BF8, &lbl_80023EF8,
+    &lbl_800241F8, &lbl_800242A0, &lbl_800245A0, &lbl_80024868, &lbl_80024B30, &lbl_80024DFC, &lbl_800250C8,
+    &lbl_800253C8,
+};
+#else
+void* jumptable_80171308[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171408[] = {
+    &lbl_8001E130, &lbl_8001E340, &lbl_8001E548, &lbl_8001E758, &lbl_8001E960, &lbl_8001EA9C, &lbl_8001EBFC,
+    &lbl_8001EC98, &lbl_80031A30, &lbl_80031A30, &lbl_80031A30, &lbl_80031A30, &lbl_8001EDF8, &lbl_8001EF34,
+    &lbl_8001F070, &lbl_8001F1BC, &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C,
+    &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C,
+    &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C, &lbl_80031A30, &lbl_8001F308, &lbl_80021C8C,
+    &lbl_80021C8C, &lbl_8001F3A0, &lbl_80031A30, &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C,
+    &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C, &lbl_80021C8C, &lbl_8001F4DC,
+    &lbl_8001F584, &lbl_8001F62C, &lbl_8001F8FC, &lbl_8001FBCC, &lbl_8001FEA0, &lbl_80020174, &lbl_8002047C,
+    &lbl_80020784, &lbl_8002082C, &lbl_80020B34, &lbl_80020E04, &lbl_800210D4, &lbl_800213A8, &lbl_8002167C,
+    &lbl_80021984,
+};
+#else
+void* jumptable_80171408[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171508[] = {
+    &lbl_8001D16C, &lbl_8001D2F0, &lbl_8001D484, &lbl_8001D9C0, &lbl_8001D598, &lbl_8001D760, &lbl_8001D8E8,
+};
+#else
+void* jumptable_80171508[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171524[] = {
+    &lbl_8001D090, &lbl_80031A30, &lbl_80031A30, &lbl_8001D090, &lbl_8001D090, &lbl_80031A30, &lbl_8001D090,
+    &lbl_8001D090, &lbl_80031A30, &lbl_8001D090, &lbl_8001D090, &lbl_8001D090, &lbl_8001D090, &lbl_8001D090,
+    &lbl_8001D090, &lbl_8001D090, &lbl_8001D090, &lbl_8001D090, &lbl_8001D090, &lbl_8001D090, &lbl_8001D090,
+    &lbl_8001D090, &lbl_8001D090, &lbl_8001D090, &lbl_80031A30,
+};
+#else
+void* jumptable_80171524[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171588[] = {
+    &lbl_80018B84, &lbl_80018D94, &lbl_80018FA4, &lbl_800191E0, &lbl_8001A444, &lbl_8001A444, &lbl_8001A444,
+    &lbl_8001A444, &lbl_80031A30, &lbl_80031A30, &lbl_80031A30, &lbl_80031A30, &lbl_80031A30, &lbl_8001A444,
+    &lbl_80031A30, &lbl_8001A444, &lbl_8001941C, &lbl_80019810, &lbl_80019C04, &lbl_8001A024,
+};
+#else
+void* jumptable_80171588[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_801715D8[] = {
+    &lbl_8000EFB8, &lbl_80018B58, &lbl_8000F20C, &lbl_8000F424, &lbl_8000F60C, &lbl_80018B58, &lbl_8000F904,
+    &lbl_8000FBFC, &lbl_8000FEF4, &lbl_80010140, &lbl_80018B58, &lbl_80018B58, &lbl_80031A30, &lbl_80031A30,
+    &lbl_80018B58, &lbl_80031A30, &lbl_8001070C, &lbl_80010918, &lbl_80010B08, &lbl_80010D14, &lbl_80010F04,
+    &lbl_80018B58, &lbl_800111EC, &lbl_800114D4, &lbl_800117BC, &lbl_800119A0, &lbl_80011B84, &lbl_80011DBC,
+    &lbl_80011FF4, &lbl_800125D4, &lbl_80012A64, &lbl_80013044, &lbl_800134D4, &lbl_80013ED0, &lbl_800148CC,
+    &lbl_80014BDC, &lbl_80014EEC, &lbl_800151FC, &lbl_80015BF8, &lbl_80015F08, &lbl_80018B58, &lbl_80018B58,
+    &lbl_80016218, &lbl_8001659C, &lbl_80016924, &lbl_80016D74, &lbl_800171C4, &lbl_80017614, &lbl_80031A30,
+    &lbl_80031A30, &lbl_80031A30, &lbl_80031A30, &lbl_80031A30, &lbl_80018B58, &lbl_80031A30, &lbl_80018B58,
+    &lbl_80017A64, &lbl_80018B58, &lbl_80017D20, &lbl_80017FE4, &lbl_8001829C, &lbl_80018B58, &lbl_80018584,
+    &lbl_80018874,
+};
+#else
+void* jumptable_801715D8[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_801716D8[] = {
+    &lbl_8000EF90, &lbl_80018B60, &lbl_8001A44C, &lbl_8001A6BC, &lbl_8001ABD8, &lbl_8001B024, &lbl_8001B310,
+    &lbl_8001B520, &lbl_8001B730, &lbl_8001BD1C, &lbl_8001C328, &lbl_8001C5D4, &lbl_8001C8C4, &lbl_8001CAA0,
+    &lbl_8001CCDC, &lbl_8001CEF4, &lbl_8001D06C, &lbl_8001D134, &lbl_80025F90, &lbl_80025F98, &lbl_80025FA0,
+    &lbl_80026378, &lbl_80026690, &lbl_800268CC, &lbl_80026B08, &lbl_80026FD4, &lbl_800274D8, &lbl_800274F8,
+    &lbl_80031A2C, &lbl_80031A2C, &lbl_80031A2C, &lbl_800274A0, &lbl_80027538, &lbl_80027F60, &lbl_80028988,
+    &lbl_80028D88, &lbl_800297FC, &lbl_8002A1DC, &lbl_8002ABBC, &lbl_80027518, &lbl_8002AFBC, &lbl_8002BAAC,
+    &lbl_8002C59C, &lbl_8002C8DC, &lbl_80031A30, &lbl_80031A30, &lbl_8002D5DC, &lbl_8002D918, &lbl_8002D94C,
+    &lbl_8002D96C, &lbl_80031A2C, &lbl_80031A2C, &lbl_8002E740, &lbl_8002E760, &lbl_80031A2C, &lbl_8002F444,
+    &lbl_80031A30, &lbl_8002F8E8, &lbl_80031A2C, &lbl_80031A2C, &lbl_80030758, &lbl_80030778, &lbl_80031A2C,
+    &lbl_80031594,
+};
+#else
+void* jumptable_801716D8[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_801717D8[] = {
+    &lbl_80038570, &lbl_800385AC, &lbl_800385E8, &lbl_80038634, &lbl_8003866C, &lbl_8003869C, &lbl_800386CC,
+    &lbl_800386F0, &lbl_8003871C, &lbl_80038740, &lbl_80038764, &lbl_80038794, &lbl_800387C4, &lbl_800387E0,
+    &lbl_800387FC, &lbl_80038830, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80038864, &lbl_80038888, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_800388AC, &lbl_800388C8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_800388EC,
+    &lbl_800388FC, &lbl_8003890C, &lbl_8003895C, &lbl_800389AC, &lbl_80038A08, &lbl_80038A64, &lbl_80038AC0,
+    &lbl_80038B1C, &lbl_80038B2C, &lbl_80038B88, &lbl_80038BD8, &lbl_80038C28, &lbl_80038C84, &lbl_80038CE0,
+    &lbl_80038D3C,
+};
+#else
+void* jumptable_801717D8[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_801718D8[] = {
+    &lbl_80037E58, &lbl_80037E84, &lbl_80037EB0, &lbl_80037EDC, &lbl_80037F08, &lbl_80037F48, &lbl_80037F88,
+    &lbl_80037FA4, &lbl_80037FC4, &lbl_80037FE8, &lbl_8003800C, &lbl_80038048, &lbl_80038084, &lbl_800380A0,
+    &lbl_800380BC, &lbl_800380FC, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_8003813C, &lbl_8003816C, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_8003819C, &lbl_800381B8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_800381DC,
+    &lbl_800381EC, &lbl_800381FC, &lbl_8003823C, &lbl_8003827C, &lbl_800382BC, &lbl_800382FC, &lbl_8003833C,
+    &lbl_8003837C, &lbl_8003838C, &lbl_800383CC, &lbl_8003840C, &lbl_8003844C, &lbl_8003848C, &lbl_800384CC,
+    &lbl_8003850C,
+};
+#else
+void* jumptable_801718D8[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_801719D8[] = {
+    &lbl_800377AC, &lbl_800377D8, &lbl_80037804, &lbl_80037830, &lbl_8003785C, &lbl_8003787C, &lbl_8003789C,
+    &lbl_800378B8, &lbl_800378D8, &lbl_80037904, &lbl_80037928, &lbl_80037950, &lbl_80037978, &lbl_800379A8,
+    &lbl_800379D0, &lbl_800379FC, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80037A28, &lbl_80037A48, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_80037A64, &lbl_80037A8C, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80037AB0,
+    &lbl_80037AC0, &lbl_80037AD0, &lbl_80037B10, &lbl_80037B50, &lbl_80037B90, &lbl_80037BD0, &lbl_80037C14,
+    &lbl_80037C58, &lbl_80037C68, &lbl_80037CAC, &lbl_80037CEC, &lbl_80037D2C, &lbl_80037D6C, &lbl_80037DAC,
+    &lbl_80037DF0,
+};
+#else
+void* jumptable_801719D8[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171AD8[] = {
+    &lbl_800370FC, &lbl_80037128, &lbl_80037154, &lbl_80037180, &lbl_800371AC, &lbl_800371D0, &lbl_800371F4,
+    &lbl_80037210, &lbl_80037230, &lbl_8003725C, &lbl_80037280, &lbl_800372A8, &lbl_800372D0, &lbl_80037300,
+    &lbl_80037328, &lbl_80037354, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80037380, &lbl_8003739C, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_800373B8, &lbl_800373E0, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80037404,
+    &lbl_80037414, &lbl_80037424, &lbl_80037464, &lbl_800374A4, &lbl_800374E4, &lbl_80037524, &lbl_80037568,
+    &lbl_800375AC, &lbl_800375BC, &lbl_80037600, &lbl_80037640, &lbl_80037680, &lbl_800376C0, &lbl_80037700,
+    &lbl_80037744,
+};
+#else
+void* jumptable_80171AD8[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171BD8[] = {
+    &lbl_80036E64, &lbl_80036EB0, &lbl_80036ED4, &lbl_80039BC8, &lbl_80036EF0, &lbl_80036F58, &lbl_80036F7C,
+};
+#else
+void* jumptable_80171BD8[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171BF4[] = {
+    &lbl_80036D80, &lbl_80036DBC, &lbl_80039BC8, &lbl_80039BC8, &lbl_80036DF0,
+    &lbl_80036E10, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8,
+};
+#else
+void* jumptable_80171BF4[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171C18[] = {
+    &lbl_80036D5C, &lbl_80036ACC, &lbl_80036B20, &lbl_80036D5C, &lbl_80036D5C, &lbl_80036B34, &lbl_80036D5C,
+    &lbl_80036D5C, &lbl_80036BCC, &lbl_80036D5C, &lbl_80036D5C, &lbl_80036D5C, &lbl_80036D5C, &lbl_80036D5C,
+    &lbl_80036D5C, &lbl_80036D5C, &lbl_80036D5C, &lbl_80036D5C, &lbl_80036D5C, &lbl_80036D5C, &lbl_80036D5C,
+    &lbl_80036D5C, &lbl_80036D5C, &lbl_80036D5C, &lbl_80036CF8,
+};
+#else
+void* jumptable_80171C18[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171C7C[] = {
+    &lbl_80036484, &lbl_800364B4, &lbl_800364E4, &lbl_80036530, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8,
+    &lbl_80039BC8, &lbl_8003657C, &lbl_800365AC, &lbl_800365DC, &lbl_8003660C, &lbl_8003663C, &lbl_80039BC8,
+    &lbl_8003666C, &lbl_80039BC8, &lbl_8003669C, &lbl_800366D8, &lbl_80036714, &lbl_80036768,
+};
+#else
+void* jumptable_80171C7C[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171CCC[] = {
+    &lbl_800359F8, &lbl_80039BC8, &lbl_80035A1C, &lbl_80035A40, &lbl_80035A64, &lbl_80039BC8, &lbl_80035A94,
+    &lbl_80035AC4, &lbl_80035AF4, &lbl_80035B08, &lbl_80039BC8, &lbl_80039BC8, &lbl_80035B38, &lbl_80035B4C,
+    &lbl_80039BC8, &lbl_80039BC8, &lbl_80035B60, &lbl_80035B7C, &lbl_80035B98, &lbl_80035BB4, &lbl_80035BD0,
+    &lbl_80039BC8, &lbl_80035C08, &lbl_80035C40, &lbl_80035C78, &lbl_80035CCC, &lbl_80035D20, &lbl_80035D74,
+    &lbl_80035DC8, &lbl_80035E38, &lbl_80035EA8, &lbl_80035EFC, &lbl_80035F50, &lbl_80035F7C, &lbl_80035FA8,
+    &lbl_80035FD4, &lbl_80036000, &lbl_8003602C, &lbl_80036058, &lbl_80036084, &lbl_80039BC8, &lbl_80039BC8,
+    &lbl_800360B0, &lbl_800360EC, &lbl_80036124, &lbl_80036160, &lbl_8003619C, &lbl_800361D8, &lbl_80036214,
+    &lbl_80036248, &lbl_8003627C, &lbl_800362B0, &lbl_800362E4, &lbl_80039BC8, &lbl_80036318, &lbl_80039BC8,
+    &lbl_8003634C, &lbl_80039BC8, &lbl_80036378, &lbl_800363A4, &lbl_800363D0, &lbl_80039BC8, &lbl_80036400,
+    &lbl_80036430,
+};
+#else
+void* jumptable_80171CCC[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171DCC[] = {
+    &lbl_800359D4, &lbl_80036460, &lbl_800367BC, &lbl_80036818, &lbl_80036844, &lbl_800368D0, &lbl_8003690C,
+    &lbl_8003693C, &lbl_8003696C, &lbl_80036994, &lbl_800369BC, &lbl_800369F4, &lbl_80036A28, &lbl_80036A4C,
+    &lbl_80036A70, &lbl_80036A94, &lbl_80036AA8, &lbl_80036E30, &lbl_80039BC8, &lbl_80039BC8, &lbl_80038D98,
+    &lbl_80038DF0, &lbl_80038E48, &lbl_80038E94, &lbl_80038EE0, &lbl_80038F18, &lbl_80038F78, &lbl_80039040,
+    &lbl_80039BC8, &lbl_80039BC8, &lbl_80039BC8, &lbl_80038F50, &lbl_80039174, &lbl_800391D8, &lbl_80039238,
+    &lbl_800392C8, &lbl_80039328, &lbl_80039388, &lbl_80039418, &lbl_80039108, &lbl_800394A8, &lbl_800394F8,
+    &lbl_80039548, &lbl_800395B8, &lbl_80039608, &lbl_80039684, &lbl_800396FC, &lbl_80039BC8, &lbl_8003976C,
+    &lbl_800397CC, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039870, &lbl_800398DC, &lbl_80039BC8, &lbl_80039944,
+    &lbl_800399AC, &lbl_80039A14, &lbl_80039BC8, &lbl_80039BC8, &lbl_80039A90, &lbl_80039B0C, &lbl_80039BC8,
+    &lbl_80039B6C,
+};
+#else
+void* jumptable_80171DCC[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171ECC[] = {
+    &lbl_8003A0D8, &lbl_8003A38C, &lbl_8003AB40, &lbl_8003A640, &lbl_8003A240, &lbl_8003A4F4,
+    &lbl_8003AB40, &lbl_8003AB40, &lbl_8003A78C, &lbl_8003A8C8, &lbl_8003AB40, &lbl_8003AA04,
+};
+#else
+void* jumptable_80171ECC[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171EFC[] = {
+    &lbl_8003AEBC, &lbl_8003B5F8, &lbl_8003B5F8, &lbl_8003B5F8, &lbl_8003B100,
+    &lbl_8003B5F8, &lbl_8003B300, &lbl_8003B5F8, &lbl_8003AFEC, &lbl_8003B5F8,
+    &lbl_8003B5F8, &lbl_8003B5F8, &lbl_8003B200, &lbl_8003B5F8, &lbl_8003B47C,
+};
+#else
+void* jumptable_80171EFC[] = {0};
+#endif
+
+_XL_OBJECTTYPE gClassCPU = {
+    "CPU",
+    sizeof(Cpu),
+    NULL,
+    (EventFunc)cpuEvent,
+};
+
+#ifndef NON_MATCHING
+void* jumptable_80171F48[] = {
+    &lbl_8003E0F0, &lbl_8003E338, &lbl_8003E338, &lbl_8003E0F0, &lbl_8003E0F0, &lbl_8003E338, &lbl_8003E0F0,
+    &lbl_8003E0F0, &lbl_8003E338, &lbl_8003E0F0, &lbl_8003E0F0, &lbl_8003E0F0, &lbl_8003E0F0, &lbl_8003E0F0,
+    &lbl_8003E0F0, &lbl_8003E0F0, &lbl_8003E0F0, &lbl_8003E0F0, &lbl_8003E0F0, &lbl_8003E0F0, &lbl_8003E0F0,
+    &lbl_8003E0F0, &lbl_8003E0F0, &lbl_8003E0F0, &lbl_8003E0C4,
+};
+#else
+void* jumptable_80171F48[] = {0};
+#endif
+
+#ifndef NON_MATCHING
+void* jumptable_80171FAC[] = {
+    &lbl_8003DDB8, &lbl_8003DE78, &lbl_8003DE3C, &lbl_8003E330, &lbl_8003DF14, &lbl_8003E038, &lbl_8003E038,
+    &lbl_8003E038, &lbl_8003E330, &lbl_8003E330, &lbl_8003E330, &lbl_8003E330, &lbl_8003E330, &lbl_8003E330,
+    &lbl_8003E330, &lbl_8003E330, &lbl_8003E0A0, &lbl_8003E180, &lbl_8003E330, &lbl_8003E330, &lbl_8003DF14,
+    &lbl_8003E038, &lbl_8003E038, &lbl_8003E038, &lbl_8003E330, &lbl_8003E330, &lbl_8003E330, &lbl_8003E330,
+    &lbl_8003E330, &lbl_8003E330, &lbl_8003E330, &lbl_8003E330, &lbl_8003E330, &lbl_8003E330, &lbl_8003E330,
+    &lbl_8003E220, &lbl_8003E330, &lbl_8003E330, &lbl_8003E330, &lbl_8003E330, &lbl_8003E330, &lbl_8003E330,
+    &lbl_8003E330, &lbl_8003E20C,
+};
+#else
+void* jumptable_80171FAC[] = {0};
+#endif
+
+static s32 cpuCompile_DSLLV_function;
+static s32 cpuCompile_DSRLV_function;
+static s32 cpuCompile_DSRAV_function;
+static s32 cpuCompile_DMULT_function;
+static s32 cpuCompile_DMULTU_function;
+static s32 cpuCompile_DDIV_function;
+static s32 cpuCompile_DDIVU_function;
+static s32 cpuCompile_DADD_function;
+static s32 cpuCompile_DADDU_function;
+static s32 cpuCompile_DSUB_function;
+static s32 cpuCompile_DSUBU_function;
+static s32 cpuCompile_S_SQRT_function;
+static s32 cpuCompile_D_SQRT_function;
+static s32 cpuCompile_W_CVT_SD_function;
+static s32 cpuCompile_L_CVT_SD_function;
+static s32 cpuCompile_CEIL_W_function;
+static s32 cpuCompile_FLOOR_W_function;
+static s32 cpuCompile_ROUND_W_function;
+static s32 cpuCompile_TRUNC_W_function;
+static s32 cpuCompile_LB_function;
+static s32 cpuCompile_LH_function;
+static s32 cpuCompile_LW_function;
+static s32 cpuCompile_LBU_function;
+static s32 cpuCompile_LHU_function;
+static s32 cpuCompile_SB_function;
+static s32 cpuCompile_SH_function;
+static s32 cpuCompile_SW_function;
+static s32 cpuCompile_LDC_function;
+static s32 cpuCompile_SDC_function;
+static s32 cpuCompile_LWL_function;
+static s32 cpuCompile_LWR_function;
+static VIRetraceCallback __cpuRetraceCallback;
+
+static inline bool cpuCheckInterrupts(Cpu* pCPU) {
+    System* pSystem;
+
+    pSystem = gpSystem;
+    if (pSystem->bException) {
+        if (!systemCheckInterrupts(pSystem)) {
+            return false;
+        }
+    } else {
+        viForceRetrace(SYSTEM_VI(pSystem));
+    }
+
+    return true;
+}
+
+static inline bool cpuTLBRandom(Cpu* pCPU) {
+    s32 iEntry;
+    s32 nCount;
+
+    nCount = 0;
+    for (iEntry = 0; iEntry < ARRAY_COUNT(pCPU->aTLB); iEntry++) {
+        if ((pCPU->aTLB[iEntry][2] & 2) == 0) {
+            nCount++;
+        }
+    }
+
+    return nCount;
+}
+
+static inline bool cpuExecuteCacheInstruction(Cpu* pCPU) {
+    s32* pBuffer;
+
+    if (!cpuGetAddressBuffer(pCPU, (void**)&pBuffer, pCPU->nPC)) {
+        return false;
+    }
+    pBuffer[-1] = 0;
+    pBuffer -= (pCPU->nPC - pCPU->nCallLast) >> 2;
+    pBuffer[0] = 0x03E00008;
+    pBuffer[1] = 0;
+
+    return true;
+}
+
+static inline void treeCallerInit(CpuCallerID* block, s32 total) {
+    s32 count;
+
+    for (count = 0; count < total; count++) {
+        block[count].N64address = 0;
+        block[count].GCNaddress = 0;
+    }
+}
+
+static inline bool treeCallerKill(Cpu* pCPU, CpuFunction* kill) {
+    s32 left;
+    s32 right;
+    CpuTreeRoot* root;
+
+    if (kill->pfCode != NULL) {
+        root = pCPU->gTree;
+        left = kill->nAddress0;
+        right = kill->nAddress1;
+
+        if (root->left != NULL) {
+            treePrintNode(pCPU, root->left, 0x10, &left, &right);
+        }
+        if (root->right != NULL) {
+            treePrintNode(pCPU, root->right, 0x10, &left, &right);
+        }
+    }
+
+    pCPU->gTree->total_memory -= kill->memory_size + sizeof(CpuFunction);
+    return true;
+}
+
+static inline bool treeForceCleanUp(Cpu* pCPU, CpuFunction* tree, s32 kill_limit) {
+    CpuTreeRoot* root = pCPU->gTree;
+
+    root->kill_limit = 0;
+    root->restore = NULL;
+    root->restore_side = 0;
+    if (tree != NULL && tree->timeToLive > 0) {
+        tree->timeToLive = pCPU->survivalTimer;
+    }
+    if (root->side == 0) {
+        if (root->left != NULL) {
+            treeForceCleanNodes(pCPU, root->left, kill_limit);
+        }
+    } else {
+        if (root->right != NULL) {
+            treeForceCleanNodes(pCPU, root->right, kill_limit);
+        }
+    }
+    root->side ^= 1;
+    return true;
+}
+
+static bool cpuHackHandler(Cpu* pCPU) {
+    s32 iSave1;
+    s32 iSave2;
+    s32 iLoad;
+    u32* pnCode;
+    s32 nSize;
+    s32 iCode;
+
+    iSave1 = iSave2 = iLoad = 0;
+
+    if (xlObjectTest(SYSTEM_RAM(gpSystem), &gClassRAM) &&
+        ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pnCode, 0, NULL)) {
+        if (!ramGetSize(SYSTEM_RAM(gpSystem), &nSize)) {
+            return false;
         }
 
-        for(i = 0; i < ram_size >> 2 && (tmp1 != -1 || tmp2 != -1 || tmp3 != -1); i++) {
-            if(tmp1 != -1) {
-                if(buf[i] == lbl_80170A20[tmp1]) {
-                    tmp1++;
-                    if(tmp1 == 5U) {
-                        buf[i - 3] = 0;
-                        tmp1 = -1;
+        for (iCode = 0; iCode < (nSize >> 2) && (iSave1 != -1 || iSave2 != -1 || iLoad != -1); iCode++) {
+            if (iSave1 != -1) {
+                if (pnCode[iCode] == ganOpcodeSaveFP1[iSave1]) {
+                    iSave1++;
+                    if (iSave1 == 5U) {
+                        pnCode[iCode - 3] = 0;
+                        iSave1 = -1;
                     }
                 } else {
-                    tmp1 = 0;
+                    iSave1 = 0;
                 }
             }
 
-            if(tmp2 != -1) {
-                if(buf[i] == lbl_80170A20_2[tmp2]) {
-                    tmp2++;
-                    if(tmp2 == 5U) {
-                        buf[i - 3] = 0;
-                        tmp2 = -1;
+            if (iSave2 != -1) {
+                if (pnCode[iCode] == ganOpcodeSaveFP2_0[iSave2]) {
+                    iSave2++;
+                    if (iSave2 == 5U) {
+                        pnCode[iCode - 3] = 0;
+                        iSave2 = -1;
                     }
-                } else if(buf[i] == lbl_80170A20_3[tmp2]) {
-                    tmp2++;
-                    if(tmp2 == 3U) {
-                        buf[i - 2] = 0;
-                        tmp2 = -1;
+                } else if (pnCode[iCode] == ganOpcodeSaveFP2_1[iSave2]) {
+                    iSave2++;
+                    if (iSave2 == 3U) {
+                        pnCode[iCode - 2] = 0;
+                        iSave2 = -1;
                     }
                 } else {
-                    tmp2 = 0;
+                    iSave2 = 0;
                 }
             }
 
-            if(tmp3 != -1) {
-                if(buf[i] == lbl_80170A20_4[tmp3]) {
-                    tmp3++;
-                    if(tmp3 == 5U) {
-                        buf[i - 3] = 0;
-                        tmp3 = -1;
+            if (iLoad != -1) {
+                if (pnCode[iCode] == ganOpcodeLoadFP[iLoad]) {
+                    iLoad++;
+                    if (iLoad == 5U) {
+                        pnCode[iCode - 3] = 0;
+                        iLoad = -1;
                     }
                 } else {
-                    tmp3 = 0;
+                    iLoad = 0;
                 }
             }
         }
     }
 
-    return tmp1 == -1 && tmp2 == -1 && tmp3 == -1;
+    return (iSave1 == -1 && iSave2 == -1 && iLoad == -1) ? true : false;
 }
 
-s32 cpuFreeCachedAddress(cpu_class_t *cpu, s32 addr_start, s32 addr_end) {
-    s32 i;
-    s32 j;
-    recomp_cache_t *recomp_cache = cpu->recomp_cache;
+static inline bool cpuMakeCachedAddress(Cpu* pCPU, s32 nAddressN64, s32 nAddressHost, CpuFunction* pFunction) {
+    s32 iAddress;
+    CpuAddress* aAddressCache;
 
-    for(i = 0;i < cpu->cache_cnt;) {
-        if(addr_start <= recomp_cache[i].n64_addr && recomp_cache[i].n64_addr <= addr_end) {
-            for(j = i; j < cpu->cache_cnt - 1; j++) {
-                recomp_cache[j] = recomp_cache[j + 1];
+    aAddressCache = pCPU->aAddressCache;
+    if ((iAddress = pCPU->nCountAddress) == ARRAY_COUNT(pCPU->aAddressCache)) {
+        iAddress -= 1;
+    } else {
+        pCPU->nCountAddress++;
+    }
+
+    for (; iAddress > 0; iAddress--) {
+        aAddressCache[iAddress] = aAddressCache[iAddress - 1];
+    }
+
+    aAddressCache[0].nN64 = nAddressN64;
+    aAddressCache[0].nHost = nAddressHost;
+    aAddressCache[0].pFunction = pFunction;
+    return true;
+}
+
+static inline bool treeSearch(Cpu* pCPU, s32 target, CpuFunction** node) {
+    CpuTreeRoot* root = pCPU->gTree;
+    bool flag;
+
+    if (target < root->root_address) {
+        flag = treeSearchNode(root->left, target, node);
+    } else {
+        flag = treeSearchNode(root->right, target, node);
+    }
+    return flag;
+}
+
+bool cpuFreeCachedAddress(Cpu* pCPU, s32 nAddress0, s32 nAddress1) {
+    s32 iAddress;
+    s32 iAddressNext;
+    s32 nAddressN64;
+    CpuAddress* aAddressCache = pCPU->aAddressCache;
+
+    iAddress = 0;
+    while (iAddress < pCPU->nCountAddress) {
+        nAddressN64 = aAddressCache[iAddress].nN64;
+        if (nAddress0 <= nAddressN64 && nAddressN64 <= nAddress1) {
+            for (iAddressNext = iAddress; iAddressNext < pCPU->nCountAddress - 1; iAddressNext++) {
+                aAddressCache[iAddressNext] = aAddressCache[iAddressNext + 1];
             }
-            cpu->cache_cnt--;
+            pCPU->nCountAddress--;
         } else {
-            i++;
+            iAddress++;
         }
     }
 
-    return 1;
+    return true;
 }
 
-s32 cpuFindCachedAddress(cpu_class_t *cpu, s32 addr, u32 **code) {
-    s32 i;
-    s32 j;
-    recomp_cache_t *cache = cpu->recomp_cache;
+static bool cpuFindCachedAddress(Cpu* pCPU, s32 nAddressN64, s32* pnAddressHost) {
+    s32 iAddress;
+    CpuFunction* pFunction;
+    CpuAddress addressFound;
+    CpuAddress* aAddressCache = pCPU->aAddressCache;
 
-    for(i = 0; i < cpu->cache_cnt; i++) {
-        if(addr == cache[i].n64_addr) {
-            
-            if(i > 128) {
-                recomp_cache_t found = cache[i];
-                while(i > 0) {
-                    cache[i] = cache[i - 1];
-                    i--;
+    for (iAddress = 0; iAddress < pCPU->nCountAddress; iAddress++) {
+        if (nAddressN64 == aAddressCache[iAddress].nN64) {
+            if (iAddress > ARRAY_COUNT(pCPU->aAddressCache) / 2) {
+                addressFound = aAddressCache[iAddress];
+                for (; iAddress > 0; iAddress--) {
+                    aAddressCache[iAddress] = aAddressCache[iAddress - 1];
                 }
-                cache[i] = found;
+                aAddressCache[iAddress] = addressFound;
             }
 
-            if(cache[i].node->unk_0x28 > 0) {
-                cache[i].node->unk_0x28 = cpu->call_cnt;
+            pFunction = aAddressCache[iAddress].pFunction;
+            if (pFunction->timeToLive > 0) {
+                pFunction->timeToLive = pCPU->survivalTimer;
             }
 
-            *code = cache[i].recomp_addr;
-            return 1;
+            *pnAddressHost = aAddressCache[iAddress].nHost;
+            return true;
         }
     }
 
-    return 0;
+    return false;
 }
 
-#ifdef NON_MATCHING
-s32 cpuTestInterrupt(cpu_class_t *cpu, s32 intr) {
-    cpu->cp0[CP0_CAUSE].sd |= ((intr & 0xFF) << 8);
+bool cpuTestInterrupt(Cpu* pCPU, s32 nMaskIP) {
+    pCPU->anCP0[13] |= (nMaskIP & 0xFF) << 8;
 
-    if(cpu->cp0[CP0_STATUS].d & 6) {
-        return 0;
+    if ((pCPU->anCP0[12] & 6) != 0) {
+        return false;
     }
 
-    if(!(cpu->cp0[CP0_STATUS].d & 1)) {
-        return 0;
+    if ((pCPU->anCP0[12] & 1) == 0) {
+        return false;
     }
 
-    if(((cpu->cp0[CP0_STATUS].sd & 0xFF00) >> 8) & (intr & 0xFF)) {
-        return 1;
+    if ((((pCPU->anCP0[12] & 0xFF00) >> 8) & (nMaskIP & 0xFF)) == 0) {
+        return false;
     }
 
-    return 0;
-}
-#else
-s32 cpuTestInterrupt(cpu_class_t *cpu, s32 intr);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuTestInterrupt.s")
-#endif
-
-#ifdef NON_MATCHING
-inline s32 cpuTestInterruptInl(cpu_class_t *cpu, s32 intr) {
-    cpu->cp0[CP0_CAUSE].sd |= ((intr & 0xFF) << 8);
-
-    if(cpu->cp0[CP0_STATUS].d & 6) {
-        return 0;
-    }
-
-    if(!(cpu->cp0[CP0_STATUS].d & 1)) {
-        return 0;
-    }
-
-    if(((cpu->cp0[CP0_STATUS].sd & 0xFF00) >> 8) & (intr & 0xFF)) {
-        return 1;
-    }
-
-    return 0;
+    return true;
 }
 
-s32 cpuException(cpu_class_t *cpu, s32 ex, u32 intr) {
-    if(cpu->cp0[CP0_STATUS].w[1] & (STATUS_ERL | STATUS_EXL)) {
-        return 0;
+bool cpuException(Cpu* pCPU, CpuExceptionCode eCode, s32 nMaskIP) {
+    s32 pad[2];
+
+    if ((pCPU->anCP0[12] & 6) != 0) {
+        return false;
+    }
+    nMaskIP &= 0xFF;
+    if (eCode == CEC_NONE) {
+        return false;
+    }
+    if ((eCode >= CEC_RESERVED_16 && eCode <= CEC_RESERVED_22) ||
+        (eCode >= CEC_RESERVED_24 && eCode <= CEC_RESERVED_30)) {
+        return false;
+    }
+    if (eCode == CEC_RESERVED) {
+        return false;
     }
 
-    if(ex == CP0_EX_NONE) {
-        return 0;
-    }
-
-    if((ex >= CP0_EX_RFU16 && ex <= CP0_EX_RFU22) || (ex >= CP0_EX_RFU24 && ex <= CP0_EX_RFU30)) {
-        return 0;
-    }
-
-    if(ex == CP0_EX_RSVD_INS) {
-        return 0;
-    }
-
-    if(ex == CP0_EX_INTERRUPT) {
-        if(!cpuTestInterruptInl(cpu, intr)) {
-            return 0;
+    if (eCode == CEC_INTERRUPT) {
+        if (!cpuTestInterrupt(pCPU, nMaskIP)) {
+            return false;
         }
     } else {
-        cpu->pc -= 4;
-        cpu->status |= 4;
+        pCPU->nPC -= 4;
+        pCPU->nMode |= 4;
     }
 
-    cpu->status &= ~8;
-    if(!(cpu->status & 0x10)) {
-        cpuHackHandler(cpu);
-        cpu->status |= 0x10;
+    pCPU->nMode &= ~8;
+    if (!(pCPU->nMode & 0x10)) {
+        if (!cpuHackHandler(pCPU)) {}
+        pCPU->nMode |= 0x10;
     }
-
-    if(cpu->unk_0x24 != -1) {
-        cpu->unk_0x24 = -1;
-        cpu->cp0[CP0_EPC].d = cpu->pc - 4;
-        cpu->cp0[CP0_CAUSE].d |= CAUSE_BD;
+    if (pCPU->nWaitPC != 0xFFFFFFFF) {
+        pCPU->nWaitPC = -1;
+        pCPU->anCP0[14] = pCPU->nPC - 4;
+        pCPU->anCP0[13] |= 0x80000000;
     } else {
-        cpu->cp0[CP0_EPC].d = cpu->pc;
+        pCPU->anCP0[14] = pCPU->nPC;
     }
 
-    cpu->status &= ~0x80;
-    cpu->cp0[CP0_STATUS].w[1] |= 2;
-    cpu->cp0[CP0_CAUSE].sd = (cpu->cp0[CP0_CAUSE].sd & ~0x7C) | (ex << 2);
+    pCPU->nMode &= ~0x80;
+    pCPU->anCP0[12] |= 2;
+    pCPU->anCP0[13] = (pCPU->anCP0[13] & ~0x7C) | (eCode << 2);
 
-    if(ex < 4) {
-        cpu->pc = 0x80000000;
+    if (eCode - 1 <= 2U) {
+        pCPU->nPC = 0x80000000;
     } else {
-        cpu->pc = 0x80000180;
+        pCPU->nPC = 0x80000180;
     }
 
-    cpu->status |= 0x24;
+    pCPU->nMode |= 4;
+    pCPU->nMode |= 0x20;
 
-    if(!func_8005D614(gSystem->unk_0x0058, cpu, -1)) {
-        return 0;
+    if (!libraryCall(SYSTEM_LIBRARY(gpSystem), pCPU, -1)) {
+        return false;
     }
 
-    return 1;
+    return true;
 }
-#else
-s32 cpuException(cpu_class_t *cpu, s32 ex, u32 intr);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuException.s")
-#endif
 
-/**
- * @brief Creates a new device and registers memory space for that device.
- * 
- * @param cpu The emulated VR4300.
- * @param new_dev_idx A pointer to the index in the cpu->devices array which the device was created.
- * @param dev_obj The object which will handle reuqests for this device.
- * @param vaddr Starting address of the device's address space.
- * @param paddr Starting physical address of the device's address space.
- * @param size Size of the device's memory space.
- * @param create_arg An argument which will be passed back to the device's event handler.
- * @return s32 1 on success, 0 otherwise.
- */
-s32 cpuMakeDevice(cpu_class_t *cpu, u32 *new_dev_idx, void *dev_obj, u32 vaddr, u32 paddr, u32 size, u32 create_arg) {
-    s32 i;
+static bool cpuMakeDevice(Cpu* pCPU, s32* piDevice, void* pObject, u32 nOffset, u32 nAddress0, u32 nAddress1,
+                          s32 nType) {
+    CpuDevice* pDevice;
+    s32 iDevice;
     s32 j;
-    cpu_dev_t *new_dev;
-    u32 addr;
+    s32 pad;
 
-    for(i = ((create_arg >> 8) & 1) ? 128 : 0; i < 256; i++) {
-        if(cpu->devices[i] == NULL) {
-            if (new_dev_idx != NULL) {
-                *new_dev_idx = i;
+    for (iDevice = ((nType >> 8) & 1) ? 128 : 0; iDevice < 256; iDevice++) {
+        if (pCPU->apDevice[iDevice] == NULL) {
+            if (piDevice != NULL) {
+                *piDevice = iDevice;
             }
 
-            if(!xlHeapTake((void**)&new_dev, 0x40)) {
-                return 0;
+            if (!xlHeapTake((void**)&pDevice, sizeof(CpuDevice))) {
+                return false;
             }
 
-            cpu->devices[i] = new_dev;
-            new_dev->create_arg = create_arg;
-            new_dev->dev_obj = dev_obj;
-            new_dev->addr_offset = paddr - vaddr;
-            if(size == 0) {
-                new_dev->paddr_start = 0;
-                new_dev->vaddr_start = 0;
-                new_dev->paddr_end = 0xFFFFFFFF;
-                new_dev->vaddr_end = 0xFFFFFFFF;
-                for(j = 0; j < 0x10000; j++) {
-                    cpu->mem_hi_map[j] = i;
+            pCPU->apDevice[iDevice] = pDevice;
+            pDevice->nType = nType;
+            pDevice->pObject = pObject;
+            pDevice->nOffsetAddress = nAddress0 - nOffset;
+
+            if (nAddress1 == 0) {
+                pDevice->nAddressPhysical0 = 0;
+                pDevice->nAddressVirtual0 = 0;
+                pDevice->nAddressPhysical1 = 0xFFFFFFFF;
+                pDevice->nAddressVirtual1 = 0xFFFFFFFF;
+
+                for (j = 0; j < 0x10000; j++) {
+                    pCPU->aiDevice[j] = iDevice;
                 }
             } else {
-                new_dev->vaddr_start = vaddr;
-                new_dev->vaddr_end = vaddr + size - 1;
-                new_dev->paddr_start = paddr;
-                new_dev->paddr_end = paddr + size - 1;
+                pDevice->nAddressVirtual0 = nOffset;
+                pDevice->nAddressVirtual1 = nOffset + nAddress1 - 1;
+                pDevice->nAddressPhysical0 = nAddress0;
+                pDevice->nAddressPhysical1 = nAddress0 + nAddress1 - 1;
 
-                for(j = size; j > 0; vaddr += 0x10000, j -= 0x10000) {
-                    cpu->mem_hi_map[vaddr >> 16] = i;
+                for (j = nAddress1; j > 0; nOffset += 0x10000, j -= 0x10000) {
+                    pCPU->aiDevice[nOffset >> 16] = iDevice;
                 }
             }
 
-            return !!xlObjectEvent(dev_obj, 0x1002, (void*)new_dev);
+            return !!xlObjectEvent(pObject, 0x1002, (void*)pDevice);
         }
     }
 
-    return 0;
+    return false;
 }
 
-s32 cpuCreateTLBDevice(cpu_class_t *cpu, s32 *new_dev_idx, u32 vaddr, u32 paddr, u32 page_size) {
-    s32 dev;
-    u32 new_dev;
+static inline bool cpuFreeDevice(Cpu* pCPU, s32 iDevice) {
+    s32 ret;
+    if (!xlHeapFree((void**)&pCPU->apDevice[iDevice])) {
+        return false;
+    } else {
+        s32 iAddress;
 
-    for(dev = 0x80; dev < 256; dev++) {
-        if(dev != cpu->mem_dev_idx) {
-            if(cpu->devices[dev] != NULL) {
-                if(cpu->devices[dev]->paddr_start <= paddr && paddr <= cpu->devices[dev]->paddr_end) {
-                    break;
-                }
+        pCPU->apDevice[iDevice] = NULL;
+        for (iAddress = 0; iAddress < ARRAY_COUNT(pCPU->aiDevice); iAddress++) {
+            if (pCPU->aiDevice[iAddress] == iDevice) {
+                pCPU->aiDevice[iAddress] = pCPU->iDeviceDefault;
             }
         }
+        return true;
     }
-    if(dev == 256) {
-        dev = cpu->mem_dev_idx;
-    }
-
-    if(!cpuMakeDevice(cpu, &new_dev, cpu->devices[dev]->dev_obj, vaddr, paddr, page_size, cpu->devices[dev]->create_arg)) {
-        return 0;
-    }
-
-    if(new_dev_idx != NULL) {
-        *new_dev_idx = new_dev;
-    }
-
-    return 1;
 }
 
-#ifdef NON_MATCHING
-s32 cpuSetTLB(cpu_class_t *cpu, s32 index) {
-    cpu_tlb_t *tlb = &cpu->tlb[index];
+static bool cpuMapAddress(Cpu* pCPU, s32* piDevice, u32 nVirtual, u32 nPhysical, s32 nSize) {
+    s32 iDeviceTarget;
+    s32 iDeviceSource;
+    u32 nAddressVirtual0;
+    u32 nAddressVirtual1;
+
+    for (iDeviceSource = 128; iDeviceSource < ARRAY_COUNT(pCPU->apDevice); iDeviceSource++) {
+        if (iDeviceSource != pCPU->iDeviceDefault && pCPU->apDevice[iDeviceSource] != NULL &&
+            pCPU->apDevice[iDeviceSource]->nAddressPhysical0 <= nPhysical &&
+            nPhysical <= pCPU->apDevice[iDeviceSource]->nAddressPhysical1) {
+            break;
+        }
+    }
+
+    if (iDeviceSource == ARRAY_COUNT(pCPU->apDevice)) {
+        iDeviceSource = pCPU->iDeviceDefault;
+    }
+
+    //! TODO: nAddress1 is set to nSize? bug?
+    if (!cpuMakeDevice(pCPU, &iDeviceTarget, pCPU->apDevice[iDeviceSource]->pObject, nVirtual, nPhysical, nSize,
+                       pCPU->apDevice[iDeviceSource]->nType)) {
+        return false;
+    }
+
+    if (piDevice != NULL) {
+        *piDevice = iDeviceTarget;
+    }
+
+    return true;
+}
+
+static bool cpuSetTLB(Cpu* pCPU, s32 iEntry) {
+    u64* pTLB = pCPU->aTLB[iEntry];
+    s32 iDevice;
+    u32 nMask;
+    u32 nVirtual;
+    u32 nPhysical;
+    s32 nPageSize;
+
     s32 i;
     s32 page_size;
     s32 tmp;
     u32 vpn2;
     u32 pfn;
 
-    tlb->page_mask.d = cpu->cp0[CP0_PAGEMASK].d & TLB_PGSZ_MASK;
-    tlb->entry_hi.d = cpu->cp0[CP0_ENTRYHI].d;
-    tlb->entry_lo0.d = cpu->cp0[CP0_ENTRYLO0].d;
-    tlb->entry_lo1.d = cpu->cp0[CP0_ENTRYLO1].d;
-    if(tlb->entry_lo0.w[1] & TLB_LO_VALD || tlb->entry_lo1.w[1] & TLB_LO_VALD) {
-        // page size
-        switch(tlb->page_mask.d) {
+    pTLB[3] = pCPU->anCP0[5] & TLB_PGSZ_MASK;
+    pTLB[2] = pCPU->anCP0[10];
+    pTLB[0] = pCPU->anCP0[2];
+    pTLB[1] = pCPU->anCP0[3];
+
+    if (pTLB[0] & 2 || pTLB[1] & 2) {
+        switch (pTLB[3]) {
             case TLB_PGSZ_4K:
-                page_size = 4 * 1024;
+                nPageSize = 4 * 1024;
                 break;
             case TLB_PGSZ_16K:
-                page_size = 16 * 1024;
+                nPageSize = 16 * 1024;
                 break;
             case TLB_PGSZ_64K:
-                page_size = 64 * 1024;
+                nPageSize = 64 * 1024;
                 break;
             case TLB_PGSZ_256K:
-                page_size = 256 * 1024;
+                nPageSize = 256 * 1024;
                 break;
             case TLB_PGSZ_1M:
-                page_size = 1 * 1024 * 1024;
+                nPageSize = 1 * 1024 * 1024;
                 break;
             case TLB_PGSZ_4M:
-                page_size = 4 * 1024 * 1024;
+                nPageSize = 4 * 1024 * 1024;
                 break;
             case TLB_PGSZ_16M:
-                page_size = 16 * 1024 * 1024;
+                nPageSize = 16 * 1024 * 1024;
                 break;
             default:
-                page_size = 0;
+                nPageSize = 0;
                 break;
         }
 
-        vpn2 = tlb->entry_hi.w[1] & 0xFFFFE000;
-        if(tlb->entry_lo0.w[1] & 2) {
-            tmp = (tlb->dev_status.w[1] >> (0 * 16)) & 0xFF;
+        nVirtual = pTLB[3] & 0xFFFFE000;
 
-            if(!xlHeapFree((void**)&cpu->devices[tmp])) {
-                return 0;
+        if (pTLB[0] & 2) {
+            // nPhysical = pTLB[0] & 0x3FFFFC0;
+            tmp = pTLB[4] & 0xFF;
+
+            if (!cpuFreeDevice(pCPU, tmp)) {
+                return false;
             }
 
-            cpu->devices[tmp] = NULL;
-
-            for(i = 0; i < 0x10000; i++) {
-                if(cpu->mem_hi_map[i] == tmp) {
-                    cpu->mem_hi_map[i] = cpu->mem_dev_idx;
-                }
+            if (!cpuMapAddress(pCPU, &tmp, nVirtual, nPhysical, nPageSize)) {
+                return false;
             }
 
-            if(!cpuCreateTLBDevice(cpu, &tmp, vpn2, pfn, page_size)) {
-                return 0;
-            }
-
-            tlb->dev_status.sd = (tmp & 0xFF) | (tlb->dev_status.sd & ~0xFF);
+            pTLB[4] = (tmp & 0xFF) | (pTLB[4] & ~0xFF);
         }
 
-        if(tlb->entry_lo1.w[1] & 2) {
-            pfn = (tlb->entry_lo1.w[1] & 0x3FFFFC0) << 6;
-            tmp = (tlb->dev_status.w[1] >> 16) & 0xFF;
+        if (pTLB[1] & 2) {
+            // nPhysical = (pTLB[1] & 0x3FFFFC0) << 6;
+            tmp = (pTLB[4] >> 16) & 0xFF;
 
-            if(!xlHeapFree((void**)&cpu->devices[tmp])) {
-                return 0;
+            if (!cpuFreeDevice(pCPU, tmp)) {
+                return false;
             }
 
-            cpu->devices[tmp] = NULL;
-
-            for(i = 0; i < 0x10000; i++) {
-                if(cpu->mem_hi_map[i] == tmp) {
-                    cpu->mem_hi_map[i] = cpu->mem_dev_idx;
-                }
+            if (!cpuMapAddress(pCPU, &tmp, nVirtual, nPhysical, nPageSize)) {
+                return false;
             }
 
-            if(!cpuCreateTLBDevice(cpu, &tmp, vpn2 + page_size, pfn, page_size)) {
-                return 0;
-            }
-
-            tlb->dev_status.sd = ((tmp & 0xFF) << 16) | (tlb->dev_status.sd & ~0xFF00);
+            pTLB[4] = ((tmp & 0xFF) << 16) | (pTLB[4] & ~0xFF00);
         }
     } else {
-        tmp = tlb->dev_status.w[1] & 0xFF;
-
-        if(!xlHeapFree((void**)&cpu->devices[tmp])) {
-            return 0;
+        if (!cpuFreeDevice(pCPU, pTLB[4] & 0xFF)) {
+            return false;
         }
 
-        cpu->devices[tmp] = NULL;
-
-        for(i = 0; i < 0x10000; i++) {
-            if(cpu->mem_hi_map[i] == tmp) {
-                cpu->mem_hi_map[i] = cpu->mem_dev_idx;
-            }
+        if (!cpuFreeDevice(pCPU, (pTLB[4] & 0xFF) >> 16)) {
+            return false;
         }
 
-        tmp = (tlb->dev_status.w[1] >> 16) & 0xFF;
-
-        if(!xlHeapFree((void**)&cpu->devices[tmp])) {
-            return 0;
-        }
-
-        cpu->devices[tmp] = NULL;
-
-        for(i = 0; i < 0x10000; i++) {
-            if(cpu->mem_hi_map[i] == tmp) {
-                cpu->mem_hi_map[i] = cpu->mem_dev_idx;
-            }
-        }
-
-        tlb->dev_status.sd = -1;
+        pTLB[4] = -1;
     }
 
-    return 1;
+    return true;
 }
-#else
-s32 cpuSetTLB(cpu_class_t *cpu, s32 index);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuSetTLB.s")
-#endif
 
-#ifdef NON_MATCHING
-/**
- * @brief Gets the operating mode of the VR4300
- * 
- * @param status The status bits to determine the mode for.
- * @param mode A pointer to the mode determined.
- * @return s32 1 on success, 0 otherwse.
- */
-s32 cpuGetMode(u64 status, u32 *mode) {
-    u32 kmode = 2;
-    u32 smode = 1;
-    u32 umode = 0;
-    u32 setmode;
+static bool cpuGetMode(u64 nStatus, CpuMode* peMode) {
+    if (nStatus & 2) {
+        *peMode = CM_KERNEL;
+        return true;
+    }
 
-    if(status & STATUS_EXL) {
-        *mode = kmode;
-        return 1;
-    } else if(!(status & STATUS_ERL)) {
-        switch(status & 0x18) {
+    if (!(nStatus & 4)) {
+        switch (nStatus & 0x18) {
             case 0x10:
-                *mode = umode;
+                *peMode = CM_USER;
                 break;
             case 8:
-                *mode = smode;
+                *peMode = CM_SUPER;
                 break;
             case 0:
-                *mode = kmode;
+                *peMode = CM_KERNEL;
                 break;
             default:
-                return 0;
+                return false;
         }
-
-        return 1;
+        return true;
     }
 
-    return 0;
+    return false;
 }
-#else
-s32 cpuGetMode(u64 status, u32 *mode);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuGetMode.s")
-#endif
 
-/**
- * @brief Determines the register size that the VR4300 is using.
- * 
- * @param status Status bits for determining the register size.
- * @param enabled 1 if 64-bits are enabled for registers, 0 for 32-bit registers.
- * @param out_mode The operating mode of the VR4300.
- * @return s32 
- */
-s32 cpuGetSize(u64 status, s32 *enabled, s32 *out_mode) {
-    u32 mode;
-    s32 res;
+static bool cpuGetSize(u64 nStatus, CpuSize* peSize, CpuMode* peMode) {
+    CpuMode eMode;
 
-    *enabled = -1;
-    if(out_mode != NULL) {
-        *out_mode = -1;
+    *peSize = CS_NONE;
+    if (peMode != NULL) {
+        *peMode = CM_NONE;
     }
 
-    if(cpuGetMode(status, &mode)) {
-        switch(mode) {
-            case 0:
-                res = 0;
-                if(status & 0x20) {
-                    res = 1;
-                }
-                *enabled = res;
+    if (cpuGetMode(nStatus, &eMode)) {
+        switch (eMode) {
+            case CM_USER:
+                *peSize = nStatus & 0x20 ? CS_64BIT : CS_32BIT;
                 break;
-            case 1: 
-                res = 0;
-                if(status & 0x40) {
-                    res = 1;
-                }
-                *enabled = res;
+            case CM_SUPER:
+                *peSize = nStatus & 0x40 ? CS_64BIT : CS_32BIT;
                 break;
-            case 2:
-                res = 0;
-                if(status & 0x80) {
-                    res = 1;
-                }
-                *enabled = res;
+            case CM_KERNEL:
+                *peSize = nStatus & 0x80 ? CS_64BIT : CS_32BIT;
                 break;
             default:
-                return 0;
+                return false;
         }
 
-        if(out_mode != NULL) {
-            *out_mode = mode;
+        if (peMode != NULL) {
+            *peMode = eMode;
         }
 
-        return 1;
+        return true;
     }
 
-    return 0;
+    return false;
 }
 
-/**
- * @brief Sets the status bits of the VR4300
- * 
- * @param cpu The emulated VR4300
- * @param mask Unused mask bits for the status register.
- * @param status New status.
- * @param arg3 Unused.
- * @return s32 1 on success, 0 otherwise.
- */
-s32 cpuSetCP0Status(cpu_class_t *cpu, u32 mask, u64 status, u32 arg3) {
-    s32 new_status_mode;
-    s32 prev_status_mode;
-    s32 new_status_64enabled;
-    s32 prev_status_64enabled;
+static bool cpuSetCP0_Status(Cpu* pCPU, u64 nStatus, u32 unknown) NO_INLINE {
+    CpuMode eMode;
+    CpuMode eModeLast;
+    CpuSize eSize;
+    CpuSize eSizeLast;
 
-    if(!cpuGetSize(status, &new_status_64enabled, &new_status_mode)) { 
-        return 0;
+    if (!cpuGetSize(nStatus, &eSize, &eMode)) {
+        return false;
+    }
+    if (!cpuGetSize(pCPU->anCP0[12], &eSizeLast, &eModeLast)) {
+        return false;
     }
 
-    if(!cpuGetSize(cpu->cp0[CP0_STATUS].d, &prev_status_64enabled, &prev_status_mode)) {
-        return 0;
-    }
+    pCPU->anCP0[12] = nStatus;
 
-    cpu->cp0[CP0_STATUS].d = status;
-    return 1;
+    return true;
 }
 
-#ifdef NON_MATCHING
-s32 cpuSetRegisterCP0(cpu_class_t *cpu, s32 reg, u64 val) {
-    s32 set_reg = 0;
+// matches but data doesn't
+bool cpuSetRegisterCP0(Cpu* pCPU, s32 iRegister, s64 nData) {
+    s32 pad;
+    s32 bFlag = false;
 
-    switch(reg) {
-        case CP0_INDEX:
-            cpu->cp0[CP0_INDEX].d = (cpu->cp0[CP0_INDEX].d & 0x80000000) | (val & set_cp0_reg_mask[0]);
+    switch (iRegister) {
+        case 0:
+            pCPU->anCP0[0] = (pCPU->anCP0[0] & 0x80000000) | (nData & ganMaskSetCP0[0]);
             break;
-        case CP0_RANDOM:
+        case 1:
         case 7:
-        case CP0_BADVADDR:
-        case CP0_PRID:
+        case 8:
+            break;
+        case 9:
+            bFlag = true;
+            break;
+        case 11:
+            bFlag = true;
+            xlObjectEvent(gpSystem, 0x1001, (void*)3);
+            if (pCPU->nMode & 1 || (nData & ganMaskSetCP0[11]) == 0) {
+                pCPU->nMode &= ~1;
+            } else {
+                pCPU->nMode |= 1;
+            }
+            break;
+        case 12:
+            cpuSetCP0_Status(pCPU, nData & ganMaskSetCP0[12], 0);
+            break;
+        case 13:
+            xlObjectEvent(gpSystem, (nData & 0x100) ? 0x1000 : 0x1001, (void*)0);
+            xlObjectEvent(gpSystem, (nData & 0x200) ? 0x1000 : 0x1001, (void*)1);
+            bFlag = true;
+            break;
+        case 14:
+            bFlag = true;
+            break;
+        case 15:
+            break;
+        case 16:
+            pCPU->anCP0[16] = (u32)(nData & ganMaskSetCP0[16]);
+            break;
         case 21:
         case 22:
         case 23:
@@ -678,6903 +1208,6528 @@ s32 cpuSetRegisterCP0(cpu_class_t *cpu, s32 reg, u64 val) {
         case 27:
         case 31:
             break;
-        case CP0_COUNT:
-            set_reg = 1;
-            break;
-        case CP0_COMPARE:
-            set_reg = 1;
-            xlObjectEvent(gSystem, 0x1001, (void*)3);
-            if(cpu->status & 1 || !(val & set_cp0_reg_mask[11])) {
-                cpu->status &= ~1;
-            } else {
-                cpu->status |= 1;
-            }
-
-            break;
-        case CP0_STATUS:
-            cpuSetCP0Status(cpu, set_cp0_reg_mask[12], val & set_cp0_reg_mask[12], 0);
-            break;
-        case CP0_CAUSE:
-            xlObjectEvent(gSystem, val & 0x100 ? 0x1000 : 0x1001, (void*) 0);
-            xlObjectEvent(gSystem, val & 0x200 ? 0x1000 : 0x1001, (void*) 0);
-            set_reg = 1;
-            break;
-        case CP0_EPC:
-            set_reg = 1;
-            break;
-        case CP0_CONFIG:
-            cpu->cp0[0x10].d = (u32)(val & set_cp0_reg_mask[0x10]);
-            break;
         default:
-            set_reg = 1;
+            bFlag = true;
             break;
     }
 
-    if(set_reg) {
-        cpu->cp0[reg].d = val & set_cp0_reg_mask[reg];
+    if (bFlag) {
+        pCPU->anCP0[iRegister] = nData & ganMaskSetCP0[iRegister];
     }
 
-    return 1;
-}
-#else
-s32 cpuSetRegisterCP0(cpu_class_t *cpu, s32 reg, u64 val);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuSetRegisterCP0.s")
-#endif
-
-#ifdef NON_MATCHING
-inline s32 checkflg(cpu_class_t *cpu) {
-    s32 i;
-    s32 val = 0;
-
-    for(i = 0; i < sizeof(cpu->tlb) / sizeof(*cpu->tlb); i++) {
-        if(!(cpu->tlb[i].entry_hi.w[1] & 2)) {
-            val += 1;
-        }
-    }
-
-    return val;
+    return true;
 }
 
-s32 cpuGetRegisterCP0(cpu_class_t *cpu, s32 reg, u64 *dest) {
-    s32 i;
-    s32 res;
-    s32 set_reg = 0;
+// matches but data doesn't
+bool cpuGetRegisterCP0(Cpu* pCPU, s32 iRegister, s64* pnData) {
+    bool bFlag = false;
 
-    switch(reg) {
+    switch (iRegister) {
         case 1:
-            res = checkflg(cpu);
-
-            *dest = res;
+            *pnData = cpuTLBRandom(pCPU);
             break;
         case 9:
-            set_reg = 1;
+            bFlag = true;
             break;
         case 11:
-            set_reg = 1;
+            bFlag = true;
             break;
         case 14:
-            set_reg = 1;
+            bFlag = true;
             break;
-        case 7: // rsvd?
-            *dest = 0;
+        case 7:
+            *pnData = 0;
             break;
         case 8:
-            set_reg = 1;
+            bFlag = true;
             break;
         case 21:
-            *dest = 0;
+            *pnData = 0;
             break;
         case 22:
-            *dest = 0;
+            *pnData = 0;
             break;
         case 23:
-            *dest = 0;
-            break;  
+            *pnData = 0;
+            break;
         case 24:
-            *dest = 0;
+            *pnData = 0;
             break;
         case 25:
-            *dest = 0;
+            *pnData = 0;
             break;
         case 31:
-            *dest = 0;
+            *pnData = 0;
             break;
         default:
-            set_reg = 1;
+            bFlag = true;
+            break;
     }
 
-    if(set_reg) {
-        *dest = cpu->cp0[reg].d & get_cp0_reg_mask[reg];
+    if (bFlag) {
+        *pnData = pCPU->anCP0[iRegister] & ganMaskGetCP0[iRegister];
     }
 
-    return 1;
+    return true;
 }
-#else
-s32 cpuGetRegisterCP0(cpu_class_t *cpu, s32 reg, u64 *dest);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuGetRegisterCP0.s")
-#endif
-#undef NON_MATCHING
 
-/**
- * @brief Mapping of VR4300 to PPC registers.  
- * If bit 0x100 is set the VR4300 register is not directly mapped to any PPC register,
- * Instead the register will use the emulated VR4300 object for saving/loading register values.
- */
-u32 reg_map[] = {
-    10,     // r0 -> r10
-    11,     // at -> r11
-    12,     // v0 -> r12
-    14,     // v1 -> r14
-    15,     // a0 -> r15
-    16,     // a1 -> r16
-    17,     // a2 -> r17
-    18,     // a3 -> r18
-    19,     // t0 -> r19
-    20,     // t1 -> r20
-    21,     // t2 -> r21
-    22,     // t3 -> r22
-    23,     // t4 -> r23
-    24,     // t5 -> r24
-    25,     // t6 -> r25
-    26,     // t7 -> r26
-    0x110,  // s0 -> gpr[16] (no ppc reg)
-    0x111,  // s1 -> gpr[17] (no ppc reg)
-    0x112,  // s2 -> gpr[18] (no ppc reg)
-    0x113,  // s3 -> gpr[19] (no ppc reg)
-    0x114,  // s4 -> gpr[20] (no ppc reg)
-    0x115,  // s5 -> gpr[21] (no ppc reg)
-    0x116,  // s6 -> gpr[22] (no ppc reg)
-    0x117,  // s7 -> gpr[23] (no ppc reg)
-    27,     // t8 -> r27
-    28,     // t9 -> r28
-    29,     // k0 -> r29
-    30,     // k1 -> r30
-    0x11C,  // gp -> gpr[28] (no ppc reg)
-    31,     // sp -> r31
-    0x11E,  // fp -> gpr[30] (no ppc reg)
-    0x11F   // ra -> gpr[31] (no ppc reg)
-};
-
-/**
- * @brief Sets CP0 values for returnning from an exception.
- * 
- * @param cpu The emulated VR4300.
- * @return s32 1 on success, 0 otherwise.
- */
-s32 __cpuERET(cpu_class_t *cpu) {
-    if(cpu->cp0[CP0_STATUS].d & STATUS_ERL) {
-        cpu->pc = cpu->cp0[CP0_ERROREPC].d;
-        cpu->cp0[CP0_STATUS].d &= ~STATUS_ERL;
+bool __cpuERET(Cpu* pCPU) {
+    if (pCPU->anCP0[12] & 4) {
+        pCPU->nPC = pCPU->anCP0[30];
+        pCPU->anCP0[12] &= ~4;
     } else {
-        cpu->pc = cpu->cp0[CP0_EPC].d;
-        cpu->cp0[CP0_STATUS].d &= ~STATUS_EXL;
+        pCPU->nPC = pCPU->anCP0[14];
+        pCPU->anCP0[12] &= ~2;
     }
 
-    cpu->status |= 0x24;
-    return 1;
+    pCPU->nMode |= 4;
+    pCPU->nMode |= 0x20;
+
+    return true;
 }
 
-/**
- * @brief Sets flags for handling cpu breakpoints.
- * 
- * @param cpu The emulated VR4300.
- * @return s32 1 on success, 0 otherwise.
- */
-s32 __cpuBreak(cpu_class_t *cpu) {
-    cpu->status |= 2;
-    return 1;
+bool __cpuBreak(Cpu* pCPU) {
+    pCPU->nMode |= 2;
+    return true;
 }
 
-s32 cpuGetBranchDistance(cpu_class_t *cpu, recomp_node_t *node, s32 *branch_dist, s32 addr, u32 *code) {
-    s32 i;
+bool cpuFindBranchOffset(Cpu* pCPU, CpuFunction* pFunction, s32* pnOffset, s32 nAddress, s32* anCode) {
+    s32 iJump;
 
-    if(code == NULL) {
-        *branch_dist = 0;
-        return 1;
+    if (anCode == NULL) {
+        *pnOffset = 0;
+        return true;
     }
 
-    for(i = 0; i < node->branch_cnt; i++) {
-        if(addr == node->branches[i].n64_target) {
-            *branch_dist = node->branches[i].branch_dist;
-            return 1;
+    for (iJump = 0; iJump < pFunction->nCountJump; iJump++) {
+        if (nAddress == pFunction->aJump[iJump].nAddressN64) {
+            *pnOffset = pFunction->aJump[iJump].nOffsetHost;
+            return true;
         }
     }
 
-    return 0;
+    return false;
 }
 
-/**
- * @brief Checks the type of delay an instruction has.
- * 
- * @param inst The instruction to determine the delay type for.
- * @return s32 The type of delay the instruction has.
- */
-s32 cpuCheckDelaySlot(u32 inst) {
-    s32 ret = 0;
+// matches but data doesn't
+static bool cpuCheckDelaySlot(u32 opcode) {
+    s32 flag = 0;
 
-    if(inst == 0) {
-        return 0;
+    if (opcode == 0) {
+        return false;
     }
 
-    switch(MIPS_OP(inst)) {
-        case OPC_SPECIAL:
-            switch(SPEC_FUNCT(inst)) {
-                case SPEC_JR:
-                    ret = 0xD05;
+    switch (MIPS_OP(opcode)) {
+        case 0x00: // special
+            switch (MIPS_FUNCT(opcode)) {
+                case 0x08: // jr
+                    flag = 0xD05;
                     break;
-                case SPEC_JALR:
-                    ret = 0x8AE;
-                    break;
-            }
-            break;
-        case OPC_REGIMM:
-            switch(REGIMM_SUB(inst)) {
-                case REGIMM_BLTZ:
-                case REGIMM_BGEZ:
-                case REGIMM_BLTZL:
-                case REGIMM_BGEZL:
-                case REGIMM_BLTZAL:
-                case REGIMM_BGEZAL:
-                case REGIMM_BLTZALL:
-                case REGIMM_BGEZALL:
-                    ret = 0x457;
+                case 0x09: // jalr
+                    flag = 0x8AE;
                     break;
             }
             break;
-        case OPC_CP0:
-            switch(MIPS_CP0FUNC(inst)) {
+        case 0x01: // regimm
+            switch (MIPS_RT(opcode)) {
+                case 0x00: // bltz
+                case 0x01: // bgez
+                case 0x02: // bltzl
+                case 0x03: // bgezl
+                case 0x10: // bltzal
+                case 0x11: // bgezal
+                case 0x12: // bltzall
+                case 0x13: // bgezall
+                    flag = 0x457;
+                    break;
+            }
+            break;
+        case 0x10: // cop0
+            switch (MIPS_FUNCT(opcode)) {
+                case 0x01:
+                case 0x02:
+                case 0x05:
+                case 0x08:
+                case 0x18:
+                    break;
                 default:
-                    switch((inst >> 0x15) & 0x1F) {
-                        default:
-                            break;
-                        case 8:
-                            switch((inst >> 0x10) & 0x1F) {
-                                case 0:
-                                case 1:
-                                case 2:
-                                case 3:
-                                    ret = 0x457;
-                                    break;
-                                default:
+                case 0x00:
+                case 0x03:
+                case 0x04:
+                case 0x06:
+                case 0x07:
+                case 0x09:
+                case 0x0A:
+                case 0x0B:
+                case 0x0C:
+                case 0x0D:
+                case 0x0E:
+                case 0x0F:
+                case 0x10:
+                case 0x11:
+                case 0x12:
+                case 0x13:
+                case 0x14:
+                case 0x15:
+                case 0x16:
+                case 0x17:
+                    switch (MIPS_RS(opcode)) {
+                        case 0x08:
+                            switch (MIPS_RT(opcode)) {
+                                case 0x00:
+                                case 0x01:
+                                case 0x02:
+                                case 0x03:
+                                    flag = 0x457;
                                     break;
                             }
                             break;
                     }
                     break;
-                case 1:
-                case 2:
-                case 5:
-                case 8:
-                case 0x18:
-                    break;
             }
             break;
-        case OPC_CP1:
-            if(MIPS_FSUB(inst) == 8) {
-                switch((inst >> 0x10) & 0x1F) {
-                    case 0:
-                    case 1:
-                    case 2:
-                    case 3:
-                        ret = 0x457;
-                        break;
-                    default:
+        case 0x11: // cop1
+            if (MIPS_RS(opcode) == 0x08) {
+                switch (MIPS_RT(opcode)) {
+                    case 0x00: // bc1f
+                    case 0x01: // bc1t
+                    case 0x02: // bc1fl
+                    case 0x03: // bc1tl
+                        flag = 0x457;
                         break;
                 }
-                break;
             }
             break;
-        case OPC_J:
-            ret = 0xD05;
+        case 0x02: // j
+            flag = 0xD05;
             break;
-        case OPC_JAL:
-            ret = 0x8AE;
+        case 0x03: // jal
+            flag = 0x8AE;
             break;
-        case OPC_BEQ:
-        case OPC_BNE:
-        case OPC_BLEZ:
-        case OPC_BGTZ:
-        case OPC_BEQL:
-        case OPC_BNEL:
-        case OPC_BLEZL:
-        case OPC_BGTZL:
-            ret = 0x457;
+        case 0x04: // beq
+        case 0x05: // bne
+        case 0x06: // blez
+        case 0x07: // bgtz
+        case 0x14: // beql
+        case 0x15: // bnel
+        case 0x16: // blezl
+        case 0x17: // bgtzl
+            flag = 0x457;
             break;
     }
 
-    return ret;
+    return flag;
 }
 
-/**
- * @brief Filles a code section of NOPs
- * 
- * @param code Pointer to fill nops to.
- * @param pos Position in @code to start filling.
- * @param cnt The amount of NOPs to fill.
- */
-void cpuNOPFill(u32 *code, s32 *pos, s32 cnt) {
-    if(code == NULL) {
-        *pos += cnt;
+static void cpuCompileNOP(s32* anCode, s32* iCode, s32 number) {
+    if (anCode == NULL) {
+        *iCode += number;
         return;
     }
 
-    while(cnt-- != 0) {
-        code[(*pos)++] = 0x60000000; // NOP
+    while (number-- != 0) {
+        anCode[(*iCode)++] = 0x60000000;
     }
 }
 
-#ifdef NON_MATCHING
-// gSystem is loaded each time in original
-s32 func_8000E734(cpu_class_t *cpu, u32 inst, u32 prev_inst, u32 next_inst, s32 pc, u32 *code, s32 *arg6, s32 *arg7) {
-    if(gSystem->rom_id == 'CLBJ' || gSystem->rom_id == 'CLBE' || gSystem->rom_id =='CLBP') {
-        // lw sp, 0x0000(a0)
-        // lw ra, 0x0004(a0)
-        // lw s0, 0x0008(a0)
-        if(inst == 0x8C9F0004 && prev_inst == 0x8C9D0000 && next_inst == 0x8C900008) {
-            cpu->unk_0x12220 |= 2;
+#ifndef NON_MATCHING
+static bool fn_8000E734(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3);
+// #pragma GLOBAL_ASM("asm/non_matchings/cpu/fn_8000E734.s")
+#else
+static bool fn_8000E734(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3) {
+    if (gpSystem->eTypeROM == 'CLBJ' || gpSystem->eTypeROM == 'CLBE' || gpSystem->eTypeROM == 'CLBP') {
+        // Mario Party
+        if (arg1 == 0x8C9F0004 && arg2 == 0x8C9D0000 && arg3 == 0x8C900008) {
+            pCPU->nFlagCODE |= 2;
         }
-    } else if(gSystem->rom_id == 'NFXJ' || gSystem->rom_id == 'NFXE' || gSystem->rom_id == 'NFXP') {
-        // nop
-        // lw ra, 0x003C(sp)
-        // sw s2, 0x0040(sp)
-        if(inst == 0x8FBF003C && prev_inst == 0x00000000 && next_inst == 0xAFB20040) {
-            cpu->unk_0x12220 |= 2;
+    } else if (gpSystem->eTypeROM == 'NFXJ' || gpSystem->eTypeROM == 'NFXE' || gpSystem->eTypeROM == 'NFXP') {
+        // Star Fox 64
+        if (arg1 == 0x8FBF003C && arg2 == 0 && arg3 == 0xAFB20040) {
+            pCPU->nFlagCODE |= 2;
+        }
+    }
+
+    return true;
+}
+#endif
+
+s32 fn_8000E81C(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3, s32 arg5, s32* arg6, s32* arg7) {
+    s32 temp_r5;
+    s32 temp_r5_2;
+    s32 temp_r5_3;
+    s32 temp_r5_4;
+    s32 temp_r5_5;
+    s32 temp_r5_6;
+
+    if (gpSystem->eTypeROM == 'CLBJ' || gpSystem->eTypeROM == 'CLBE' || gpSystem->eTypeROM == 'CLBP') {
+        if (arg1 == 0xAC9F0004 && arg2 == 0xAC9D0000 && arg3 == 0xAC900008) {
+            if (arg6 != NULL) {
+                temp_r5 = *arg7;
+                arg6[temp_r5] = 0x80A30000;
+                *arg7 = temp_r5 + 1;
+            } else {
+                *arg7 += 1;
+            }
+
+            if (ganMapGPR[31] & 0x100) {
+                if (arg6 != NULL) {
+                    temp_r5_2 = *arg7;
+                    arg6[temp_r5_2] = 0x90A30000;
+                    *arg7 = temp_r5_2 + 1;
+                } else {
+                    *arg7 += 1;
+                }
+            } else if (arg6 != NULL) {
+                temp_r5_3 = *arg7;
+                arg6[temp_r5_3] = (ganMapGPR[31] << 0x10) | 0x7CA00000 | 0x2B78;
+                *arg7 = temp_r5_3 + 1;
+            } else {
+                *arg7 += 1;
+            }
+
+            pCPU->nFlagCODE |= 2;
+        }
+    } else if (gpSystem->eTypeROM == 'NFXJ' || gpSystem->eTypeROM == 'NFXE' || gpSystem->eTypeROM == 'NFXP') {
+        if (arg1 == 0xAFBF003C && arg2 == 0x0080A025 && arg3 == 0xAFB00018) {
+            if (arg6 != NULL) {
+                temp_r5_4 = *arg7;
+                arg6[temp_r5_4] = 0x80A30000;
+                *arg7 = temp_r5_4 + 1;
+            } else {
+                *arg7 += 1;
+            }
+
+            if (ganMapGPR[31] & 0x100) {
+                if (arg6 != NULL) {
+                    temp_r5_5 = *arg7;
+                    arg6[temp_r5_5] = 0x90A30000;
+                    *arg7 = temp_r5_5 + 1;
+                } else {
+                    *arg7 += 1;
+                }
+            } else if (arg6 != NULL) {
+                temp_r5_6 = *arg7;
+                arg6[temp_r5_6] = (ganMapGPR[31] << 0x10) | 0x7CA00000 | 0x2B78;
+                *arg7 = temp_r5_6 + 1;
+            } else {
+                *arg7 += 1;
+            }
+
+            pCPU->nFlagCODE |= 2;
         }
     }
 
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000E734.s")
-#endif
 
-#ifdef NON_MATCHING
-// Same issue as above, some other
-s32 func_8000E81C(cpu_class_t *cpu, u32 inst, u32 prev_inst, u32 next_inst, s32 arg4, u32 *code, s32 *pos, u32 *arg7) {
-    if(gSystem->rom_id == CLBJ || gSystem->rom_id == CLBE || gSystem->rom_id ==CLBP) {
-        // sw sp, 0x0000(a0)
-        // sw ra, 0x0004(a0)
-        // sw s0, 0x0008(a0)
-        if(inst == 0xAC9F0004 && prev_inst == 0xAC9D0000 && next_inst == 0xAC900008) {
-            if(code != NULL) {
-                code[(*pos)++] = 0x80A30000 + ((u32)&cpu->n64_ra - (u32)cpu); // addic r0, r0, 0xA380
-            } else {
-                (*pos)++;
-            }
-            *arg7 = reg_map[31];
-            if(*arg7 & 0x100) {
-                if(code != NULL) {
-                    code[(*pos)++] = 0x90A30000 + (u16)((u32)&cpu->gpr[31] - (u32)cpu + 4);
-                } else {
-                    (*pos)++;
-                }
-            } else {
-                if(code != NULL) {
-                    code[(*pos)++] = 0x7CA02B78 | (*arg7 << 16);
-                } else {
-                    (*pos)++;
-                }
-            }
-            cpu->unk_0x12220 |= 2;
-        }
-    } else if(gSystem->rom_id == NFXJ || gSystem->rom_id == NFXE || gSystem->rom_id == NFXP) {
-        // move s4, a0
-        // sw ra, 0x003C(sp)
-        // sw s0, 0x0018(sp)
-        if(inst == 0xAFBF003C && prev_inst == 0x0080A025 && next_inst == 0xAFB00018) {
-            if(code != NULL) {
-                // addic r0, r0, offset(cpu_class_t, n64_ra)
-                code[(*pos)++] = 0x80A30000 + ((u32)&cpu->n64_ra - (u32)cpu);
-            } else {
-                (*pos)++;
-            }
+static bool cpuGetPPC(Cpu* pCPU, s32* pnAddress, CpuFunction* pFunction, s32* anCode, s32* piCode, bool bSlot);
+// #pragma GLOBAL_ASM("asm/non_matchings/cpu/cpuGetPPC.s")
 
-            *arg7 = reg_map[31];
-            if(*arg7 & 0x100) {
-                if(code != NULL) {
-                    // stw r5, offsetof(cpu_class_t, gpr[31]) + 4(r3)
-                    code[(*pos)++] = 0x90A30000 + (u16)((u32)&cpu->gpr[31] - (u32)cpu + 4);
-                } else {
-                    (*pos)++;
-                }
-            } else {
-                if(code != NULL) {
-                    // mr *arg7, r5
-                    code[(*pos)++] = 0x7CA02B78 | (*arg7 << 16);
-                } else {
-                    (*pos)++;
-                }
-            }
-            cpu->unk_0x12220 |= 2;
-        }
-    }
-
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/func_8000E81C.s")
-#endif
-
-#ifdef NON_MATCHING
-/**
- * @brief The main MIPS->PPC Dynamic recompiler.
- * Largely unfinished.
- * @param cpu The emulated VR4300.
- * @param inst_addr The address to recompile.
- * @param node The function that is being recompiled.
- * @param code Pointer to the recompiled code.
- * @param pos Pointer to the current position in the recompiled code.
- * @param delay 1 if we are recompiling a delay slot.
- * @return s32 1 on success, 0 otherwise.
- */
-s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, s32 *pos, s32 delay) {
-    u32 *mips_buf;
-    u32 prev_inst;
-    u32 cur_inst;
-    u32 next_inst;
-    s32 skip;
-    s32 cur_inst_addr;
-    s32 i;
-    s32 bVar2;
-    u32 offset;
-    s32 iVar5 = 0;
-    u32 rA;
-    u32 rS;
-    u32 rD;
-    u32 rB;
-    s32 prev_pos;
-
-
-    if(!cpuGetAddressBuffer(cpu, (void**)&mips_buf, *inst_addr)) {
-        return 0;
-    }
-
-    skip = 0;
-    next_inst = mips_buf[1];
-    cur_inst = mips_buf[0];
-    prev_inst = mips_buf[-1];
-    cur_inst_addr = *inst_addr;
-    
-    (*inst_addr) += 4;
-    
-    for(i = 0; i < cpu->hack_cnt; i++) {
-        if(cur_inst_addr == cpu->hacks[i].addr && cur_inst == cpu->hacks[i].expected) {
-            if(cpu->hacks[i].replacement == -1) {
-                skip = 1;
-            }
-
-            if(cpu->hacks[i].replacement != -1) {
-                cur_inst = cpu->hacks[i].replacement;
-            }
-        }
-
-        if((cur_inst_addr + 4) == cpu->hacks[i].addr && next_inst == cpu->hacks[i].expected) {
-            if(cpu->hacks[i].replacement != -1) {
-                next_inst = cpu->hacks[i].replacement;
-            }
-        }
-
-        if((cur_inst_addr - 4) == cpu->hacks[i].addr && prev_inst == cpu->hacks[i].expected) {
-            if(cpu->hacks[i].replacement != -1) {
-                prev_inst = cpu->hacks[i].replacement;
-            }
-        }
-    }
-
-    cpu->unk_0x12288 = 0;
-    if(*pos == 0) {
-        cpu->unk_0x1228C = -1;
-
-        if(!skip) {
-            if(!cpuCheckDelaySlot(cur_inst)) {
-                if((node->n64_end_addr - node->n64_start_addr) / 4 >= 25) {
-                    skip = 1;
-                }
-
-                if((node->n64_end_addr - node->n64_start_addr) / 4 <= 26) {
-                    bVar2 = 1;
-                }
-            }
-
-            if(code != NULL) {
-                code[(*pos)++] = 0x3CA00000 | ((u32)node >> 0x10);
-                code[(*pos)++] = 0x60A50000 | ((u32)node & 0xFFFF);
-                code[(*pos)++] = 0x80C50028;
-                code[(*pos)++] = 0x2C060000;
-                code[(*pos)++] = 0x41820008;
-                code[(*pos)++] = 0x90850028;
-            }
-
-            if(bVar2) {
-                if(code != NULL) {
-                    code[(*pos)++] = 0x80a3003c;
-                    code[(*pos)++] = 0x7ca62850;
-                    code[(*pos)++] = 0x2c050002;
-                    code[(*pos)++] = 0x41800014;
-                    code[(*pos)++] = 0x3ca00000 | (cur_inst_addr >> 0x10);
-                    code[(*pos)++] = 0x7ca62850 | (cur_inst_addr & 0xFFFF);
-                    offset = ((u32)cpu->execute_opcode -(u32)&code[*pos]);
-                    code[(*pos)++] = 0x48000001 | (offset & 0x3FFFFFC);
-                } else {
-                    (*pos) += 16;
-                }
-            }
-        }
-    } else {
-        iVar5 = cpuCheckDelaySlot(prev_inst);
-    }
-
-    bVar2 = 0;
-    if(cur_inst != 0 && (iVar5 || delay)) {
-        bVar2 = 1;
-    }
-
-    if(!skip) {
-        if(code == NULL || bVar2) {
-            cpu->unk_0x12274 = 0;
-            cpu->unk_0x12220 = 0;
-            cpu->unk_0x1228C = -1;
-            cpu->unk_0x12294 = 0;
-        }
-
-        switch(MIPS_OP(cur_inst)) {
-            case OPC_SPECIAL:
-                switch(SPEC_FUNCT(cur_inst)) {
-                    case SPEC_SLL:
-                        if(cur_inst == 0) {
-                            if(code != NULL) {
-                                code[(*pos)++] = 0x60000000; // NOP
-                            }
-                        }
-
-                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
-
-                        rA = reg_map[MIPS_RD(cur_inst)];
-
-                        if(rA & 0x100) {
-                            rA = 5;
-                        }
-
-                        rS = reg_map[MIPS_RT(cur_inst)];
-                        if(rS & 0x100) {
-                            rS = 6;
-                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RT(cur_inst))) {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // mr r6, cpu->tmp_ppc_dest_reg
-                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
-                                }
-                            } else {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // lwz r6, cpu->gpr[rt]
-                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
-                                }
-                            }
-                        }
-
-                        if(code != NULL) {
-                            // li r7, shift_amt
-                            code[*pos] = 0x38E00000 | ((cur_inst >> 6) & 0x1F);
-                        }
-
-                        (*pos)++;
-
-                        if(code != NULL) {
-                            // slw rA, rS, r7
-                            code[*pos] = 0x7C000030 | (rS << 21) | (rA << 16) | 0x3800;
-                        }
-
-                        (*pos)++;
-
-                        if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
-                            cpu->unk_0x12274 = 2;
-                            cpu->tmp_mips_dest_reg = MIPS_RD(cur_inst);
-                            cpu->tmp_ppc_dest_reg = rA;
-                            if(code != NULL) {
-                                // stw r5, cpu->gpr[rd]
-                                code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
-                            }
-                        }
-
-                        break;
-                    case SPEC_SRL:
-                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
-
-                        rA = reg_map[MIPS_RD(cur_inst)];
-
-                        if(rA & 0x100) {
-                            rA = 5;
-                        }
-
-                        rS = reg_map[MIPS_RT(cur_inst)];
-                        if(rS & 0x100) {
-                            rS = 6;
-                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RT(cur_inst))) {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // mr r6, cpu->tmp_ppc_dest_reg
-                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
-                                }
-                            } else {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // lwz r6, cpu->gpr[rt]
-                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
-                                }
-                            }
-                        }
-
-                        if(code != NULL) {
-                            // li r7, shift_amt
-                            code[*pos] = 0x38E00000 | ((cur_inst >> 6) & 0x1F);
-                        }
-
-                        (*pos)++;
-
-                        if(code != NULL) {
-                            // srw rA, rS, r7
-                            code[*pos] = 0x7C000430 | (rS << 21) | (rA << 16) | 0x3800;
-                        }
-
-                        (*pos)++;
-
-                        if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
-                            cpu->unk_0x12274 = 2;
-                            cpu->tmp_mips_dest_reg = MIPS_RD(cur_inst);
-                            cpu->tmp_ppc_dest_reg = rA;
-                            if(code != NULL) {
-                                // stw r5, cpu->gpr[rd]
-                                code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
-                            }
-                        }
-
-                        break;
-                    case SPEC_SRA:
-                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
-
-                        rA = reg_map[MIPS_RD(cur_inst)];
-
-                        if(rA & 0x100) {
-                            rA = 5;
-                        }
-
-                        rS = reg_map[MIPS_RT(cur_inst)];
-                        if(rS & 0x100) {
-                            rS = 6;
-                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RT(cur_inst))) {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // mr r6, cpu->tmp_ppc_dest_reg
-                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
-                                }
-                            } else {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // lwz r6, cpu->gpr[rt]
-                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
-                                }
-                            }
-                        }
-
-                        if(code != NULL) {
-                            // srawi rA, rS, r7
-                            code[*pos] = 0x7C000670 | (rS << 21) | (rA << 16) | (((cur_inst >> 6) & 0x1F) << 11);
-                        }
-
-                        (*pos)++;
-
-                        if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
-                            cpu->unk_0x12274 = 2;
-                            cpu->tmp_mips_dest_reg = MIPS_RD(cur_inst);
-                            cpu->tmp_ppc_dest_reg = rA;
-                            if(code != NULL) {
-                                // stw r5, cpu->gpr[rd]
-                                code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
-                            }
-                        }
-
-                        break;
-                    case SPEC_SLLV:
-                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
-
-                        rA = reg_map[MIPS_RD(cur_inst)];
-
-                        if(rA & 0x100) {
-                            rA = 5;
-                        }
-
-                        rS = reg_map[MIPS_RT(cur_inst)];
-                        if(rS & 0x100) {
-                            rS = 6;
-                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RT(cur_inst))) {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // mr r6, cpu->tmp_ppc_dest_reg
-                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
-                                }
-                            } else {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // lwz r6, cpu->gpr[rt]
-                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
-                                }
-                            }
-                        }
-
-                        rB = reg_map[MIPS_RS(cur_inst)];
-                        if(rB & 0x100) {
-                            rB = 7;
-                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RS(cur_inst))) {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // mr r6, cpu->tmp_ppc_dest_reg
-                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
-                                }
-                            } else {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // lwz r6, cpu->gpr[rs]
-                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
-                                }
-                            }
-                        }
-
-                        if(code != NULL) {
-                            // andi. rB, rB, 0x1F
-                            code[*pos] = 0x70000000 | (rB << 21) | (rB << 16) | 0x1F;
-                        }
-
-                        (*pos)++;
-
-                        if(code != NULL) {
-                            // slw rA, rS, rB
-                            code[*pos] = 0x7C000030 | (rS << 21) | (rA << 16) | (rB << 11);
-                        }
-
-                        (*pos)++;
-
-                        if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
-                            cpu->unk_0x12274 = 2;
-                            cpu->tmp_mips_dest_reg = MIPS_RD(cur_inst);
-                            cpu->tmp_ppc_dest_reg = rA;
-                            if(code != NULL) {
-                                // stw r5, cpu->gpr[rd]
-                                code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
-                            }
-                        }
-
-                        break;
-                    case SPEC_SRLV:
-                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
-
-                        rA = reg_map[MIPS_RD(cur_inst)];
-
-                        if(rA & 0x100) {
-                            rA = 5;
-                        }
-
-                        rS = reg_map[MIPS_RT(cur_inst)];
-                        if(rS & 0x100) {
-                            rS = 6;
-                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RT(cur_inst))) {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // mr r6, cpu->tmp_ppc_dest_reg
-                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
-                                }
-                            } else {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // lwz r6, cpu->gpr[rt]
-                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
-                                }
-                            }
-                        }
-
-                        rB = reg_map[MIPS_RS(cur_inst)];
-                        if(rB & 0x100) {
-                            rB = 7;
-                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RS(cur_inst))) {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // mr r6, cpu->tmp_ppc_dest_reg
-                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
-                                }
-                            } else {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // lwz r6, cpu->gpr[rs]
-                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
-                                }
-                            }
-                        }
-
-                        if(code != NULL) {
-                            // andi. rB, rB, 0x1F
-                            code[*pos] = 0x70000000 | (rB << 21) | (rB << 16) | 0x1F;
-                        }
-
-                        (*pos)++;
-
-                        if(code != NULL) {
-                            // srw rA, rS, rB
-                            code[*pos] = 0x7C000430 | (rS << 21) | (rA << 16) | (rB << 11);
-                        }
-
-                        (*pos)++;
-
-                        if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
-                            cpu->unk_0x12274 = 2;
-                            cpu->tmp_mips_dest_reg = MIPS_RD(cur_inst);
-                            cpu->tmp_ppc_dest_reg = rA;
-                            if(code != NULL) {
-                                // stw r5, cpu->gpr[rd]
-                                code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
-                            }
-                        }
-
-                        break;
-                    case SPEC_SRAV:
-                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
-
-                        rA = reg_map[MIPS_RD(cur_inst)];
-
-                        if(rA & 0x100) {
-                            rA = 5;
-                        }
-
-                        rS = reg_map[MIPS_RT(cur_inst)];
-                        if(rS & 0x100) {
-                            rS = 6;
-                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RT(cur_inst))) {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // mr r6, cpu->tmp_ppc_dest_reg
-                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
-                                }
-                            } else {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // lwz r6, cpu->gpr[rt]
-                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
-                                }
-                            }
-                        }
-
-                        rB = reg_map[MIPS_RS(cur_inst)];
-                        if(rB & 0x100) {
-                            rB = 7;
-                            if(cpuIsBranchTarget(cpu, cur_inst_addr, MIPS_RS(cur_inst))) {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // mr r6, cpu->tmp_ppc_dest_reg
-                                    code[(*pos)++] = 0x7C060378 | (cpu->tmp_ppc_dest_reg << 0xB) | (cpu->tmp_ppc_dest_reg << 0x15);
-                                }
-                            } else {
-                                if(code == NULL) {
-                                    (*pos)++;
-                                } else {
-                                    // lwz r6, cpu->gpr[rs]
-                                    code[(*pos)++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
-                                }
-                            }
-                        }
-
-                        if(code != NULL) {
-                            // andi. rB, rB, 0x1F
-                            code[*pos] = 0x70000000 | (rB << 21) | (rB << 16) | 0x1F;
-                        }
-
-                        (*pos)++;
-
-                        if(code != NULL) {
-                            // sraw rA, rS, rB
-                            code[*pos] = 0x7C000630 | (rS << 21) | (rA << 16) | (rB << 11);
-                        }
-
-                        (*pos)++;
-
-                        if(reg_map[MIPS_RD(cur_inst)] & 0x100) {
-                            cpu->unk_0x12274 = 2;
-                            cpu->tmp_mips_dest_reg = MIPS_RD(cur_inst);
-                            cpu->tmp_ppc_dest_reg = rA;
-                            if(code != NULL) {
-                                // stw r5, cpu->gpr[rd]
-                                code[*pos] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
-                            }
-                        }
-
-                        break;
-
-                    case SPEC_JR:
-                        // Compile delay slot if not a NOP
-                        if(next_inst != 0) {
-                            if(!cpuGetPPC(cpu, inst_addr, node, code, pos, 1)) {
-                                return 0;
-                            }
-
-                            (*inst_addr) -=4;
-                        }
-
-                        if(MIPS_RS(cur_inst) != MREG_RA) {
-                            cpu->unk_0x12270 = 0;
-                        }
-
-                        if(MIPS_RS(cur_inst) == MREG_RA && !(cpu->unk_0x12220 & 2)) {
-                            rA = reg_map[MIPS_RS(cur_inst)];
-                            if(rA & 0x100) {
-                                rA = 5;
-
-                                if(code != NULL) {
-                                    // lwz r5, cpu->gpr[rs]
-                                    code[(*pos++)] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
-                                } else {
-                                    (*pos)++;
-                                }
-                            }
-
-                            if(code != NULL) {
-                                // mtlr rA
-                                code[(*pos)++] = 0x7C0803A6 | (rA << 21);
-                                // blr
-                                code[(*pos)++] = 0x4E800020;
-                            }
-                        } else {
-                            rA = reg_map[MIPS_RS(cur_inst)];
-                            if(rA & 0x100) {
-                                if(code != NULL) {
-                                    // lwz r5, cpu->gpr[rd]
-                                    code[*pos] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
-                                }
-                            } else {
-                                if(code != NULL) {
-                                    // mr r5, rA
-                                    code[*pos] = 0x7C050378 | (rA << 21) | (rA << 11);
-                                }
-                            }
-                            
-                            (*pos)++;
-
-                            if(code != NULL) {
-                                offset = (u32)cpu->execute_jump - (u32)&code[*pos];
-                                code[(*pos)++] = 0x48000001 | (offset & 0x3FFFFFC);
-                            }
-                        }
-
-                        break;
-                    case SPEC_JALR:
-                        // Compile delay slot if not a NOP
-                        if(next_inst != 0) {
-                            if(!cpuGetPPC(cpu, inst_addr, node, code, pos, 1)) {
-                                return 0;
-                            }
-
-                            (*inst_addr) -=4;
-                        }
-
-                        if(code != NULL) {
-                            // lwz r5, cpu->running_node
-                            code[*pos + 0] = 0x80A3002C;
-                            // lis r7, 0x8000
-                            code[*pos + 1] = 0x3ce08000;
-                            // lwz r6, cpu->running_node->unk_0x28
-                            code[*pos + 2] = 0x80c50028;
-                            // or r6, r6, r7
-                            code[*pos + 3] = 0x7cc63b78;
-                            // lis r7, hi(cur_inst_addr + 8)
-                            code[*pos + 4] = 0x3ce00000 | ((cur_inst_addr + 8) >> 0x10);
-                            // stw r6, cpu->running_node->unk_0x28
-                            code[*pos + 5] = 0x90c50028;
-                            // ori r7, r7, lo(cur_inst_addr + 8)
-                            code[*pos + 6] = 0x60e70000 | ((cur_inst_addr + 8) & 0xFFFF);
-                        }
-
-                        (*pos) += 7;
-
-                        if(code != NULL) {
-                            // stw r7, cpu->n64_ra
-                            code[*pos] = 0x90E30030;
-                        }
-
-                        (*pos)++;
-
-                        rB = reg_map[MREG_RA];
-                        if(rB & 0x100) {
-                            if(code != NULL) {
-                                // lis r5, hi(ret_addr)
-                                code[*pos] = 0x3CA00000 | ((u32)&code[*pos + 5] >> 0x10);
-                                // ori r5, r5, lo(ret_addr)
-                                code[*pos + 1] = 0x60A50000 | ((u32)&code[*pos + 5] & 0xFFFF);
-                            }
-
-                            (*pos) += 2;
-
-                            if(code != NULL) {
-                                (*pos)++;
-                            } else {
-                                // stw r5, cpu->gpr[MREG_RA]
-                                code[(*pos)++] = 0x90A30000 + ((u32)&cpu->gpr[MREG_RA] - (u32)cpu + 4);
-                            }
-                        } else {
-                            if(code != NULL) {
-                                // lis rB, hi(ret_addr)
-                                code[*pos] = 0x3C000000 | ((u32)&code[*pos + 5] >> 0x10) | (reg_map[MREG_RA] << 21);
-                            }
-
-                            (*pos)++;
-
-                            if(code == NULL) {
-                                (*pos)++;
-                            }
-                        }
-
-                        rA = reg_map[MIPS_RS(cur_inst)];
-                        if(rA & 0x100) {
-                            if(code != NULL) {
-                                // lwz r5, cpu->gpr[rs]
-                                code[*pos] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
-                            }
-                        } else {
-                            if(code != NULL) {
-                                // mr r5, rA
-                                code[*pos] = 0x7C050378 | (rA << 21) | (rA << 11);
-                            }
-                        }
-
-                        (*pos)++;
-
-                        if(code != NULL) {
-                            offset = (u32)cpu->execute_jump - (u32)&code[*pos];
-                            // bl cpu->execute_jump
-                            code[*pos + 0] = 0x48000001 | (offset & 0x3FFFFFC);
-                            // lis r5, hi(node)
-                            code[*pos + 1] = 0x3cA00000 | ((u32)node >> 0x10);
-                            // ori r5, r5, lo(node)
-                            code[*pos + 2] = 0x60A50000 | ((u32)node & 0xFFFF);
-                            // stw r5, cpu->running_node
-                            code[*pos + 3] = 0x90A3002C;
-                            // lis r7, 0x8000
-                            code[*pos + 4] = 0x3CE08000;
-                            // lwz r6, node->unk_0x28
-                            code[*pos + 5] = 0x80C50028;
-                            // andc r6, r6, r7
-                            code[*pos + 6] = 0x7CC63878;
-                            // cmpwi r6, 0
-                            code[*pos + 7] = 0x2C060000;
-                            // beq + 8
-                            code[*pos + 8] = 0x41820008;
-                            // stw r4, node->unk_0x28
-                            code[*pos + 9] = 0x90850028;
-                        }
-
-                        (*pos) += 10;
-
-                        prev_pos = *pos;
-
-                        if(!cpuGetPPC(cpu, inst_addr, node, code, pos, 0)) {
-                            return 0;
-                        }
-
-                        if(code != NULL) {
-                            offset = *pos - prev_pos;
-                            // b from prev_pos to cur pos
-                            code[prev_pos] = 0x48000000 | (offset & 0x3FFFFFC);
-                        }
-
-                        break;
-                    case SPEC_MFHI:
-                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
-
-                        rA = reg_map[MIPS_RD(cur_inst)];
-                        if(rA & 0x100) {
-                            if(code != NULL) {
-                                // lwz r5, lo32(cpu->hi)
-                                code[*pos] = 0x80A30000 | ((u32)&cpu->hi - (u32)cpu + 4);
-                                // stw r5, lo32(cpu->gpr[rd])
-                                code[*pos + 1] = 0x90A30000 | ((u32)&cpu->gpr[rA] - (u32)cpu + 4);
-                                // lwz r5, hi32(cpu->hi)
-                                code[*pos + 2] = 0x80a30000 | ((u32)&cpu->hi - (u32)cpu);
-                                // stw r5, hi32(cpu->gpr[rd])
-                                code[*pos + 3] = 0x90a30000 | ((u32)&cpu->gpr[rA] - (u32)cpu);
-                            }
-                        } else {
-                            if(code != NULL) {
-                                // lwz rA, lo32(cpu->hi)
-                                code[*pos] = 0x80030000 | (rA << 21) + ((u32)&cpu->hi - (u32)cpu + 4);
-                                // lwz r5, hi32(cpu->hi)
-                                code[*pos + 1] = 0x80a30000 | ((u32)&cpu->hi - (u32)cpu);
-                                // stw r5, hi32(cpu->gpr[rd])
-                                code[*pos + 2] = 0x90a30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu);
-                            }
-                        }
-
-                        break;
-
-                    case SPEC_MTHI:
-                        rA = reg_map[MIPS_RS(cur_inst)];
-                        if(rA & 0x100) {
-                            if(code != NULL) {
-                                // lwz r5, lo32(cpu->gpr[rs])
-                                code[*pos] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
-                                // stw r5, lo32(cpu->hi)
-                                code[*pos + 1] = 0x90A30000 + ((u32)&cpu->hi -(u32)cpu + 4);
-                                // lwz r5, hi32(cpu->gpr[rs])
-                                code[*pos + 2] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu);
-                                // stw r5, hi32(cpu->hi)
-                                code[*pos + 3] = 0x90A30000 + ((u32)&cpu->hi - (u32)cpu);
-                            }
-                        } else {
-                            if(code != NULL) {
-                                // stw rA, lo32(cpu->hi)
-                                code[*pos] = 0x90030000 | (rA << 11) + ((u32)&cpu->hi - (u32)cpu + 4);
-                                // lwz r5, hi32(cpu->gpr[rs])
-                                code[*pos + 1] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu);
-                                // stw r5, hi32(cpu->hi)
-                                code[*pos + 2] = 0x90A30000 + ((u32)&cpu->hi - (u32)cpu);
-                            }
-                        }
-                        break;
-                    case SPEC_MFLO:
-                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
-
-                        rA = reg_map[MIPS_RD(cur_inst)];
-                        if(rA & 0x100) {
-                            if(code != NULL) {
-                                // lwz r5, lo32(cpu->lo)
-                                code[*pos] = 0x80A30000 | ((u32)&cpu->lo - (u32)cpu + 4);
-                                // stw r5, lo32(cpu->gpr[rd])
-                                code[*pos + 1] = 0x90A30000 | ((u32)&cpu->gpr[rA] - (u32)cpu + 4);
-                                // lwz r5, hi32(cpu->lo)
-                                code[*pos + 2] = 0x80a30000 | ((u32)&cpu->lo - (u32)cpu);
-                                // stw r5, hi32(cpu->gpr[rd])
-                                code[*pos + 3] = 0x90a30000 | ((u32)&cpu->gpr[rA] - (u32)cpu);
-                            }
-                        } else {
-                            if(code != NULL) {
-                                // lwz rA, lo32(cpu->lo)
-                                code[*pos] = 0x80030000 | (rA << 21) + ((u32)&cpu->lo - (u32)cpu + 4);
-                                // lwz r5, hi32(cpu->lo)
-                                code[*pos + 1] = 0x80a30000 | ((u32)&cpu->lo - (u32)cpu);
-                                // stw r5, hi32(cpu->gpr[rd])
-                                code[*pos + 2] = 0x90a30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu);
-                            }
-                        }
-
-                        break;
-                    case SPEC_MTLO:
-                        rA = reg_map[MIPS_RS(cur_inst)];
-                        if(rA & 0x100) {
-                            if(code != NULL) {
-                                // lwz r5, lo32(cpu->gpr[rs])
-                                code[*pos] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
-                                // stw r5, lo32(cpu->lo)
-                                code[*pos + 1] = 0x90A30000 + ((u32)&cpu->lo -(u32)cpu + 4);
-                                // lwz r5, hi32(cpu->gpr[rs])
-                                code[*pos + 2] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu);
-                                // stw r5, hi32(cpu->lo)
-                                code[*pos + 3] = 0x90A30000 + ((u32)&cpu->lo - (u32)cpu);
-                            }
-                        } else {
-                            if(code != NULL) {
-                                // stw rA, lo32(cpu->lo)
-                                code[*pos] = 0x90030000 | (rA << 11) + ((u32)&cpu->lo - (u32)cpu + 4);
-                                // lwz r5, hi32(cpu->gpr[rs])
-                                code[*pos + 1] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu);
-                                // stw r5, hi32(cpu->lo)
-                                code[*pos + 2] = 0x90A30000 + ((u32)&cpu->lo - (u32)cpu);
-                            }
-                        }
-                        break;
-                    case SPEC_DSLLV:
-                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
-
-                        rA = reg_map[MIPS_RT(cur_inst)];
-                        if(!(rA & 0x100)) {
-                            if(code != NULL) {
-                                code[(*pos)++] = 0x90030000 | (rA << 11) + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
-
-                            } else {
-                                (*pos)++;
-                            }
-                        }
-
-                        rS = reg_map[MIPS_RS(cur_inst)];
-                        if(!(rS & 0x100)) {
-                            code[(*pos)++] = 0x90030000 | (rS << 11) + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
-                        } else {
-                            (*pos)++;
-                        }
-
-                        if(code != NULL) {
-                            // lwz r5, hi32(cpu->gpr[rt])
-                            code[*pos + 0] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu);
-                            // lwz r6, cpu->gpr[rt]
-                            code[*pos + 1] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
-                            // lwz r7, cpu->gpr[rs]
-                            code[*pos + 2] = 0x80E30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
-                            offset = (u32)cpuCompile_DSLLV_function - (u32)&code[*pos + 3];
-                            // bl cpuCompile_DSLLV_function
-                            code[*pos + 3] = 0x48000001 | (offset & 0x3FFFFFC);
-                            // stw r5, hi32(cpu->gpr[rd])
-                            code[*pos + 4] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] -(u32)cpu);
-                        }
-
-                        (*pos) += 5;
-
-                        if(code != NULL) {
-                            // stw, r6, cpu->gpr[rD]
-                            code[*pos] = 0x90C30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
-                        }
-
-                        (*pos)++;
-
-                        rD = reg_map[MIPS_RD(cur_inst)];
-                        if(!(rD & 0x100)) {
-                            // mr rD, r6
-                            code[*pos] = 0x7CC03378 | (rD << 16);
-                        }
-                        break;
-                    case SPEC_DSRLV:
-                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
-
-                        rA = reg_map[MIPS_RT(cur_inst)];
-                        if(!(rA & 0x100)) {
-                            if(code != NULL) {
-                                code[(*pos)++] = 0x90030000 | (rA << 11) + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
-
-                            } else {
-                                (*pos)++;
-                            }
-                        }
-
-                        rS = reg_map[MIPS_RS(cur_inst)];
-                        if(!(rS & 0x100)) {
-                            code[(*pos)++] = 0x90030000 | (rS << 11) + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
-                        } else {
-                            (*pos)++;
-                        }
-
-                        if(code != NULL) {
-                            // lwz r5, hi32(cpu->gpr[rt])
-                            code[*pos + 0] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu);
-                            // lwz r6, cpu->gpr[rt]
-                            code[*pos + 1] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
-                            // lwz r7, cpu->gpr[rs]
-                            code[*pos + 2] = 0x80E30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
-                            offset = (u32)cpuCompile_DSRLV_function - (u32)&code[*pos + 3];
-                            // bl cpuCompile_DSLLV_function
-                            code[*pos + 3] = 0x48000001 | (offset & 0x3FFFFFC);
-                            // stw r5, hi32(cpu->gpr[rd])
-                            code[*pos + 4] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] -(u32)cpu);
-                        }
-
-                        (*pos) += 5;
-
-                        if(code != NULL) {
-                            // stw, r6, cpu->gpr[rD]
-                            code[*pos] = 0x90C30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
-                        }
-
-                        (*pos)++;
-
-                        rD = reg_map[MIPS_RD(cur_inst)];
-                        if(!(rD & 0x100)) {
-                            // mr rD, r6
-                            code[*pos] = 0x7CC03378 | (rD << 16);
-                        }
-                        break;
-                    case SPEC_DSRAV:
-                        cpu->unk_0x1222C &= ~(1 << MIPS_RD(cur_inst));
-
-                        rA = reg_map[MIPS_RT(cur_inst)];
-                        if(!(rA & 0x100)) {
-                            if(code != NULL) {
-                                code[(*pos)++] = 0x90030000 | (rA << 11) + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
-
-                            } else {
-                                (*pos)++;
-                            }
-                        }
-
-                        rS = reg_map[MIPS_RS(cur_inst)];
-                        if(!(rS & 0x100)) {
-                            code[(*pos)++] = 0x90030000 | (rS << 11) + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
-                        } else {
-                            (*pos)++;
-                        }
-
-                        if(code != NULL) {
-                            // lwz r5, hi32(cpu->gpr[rt])
-                            code[*pos + 0] = 0x80A30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu);
-                            // lwz r6, cpu->gpr[rt]
-                            code[*pos + 1] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(cur_inst)] - (u32)cpu + 4);
-                            // lwz r7, cpu->gpr[rs]
-                            code[*pos + 2] = 0x80E30000 + ((u32)&cpu->gpr[MIPS_RS(cur_inst)] - (u32)cpu + 4);
-                            offset = (u32)cpuCompile_DSRAV_function - (u32)&code[*pos + 3];
-                            // bl cpuCompile_DSLLV_function
-                            code[*pos + 3] = 0x48000001 | (offset & 0x3FFFFFC);
-                            // stw r5, hi32(cpu->gpr[rd])
-                            code[*pos + 4] = 0x90A30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] -(u32)cpu);
-                        }
-
-                        (*pos) += 5;
-
-                        if(code != NULL) {
-                            // stw, r6, cpu->gpr[rD]
-                            code[*pos] = 0x90C30000 + ((u32)&cpu->gpr[MIPS_RD(cur_inst)] - (u32)cpu + 4);
-                        }
-
-                        (*pos)++;
-
-                        rD = reg_map[MIPS_RD(cur_inst)];
-                        if(!(rD & 0x100)) {
-                            // mr rD, r6
-                            code[*pos] = 0x7CC03378 | (rD << 16);
-                        }
-                        break;
-                }
-                break;
-        }
-    }
-}
-#else
-s32 cpuGetPPC(cpu_class_t *cpu, s32 *inst_addr, recomp_node_t *node, u32 *code, s32 *pos, s32 delay);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuGetPPC.s")
-#endif
-
-s32 func_80031D4C(cpu_class_t *cpu, recomp_node_t *node, s32 arg2) {
-    return 0;
+//! TODO: remove NO_INLINE once this is matched
+static bool fn_80031D4C(Cpu* pCPU, CpuFunction* pFunction, s32 unknown) NO_INLINE {
+    return false;
 }
 
-#ifdef NON_MATCHING
-/**
- * @brief Creates a new recompiled function block.
- * 
- * @param cpu The emulated VR4300.
- * @param out_node A pointer to an already recompiled function, or one that has been created.
- * @param addr The n64 address of the function to find or create.
- * @return s32 1 on success, 0 otherwise.
- */
-s32 cpuMakeFunction(cpu_class_t *cpu, recomp_node_t **out_node, s32 addr) {
-    s32 success = 1;
-    branch_t branches[0x400];
-    s32 pos;
-    s32 total_inst;
-    s32 i;
-    size_t code_size;
-    size_t ext_call_size;
-    size_t alloc_size;
-    u32 *code;
-    u32 *code_p;
-    s32 ref_cnt;
-    s32 cur_addr;
-    recomp_node_t *node;
+static bool cpuMakeFunction(Cpu* pCPU, CpuFunction** ppFunction, s32 nAddressN64) {
+    s32 iCode;
+    s32 iCode0;
+    s32 pad;
+    s32 iJump;
+    s32 iCheck;
+    s32 firstTime;
+    s32 kill_value;
+    s32 memory_used;
+    s32 codeMemory;
+    s32 blockMemory;
+    s32* chunkMemory;
+    s32* anCode;
+    s32 nAddress;
+    CpuFunction* pFunction;
+    CpuJump aJump[1024];
 
-    if(!cpuFindFunction(cpu, addr, &node)) {
-        return 0;
+    firstTime = 1;
+    if (!cpuFindFunction(pCPU, nAddressN64, &pFunction)) {
+        return false;
     }
 
-    if(func_80031D4C(cpu, node, 1)) {
-        if(out_node != NULL) {
-            *out_node = node;
+    if (fn_80031D4C(pCPU, pFunction, 1)) {
+        if (ppFunction != NULL) {
+            *ppFunction = pFunction;
         }
-        return 1;
+
+        return true;
     }
 
-    if(node->recompiled_func == NULL) {
-        libraryTestFunction(gSystem->unk_0x0058, node);
-        node->branch_cnt = 0;
-        node->branches = branches;
-        cpu->unk_0x1221C = 0x20000000;
-        cpu->unk_0x12220 = 0;
-        node->unk_0x1C = 0;
-        node->state = 11;
-        cpu->unk_0x12270 = 1;
-        cpu->unk_0x12294 = 0;
-        pos = 0;
-        cur_addr = node->n64_start_addr;
-        while(cur_addr <= node->n64_end_addr) {
-            if(!cpuGetPPC(cpu, &cur_addr, node, NULL, &pos, 0)) {
-                return 0;
+    if (pFunction->pfCode == NULL) {
+        libraryTestFunction(SYSTEM_LIBRARY(gpSystem), pFunction);
+        pFunction->nCountJump = 0;
+        pFunction->aJump = aJump;
+        pCPU->nFlagRAM = 0x20000000;
+        pCPU->nFlagCODE = 0;
+        pFunction->callerID_total = 0;
+        pFunction->callerID_flag = 0xB;
+        pCPU->nOptimize.validCheck = 1;
+        pCPU->nOptimize.checkNext = 0;
+
+        iCode = 0;
+        nAddress = pFunction->nAddress0;
+        while (nAddress <= pFunction->nAddress1) {
+            if (!cpuGetPPC(pCPU, &nAddress, pFunction, NULL, &iCode, false)) {
+                return false;
             }
         }
-        total_inst = pos;
-        code_size = pos * 4;
-        alloc_size = code_size;
-        if(node->ext_call_cnt != 0) {
-            ext_call_size = node->ext_call_cnt * sizeof(*node->ext_calls);
-            alloc_size += ext_call_size;
+
+        iCode0 = iCode;
+        codeMemory = iCode * sizeof(s32);
+        memory_used = codeMemory;
+
+        iCheck = pFunction->callerID_total;
+        if (iCheck != 0) {
+            blockMemory = iCheck * sizeof(CpuCallerID);
+            memory_used += blockMemory;
         } else {
-            ext_call_size = 0;
+            blockMemory = 0;
         }
 
-        if(node->branch_cnt > 0) {
-            alloc_size += node->branch_cnt * sizeof(*node->branches);
+        if (pFunction->nCountJump > 0) {
+            memory_used += pFunction->nCountJump * sizeof(CpuJump);
         }
 
-        do {
-            s32 clean_cnt;
-            recomp_tree_t *recomp_tree;
-            if(cpuHeapTake((char**)&code, cpu, node, alloc_size)){
+        while (true) {
+            if (cpuHeapTake(&chunkMemory, pCPU, pFunction, memory_used)) {
                 break;
             }
 
-            recomp_tree = cpu->recomp_tree;
-            if(success) {
-                success = 0;
-                clean_cnt = cpu->call_cnt - 300;
-                continue;
-            }
-
-            clean_cnt += 95;
-            if(clean_cnt > (cpu->call_cnt - 10)) {
-                clean_cnt = cpu->call_cnt - 10;
-            }
-
-            recomp_tree->unk_0x70 = 0;
-            recomp_tree->unk_0x7C = NULL;
-            recomp_tree->unk_0x80 = 0;
-            if(node != NULL && node->unk_0x28 > 0) {
-                node->unk_0x28 = cpu->call_cnt;
-            }
-
-            if(recomp_tree->unk_0x78 == 0) {
-                if(recomp_tree->code_root != NULL) {
-                    treeForceCleanNodes(cpu, recomp_tree->code_root, clean_cnt);
-                }
+            if (firstTime) {
+                firstTime = 0;
+                kill_value = pCPU->survivalTimer - 300;
             } else {
-                if(recomp_tree->ovl_root != NULL) {
-                    treeForceCleanNodes(cpu, recomp_tree->ovl_root, clean_cnt);
+                kill_value += 95;
+                if (kill_value > pCPU->survivalTimer - 10) {
+                    kill_value = pCPU->survivalTimer - 10;
                 }
             }
 
-            recomp_tree->unk_0x78 ^= 1;
-        } while(1);
+            treeForceCleanUp(pCPU, pFunction, kill_value);
+        }
 
-        code_p = code;
-        if(ext_call_size != 0) {
-            ext_call_t *ext_call;
-            node->ext_call = (ext_call_t*)((char*)code_p + code_size);
-            ext_call = node->ext_call;
-            for(i = 0; i < ref_cnt; i++) {
-                ext_call[i].n64_addr = 0;
-                ext_call[i].vc_addr = 0;
+        anCode = chunkMemory;
+        if (blockMemory != 0) {
+            pFunction->block = (CpuCallerID*)((u8*)chunkMemory + codeMemory);
+            treeCallerInit(pFunction->block, iCheck);
+        }
+
+        pCPU->nFlagRAM = 0x20000000;
+        pCPU->nFlagCODE = 0;
+        pFunction->callerID_total = 0;
+        pFunction->callerID_flag = 0x16;
+        pCPU->nOptimize.checkNext = 0;
+        pCPU->nOptimize.destGPR_check = 0;
+        pCPU->nOptimize.destFPR_check = 0;
+
+        iCode = 0;
+        nAddress = pFunction->nAddress0;
+        while (nAddress <= pFunction->nAddress1) {
+            if (!cpuGetPPC(pCPU, &nAddress, pFunction, anCode, &iCode, false)) {
+                return false;
             }
         }
 
-        cpu->unk_0x1221C = 0x20000000;
-        cpu->unk_0x12220 = 0;
-        node->unk_0x1C = 0;
-        node->state = 22;
-        cpu->unk_0x12294 = 0;
-        cpu->unk_0x12274 = 0;
-        cpu->unk_0x12280 = 0;
-        pos = 0;
-        cur_addr = node->n64_start_addr;
-        while(cur_addr <= node->n64_end_addr) {
-            if(!cpuGetPPC(cpu, &cur_addr, node, code_p, &pos, 0)) {
-                return 0;
-            }
+        if (iCode > iCode0) {
+            return false;
         }
 
-        if(pos > total_inst) {
-            return 0;
+        // not `cpuCompileNOP`?
+        while (iCode < iCode0) {
+            anCode[iCode++] = 0x60000000;
         }
 
-        while(pos < total_inst) {
-            code_p[pos++] = 0x60000000; // nop;
-        }
+        pFunction->callerID_flag = 0x21;
+        pFunction->pfCode = anCode;
+        DCStoreRange(pFunction->pfCode, iCode * 4);
+        ICInvalidateRange(pFunction->pfCode, iCode * 4);
 
-        node->state = 33;
-        node->recompiled_func = (recomp_func_t*)code_p;
-        DCStoreRange(node->recompiled_func, pos * 4);
-        ICInvalidateRange(node->recompiled_func, pos * 4);
-        if(node->branch_cnt > 0) {
-            if(node->branch_cnt >= 0x400) {
-                return 0;
+        if (pFunction->nCountJump > 0) {
+            if (pFunction->nCountJump >= 0x400) {
+                return false;
             }
 
-            node->branches = (branch_t*)((char*)code + code_size + ext_call_size);
-            for(i = 0; i < node->branch_cnt; i++) {
-                node->branches[i] = branches[i];
+            pFunction->aJump = (CpuJump*)((u8*)chunkMemory + codeMemory + blockMemory);
+            for (iJump = 0; iJump < pFunction->nCountJump; iJump++) {
+                pFunction->aJump[iJump].nOffsetHost = aJump[iJump].nOffsetHost;
+                pFunction->aJump[iJump].nAddressN64 = aJump[iJump].nAddressN64;
             }
         } else {
-            node->branches = NULL;
+            pFunction->aJump = NULL;
         }
 
-        node->size = alloc_size;
-        cpu->recomp_tree->total_size += alloc_size;
-        func_80031D4C(cpu, node, 0);
+        pFunction->memory_size = memory_used;
+        pCPU->gTree->total_memory += memory_used;
+        if (fn_80031D4C(pCPU, pFunction, 0)) {}
     }
 
-    if(out_node != NULL) {
-        *out_node = node;
+    if (ppFunction != NULL) {
+        *ppFunction = pFunction;
     }
 
-    return  1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuMakeFunction.s")
-#endif
-
-#ifdef NON_MATCHING
-inline void setCache(cpu_class_t *cpu, u32 *code, recomp_node_t *node, s32 addr) {
-    recomp_cache_t *cache;
-    s32 cnt = cpu->cache_cnt;
-    recomp_cache_t *cache_start = cpu->recomp_cache;
-
-    if(cnt == 256) {
-        cnt--;
-    } else {
-        cpu->cache_cnt++;
-    }
-
-    cache = &cache_start[cnt];
-
-    while(cnt > 0) {
-        *cache = cache[-1];
-        cache--;
-        cnt--;
-    }
-
-    cache_start->n64_addr = addr;
-    cache_start->recomp_addr = code;
-    cache_start->node = node;
+    return true;
 }
 
-/**
- * @brief Searches the recompiled block cache for an address, or creates a new block if one cannot be found.
- * 
- * @param cpu The emulated VR4300.
- * @param addr N64 code address to search for.
- * @param code A pointer to set the found PPC code to.
- * @return s32 1 on success, 0 otherwise.
- */
-s32 cpuFindAddress(cpu_class_t *cpu, s32 addr, u32 **code) {
-    s32 pos;
-    s32 cur_addr;
-    s32 i;
-    s32 j;
-    recomp_node_t *node;
-    branch_t *branch;
-    s32 cont;
+static bool cpuFindAddress(Cpu* pCPU, s32 nAddressN64, s32* pnAddressGCN) {
+    s32 iJump;
+    s32 iCode;
+    s32 nAddress;
+    CpuFunction* pFunction;
+    s32 pad;
 
-    if(cpu->status & 0x20) {
-        cpu->status &= ~0x20;
+    if (pCPU->nMode & 0x20) {
+        pCPU->nMode &= ~0x20;
     }
 
-    if(cpuFindCachedAddress(cpu, addr, code)) {
-        return 1;
+    if (cpuFindCachedAddress(pCPU, nAddressN64, pnAddressGCN)) {
+        return true;
     }
 
-    node = cpu->running_node;
-
-    if(node == NULL || addr < node->n64_start_addr || node->n64_end_addr < addr) {
-        if(!cpuMakeFunction(cpu, &node, addr)) {
-            return 0;
+    if ((pFunction = pCPU->pFunctionLast) == NULL || nAddressN64 < pFunction->nAddress0 ||
+        pFunction->nAddress1 < nAddressN64) {
+        if (!cpuMakeFunction(pCPU, &pFunction, nAddressN64)) {
+            return false;
         }
     }
 
-    for(i = 0; i < node->branch_cnt; i++) {
-        if(addr != node->branches[i].n64_target) {
-            continue;
-        }
-
-        *code = &node->recompiled_func[node->branches[i].branch_dist];
-
-        if(node->unk_0x28 > 0) {
-            node->unk_0x28 = cpu->call_cnt;
-        }
-
-        setCache(cpu, *code, node, addr);
-        return 1;
-    }
-
-    cpu->unk_0x1221C = 0x20000000;
-    cpu->unk_0x12220 = 0;
-    node->state = 33;
-    pos = 0;
-    if(node->n64_start_addr != addr) {
-        node->unk_0x28 = 0;
-    }
-
-    cur_addr = node->n64_start_addr;
-    while(cur_addr <= node->n64_end_addr) {
-        if(cur_addr == addr) {
-            *code = (u32*)((u32)node->recompiled_func + (pos * 4));
-            if(node->unk_0x28 > 0) {
-                node->unk_0x28 = cpu->call_cnt;
+    for (iJump = 0; iJump < pFunction->nCountJump; iJump++) {
+        if (pFunction->aJump[iJump].nAddressN64 == nAddressN64) {
+            *pnAddressGCN = (s32)((s32*)pFunction->pfCode + pFunction->aJump[iJump].nOffsetHost);
+            if (pFunction->timeToLive > 0) {
+                pFunction->timeToLive = pCPU->survivalTimer;
             }
-
-            setCache(cpu, *code, node, addr);
-
-            return 1;
-        }
-
-        if(!cpuGetPPC(cpu, &cur_addr, node, NULL, &pos, 0)) {
-            return 0;
+            cpuMakeCachedAddress(pCPU, nAddressN64, *pnAddressGCN, pFunction);
+            return true;
         }
     }
 
-    return 0;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuFindAddress.s")
-#endif
-#undef NON_MATCHING
+    pCPU->nFlagRAM = 0x20000000;
+    pCPU->nFlagCODE = 0;
+    pFunction->callerID_flag = 0x21;
+    iCode = 0;
+    if (pFunction->nAddress0 != nAddressN64) {
+        pFunction->timeToLive = 0;
+    }
 
-inline s32 find_in_branches(recomp_node_t *node, s32 pc) {
+    nAddress = pFunction->nAddress0;
+    while (nAddress <= pFunction->nAddress1) {
+        if (nAddress == nAddressN64) {
+            *pnAddressGCN = (s32)((s32*)pFunction->pfCode + iCode);
+            if (pFunction->timeToLive > 0) {
+                pFunction->timeToLive = pCPU->survivalTimer;
+            }
+            cpuMakeCachedAddress(pCPU, nAddressN64, *pnAddressGCN, pFunction);
+            return true;
+        }
+        if (!cpuGetPPC(pCPU, &nAddress, pFunction, NULL, &iCode, false)) {
+            return false;
+        }
+    }
+
+    return false;
+}
+
+static inline bool cpuNoBranchTo(CpuFunction* pFunction, s32 addressN64) {
     s32 i;
 
-    for(i = 0; i < node->branch_cnt; i++) {
-        if(pc == node->branches[i].n64_target) {
-            return 0;
+    for (i = 0; i < pFunction->nCountJump; i++) {
+        if (pFunction->aJump[i].nAddressN64 == addressN64) {
+            return false;
         }
     }
 
-    return 1;
+    return true;
 }
 
-s32 func_800326D0(cpu_class_t *cpu, s32 pc, s32 r5) {
-    if(!cpu->unk_0x12270) {
-        return 0;
+static bool cpuCutStoreLoad(Cpu* pCPU, s32 currentAddress, s32 source) {
+    if (pCPU->nOptimize.validCheck == 0) {
+        return false;
     }
 
-    if(cpu->unk_0x12274 == 0) {
-        return 0;
+    if (pCPU->nOptimize.destGPR_check == 0) {
+        return false;
     }
 
-    if(r5 != cpu->tmp_mips_dest_reg) {
-        return 0;
+    if (source != pCPU->nOptimize.destGPR) {
+        return false;
     }
 
-    if(!find_in_branches(cpu->running_node, pc)) {
-        cpu->unk_0x12274 = 0;
-        return 0;
+    if (!cpuNoBranchTo(pCPU->pFunctionLast, currentAddress)) {
+        pCPU->nOptimize.destGPR_check = 0;
+        return false;
     }
 
-    cpu->unk_0x12274 = 0;
-    return 1;
+    pCPU->nOptimize.destGPR_check = 0;
+    return true;
 }
 
-s32 func_80032780(cpu_class_t *cpu, s32 pc, s32 r5) {
-    if(!cpu->unk_0x12270) {
-        return 0;
+static bool cpuCutStoreLoadF(Cpu* pCPU, s32 currentAddress, s32 source) {
+    if (pCPU->nOptimize.validCheck == 0) {
+        return false;
     }
 
-    if(cpu->unk_0x12280 == 0) {
-        return 0;
+    if (pCPU->nOptimize.destFPR_check == 0) {
+        return false;
     }
 
-    if(r5 != cpu->unk_0x12284) {
-        return 0;
+    if (source != pCPU->nOptimize.destFPR) {
+        return false;
     }
 
-    if(!find_in_branches(cpu->running_node, pc)) {
-        cpu->unk_0x12280 = 0;
-        return 0;
+    if (!cpuNoBranchTo(pCPU->pFunctionLast, currentAddress)) {
+        pCPU->nOptimize.destFPR_check = 0;
+        return false;
     }
 
-    cpu->unk_0x12280 =0;
-    return 1;
+    pCPU->nOptimize.destFPR_check = 0;
+    return true;
 }
 
-s32 func_80032830(cpu_class_t *cpu, s32 pc, u32 *code, s32 base, s32 rt) {
-    s32 i;
-
-    if(code == NULL) {
-        return 0;
+static bool cpuStackOffset(Cpu* pCPU, s32 currentAddress, s32* anCode, s32 source, s32 target) {
+    if (anCode == NULL) {
+        return false;
     }
 
-    if(!cpu->unk_0x12270) {
-        return 0;
+    if (pCPU->nOptimize.validCheck == 0) {
+        return false;
     }
 
-    if(!find_in_branches(cpu->running_node, pc)) {
-        return 0;
+    if (!cpuNoBranchTo(pCPU->pFunctionLast, currentAddress)) {
+        return false;
     }
 
-    cpu->unk_0x12288 = 1;
+    pCPU->nOptimize.addr_check = 1;
 
-    if(base == rt) {
-        cpu->unk_0x1228C = -1;
-        return 0;
+    if (source == target) {
+        pCPU->nOptimize.addr_last = -1;
+        return false;
     }
 
-    if(cpu->unk_0x1228C != base) {
-        cpu->unk_0x1228C = base;
-        return 0;
+    if (pCPU->nOptimize.addr_last != source) {
+        pCPU->nOptimize.addr_last = source;
+        return false;
     }
 
-    return 1;
+    return true;
 }
 
-s32 cpuNextInstruction(cpu_class_t *cpu, u32 addr, s32 inst, u32 *code, u32 *pos) {
-    if(code == NULL) {
-        return 0;
+static bool cpuNextInstruction(Cpu* pCPU, s32 addressN64, s32 opcode, s32* anCode, s32* iCode) {
+    if (anCode == NULL) {
+        return false;
     }
-   if(cpu->unk_0x12270 == 0) {
-        return 0;
+    if (pCPU->nOptimize.validCheck == 0) {
+        return false;
+    }
+    if (pCPU->nOptimize.checkNext != addressN64 - 4) {
+        pCPU->nOptimize.checkNext = 0;
+        return false;
+    }
+    pCPU->nOptimize.checkNext = 0;
+
+    if (!cpuNoBranchTo(pCPU->pFunctionLast, addressN64)) {
+        return false;
     }
 
-    if(cpu->unk_0x12294 != addr - 4) {
-        cpu->unk_0x12294 = 0;
-        return 0;
-    }
-    
-    cpu->unk_0x12294 = 0;
-
-    if(!find_in_branches(cpu->running_node, addr)) {
-        return 0;
-    }
-
-    switch(inst >> 0x1A) {
-        case OPC_ORI:
-            if(cpu->tmp_mips_dest_reg == MIPS_RS(inst) && MIPS_RS(inst) == MIPS_RT(inst)) {
-                if(cpu->unk_0x12290 != 1000) {
-                    return 0;
+    switch (MIPS_OP(opcode)) {
+        case 0x0D: // ori
+            if (pCPU->nOptimize.destGPR == MIPS_RS(opcode) && MIPS_RS(opcode) == MIPS_RT(opcode)) {
+                if (pCPU->nOptimize.checkType != 0x3E8) {
+                    return false;
                 }
-                /**
-                 * nop
-                 * ori tmp_dest, tmp_dest, imm
-                 * nop
-                 */
-                code[*pos - 1] = 0x60000000;
-                code[(*pos)++] = (0x60000000 | (cpu->tmp_ppc_dest_reg << 0x15) | (cpu->tmp_ppc_dest_reg << 0x10)) | (inst & 0xFFFF);
-                code[(*pos)++] = 0x60000000;
-                code[(*pos)++] = ((cpu->tmp_ppc_dest_reg << 0x15) | 0x90030000) + ((u32)&cpu->gpr[MIPS_RT(inst)] - (u32)cpu + 4);
-                cpu->unk_0x12274 = 2;
-                return 1;
+                anCode[*iCode - 1] = 0x60000000;
+                anCode[(*iCode)++] = 0x60000000 | (pCPU->nOptimize.destGPR_mapping << 21) |
+                                     (pCPU->nOptimize.destGPR_mapping << 16) | MIPS_IMM_U16(opcode);
+                anCode[(*iCode)++] = 0x60000000;
+                anCode[(*iCode)++] = (0x90030000 | (pCPU->nOptimize.destGPR_mapping << 21)) +
+                                     (OFFSETOF(pCPU, aGPR[MIPS_RT(opcode)]) + 4);
+                pCPU->nOptimize.destGPR_check = 2;
+                return true;
             }
-            return 0;
-        case OPC_ADDIU:
-            if(cpu->tmp_mips_dest_reg == MIPS_RS(inst) && MIPS_RS(inst) == MIPS_RT(inst)) {
-                if(cpu->unk_0x12290 != 1000) {
-                    return 0;
+            return false;
+        case 0x09: // addiu
+            if (pCPU->nOptimize.destGPR == MIPS_RS(opcode) && MIPS_RS(opcode) == MIPS_RT(opcode)) {
+                if (pCPU->nOptimize.checkType != 0x3E8) {
+                    return false;
                 }
-
-                /**
-                 * nop
-                 * addi tmp_dest, tmp_dest, imm
-                 * nop
-                 */
-                code[*pos - 1] = 0x60000000;
-                code[(*pos)++] = (inst & 0xFFFF) | (cpu->tmp_ppc_dest_reg << 0x10) | (cpu->tmp_ppc_dest_reg << 0x15) | 0x38000000;
-                code[(*pos)++] = 0x60000000;
-                code[(*pos)++] = ((cpu->tmp_ppc_dest_reg << 0x15) | 0x90030000) + ((u32)&cpu->gpr[MIPS_RT(inst)] - (u32)cpu + 4);
-                cpu->unk_0x12274 = 2;
-                return 1;
+                anCode[*iCode - 1] = 0x60000000;
+                anCode[(*iCode)++] = 0x38000000 | (pCPU->nOptimize.destGPR_mapping << 21) |
+                                     (pCPU->nOptimize.destGPR_mapping << 16) | MIPS_IMM_U16(opcode);
+                anCode[(*iCode)++] = 0x60000000;
+                anCode[(*iCode)++] = (0x90030000 | (pCPU->nOptimize.destGPR_mapping << 21)) +
+                                     (OFFSETOF(pCPU, aGPR[MIPS_RT(opcode)]) + 4);
+                pCPU->nOptimize.destGPR_check = 2;
+                return true;
             }
-            return 0;
+            return false;
         default:
-            invalidInst();
-            return 0;
+            xlExit();
+            break;
     }
 
-    return 0;
+    return false;
 }
 
-void func_80032B74(u32 arg0) {
-    gSystem->cpu->unk_0x3C = arg0;
-    if(lbl_8025CFE8 != NULL) {
-        lbl_8025CFE8(arg0);
+static void cpuRetraceCallback(u32 nCount) {
+    SYSTEM_CPU(gpSystem)->nRetrace = nCount;
+
+    if (__cpuRetraceCallback != NULL) {
+        __cpuRetraceCallback(nCount);
     }
 }
 
-#ifdef NON_MATCHING
-inline s32 treeCheck(cpu_class_t *cpu, recomp_tree_t *tree) {
-    s32 iVar1;
-
-    if(cpu->call_cnt < 300) {
-        return 0;
-    }
-
-    if(cpu->call_cnt == 300) {
-        tree->unk_0x70 = 1;
-        return 1;
-    }
-
-    
-    if(cpu->call_cnt - cpu->call_cnt / 400 * 400 == 0) {
-        if((cpu->recomp_tree != NULL ? cpu->recomp_tree->total_size : 0) > 0x319750) {
-            tree->unk_0x70 = cpu->call_cnt - 200;
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-s32 cpuExecuteUpdate(cpu_class_t *cpu, u32 **code_p, u32 tick) {
-    recomp_tree_t *tree;
-    u32 cpu_tick;
-    s32 val;
-
-    if(!romUpdate(gSystem->rom)) {
-        return 0;
-    }
-
-
-    if(!rspUpdate(gSystem->rsp, cpu->status & 0x80 && gSystem->unk_0x00 == 0 ? 1 : 0)) {
-        return 0;
-    }
-
-    tree = cpu->recomp_tree;
-    treeTimerCheck(cpu);
-    if(cpu->unk_0x3C == cpu->unk_0x40 && tree->unk_0x74 < 12) {
-        if(treeCheck(cpu, tree)) {
-            cpu->unk_0x34++;
-        }
-
-        if(tree->unk_0x70 != 0) {
-            treeCleanup(cpu, tree);
-        }
-    }
-
-    cpu_tick = cpu->tick;
-
-    if(tick > cpu_tick) {
-        cpu_tick = (float)((tick - cpu_tick) * 4);
+static inline s32 treeMemory(Cpu* pCPU) {
+    if (pCPU->gTree != NULL) {
+        return pCPU->gTree->total_memory;
     } else {
-        cpu_tick = (float)(((-1 - cpu_tick) + tick) * 4);
+        return 0;
+    }
+}
+
+static inline bool treeKillReason(Cpu* pCPU, s32* value) {
+    if (pCPU->survivalTimer < 300) {
+        return false;
+    }
+    if (pCPU->survivalTimer == 300) {
+        *value = 1;
+        return true;
+    }
+    if (pCPU->survivalTimer % 400 == 0 && treeMemory(pCPU) > 3250000) {
+        *value = pCPU->survivalTimer - 200;
+        return true;
     }
 
-    if(cpu->status & 0x40 && cpu->unk_0x40 != cpu->unk_0x3C && videoForceRetrace(gSystem->video)) {
-        if(__abs(cpu->unk_0x3C - cpu->unk_0x40) < 4) {
-            cpu->unk_0x40++;
-        } else {
-            cpu->unk_0x40 = cpu->unk_0x3C;
+    return false;
+}
+
+static bool cpuExecuteUpdate(Cpu* pCPU, s32* pnAddressGCN, u32 nCount) {
+    RspUpdateMode eModeUpdate;
+    s32 nDelta;
+    u32 nCounter;
+    u32 nCompare;
+
+    u32 nCounterDelta;
+    CpuTreeRoot* root;
+
+    if (!romUpdate(SYSTEM_ROM(gpSystem))) {
+        return false;
+    }
+
+    eModeUpdate = ((pCPU->nMode & 0x80) && !gpSystem->bException) ? RUM_IDLE : RUM_NONE;
+
+    if (!rspUpdate(SYSTEM_RSP(gpSystem), eModeUpdate)) {
+        return false;
+    }
+
+    root = pCPU->gTree;
+    treeTimerCheck(pCPU);
+    if (pCPU->nRetrace == pCPU->nRetraceUsed && root->kill_number < 12) {
+        if (treeKillReason(pCPU, &root->kill_limit)) {
+            pCPU->survivalTimer++;
+        }
+        if (root->kill_limit != 0) {
+            treeCleanUp(pCPU, root);
         }
     }
 
-
-    if(cpu->status & 1) {
-        if (((cpu->cp0[CP0_COMPARE].w[1] <= cpu->cp0[CP0_COUNT].w[1]) && (cpu->cp0[CP0_COUNT].w[1] + cpu_tick >= cpu->cp0[CP0_COMPARE].w[1])) ||
-        ((cpu->cp0[CP0_COUNT].w[1] >= cpu->cp0[CP0_COMPARE].w[1] && ((cpu->cp0[CP0_COUNT].w[1] + cpu_tick >= cpu->cp0[CP0_COMPARE].w[1] && (cpu->cp0[CP0_COUNT].w[1] + cpu_tick < cpu->cp0[CP0_COUNT].w[1])))))) {
-            cpu->status &= ~1;
-            xlObjectEvent(gSystem, 0x1000, (void*)3);
-        }
-
-        cpu->cp0[CP0_COUNT].sd += cpu_tick;
-    }
-
-    if(cpu->status & 8 && !(cpu->status & 4) && gSystem->unk_0x00 != 0) {
-        if(!systemCheckInterrupts(gSystem)) {
-            return 0;
-        }
-    }
-
-    if(cpu->status & 4) {
-        cpu->status &= ~0x84;
-        if(!cpuFindAddress(cpu, cpu->pc, code_p)) {
-            return 0;
-        }
-    }
-
-    return 1;
-}
-#else
-s32 cpuExecuteUpdate(cpu_class_t *cpu, u32 **code_p, u32 tick);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecuteUpdate.s")
-#endif
-
-#ifdef NON_MATCHING
-s32 cpuCompile_DSLLV(cpu_class_t *cpu, u32 **out_func) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x30000040)) {
-        return 0;
-    }
-
-    *out_func = buf;
-
-    // stwu sp, -0x0018(sp)
-    //andi. r7, r7, 0x1F
-    // stw r9, 0x0010(sp)
-    // subfic r9, r7, 32
-    // stw r8, 0x0008(sp)
-    // slw r5, r5, r7
-    // srw r8, r6, r9
-    // or r5, r5, r8
-    // subi r9, r7, 32
-    // slw r8, r6, r9
-    // or r5, r5, r8
-    // slw r6, r6, r7
-    // lwz r8, 0x0008(sp)
-    // lwz r9, 0x0010(sp)
-    // addi sp, sp 24
-    // blr
-
-    buf[0] = 0x9421ffe8;
-    buf[1] = 0x70e7003f;
-    buf[2] = 0x91210010;
-    buf[3] = 0x21270020;
-    buf[4] = 0x91010008;
-    buf[5] = 0x7ca53830;
-    buf[6] = 0x7cc84c30;
-    buf[7] = 0x7ca54378;
-    buf[8] = 0x3927ffe0;
-    buf[9] = 0x7cc84830;
-    buf[10] = 0x7ca54378;
-    buf[11] = 0x7cc63830;
-    buf[12] = 0x81010008;
-    buf[13] = 0x81210010;
-    buf[14] = 0x38210018;
-    buf[15] = 0x4E800020;
-
-    DCStoreRange(buf, 0x40);
-    ICInvalidateRange(buf, 0x40);
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_DSLLV.s")
-#endif
-
-#ifdef NON_MATCHING
-s32 cpuCompile_DSRLV(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-    u32 pos;
-
-    if(!xlHeapTake((void**)&buf, 0x30000040)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    buf[0] = 0x9421ffe8;
-    buf[1] = 0x70e7003f;
-    buf[2] = 0x91210010;
-    buf[3] = 0x21270020;
-    buf[4] = 0x91010008;
-    buf[5] = 0x7cc63c30;
-    buf[6] = 0x7ca84830;
-    buf[7] = 0x7cc64378;
-    buf[8] = 0x3927ffe0;
-    buf[9] = 0x7ca84c30;
-    buf[10] = 0x7cc64378;
-    buf[11] = 0x7ca53c30;
-    buf[12] = 0x81010008;
-    buf[13] = 0x81210010;
-    buf[14] = 0x38210018;
-    buf[15] = 0x4E800020;
-
-    DCStoreRange(buf, 0x40);
-    ICInvalidateRange(buf, 0x40);
-
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_DSRLV.s")
-#endif
-
-#ifdef NON_MATCHING
-s32 cpuCompile_DSRAV(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x30000044)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    buf[0] = 0x9421ffe8;
-    buf[1] = 0x70e7003f;
-    buf[2] = 0x91210010;
-    buf[3] = 0x21270020;
-    buf[4] = 0x91010008;
-    buf[5] = 0x7cc63c30;
-    buf[6] = 0x7ca84830;
-    buf[7] = 0x7cc64378;
-    buf[8] = 0x3527ffe0;
-    buf[9] = 0x7ca84e30;
-    buf[10] = 0x40810008;
-    buf[11] = 0x61060000;
-    buf[12] = 0x7ca53e30;
-    buf[13] = 0x81010008;
-    buf[14] = 0x81210010;
-    buf[15] = 0x38210018;
-    buf[16] = 0x4E800020;
-
-    DCStoreRange(buf, 0x44);
-    ICInvalidateRange(buf, 0x44);
-    
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_DSRAV.s")
-#endif
-
-#ifdef NON_MATCHING
-s32 cpuCompile_DMULT(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x300000D4)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    buf[0] = 0x39200000;
-    buf[1] = 0x39400000;
-    buf[2] = 0x39800040;
-    buf[3] = 0x39600001;
-    buf[4] = 0x2c050000;
-    buf[5] = 0x40800014;
-    buf[6] = 0x7cc630f8;
-    buf[7] = 0x7ca528f8;
-    buf[8] = 0x7cc65814;
-    buf[9] = 0x7ca54914;
-    buf[10] = 0x2c070000;
-    buf[11] = 0x40800014;
-    buf[12] = 0x7d0840f8;
-    buf[13] = 0x7ce738f8;
-    buf[14] = 0x7d085814;
-    buf[15] = 0x7ce74914;
-    buf[16] = 0x710b0001;
-    buf[17] = 0x41820018;
-    buf[18] = 0x39600000;
-    buf[19] = 0x7d4a3014;
-    buf[20] = 0x7d292914;
-    buf[21] = 0x7d6b5914;
-    buf[22] = 0x42800008;
-    buf[23] = 0x39600000;
-    buf[24] = 0x5508f87e;
-    buf[25] = 0x50e8f800;
-    buf[26] = 0x54e7f87e;
-    buf[27] = 0x5147f800;
-    buf[28] = 0x554af87e;
-    buf[29] = 0x512af800;
-    buf[30] = 0x5529f87e;
-    buf[31] = 0x5169f800;
-    buf[32] = 0x556bf87e;
-    buf[33] = 0x398cffff;
-    buf[34] = 0x2c0c0000;
-    buf[35] = 0x4082ffb4;
-    buf[36] = 0x39600001;
-    buf[37] = 0x7dce7a78;
-    buf[38] = 0x2c0e0000;
-    buf[39] = 0x40800024;
-    buf[40] = 0x7d0840f8;
-    buf[41] = 0x7ce738f8;
-    buf[42] = 0x7d4a50f8;
-    buf[43] = 0x7d2948f8;
-    buf[44] = 0x7d085814;
-    buf[45] = 0x7ce76114;
-    buf[46] = 0x7d4a6114;
-    buf[47] = 0x7d296114;
-    buf[48] = 0x9103000c;
-    buf[49] = 0x90e30008;
-    buf[50] = 0x91430014;
-    buf[51] = 0x91230010;
-    buf[52] = 0x4E800020;
-
-    DCStoreRange(buf, 0xD4);
-    ICInvalidateRange(buf, 0xD4);
-
-    return 1;
-
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_DMULT.s")
-#endif
-
-#ifdef NON_MATCHING
-s32 cpuCompile_DMULTU(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x30000070)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    buf[0] = 0x39200000;
-    buf[1] = 0x39400000;
-    buf[2] = 0x39800040;
-    buf[3] = 0x710b0001;
-    buf[4] = 0x41820018;
-    buf[5] = 0x39600000;
-    buf[6] = 0x7d4a3014;
-    buf[7] = 0x7d292914;
-    buf[8] = 0x7d6b5914;
-    buf[9] = 0x42800008;
-    buf[10] = 0x39600000;
-    buf[11] = 0x5508f87e;
-    buf[12] = 0x50e8f800;
-    buf[13] = 0x54e7f87e;
-    buf[14] = 0x5147f800;
-    buf[15] = 0x554af87e;
-    buf[16] = 0x512af800;
-    buf[17] = 0x5529f87e;
-    buf[18] = 0x5169f800;
-    buf[19] = 0x556bf87e;
-    buf[20] = 0x398cffff;
-    buf[21] = 0x2c0c0000;
-    buf[22] = 0x4082ffb4;
-    buf[23] = 0x91030000 + ((u32)&cpu->lo - (u32)cpu + 4);
-    buf[24] = 0x90e30000 + ((u32)&cpu->lo - (u32)cpu);
-    buf[25] = 0x91430000 + ((u32)&cpu->hi - (u32)cpu + 4);
-    buf[26] = 0x91230000 + ((u32)&cpu->hi - (u32)cpu);
-    buf[27] = 0x4e800020;
-
-    DCStoreRange(buf, 0x70);
-    ICInvalidateRange(buf, 0x70);
-
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_DMULTU.s")
-#endif
-
-#ifdef NON_MATCHING
-s32 cpuCompile_DDIV(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x30000100)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    buf[0] = 0x38a00040;
-    buf[1] = 0x38c00000;
-    buf[2] = 0x38e00000;
-    buf[3] = 0x39800001;
-    buf[4] = 0x2c080000;
-    buf[5] = 0x40800014;
-    buf[6] = 0x7d2948f8;
-    buf[7] = 0x7d0840f8;
-    buf[8] = 0x7d296014;
-    buf[9] = 0x7d083114;
-    buf[10] = 0x2c0a0000;
-    buf[11] = 0x40800014;
-    buf[12] = 0x7d6b58f8;
-    buf[13] = 0x7d4a50f8;
-    buf[14] = 0x7d6b6014;
-    buf[15] = 0x7d4a3114;
-    buf[16] = 0x3d80ffff;
-    buf[17] = 0x618cfffe;
-    buf[18] = 0x2c060000;
-    buf[19] = 0x4180002c;
-    buf[20] = 0x54c6083c;
-    buf[21] = 0x50e60ffe;
-    buf[22] = 0x54e7083c;
-    buf[23] = 0x51070ffe;
-    buf[24] = 0x5508083c;
-    buf[25] = 0x51280ffe;
-    buf[26] = 0x5529083c;
-    buf[27] = 0x7ceb3810;
-    buf[28] = 0x7cca3110;
-    buf[29] = 0x42800028;
-    buf[30] = 0x54c6083c;
-    buf[31] = 0x50e60ffe;
-    buf[32] = 0x54e7083c;
-    buf[33] = 0x51070ffe;
-    buf[34] = 0x5508083c;
-    buf[35] = 0x51280ffe;
-    buf[36] = 0x5529083c;
-    buf[37] = 0x7ce75814;
-    buf[38] = 0x7cc65114;
-    buf[39] = 0x2c060000;
-    buf[40] = 0x4180000c;
-    buf[41] = 0x61290001;
-    buf[42] = 0x42800008;
-    buf[43] = 0x7d296038;
-    buf[44] = 0x38a5ffff;
-    buf[45] = 0x2c050000;
-    buf[46] = 0x4082ff90;
-    buf[47] = 0x2c060000;
-    buf[48] = 0x4080000c;
-    buf[49] = 0x7ce75814;
-    buf[50] = 0x7cc65114;
-    buf[51] = 0x39800001;
-    buf[52] = 0x7dce7a78;
-    buf[53] = 0x2c0e0000;
-    buf[54] = 0x40800014;
-    buf[55] = 0x7d2948f8;
-    buf[56] = 0x7d0840f8;
-    buf[57] = 0x7d296014;
-    buf[58] = 0x7d082914;
-    buf[59] = 0x91030000 + ((u32)&cpu->lo - (u32)cpu);
-    buf[60] = 0x91230000 + ((u32)&cpu->lo - (u32)cpu + 4);
-    buf[61] = 0x90c30000 + ((u32)&cpu->hi - (u32)cpu);
-    buf[62] = 0x90e30000 + ((u32)&cpu->hi - (u32)cpu + 4);
-    buf[63] = 0x4E800020;
-
-    DCStoreRange(buf, 0x100);
-    ICInvalidateRange(buf, 0x100);
-
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_DDIV.s")
-#endif
-
-#ifdef NON_MATCHING
-s32 cpuCompile_DDIVU(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x300000AC)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    buf[0] = 0x38a00040;
-    buf[1] = 0x38c00000;
-    buf[2] = 0x38e00000;
-    buf[3] = 0x3d80ffff;
-    buf[4] = 0x618cfffe;
-    buf[5] = 0x2c060000;
-    buf[6] = 0x4180002c;
-    buf[7] = 0x54c6083c;
-    buf[8] = 0x50e60ffe;
-    buf[9] = 0x54e7083c;
-    buf[10] = 0x51070ffe;
-    buf[11] = 0x5508083c;
-    buf[12] = 0x51280ffe;
-    buf[13] = 0x5529083c;
-    buf[14] = 0x7ceb3810;
-    buf[15] = 0x7cca3110;
-    buf[16] = 0x42800028;
-    buf[17] = 0x54c6083c;
-    buf[18] = 0x50e60ffe;
-    buf[19] = 0x54e7083c;
-    buf[20] = 0x51070ffe;
-    buf[21] = 0x5508083c;
-    buf[22] = 0x51280ffe;
-    buf[23] = 0x5529083c;
-    buf[24] = 0x7ce75814;
-    buf[25] = 0x7cc65114;
-    buf[26] = 0x2c060000;
-    buf[27] = 0x4180000c;
-    buf[28] = 0x61290001;
-    buf[29] = 0x42800008;
-    buf[30] = 0x7d296038;
-    buf[31] = 0x38a5ffff;
-    buf[32] = 0x2c050000;
-    buf[33] = 0x4082ff90;
-    buf[34] = 0x2c060000;
-    buf[35] = 0x4080000c;
-    buf[36] = 0x7ce75814;
-    buf[37] = 0x7cc65114;
-    buf[38] = 0x91030000 + ((u32)&cpu->lo - (u32)cpu);
-    buf[39] = 0x91230000 + ((u32)&cpu->lo - (u32)cpu + 4);
-    buf[40] = 0x90c30000 + ((u32)&cpu->hi - (u32)cpu);
-    buf[41] = 0x90e30000 + ((u32)&cpu->hi - (u32)cpu + 4);
-    buf[42] = 0x4E800020;
-
-    DCStoreRange(buf, 0xAC);
-    ICInvalidateRange(buf, 0xAC);
-
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_DDIVU.s")
-#endif
-
-#ifdef NON_MATCHING
-s32 cpuCompile_S_SQRT(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x30000090)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    buf[0] = 0xc0030000 + ((u32)cpu->gpr - (u32)cpu + 4);
-    buf[1] = 0xfc010040;
-    buf[2] = 0x40810078;
-    buf[3] = 0xfc400834;
-    buf[4] = 0x3ca03fe0;
-    buf[5] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu);
-    buf[6] = 0xc8830000 + ((u32)cpu->gpr - (u32)cpu);
-    buf[7] = 0x3ca04008;
-    buf[8] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu);
-    buf[9] = 0xc8630000 + ((u32)cpu->gpr - (u32)cpu);
-    buf[10] = 0xfca400b2;
-    buf[11] = 0xfcc200b2;
-    buf[12] = 0xfcc101b2;
-    buf[13] = 0xfcc33028;
-    buf[14] = 0xfc4501b2;
-    buf[15] = 0xfca400b2;
-    buf[16] = 0xfcc200b2;
-    buf[17] = 0xfcc101b2;
-    buf[18] = 0xfcc33028;
-    buf[19] = 0xfc4501b2;
-    buf[20] = 0xfca400b2;
-    buf[21] = 0xfcc200b2;
-    buf[22] = 0xfcc101b2;
-    buf[23] = 0xfcc33028;
-    buf[24] = 0xfc4501b2;
-    buf[25] = 0xfca400b2;
-    buf[26] = 0xfcc200b2;
-    buf[27] = 0xfcc101b2;
-    buf[28] = 0xfcc33028;
-    buf[29] = 0xfc4501b2;
-    buf[30] = 0xfcc100b2;
-    buf[31] = 0xfc203018;
-    buf[32] = 0x38a00000;
-    buf[33] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu + 4);
-    buf[34] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu);
-    buf[35] = 0x4e800020;
-
-    DCStoreRange(buf, 0x90);
-    ICInvalidateRange(buf, 0x90);
-
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_S_SQRT.s")
-#endif
-
-#ifdef NON_MATCHING
-s32 cpuCompile_D_SQRT(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-    
-    if(!xlHeapTake((void**)&buf, 0x300000C0)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    buf[0] = 0xc80300 + ((u32)cpu->gpr - (u32)cpu);
-    buf[1] = 0xfc010040;
-    buf[2] = 0x40810068;
-    buf[3] = 0xfc400834;
-    buf[4] = 0x3ca03fe0;
-    buf[5] = 0x90a300 + ((u32)cpu->gpr - (u32)cpu);
-    buf[6] = 0xc88300 + ((u32)cpu->gpr - (u32)cpu);
-    buf[7] = 0x3ca04008;
-    buf[8] = 0x90a300 + ((u32)cpu->gpr - (u32)cpu);
-    buf[9] = 0xc86300 + ((u32)cpu->gpr - (u32)cpu);
-    buf[10] = 0xfc0200b2;
-    buf[0xb] = 0xfc4400b2;
-    buf[0xc] = 0xfc01183c;
-    buf[0xd] = 0xfc420032;
-    buf[0xe] = 0xfc0200b2;
-    buf[0xf] = 0xfc4400b2;
-    buf[0x10] = 0xfc01183c;
-    buf[0x11] = 0xfc420032;
-    buf[0x12] = 0xfc0200b2;
-    buf[0x13] = 0xfc4400b2;
-    buf[0x14] = 0xfc01183c;
-    buf[0x15] = 0xfc420032;
-    buf[0x16] = 0xfc0200b2;
-    buf[0x17] = 0xfc4400b2;
-    buf[0x18] = 0xfc01183c;
-    buf[0x19] = 0xfc020032;
-    buf[0x1a] = 0xfc210032;
-    buf[0x1b] = 0x42800044;
-    buf[0x1c] = 0xfc010000;
-    buf[0x1d] = 0x4082000c;
-    buf[0x1e] = 0xfc200090;
-    buf[0x1f] = 0x42800034;
-    buf[0x20] = 0xfc010000;
-    buf[0x21] = 0x41820020;
-    buf[0x22] = 0x3ca07fff;
-    buf[0x23] = 0x60a5ffff;
-    buf[0x24] = 0x90a300 + ((u32)cpu->gpr - (u32)cpu);
-    buf[0x25] = 0x3ca0e000;
-    buf[0x26] = 0x90a3004c;
-    buf[0x27] = 0xc02300 + ((u32)cpu->gpr - (u32)cpu);
-    buf[0x28] = 0x42800010;
-    buf[0x29] = 0x3ca07ff0;
-    buf[0x2a] = 0x90a300 + ((u32)cpu->gpr - (u32)cpu);
-    buf[0x2b] = 0xc02300 + ((u32)cpu->gpr - (u32)cpu);
-    buf[0x2c] = 0x38a00000;
-    buf[0x2d] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu + 4);
-    buf[0x2e] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu);
-    buf[0x2f] = 0x48E00020;
-
-    DCStoreRange(buf, 0xC0);
-    ICInvalidateRange(buf, 0xC0);
-
-    return 1;
-
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_D_SQRT.s")
-#endif
-
-#ifdef NON_MATCHING
-s32 cpuCompile_W_CVT_SD(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x30000038)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    /**
-     * xoris r5, r5, 0x8000
-     * lis r6, 0x4330
-     * stw r5, cpu->gpr[0].w[1]
-     * stw r6, cpu->gpr[0].w[0]
-     * lfd f0, cpu->gpr[0].fd
-     * stw r6, cpu->gpr[0].w[0]
-     * lis r5, 0x8000
-     * stw r5, cpu->gpr[0].w[1]
-     * lfd f1, cpu->gpr[0].fd
-     * fsub f1, f0, f1
-     * li r5, 0
-     * stw r5, cpu->gpr[0].w[0]
-     * stw r5, cpu->gpr[0].w[1]
-     * blr
-     */
-
-    buf[0] = 0x6ca58000; 
-    buf[1] = 0x3cc04330;
-    buf[2] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu + 4);
-    buf[3] = 0x90c30000 + ((u32)cpu->gpr - (u32)cpu);
-    buf[4] = 0xc8030000 + ((u32)cpu->gpr - (u32)cpu);
-    buf[5] = 0x90c30000 + ((u32)cpu->gpr - (u32)cpu);
-    buf[6] = 0x3ca08000;
-    buf[7] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu + 4);
-    buf[8] = 0xc8230000 + ((u32)cpu->gpr - (u32)cpu);
-    buf[9] = 0xfc200828;
-    buf[10] = 0x38a00000;
-    buf[11] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu);
-    buf[12] = 0x90a30000 + ((u32)cpu->gpr - (u32)cpu + 4);
-    buf[13] = 0x4E800020;
-
-    DCStoreRange(buf, 0x38);
-    ICInvalidateRange(buf, 0x38);
-
-    return 1;
-
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_W_CVT_SD.s")
-#endif
-
-#ifdef NON_MATCHING
-s32 cpuCompile_L_CVT_SD(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x300000E0)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    buf[0] = 0x9421ffd0;
-    buf[1] = 0x91010008;
-    buf[2] = 0x91210010;
-    buf[3] = 0x91410018;
-    buf[4] = 0x91610020;
-    buf[5] = 0x91810028;
-    buf[6] = 0x9421fff0;
-    buf[7] = 0x54a70001;
-    buf[8] = 0x4182000c;
-    buf[9] = 0x20c60000;
-    buf[10] = 0x7ca50190;
-    buf[0xb] = 0x7ca93379;
-    buf[0xc] = 0x39000000;
-    buf[0xd] = 0x41820080;
-    buf[0xe] = 0x7ca90034;
-    buf[0xf] = 0x7cca0034;
-    buf[0x10] = 0x552bd008;
-    buf[0x11] = 0x7d6bfe70;
-    buf[0x12] = 0x7d6b5038;
-    buf[0x13] = 0x7d295a14;
-    buf[0x14] = 0x21490020;
-    buf[0x15] = 0x3169ffe0;
-    buf[0x16] = 0x7ca54830;
-    buf[0x17] = 0x7ccc5430;
-    buf[0x18] = 0x7ca56378;
-    buf[0x19] = 0x7ccc5830;
-    buf[0x1a] = 0x7ca56378;
-    buf[0x1b] = 0x7cc64830;
-    buf[0x1c] = 0x7d094050;
-    buf[0x1d] = 0x54c9057e;
-    buf[0x1e] = 0x2c090400;
-    buf[0x1f] = 0x3908043e;
-    buf[0x20] = 0x4180001c;
-    buf[0x21] = 0x4181000c;
-    buf[0x22] = 0x54c90529;
-    buf[0x23] = 0x41820010;
-    buf[0x24] = 0x30c60800;
-    buf[0x25] = 0x7ca50194;
-    buf[0x26] = 0x7d080194;
-    buf[0x27] = 0x54c6a83e;
-    buf[0x28] = 0x50a6a814;
-    buf[0x29] = 0x54a5ab3e;
-    buf[0x2a] = 0x5508a016;
-    buf[0x2b] = 0x7d052b78;
-    buf[0x2c] = 0x7ce52b78;
-    buf[0x2d] = 0x90a10008;
-    buf[0x2e] = 0x90c1000c;
-    buf[0x2f] = 0xc8210008;
-    buf[0x30] = 0x38210010;
-    buf[0x31] = 0x81010008;
-    buf[0x32] = 0x81210010;
-    buf[0x33] = 0x81410018;
-    buf[0x34] = 0x81610020;
-    buf[0x35] = 0x81810028;
-    buf[0x36] = 0x38210030;
-    buf[0x37] = 0x48E00020;
-
-    DCStoreRange(buf, 0xE0);
-    ICInvalidateRange(buf, 0xE0);
-
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_L_CVT_SD.s")
-#endif
-
-#ifdef NON_MATCHING
-s32 cpuCompile_CEIL_W(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x30000034)) {
-        return 0;
-    }
-
-    *code = buf;
-    buf[0] = 0x9421ffe0;
-    buf[1] = 0xc8030000 + ((u32)cpu->fpr - (u32)cpu) & 0xFFFF;
-    buf[2] = 0xfc010040;
-    buf[3] = 0x4081000c;
-    buf[4] = 0x38c00001;
-    buf[5] = 0x42800008;
-    buf[6] = 0x38c00000;
-    buf[7] = 0xfc20081e;
-    buf[8] = 0xd8210010;
-    buf[9] = 0x80a10014;
-    buf[10] = 0x7ca62a14;
-    buf[0xb] = 0x38210020;
-    buf[0xc] = 0x4E800020;
-
-    DCStoreRange(buf, 0x34);
-    ICInvalidateRange(buf, 0x34);
-
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_CEIL_W.s")
-#endif
-
-#ifdef NON_MATCHING
-s32 cpuCompile_FLOOR_W(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x30000034)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    /**
-     * stwu sp, -32(sp)
-     * lfd f0, cpu->fpr[0]
-     * fcmpo cr0, f1, f0
-     * blt- -> buf[6]
-     * li r6, 0
-     * bc 20, 0 -> buf[7]
-     * li r6, 1
-     * fctiwz f1, f1
-     * stfd f1, 0x0010(sp)
-     * lwz r5, 0x0014(sp)
-     * sub r5, r5, r6
-     * addi sp, sp, 32
-     * blr
-     */
-
-    buf[0] = 0x9421ffe0;
-    buf[1] = 0xc8030000 + (((u32)&cpu->fpr[0] - (u32)cpu) & 0xFFFF);
-    buf[2] = 0xfc010040;
-    buf[3] = 0x4180000c;
-    buf[4] = 0x38c00000;
-    buf[5] = 0x42800008;
-    buf[6] = 0x38c00001;
-    buf[7] = 0xfc20081e;
-    buf[8] = 0xd8210010;
-    buf[9] = 0x80a10014;
-    buf[10] = 0x7ca62850;
-    buf[11] = 0x38210020;
-    buf[12] = 0x4E800020;
-
-    DCStoreRange(buf, 0x34);
-    ICInvalidateRange(buf, 0x34);
-
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_FLOOR_W.s")
-#endif
-
-#ifdef NON_MATCHING
-
-inline s32 rlwinm(u32 *code, u32 ra, u32 rs, u32 sh, u32 mb, u32 me) {
-    *code = (21 << 26) | (rs << 21) | (ra << 16) | (sh << 11) | (mb << 6) | (me << 1);
-
-}
-
-inline s32 addi(u32 *code, u32 rt, u32 ra, u32 imm) {
-    *code = ((14 << 26) | (rt << 21) | (ra << 16)) + imm;
-}
-
-inline s32 lwzx(u32 *code, u32 rt, u32 ra, u32 rb) {
-    *code = (31 << 26) | (rt << 21) | (ra << 16) | (rb << 11) | (23 << 1);
-}
-
-inline s32 lwz(u32 *code, u32 rt, u32 ra, u32 d) {
-    *code = ((32 << 26) | (rt << 21) | (ra << 16)) + d;
-}
-
-inline s32 add(u32 *code, u32 rt, u32 ra, u32 rb) {
-    *code= (31 << 26) | (rt << 21) | (ra << 16) | (rb << 11) | (266 << 1);
-}
-
-inline s32 lbzx(u32 *code, u32 rt, u32 ra, u32 rb) {
-    *code = (31 << 26) | (rt << 21) | (ra << 16) | (rb << 11) | (87 << 1);
-}
-
-inline s32 extsb(u32 *code,  u32 ra, u32 rs) {
-    *code = (31 << 26) | (rs << 21) | (ra << 16) | (954 << 1);
-}
-
-inline void blr(u32 *code) {
-    *code = (19 << 26) | (20 << 21) | (16 << 1);
-}
-
-s32 cpuCompile_LB(cpu_class_t *cpu, void **code) {
-    u32 *buf;
-    s32 pos;
-
-    if(!xlHeapTake((void**)&buf, 0x3000002C)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    // r3 = cpu
-    // r5 = address
-    // r6 = dev_idx
-    // rlwinm r6, r6, 2, 0, 29; r6 = (dev_idx * 4) & 0xC
-    // addi r7, r3 (offsetOf devices); r7 = cpu->devices;
-    // lwzx r6, r6, r7; r6 = cpu->devices[dev_idx]
-    // lwz r7, 0x0008(r6); r7 = cpu->devices[dev_idx].addr_offset
-    // add r5, r5, r7; r5 = address + cpu->devices[dev_idx].addr_offset
-    // lwz r7, 0x0004(r6); r7 = cpu->devices[dev_idx].dev_obj
-    // lwz r7, 0x0004(r7); r7 cpu->devices[dev_idx].dev_obj + 4
-    // lbzx r5, r5, r7
-    // extsb r5, r5
-    // blr
-
-    pos = 0;
-
-    rlwinm(&buf[pos++], 6, 6, 2, 0, 29);
-    addi(&buf[pos++], 7, 3, ((s32)&cpu->devices[0] - (s32)cpu));
-    lwzx(&buf[pos++], 6, 6, 7);
-    lwz(&buf[pos++], 7, 6, offsetof(cpu_dev_t, addr_offset));
-    add(&buf[pos++], 5, 5, 7);
-    lwz(&buf[pos++], 7, 6, offsetof(cpu_dev_t, dev_obj));
-    lwz(&buf[pos++], 7, 7, offsetof(ram_class_t, dram));
-    lbzx(&buf[pos++], 5, 5, 7);
-    extsb(&buf[pos++], 5, 5);
-    blr(&buf[pos++]);
-
-    DCStoreRange(buf, pos * sizeof(*buf));
-    ICInvalidateRange(buf, pos * sizeof(*buf));
-
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_LB.s")
-#endif
-#undef NON_MATCHING
-
-#ifdef NON_MATCHING
-s32 cpuCompile_LH(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-    if(!xlHeapTake((void**)&buf, 0x3000002C)) {
-        return 0;
-    }
-
-    *code = buf;
-    buf[0] = 0x54c6103a;
-    buf[1] = 0x38e30000 + ((u32)cpu->devices - (u32)cpu);
-    buf[2] = 0x7cc6382e;
-    buf[3] = 0x80e60008;
-    buf[4] = 0x7ca53a14;
-    buf[5] = 0x80e60004;
-    buf[6] = 0x80e70004;
-    buf[7] = 0x7ca53a2e;
-    buf[8] = 0x7ca50734;
-    buf[9] = 0x4E800020;
-
-    DCStoreRange(buf, 0x28);
-    ICInvalidateRange(buf, 0x28);
-    
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_LH.s")
-#endif
-
-#ifdef NON_MATCHING
-s32 cpuCompile_LW(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x30000028)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    buf[0] = 0x54c6103a; 
-    buf[1] = 0x38e30000 + ((u32)cpu->devices - (u32)cpu);
-    buf[2] = 0x7cc6382e;
-    buf[3] = 0x80e60000 + offsetof(cpu_dev_t, addr_offset);
-    buf[4] = 0x7ca53a14;
-    buf[5] = 0x80e60000 + offsetof(cpu_dev_t, dev_obj);
-    buf[6] = 0x80e70000 + offsetof(ram_class_t, dram);
-    buf[7] = 0x7ca5382e;
-    buf[8] = 0x4E800020;
-
-    DCStoreRange(buf, 0x24);
-    ICInvalidateRange(buf, 0x24);
-
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_LW.s")
-#endif
-
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_LBU.s")
-
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_LHU.s")
-
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_SB.s")
-
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_SH.s")
-
-#ifdef NON_MATCHING
-s32 cpuCompile_SW(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x30000028)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    // rlwinm r6, r6, 2, 0, 29
-    // addi r7, r3, cpu->devices
-    // lwzx r6, r6, r7
-    // lwz r7, r7, 0x0008(r6)
-    // add r5, r5, r7
-    // lwz r7, 0x0004(r6)
-    // lwz r7, 0x0004(r7)
-    // stwx r8, r5, r7
-    // blr
-
-    buf[0] = 0x54c6103a;
-    buf[1] = 0x38e30000 + ((u32)cpu->devices - (u32)cpu);
-    buf[2] = 0x7cc6382e;
-    buf[3] = 0x80e60008;
-    buf[4] = 0x7ca53a14;
-    buf[5] = 0x80e60004;
-    buf[6] = 0x80e70004;
-    buf[7] = 0x7d05392e;
-    buf[8] = 0x4E800020;
-
-    DCStoreRange(buf, 0x24);
-    ICInvalidateRange(buf, 0x24);
-
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_SW.s")
-#endif
-
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_LDC.s")
-
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_SDC.s")
-
-#ifdef NON_MATCHING
-s32 cpuCompile_LWL(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x30000030)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    buf[0] = 0x38c00018;
-    buf[1] = 0x88a70000;
-    buf[2] = 0x7ca53030;
-    buf[3] = 0x394000ff;
-    buf[4] = 0x7d4a3030;
-    buf[5] = 0x7d295078;
-    buf[6] = 0x7d292b78;
-    buf[7] = 0x38c6fff8;
-    buf[8] = 0x54e507bf;
-    buf[9] = 0x38e70001;
-    buf[10] = 0x4082ffdc;
-    buf[11] = 0x4e800020;
-
-    DCStoreRange(buf, 0x30);
-    ICInvalidateRange(buf, 0x30);
-
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_LWL.s")
-#endif
-
-#ifdef NON_MATCHING
-s32 cpuCompile_LWR(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x30000030)) {
-        return 0;
-    }
-
-    *code = buf;
-
-    buf[0] = 0x38c00000;
-    buf[1] = 0x88a70000;
-    buf[2] = 0x7ca53030;
-    buf[3] = 0x394000ff;
-    buf[4] = 0x7d4a3030;
-    buf[5] = 0x7d295078;
-    buf[6] = 0x7d292b78;
-    buf[7] = 0x38c60008;
-    buf[8] = 0x54e507bf;
-    buf[9] = 0x38e7ffff;
-    buf[10] = 0x4082ffdc;
-    buf[11] = 0x4e800020;
-
-    DCStoreRange(buf, 0x30);
-    ICInvalidateRange(buf, 0x30);
-
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuCompile_LWR.s")
-#endif
-
-#ifdef NON_MATCHING
-inline s32 checkRetrace() {
-    if(gSystem->unk_0x00 != 0) {
-        if(!systemCheckInterrupts(gSystem)) {
-            return 0;
-        }
-    } else {    
-        videoForceRetrace(gSystem->video);
-    }
-
-    return 1;
-}
-
-inline unkFrameSet(u32 rom_id, u32 *frame, u32 addr) {
-    if(rom_id == 'NKTJ') {
-        if(addr == 0x802A4118) {
-            frame[0x11] = 0;
-        }
-        if(addr == 0x800729D4) {
-            frame[0x11] = 1;
-        }
-    } else if(rom_id == 'NKTP') {
-        if(addr == 0x802A4160) {
-            frame[0x11] = 0;
-        }
-        if(addr == 0x80072E34) {
-            frame[0x11] = 1;
-        }
-    } else if(rom_id == 'NKTE') {
-        if(addr == 0x802A4160) {
-            frame[0x11] = 0;
-        }
-        if(addr == 0x80072E54) {
-            frame[0x11] = 1;
-        }
-    }
-}
-
-inline cpu_dev_t *get_dev(cpu_dev_t **devs, u8 *idxs, u32 addr) {
-    return devs[idxs[(addr >> 0x10)]];
-}
-
-inline void setCP0Random(cpu_class_t *cpu) {
-    s32 val;
-    s32 i;
-
-    for(val = 0, i = 0; i < 48; i++) {
-        if(!(cpu->tlb[i].entry_hi.sw[1] & 2)) {
-            val++;
-        }
-    }
-
-    cpu->cp0[CP0_RANDOM].sd = val;
-
-    cpuSetTLB(cpu, cpu->cp0[CP0_RANDOM].sw[1]);
-}
-
-void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret) {
-    u64 prev_ra;
-    s32 save_ra = 0;
-    u32 tick = OSGetTick();
-    u32 inst;
-    cpu_dev_t **devs;
-    cpu_dev_t *dev;
-    s32 i;
-    s32 val;
-    s32 sh;
-    u32 ea;
-    u8 *dev_idx;
-    u32 *code_buf;
-    u8 byteBuf;
-    u16 halfBuf;
-    u32 wordBuf;
-    reg64_t tmp;
-
-    if(cpu->unk_0x24 != 0) {
-        cpu->status |= 8;
+    if (nCount > pCPU->nTickLast) {
+        nCounterDelta = (f32)((nCount - pCPU->nTickLast) * 4);
     } else {
-        cpu->status &= ~8;
+        nCounterDelta = (f32)(((-1 - pCPU->nTickLast) + nCount) * 4);
     }
 
-    unkFrameSet(gSystem->rom_id, gSystem->frame, addr);
+    if ((pCPU->nMode & 0x40) && pCPU->nRetraceUsed != pCPU->nRetrace) {
+        if (viForceRetrace(SYSTEM_VI(gpSystem))) {
+            nDelta = pCPU->nRetrace - pCPU->nRetraceUsed;
+            if (nDelta < 0) {
+                nDelta = -nDelta;
+            }
 
-    dev_idx = cpu->mem_hi_map;
-    devs = cpu->devices;
-
-    if(!cpuGetAddressBuffer(cpu, (void**)&code_buf, addr)) {
-        return NULL;
+            if (nDelta < 4) {
+                pCPU->nRetraceUsed++;
+            } else {
+                pCPU->nRetraceUsed = ((Cpu*)pCPU)->nRetrace;
+            }
+        }
     }
 
-    inst = *code_buf;
-    cpu->pc = addr + 4;
-    if(inst == 0xACBF011C) {
-        prev_ra = cpu->gpr[MREG_RA].d;
-        cpu->gpr[MREG_RA].w[1] = cpu->n64_ra;
-        save_ra = 1;
+    if (pCPU->nMode & 1) {
+        nCounter = pCPU->anCP0[9];
+        nCompare = pCPU->anCP0[11];
+        if ((nCounter <= nCompare && nCounter + nCounterDelta >= nCompare) ||
+            (nCounter >= nCompare && nCounter + nCounterDelta >= nCompare && nCounter + nCounterDelta < nCounter)) {
+            pCPU->nMode &= ~1;
+            xlObjectEvent(gpSystem, 0x1000, (void*)3);
+        }
+    }
+    pCPU->anCP0[9] += nCounterDelta;
+
+    if ((pCPU->nMode & 8) && !(pCPU->nMode & 4) && gpSystem->bException) {
+        if (!systemCheckInterrupts(gpSystem)) {
+            return false;
+        }
     }
 
-    switch(MIPS_OP(inst)) {
-        case OPC_SPECIAL:
-            switch(SPEC_FUNCT(inst)) {
-                case SPEC_SLL: // SLL
-                    cpu->gpr[MIPS_RD(inst)].w[1] = cpu->gpr[MIPS_RT(inst)].w[1] << MIPS_SA(inst);
+    if (pCPU->nMode & 4) {
+        pCPU->nMode &= ~0x84;
+        if (!cpuFindAddress(pCPU, pCPU->nPC, pnAddressGCN)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool cpuCompile_DSLLV(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 16;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x9421FFE8; // stwu    r1,-24(r1)
+    compile[count++] = 0x70E7003F; // andi.   r7,r7,63
+    compile[count++] = 0x91210010; // stw     r9,16(r1)
+    compile[count++] = 0x21270020; // subfic  r9,r7,32
+    compile[count++] = 0x91010008; // stw     r8,8(r1)
+    compile[count++] = 0x7CA53830; // slw     r5,r5,r7
+    compile[count++] = 0x7CC84C30; // srw     r8,r6,r9
+    compile[count++] = 0x7CA54378; // or      r5,r5,r8
+    compile[count++] = 0x3927FFE0; // addi    r9,r7,-32
+    compile[count++] = 0x7CC84830; // slw     r8,r6,r9
+    compile[count++] = 0x7CA54378; // or      r5,r5,r8
+    compile[count++] = 0x7CC63830; // slw     r6,r6,r7
+    compile[count++] = 0x81010008; // lwz     r8,8(r1)
+    compile[count++] = 0x81210010; // lwz     r9,16(r1)
+    compile[count++] = 0x38210018; // addi    r1,r1,24
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_DSRLV(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 16;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x9421FFE8; // stwu    r1,-24(r1)
+    compile[count++] = 0x70E7003F; // andi.   r7,r7,63
+    compile[count++] = 0x91210010; // stw     r9,16(r1)
+    compile[count++] = 0x21270020; // subfic  r9,r7,32
+    compile[count++] = 0x91010008; // stw     r8,8(r1)
+    compile[count++] = 0x7CC63C30; // srw     r6,r6,r7
+    compile[count++] = 0x7CA84830; // slw     r8,r5,r9
+    compile[count++] = 0x7CC64378; // or      r6,r6,r8
+    compile[count++] = 0x3927FFE0; // addi    r9,r7,-32
+    compile[count++] = 0x7CA84C30; // srw     r8,r5,r9
+    compile[count++] = 0x7CC64378; // or      r6,r6,r8
+    compile[count++] = 0x7CA53C30; // srw     r5,r5,r7
+    compile[count++] = 0x81010008; // lwz     r8,8(r1)
+    compile[count++] = 0x81210010; // lwz     r9,16(r1)
+    compile[count++] = 0x38210018; // addi    r1,r1,24
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_DSRAV(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 17;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x9421FFE8; // stwu    r1,-24(r1)
+    compile[count++] = 0x70E7003F; // andi.   r7,r7,63
+    compile[count++] = 0x91210010; // stw     r9,16(r1)
+    compile[count++] = 0x21270020; // subfic  r9,r7,32
+    compile[count++] = 0x91010008; // stw     r8,8(r1)
+    compile[count++] = 0x7CC63C30; // srw     r6,r6,r7
+    compile[count++] = 0x7CA84830; // slw     r8,r5,r9
+    compile[count++] = 0x7CC64378; // or      r6,r6,r8
+    compile[count++] = 0x3527FFE0; // addic.  r9,r7,-32
+    compile[count++] = 0x7CA84E30; // sraw    r8,r5,r9
+    compile[count++] = 0x40810008; // ble-    0x8
+    compile[count++] = 0x61060000; // ori     r6,r8,0
+    compile[count++] = 0x7CA53E30; // sraw    r5,r5,r7
+    compile[count++] = 0x81010008; // lwz     r8,8(r1)
+    compile[count++] = 0x81210010; // lwz     r9,16(r1)
+    compile[count++] = 0x38210018; // addi    r1,r1,24
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_DMULT(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 53;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x39200000; // li      r9,0
+    compile[count++] = 0x39400000; // li      r10,0
+    compile[count++] = 0x39800040; // li      r12,64
+    compile[count++] = 0x39600001; // li      r11,1
+    compile[count++] = 0x2C050000; // cmpwi   r5,0
+    compile[count++] = 0x40800014; // bge-    0x14
+    compile[count++] = 0x7CC630F8; // not     r6,r6
+    compile[count++] = 0x7CA528F8; // not     r5,r5
+    compile[count++] = 0x7CC65814; // addc    r6,r6,r11
+    compile[count++] = 0x7CA54914; // adde    r5,r5,r9
+    compile[count++] = 0x2C070000; // cmpwi   r7,0
+    compile[count++] = 0x40800014; // bge-    0x14
+    compile[count++] = 0x7D0840F8; // not     r8,r8
+    compile[count++] = 0x7CE738F8; // not     r7,r7
+    compile[count++] = 0x7D085814; // addc    r8,r8,r11
+    compile[count++] = 0x7CE74914; // adde    r7,r7,r9
+    compile[count++] = 0x710B0001; // andi.   r11,r8,1
+    compile[count++] = 0x41820018; // beq-    0x18
+    compile[count++] = 0x39600000; // li      r11,0
+    compile[count++] = 0x7D4A3014; // addc    r10,r10,r6
+    compile[count++] = 0x7D292914; // adde    r9,r9,r5
+    compile[count++] = 0x7D6B5914; // adde    r11,r11,r11
+    compile[count++] = 0x42800008; // bc      20,lt,0x8
+    compile[count++] = 0x39600000; // li      r11,0
+    compile[count++] = 0x5508F87E; // srwi    r8,r8,1
+    compile[count++] = 0x50E8F800; // rlwimi  r8,r7,31,0,0
+    compile[count++] = 0x54E7F87E; // srwi    r7,r7,1
+    compile[count++] = 0x5147F800; // rlwimi  r7,r10,31,0,0
+    compile[count++] = 0x554AF87E; // srwi    r10,r10,1
+    compile[count++] = 0x512AF800; // rlwimi  r10,r9,31,0,0
+    compile[count++] = 0x5529F87E; // srwi    r9,r9,1
+    compile[count++] = 0x5169F800; // rlwimi  r9,r11,31,0,0
+    compile[count++] = 0x556BF87E; // srwi    r11,r11,1
+    compile[count++] = 0x398CFFFF; // addi    r12,r12,-1
+    compile[count++] = 0x2C0C0000; // cmpwi   r12,0
+    compile[count++] = 0x4082FFB4; // bne+    0xFFFFFFB4
+    compile[count++] = 0x39600001; // li      r11,1
+    compile[count++] = 0x7DCE7A78; // xor     r14,r14,r15
+    compile[count++] = 0x2C0E0000; // cmpwi   r14,0
+    compile[count++] = 0x40800024; // bge-    0x24
+    compile[count++] = 0x7D0840F8; // not     r8,r8
+    compile[count++] = 0x7CE738F8; // not     r7,r7
+    compile[count++] = 0x7D4A50F8; // not     r10,r10
+    compile[count++] = 0x7D2948F8; // not     r9,r9
+    compile[count++] = 0x7D085814; // addc    r8,r8,r11
+    compile[count++] = 0x7CE76114; // adde    r7,r7,r12
+    compile[count++] = 0x7D4A6114; // adde    r10,r10,r12
+    compile[count++] = 0x7D296114; // adde    r9,r9,r12
+    compile[count++] = 0x91030004 + OFFSETOF(pCPU, nLo); // stw     r8,4(r3)
+    compile[count++] = 0x90E30000 + OFFSETOF(pCPU, nLo); // stw     r7,0(r3)
+    compile[count++] = 0x91430004 + OFFSETOF(pCPU, nHi); // stw     r10,4(r3)
+    compile[count++] = 0x91230000 + OFFSETOF(pCPU, nHi); // stw     r9,0(r3)
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_DMULTU(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 28;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x39200000; // li      r9,0
+    compile[count++] = 0x39400000; // li      r10,0
+    compile[count++] = 0x39800040; // li      r12,64
+    compile[count++] = 0x710B0001; // andi.   r11,r8,1
+    compile[count++] = 0x41820018; // beq-    0x18
+    compile[count++] = 0x39600000; // li      r11,0
+    compile[count++] = 0x7D4A3014; // addc    r10,r10,r6
+    compile[count++] = 0x7D292914; // adde    r9,r9,r5
+    compile[count++] = 0x7D6B5914; // adde    r11,r11,r11
+    compile[count++] = 0x42800008; // bc      20,lt,0x8
+    compile[count++] = 0x39600000; // li      r11,0
+    compile[count++] = 0x5508F87E; // srwi    r8,r8,1
+    compile[count++] = 0x50E8F800; // rlwimi  r8,r7,31,0,0
+    compile[count++] = 0x54E7F87E; // srwi    r7,r7,1
+    compile[count++] = 0x5147F800; // rlwimi  r7,r10,31,0,0
+    compile[count++] = 0x554AF87E; // srwi    r10,r10,1
+    compile[count++] = 0x512AF800; // rlwimi  r10,r9,31,0,0
+    compile[count++] = 0x5529F87E; // srwi    r9,r9,1
+    compile[count++] = 0x5169F800; // rlwimi  r9,r11,31,0,0
+    compile[count++] = 0x556BF87E; // srwi    r11,r11,1
+    compile[count++] = 0x398CFFFF; // addi    r12,r12,-1
+    compile[count++] = 0x2C0C0000; // cmpwi   r12,0
+    compile[count++] = 0x4082FFB4; // bne+    0xFFFFFFB4
+    compile[count++] = 0x91030004 + OFFSETOF(pCPU, nLo); // stw     r8,4(r3)
+    compile[count++] = 0x90E30000 + OFFSETOF(pCPU, nLo); // stw     r7,0(r3)
+    compile[count++] = 0x91430004 + OFFSETOF(pCPU, nHi); // stw     r10,4(r3)
+    compile[count++] = 0x91230000 + OFFSETOF(pCPU, nHi); // stw     r9,0(r3)
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_DDIV(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 64;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x38A00040; // li      r5,64
+    compile[count++] = 0x38C00000; // li      r6,0
+    compile[count++] = 0x38E00000; // li      r7,0
+    compile[count++] = 0x39800001; // li      r12,1
+    compile[count++] = 0x2C080000; // cmpwi   r8,0
+    compile[count++] = 0x40800014; // bge-    0x14
+    compile[count++] = 0x7D2948F8; // not     r9,r9
+    compile[count++] = 0x7D0840F8; // not     r8,r8
+    compile[count++] = 0x7D296014; // addc    r9,r9,r12
+    compile[count++] = 0x7D083114; // adde    r8,r8,r6
+    compile[count++] = 0x2C0A0000; // cmpwi   r10,0
+    compile[count++] = 0x40800014; // bge-    0x14
+    compile[count++] = 0x7D6B58F8; // not     r11,r11
+    compile[count++] = 0x7D4A50F8; // not     r10,r10
+    compile[count++] = 0x7D6B6014; // addc    r11,r11,r12
+    compile[count++] = 0x7D4A3114; // adde    r10,r10,r6
+    compile[count++] = 0x3D80FFFF; // lis     r12,-1
+    compile[count++] = 0x618CFFFE; // ori     r12,r12,65534
+    compile[count++] = 0x2C060000; // cmpwi   r6,0
+    compile[count++] = 0x4180002C; // blt-    0x2C
+    compile[count++] = 0x54C6083C; // slwi    r6,r6,1
+    compile[count++] = 0x50E60FFE; // rlwimi  r6,r7,1,31,31
+    compile[count++] = 0x54E7083C; // slwi    r7,r7,1
+    compile[count++] = 0x51070FFE; // rlwimi  r7,r8,1,31,31
+    compile[count++] = 0x5508083C; // slwi    r8,r8,1
+    compile[count++] = 0x51280FFE; // rlwimi  r8,r9,1,31,31
+    compile[count++] = 0x5529083C; // slwi    r9,r9,1
+    compile[count++] = 0x7CEB3810; // subfc   r7,r11,r7
+    compile[count++] = 0x7CCA3110; // subfe   r6,r10,r6
+    compile[count++] = 0x42800028; // bc      20,lt,0x28
+    compile[count++] = 0x54C6083C; // slwi    r6,r6,1
+    compile[count++] = 0x50E60FFE; // rlwimi  r6,r7,1,31,31
+    compile[count++] = 0x54E7083C; // slwi    r7,r7,1
+    compile[count++] = 0x51070FFE; // rlwimi  r7,r8,1,31,31
+    compile[count++] = 0x5508083C; // slwi    r8,r8,1
+    compile[count++] = 0x51280FFE; // rlwimi  r8,r9,1,31,31
+    compile[count++] = 0x5529083C; // slwi    r9,r9,1
+    compile[count++] = 0x7CE75814; // addc    r7,r7,r11
+    compile[count++] = 0x7CC65114; // adde    r6,r6,r10
+    compile[count++] = 0x2C060000; // cmpwi   r6,0
+    compile[count++] = 0x4180000C; // blt-    0xC
+    compile[count++] = 0x61290001; // ori     r9,r9,1
+    compile[count++] = 0x42800008; // bc      20,lt,0x8
+    compile[count++] = 0x7D296038; // and     r9,r9,r12
+    compile[count++] = 0x38A5FFFF; // addi    r5,r5,-1
+    compile[count++] = 0x2C050000; // cmpwi   r5,0
+    compile[count++] = 0x4082FF90; // bne+    0xFFFFFF90
+    compile[count++] = 0x2C060000; // cmpwi   r6,0
+    compile[count++] = 0x4080000C; // bge-    0xC
+    compile[count++] = 0x7CE75814; // addc    r7,r7,r11
+    compile[count++] = 0x7CC65114; // adde    r6,r6,r10
+    compile[count++] = 0x39800001; // li      r12,1
+    compile[count++] = 0x7DCE7A78; // xor     r14,r14,r15
+    compile[count++] = 0x2C0E0000; // cmpwi   r14,0
+    compile[count++] = 0x40800014; // bge-    0x14
+    compile[count++] = 0x7D2948F8; // not     r9,r9
+    compile[count++] = 0x7D0840F8; // not     r8,r8
+    compile[count++] = 0x7D296014; // addc    r9,r9,r12
+    compile[count++] = 0x7D082914; // adde    r8,r8,r5
+    compile[count++] = 0x91030000 + OFFSETOF(pCPU, nLo); // stw     r8,0(r3)
+    compile[count++] = 0x91230004 + OFFSETOF(pCPU, nLo); // stw     r9,4(r3)
+    compile[count++] = 0x90C30000 + OFFSETOF(pCPU, nHi); // stw     r6,0(r3)
+    compile[count++] = 0x90E30004 + OFFSETOF(pCPU, nHi); // stw     r7,4(r3)
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_DDIVU(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 43;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x38A00040; // li      r5,64
+    compile[count++] = 0x38C00000; // li      r6,0
+    compile[count++] = 0x38E00000; // li      r7,0
+    compile[count++] = 0x3D80FFFF; // lis     r12,-1
+    compile[count++] = 0x618CFFFE; // ori     r12,r12,65534
+    compile[count++] = 0x2C060000; // cmpwi   r6,0
+    compile[count++] = 0x4180002C; // blt-    0x2C
+    compile[count++] = 0x54C6083C; // slwi    r6,r6,1
+    compile[count++] = 0x50E60FFE; // rlwimi  r6,r7,1,31,31
+    compile[count++] = 0x54E7083C; // slwi    r7,r7,1
+    compile[count++] = 0x51070FFE; // rlwimi  r7,r8,1,31,31
+    compile[count++] = 0x5508083C; // slwi    r8,r8,1
+    compile[count++] = 0x51280FFE; // rlwimi  r8,r9,1,31,31
+    compile[count++] = 0x5529083C; // slwi    r9,r9,1
+    compile[count++] = 0x7CEB3810; // subfc   r7,r11,r7
+    compile[count++] = 0x7CCA3110; // subfe   r6,r10,r6
+    compile[count++] = 0x42800028; // bc      20,lt,0x28
+    compile[count++] = 0x54C6083C; // slwi    r6,r6,1
+    compile[count++] = 0x50E60FFE; // rlwimi  r6,r7,1,31,31
+    compile[count++] = 0x54E7083C; // slwi    r7,r7,1
+    compile[count++] = 0x51070FFE; // rlwimi  r7,r8,1,31,31
+    compile[count++] = 0x5508083C; // slwi    r8,r8,1
+    compile[count++] = 0x51280FFE; // rlwimi  r8,r9,1,31,31
+    compile[count++] = 0x5529083C; // slwi    r9,r9,1
+    compile[count++] = 0x7CE75814; // addc    r7,r7,r11
+    compile[count++] = 0x7CC65114; // adde    r6,r6,r10
+    compile[count++] = 0x2C060000; // cmpwi   r6,0
+    compile[count++] = 0x4180000C; // blt-    0xC
+    compile[count++] = 0x61290001; // ori     r9,r9,1
+    compile[count++] = 0x42800008; // bc      20,lt,0x8
+    compile[count++] = 0x7D296038; // and     r9,r9,r12
+    compile[count++] = 0x38A5FFFF; // addi    r5,r5,-1
+    compile[count++] = 0x2C050000; // cmpwi   r5,0
+    compile[count++] = 0x4082FF90; // bne+    0xFFFFFF90
+    compile[count++] = 0x2C060000; // cmpwi   r6,0
+    compile[count++] = 0x4080000C; // bge-    0xC
+    compile[count++] = 0x7CE75814; // addc    r7,r7,r11
+    compile[count++] = 0x7CC65114; // adde    r6,r6,r10
+    compile[count++] = 0x91030000 + OFFSETOF(pCPU, nLo); // stw     r8,0(r3)
+    compile[count++] = 0x91230004 + OFFSETOF(pCPU, nLo); // stw     r9,4(r3)
+    compile[count++] = 0x90C30000 + OFFSETOF(pCPU, nHi); // stw     r6,0(r3)
+    compile[count++] = 0x90E30004 + OFFSETOF(pCPU, nHi); // stw     r7,4(r3)
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static inline bool cpuCompile_DADD(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 3;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x7CA53814; // addc    r5,r5,r7
+    compile[count++] = 0x7CC64114; // adde    r6,r6,r8
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static inline bool cpuCompile_DADDU(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 3;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x7CA53814; // addc    r5,r5,r7
+    compile[count++] = 0x7CC64114; // adde    r6,r6,r8
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static inline bool cpuCompile_DSUB(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 3;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x7CA72914; // adde    r5,r7,r5
+    compile[count++] = 0x7CC83014; // addc    r6,r8,r6
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static inline bool cpuCompile_DSUBU(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 3;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x7CA72914; // adde    r5,r7,r5
+    compile[count++] = 0x7CC83014; // addc    r6,r8,r6
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_S_SQRT(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 36;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0xC0030000 + (OFFSETOF(pCPU, aGPR) + 4); // lfs     f0,0(r3)
+    compile[count++] = 0xFC010040; // fcmpo   cr0,f1,f0
+    compile[count++] = 0x40810078; // ble-    0x78
+    compile[count++] = 0xFC400834; // frsqrte f2,f1
+    compile[count++] = 0x3CA03FE0; // lis     r5,16352
+    compile[count++] = 0x90A30000 + OFFSETOF(pCPU, aGPR); // stw     r5,0(r3)
+    compile[count++] = 0xC8830000 + OFFSETOF(pCPU, aGPR); // lfd     f4,0(r3)
+    compile[count++] = 0x3CA04008; // lis     r5,16392
+    compile[count++] = 0x90A30000 + OFFSETOF(pCPU, aGPR); // stw     r5,0(r3)
+    compile[count++] = 0xC8630000 + OFFSETOF(pCPU, aGPR); // lfd     f3,0(r3)
+    compile[count++] = 0xFCA400B2; // fmul    f5,f4,f2
+    compile[count++] = 0xFCC200B2; // fmul    f6,f2,f2
+    compile[count++] = 0xFCC101B2; // fmul    f6,f1,f6
+    compile[count++] = 0xFCC33028; // fsub    f6,f3,f6
+    compile[count++] = 0xFC4501B2; // fmul    f2,f5,f6
+    compile[count++] = 0xFCA400B2; // fmul    f5,f4,f2
+    compile[count++] = 0xFCC200B2; // fmul    f6,f2,f2
+    compile[count++] = 0xFCC101B2; // fmul    f6,f1,f6
+    compile[count++] = 0xFCC33028; // fsub    f6,f3,f6
+    compile[count++] = 0xFC4501B2; // fmul    f2,f5,f6
+    compile[count++] = 0xFCA400B2; // fmul    f5,f4,f2
+    compile[count++] = 0xFCC200B2; // fmul    f6,f2,f2
+    compile[count++] = 0xFCC101B2; // fmul    f6,f1,f6
+    compile[count++] = 0xFCC33028; // fsub    f6,f3,f6
+    compile[count++] = 0xFC4501B2; // fmul    f2,f5,f6
+    compile[count++] = 0xFCA400B2; // fmul    f5,f4,f2
+    compile[count++] = 0xFCC200B2; // fmul    f6,f2,f2
+    compile[count++] = 0xFCC101B2; // fmul    f6,f1,f6
+    compile[count++] = 0xFCC33028; // fsub    f6,f3,f6
+    compile[count++] = 0xFC4501B2; // fmul    f2,f5,f6
+    compile[count++] = 0xFCC100B2; // fmul    f6,f1,f2
+    compile[count++] = 0xFC203018; // frsp    f1,f6
+    compile[count++] = 0x38A00000; // li      r5,0
+    compile[count++] = 0x90A30000 + (OFFSETOF(pCPU, aGPR) + 4); // stw     r5,0(r3)
+    compile[count++] = 0x90A30000 + OFFSETOF(pCPU, aGPR); // stw     r5,0(r3)
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_D_SQRT(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 48;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0xC8030000 + OFFSETOF(pCPU, aGPR); // lfd     f0,0(r3)
+    compile[count++] = 0xFC010040; // fcmpo   cr0,f1,f0
+    compile[count++] = 0x40810068; // ble-    0x68
+    compile[count++] = 0xFC400834; // frsqrte f2,f1
+    compile[count++] = 0x3CA03FE0; // lis     r5,16352
+    compile[count++] = 0x90A30000 + OFFSETOF(pCPU, aGPR); // stw     r5,0(r3)
+    compile[count++] = 0xC8830000 + OFFSETOF(pCPU, aGPR); // lfd     f4,0(r3)
+    compile[count++] = 0x3CA04008; // lis     r5,16392
+    compile[count++] = 0x90A30000 + OFFSETOF(pCPU, aGPR); // stw     r5,0(r3)
+    compile[count++] = 0xC8630000 + OFFSETOF(pCPU, aGPR); // lfd     f3,0(r3)
+    compile[count++] = 0xFC0200B2; // fmul    f0,f2,f2
+    compile[count++] = 0xFC4400B2; // fmul    f2,f4,f2
+    compile[count++] = 0xFC01183C; // fnmsub  f0,f1,f0,f3
+    compile[count++] = 0xFC420032; // fmul    f2,f2,f0
+    compile[count++] = 0xFC0200B2; // fmul    f0,f2,f2
+    compile[count++] = 0xFC4400B2; // fmul    f2,f4,f2
+    compile[count++] = 0xFC01183C; // fnmsub  f0,f1,f0,f3
+    compile[count++] = 0xFC420032; // fmul    f2,f2,f0
+    compile[count++] = 0xFC0200B2; // fmul    f0,f2,f2
+    compile[count++] = 0xFC4400B2; // fmul    f2,f4,f2
+    compile[count++] = 0xFC01183C; // fnmsub  f0,f1,f0,f3
+    compile[count++] = 0xFC420032; // fmul    f2,f2,f0
+    compile[count++] = 0xFC0200B2; // fmul    f0,f2,f2
+    compile[count++] = 0xFC4400B2; // fmul    f2,f4,f2
+    compile[count++] = 0xFC01183C; // fnmsub  f0,f1,f0,f3
+    compile[count++] = 0xFC020032; // fmul    f0,f2,f0
+    compile[count++] = 0xFC210032; // fmul    f1,f1,f0
+    compile[count++] = 0x42800044; // bc      20,lt,0x44
+    compile[count++] = 0xFC010000; // fcmpu   cr0,f1,f0
+    compile[count++] = 0x4082000C; // bne-    0xC
+    compile[count++] = 0xFC200090; // fmr     f1,f0
+    compile[count++] = 0x42800034; // bc      20,lt,0x34
+    compile[count++] = 0xFC010000; // fcmpu   cr0,f1,f0
+    compile[count++] = 0x41820020; // beq-    0x20
+    compile[count++] = 0x3CA07FFF; // lis     r5,32767
+    compile[count++] = 0x60A5FFFF; // ori     r5,r5,65535
+    compile[count++] = 0x90A30000 + OFFSETOF(pCPU, aGPR); // stw     r5,0(r3)
+    compile[count++] = 0x3CA0E000; // lis     r5,-8192
+    compile[count++] = 0x90A30004 + OFFSETOF(pCPU, aGPR); // stw     r5,4(r3)
+    compile[count++] = 0xC0230000 + OFFSETOF(pCPU, aGPR); // lfs     f1,0(r3)
+    compile[count++] = 0x42800010; // bc      20,lt,0x10
+    compile[count++] = 0x3CA07FF0; // lis     r5,32752
+    compile[count++] = 0x90A30000 + OFFSETOF(pCPU, aGPR); // stw     r5,0(r3)
+    compile[count++] = 0xC0230000 + OFFSETOF(pCPU, aGPR); // lfs     f1,0(r3)
+    compile[count++] = 0x38A00000; // li      r5,0
+    compile[count++] = 0x90A30004 + OFFSETOF(pCPU, aGPR); // stw     r5,4(r3)
+    compile[count++] = 0x90A30000 + OFFSETOF(pCPU, aGPR); // stw     r5,0(r3)
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_W_CVT_SD(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 14;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x6CA58000; // xoris   r5,r5,32768
+    compile[count++] = 0x3CC04330; // lis     r6,17200
+    compile[count++] = 0x90A30004 + OFFSETOF(pCPU, aGPR); // stw     r5,4(r3)
+    compile[count++] = 0x90C30000 + OFFSETOF(pCPU, aGPR); // stw     r6,0(r3)
+    compile[count++] = 0xC8030000 + OFFSETOF(pCPU, aGPR); // lfd     f0,0(r3)
+    compile[count++] = 0x90C30000 + OFFSETOF(pCPU, aGPR); // stw     r6,0(r3)
+    compile[count++] = 0x3CA08000; // lis     r5,-32768
+    compile[count++] = 0x90A30004 + OFFSETOF(pCPU, aGPR); // stw     r5,4(r3)
+    compile[count++] = 0xC8230000 + OFFSETOF(pCPU, aGPR); // lfd     f1,0(r3)
+    compile[count++] = 0xFC200828; // fsub    f1,f0,f1
+    compile[count++] = 0x38A00000; // li      r5,0
+    compile[count++] = 0x90A30000 + OFFSETOF(pCPU, aGPR); // stw     r5,0(r3)
+    compile[count++] = 0x90A30004 + OFFSETOF(pCPU, aGPR); // stw     r5,4(r3)
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_L_CVT_SD(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 56;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x9421FFD0; // stwu    r1,-48(r1)
+    compile[count++] = 0x91010008; // stw     r8,8(r1)
+    compile[count++] = 0x91210010; // stw     r9,16(r1)
+    compile[count++] = 0x91410018; // stw     r10,24(r1)
+    compile[count++] = 0x91610020; // stw     r11,32(r1)
+    compile[count++] = 0x91810028; // stw     r12,40(r1)
+    compile[count++] = 0x9421FFF0; // stwu    r1,-16(r1)
+    compile[count++] = 0x54A70001; // clrrwi. r7,r5,31
+    compile[count++] = 0x4182000C; // beq-    0xC
+    compile[count++] = 0x20C60000; // subfic  r6,r6,0
+    compile[count++] = 0x7CA50190; // subfze  r5,r5
+    compile[count++] = 0x7CA93379; // or.     r9,r5,r6
+    compile[count++] = 0x39000000; // li      r8,0
+    compile[count++] = 0x41820080; // beq-    0x80
+    compile[count++] = 0x7CA90034; // cntlzw  r9,r5
+    compile[count++] = 0x7CCA0034; // cntlzw  r10,r6
+    compile[count++] = 0x552BD008; // rlwinm  r11,r9,26,0,4
+    compile[count++] = 0x7D6BFE70; // srawi   r11,r11,31
+    compile[count++] = 0x7D6B5038; // and     r11,r11,r10
+    compile[count++] = 0x7D295A14; // add     r9,r9,r11
+    compile[count++] = 0x21490020; // subfic  r10,r9,32
+    compile[count++] = 0x3169FFE0; // addic   r11,r9,-32
+    compile[count++] = 0x7CA54830; // slw     r5,r5,r9
+    compile[count++] = 0x7CCC5430; // srw     r12,r6,r10
+    compile[count++] = 0x7CA56378; // or      r5,r5,r12
+    compile[count++] = 0x7CCC5830; // slw     r12,r6,r11
+    compile[count++] = 0x7CA56378; // or      r5,r5,r12
+    compile[count++] = 0x7CC64830; // slw     r6,r6,r9
+    compile[count++] = 0x7D094050; // subf    r8,r9,r8
+    compile[count++] = 0x54C9057E; // clrlwi  r9,r6,21
+    compile[count++] = 0x2C090400; // cmpwi   r9,1024
+    compile[count++] = 0x3908043E; // addi    r8,r8,1086
+    compile[count++] = 0x4180001C; // blt-    0x1C
+    compile[count++] = 0x4181000C; // bgt-    0xC
+    compile[count++] = 0x54C90529; // rlwinm. r9,r6,0,20,20
+    compile[count++] = 0x41820010; // beq-    0x10
+    compile[count++] = 0x30C60800; // addic   r6,r6,2048
+    compile[count++] = 0x7CA50194; // addze   r5,r5
+    compile[count++] = 0x7D080194; // addze   r8,r8
+    compile[count++] = 0x54C6A83E; // rotlwi  r6,r6,21
+    compile[count++] = 0x50A6A814; // rlwimi  r6,r5,21,0,10
+    compile[count++] = 0x54A5AB3E; // rlwinm  r5,r5,21,12,31
+    compile[count++] = 0x5508A016; // slwi    r8,r8,20
+    compile[count++] = 0x7D052B78; // or      r5,r8,r5
+    compile[count++] = 0x7CE52B78; // or      r5,r7,r5
+    compile[count++] = 0x90A10008; // stw     r5,8(r1)
+    compile[count++] = 0x90C1000C; // stw     r6,12(r1)
+    compile[count++] = 0xC8210008; // lfd     f1,8(r1)
+    compile[count++] = 0x38210010; // addi    r1,r1,16
+    compile[count++] = 0x81010008; // lwz     r8,8(r1)
+    compile[count++] = 0x81210010; // lwz     r9,16(r1)
+    compile[count++] = 0x81410018; // lwz     r10,24(r1)
+    compile[count++] = 0x81610020; // lwz     r11,32(r1)
+    compile[count++] = 0x81810028; // lwz     r12,40(r1)
+    compile[count++] = 0x38210030; // addi    r1,r1,48
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_CEIL_W(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 13;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x9421FFE0; // stwu    r1,-32(r1)
+    compile[count++] = 0xC8030000 + (OFFSETOF(pCPU, aFPR) & 0xFFFF); // lfd     f0,0(r3)
+    compile[count++] = 0xFC010040; // fcmpo   cr0,f1,f0
+    compile[count++] = 0x4081000C; // ble-    0xC
+    compile[count++] = 0x38C00001; // li      r6,1
+    compile[count++] = 0x42800008; // bc      20,lt,0x8
+    compile[count++] = 0x38C00000; // li      r6,0
+    compile[count++] = 0xFC20081E; // fctiwz  f1,f1
+    compile[count++] = 0xD8210010; // stfd    f1,16(r1)
+    compile[count++] = 0x80A10014; // lwz     r5,20(r1)
+    compile[count++] = 0x7CA62A14; // add     r5,r6,r5
+    compile[count++] = 0x38210020; // addi    r1,r1,32
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_FLOOR_W(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 13;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x9421FFE0; // stwu    r1,-32(r1)
+    compile[count++] = 0xC8030000 + (OFFSETOF(pCPU, aFPR) & 0xFFFF); // lfd     f0,0(r3)
+    compile[count++] = 0xFC010040; // fcmpo   cr0,f1,f0
+    compile[count++] = 0x4180000C; // blt-    0xC
+    compile[count++] = 0x38C00000; // li      r6,0
+    compile[count++] = 0x42800008; // bc      20,lt,0x8
+    compile[count++] = 0x38C00001; // li      r6,1
+    compile[count++] = 0xFC20081E; // fctiwz  f1,f1
+    compile[count++] = 0xD8210010; // stfd    f1,16(r1)
+    compile[count++] = 0x80A10014; // lwz     r5,20(r1)
+    compile[count++] = 0x7CA62850; // subf    r5,r6,r5
+    compile[count++] = 0x38210020; // addi    r1,r1,32
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static inline bool cpuCompile_ROUND_W(s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 3;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0xFC00081C; // fctiw   f0,f1
+    compile[count++] = 0x7C051FAE; // stfiwx  f0,r5,r3
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static inline bool cpuCompile_TRUNC_W(s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 3;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0xFC00081E; // fctiwz  f0,f1
+    compile[count++] = 0x7C051FAE; // stfiwx  f0,r5,r3
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_LB(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 11;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x54C6103A; // slwi    r6,r6,2
+    compile[count++] = 0x38E30000 + OFFSETOF(pCPU, apDevice); // addi    r7,r3,0
+    compile[count++] = 0x7CC6382E; // lwzx    r6,r6,r7
+    compile[count++] = 0x80E60008; // lwz     r7,8(r6)
+    compile[count++] = 0x7CA53A14; // add     r5,r5,r7
+    compile[count++] = 0x80E60004; // lwz     r7,4(r6)
+    compile[count++] = 0x80E70004; // lwz     r7,4(r7)
+    compile[count++] = 0x7CA538AE; // lbzx    r5,r5,r7
+    compile[count++] = 0x7CA50774; // extsb   r5,r5
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_LH(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 11;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x54C6103A; // slwi    r6,r6,2
+    compile[count++] = 0x38E30000 + OFFSETOF(pCPU, apDevice); // addi    r7,r3,0
+    compile[count++] = 0x7CC6382E; // lwzx    r6,r6,r7
+    compile[count++] = 0x80E60008; // lwz     r7,8(r6)
+    compile[count++] = 0x7CA53A14; // add     r5,r5,r7
+    compile[count++] = 0x80E60004; // lwz     r7,4(r6)
+    compile[count++] = 0x80E70004; // lwz     r7,4(r7)
+    compile[count++] = 0x7CA53A2E; // lhzx    r5,r5,r7
+    compile[count++] = 0x7CA50734; // extsh   r5,r5
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_LW(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 10;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x54C6103A; // slwi    r6,r6,2
+    compile[count++] = 0x38E30000 + OFFSETOF(pCPU, apDevice); // addi    r7,r3,0
+    compile[count++] = 0x7CC6382E; // lwzx    r6,r6,r7
+    compile[count++] = 0x80E60008; // lwz     r7,8(r6)
+    compile[count++] = 0x7CA53A14; // add     r5,r5,r7
+    compile[count++] = 0x80E60004; // lwz     r7,4(r6)
+    compile[count++] = 0x80E70004; // lwz     r7,4(r7)
+    compile[count++] = 0x7CA5382E; // lwzx    r5,r5,r7
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_LBU(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 10;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x54C6103A; // slwi    r6,r6,2
+    compile[count++] = 0x38E30000 + OFFSETOF(pCPU, apDevice); // addi    r7,r3,0
+    compile[count++] = 0x7CC6382E; // lwzx    r6,r6,r7
+    compile[count++] = 0x80E60008; // lwz     r7,8(r6)
+    compile[count++] = 0x7CA53A14; // add     r5,r5,r7
+    compile[count++] = 0x80E60004; // lwz     r7,4(r6)
+    compile[count++] = 0x80E70004; // lwz     r7,4(r7)
+    compile[count++] = 0x7CA538AE; // lbzx    r5,r5,r7
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_LHU(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 10;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x54C6103A; // slwi    r6,r6,2
+    compile[count++] = 0x38E30000 + OFFSETOF(pCPU, apDevice); // addi    r7,r3,0
+    compile[count++] = 0x7CC6382E; // lwzx    r6,r6,r7
+    compile[count++] = 0x80E60008; // lwz     r7,8(r6)
+    compile[count++] = 0x7CA53A14; // add     r5,r5,r7
+    compile[count++] = 0x80E60004; // lwz     r7,4(r6)
+    compile[count++] = 0x80E70004; // lwz     r7,4(r7)
+    compile[count++] = 0x7CA53A2E; // lhzx    r5,r5,r7
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_SB(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 10;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x54C6103A; // slwi    r6,r6,2
+    compile[count++] = 0x38E30000 + OFFSETOF(pCPU, apDevice); // addi    r7,r3,0
+    compile[count++] = 0x7CC6382E; // lwzx    r6,r6,r7
+    compile[count++] = 0x80E60008; // lwz     r7,8(r6)
+    compile[count++] = 0x7CA53A14; // add     r5,r5,r7
+    compile[count++] = 0x80E60004; // lwz     r7,4(r6)
+    compile[count++] = 0x80E70004; // lwz     r7,4(r7)
+    compile[count++] = 0x7D0539AE; // stbx    r8,r5,r7
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_SH(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 10;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x54C6103A; // slwi    r6,r6,2
+    compile[count++] = 0x38E30000 + OFFSETOF(pCPU, apDevice); // addi    r7,r3,0
+    compile[count++] = 0x7CC6382E; // lwzx    r6,r6,r7
+    compile[count++] = 0x80E60008; // lwz     r7,8(r6)
+    compile[count++] = 0x7CA53A14; // add     r5,r5,r7
+    compile[count++] = 0x80E60004; // lwz     r7,4(r6)
+    compile[count++] = 0x80E70004; // lwz     r7,4(r7)
+    compile[count++] = 0x7D053B2E; // sthx    r8,r5,r7
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_SW(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 10;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x54C6103A; // slwi    r6,r6,2
+    compile[count++] = 0x38E30000 + OFFSETOF(pCPU, apDevice); // addi    r7,r3,0
+    compile[count++] = 0x7CC6382E; // lwzx    r6,r6,r7
+    compile[count++] = 0x80E60008; // lwz     r7,8(r6)
+    compile[count++] = 0x7CA53A14; // add     r5,r5,r7
+    compile[count++] = 0x80E60004; // lwz     r7,4(r6)
+    compile[count++] = 0x80E70004; // lwz     r7,4(r7)
+    compile[count++] = 0x7D05392E; // stwx    r8,r5,r7
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_LDC(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 12;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x54C6103A; // slwi    r6,r6,2
+    compile[count++] = 0x38E30000 + OFFSETOF(pCPU, apDevice); // addi    r7,r3,0
+    compile[count++] = 0x7CC6382E; // lwzx    r6,r6,r7
+    compile[count++] = 0x80E60008; // lwz     r7,8(r6)
+    compile[count++] = 0x7CA53A14; // add     r5,r5,r7
+    compile[count++] = 0x80E60004; // lwz     r7,4(r6)
+    compile[count++] = 0x80E70004; // lwz     r7,4(r7)
+    compile[count++] = 0x7CE53A14; // add     r7,r5,r7
+    compile[count++] = 0x80A70000; // lwz     r5,0(r7)
+    compile[count++] = 0x80C70004; // lwz     r6,4(r7)
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_SDC(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 12;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x54C6103A; // slwi    r6,r6,2
+    compile[count++] = 0x38E30000 + OFFSETOF(pCPU, apDevice); // addi    r7,r3,0
+    compile[count++] = 0x7CC6382E; // lwzx    r6,r6,r7
+    compile[count++] = 0x80E60008; // lwz     r7,8(r6)
+    compile[count++] = 0x7CA53A14; // add     r5,r5,r7
+    compile[count++] = 0x80E60004; // lwz     r7,4(r6)
+    compile[count++] = 0x80E70004; // lwz     r7,4(r7)
+    compile[count++] = 0x7CE53A14; // add     r7,r5,r7
+    compile[count++] = 0x91070000; // stw     r8,0(r7)
+    compile[count++] = 0x91270004; // stw     r9,4(r7)
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_LWL(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 12;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x38C00018; // li      r6,24
+    compile[count++] = 0x88A70000; // lbz     r5,0(r7)
+    compile[count++] = 0x7CA53030; // slw     r5,r5,r6
+    compile[count++] = 0x394000FF; // li      r10,255
+    compile[count++] = 0x7D4A3030; // slw     r10,r10,r6
+    compile[count++] = 0x7D295078; // andc    r9,r9,r10
+    compile[count++] = 0x7D292B78; // or      r9,r9,r5
+    compile[count++] = 0x38C6FFF8; // addi    r6,r6,-8
+    compile[count++] = 0x54E507BF; // clrlwi. r5,r7,30
+    compile[count++] = 0x38E70001; // addi    r7,r7,1
+    compile[count++] = 0x4082FFDC; // bne+    0xFFFFFFDC
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static bool cpuCompile_LWR(Cpu* pCPU, s32* addressGCN) {
+    s32* compile;
+    s32 count = 0;
+    s32 nSize = 12;
+
+    if (!xlHeapTake((void**)&compile, (nSize * sizeof(s32)) | 0x30000000)) {
+        return false;
+    }
+    *addressGCN = (s32)compile;
+
+    compile[count++] = 0x38C00000; // li      r6,0
+    compile[count++] = 0x88A70000; // lbz     r5,0(r7)
+    compile[count++] = 0x7CA53030; // slw     r5,r5,r6
+    compile[count++] = 0x394000FF; // li      r10,255
+    compile[count++] = 0x7D4A3030; // slw     r10,r10,r6
+    compile[count++] = 0x7D295078; // andc    r9,r9,r10
+    compile[count++] = 0x7D292B78; // or      r9,r9,r5
+    compile[count++] = 0x38C60008; // addi    r6,r6,8
+    compile[count++] = 0x54E507BF; // clrlwi. r5,r7,30
+    compile[count++] = 0x38E7FFFF; // addi    r7,r7,-1
+    compile[count++] = 0x4082FFDC; // bne+    0xFFFFFFDC
+    compile[count++] = 0x4E800020; // blr
+
+    nSize = count;
+    DCStoreRange(compile, nSize * sizeof(s32));
+    ICInvalidateRange(compile, nSize * sizeof(s32));
+
+    return true;
+}
+
+static inline cpuUnknownMarioKartFrameSet(SystemRomType eTypeROM, void* pFrame, s32 nAddressN64) {
+    if (eTypeROM == 'NKTJ') {
+        if (nAddressN64 == 0x802A4118) {
+            *((s32*)pFrame + 0x11) = 0;
+        }
+        if (nAddressN64 == 0x800729D4) {
+            *((s32*)pFrame + 0x11) = 1;
+        }
+    } else if (eTypeROM == 'NKTP') {
+        if (nAddressN64 == 0x802A4160) {
+            *((s32*)pFrame + 0x11) = 0;
+        }
+        if (nAddressN64 == 0x80072E34) {
+            *((s32*)pFrame + 0x11) = 1;
+        }
+    } else if (eTypeROM == 'NKTE') {
+        if (nAddressN64 == 0x802A4160) {
+            *((s32*)pFrame + 0x11) = 0;
+        }
+        if (nAddressN64 == 0x80072E54) {
+            *((s32*)pFrame + 0x11) = 1;
+        }
+    }
+}
+
+static bool cpuExecuteOpcode(Cpu* pCPU, s32 nCount0, s32 nAddressN64, s32 nAddressGCN) {
+    s32 pad1[2];
+    u64 save;
+    s32 restore;
+    u32 nOpcode;
+    u32* opcode;
+    s32 pad2;
+    CpuDevice** apDevice;
+    u8* aiDevice;
+    s32 iEntry;
+    s32 nCount;
+    s8 nData8;
+    s16 nData16;
+    s32 nData32;
+    s64 nData64;
+    s32 nAddress;
+    CpuFunction* pFunction;
+    s32 nTick;
+    s32 pad3[3];
+
+    restore = 0;
+    nTick = OSGetTick();
+    if (pCPU->nWaitPC != 0) {
+        pCPU->nMode |= 8;
+    } else {
+        pCPU->nMode &= ~8;
+    }
+
+    cpuUnknownMarioKartFrameSet(gpSystem->eTypeROM, SYSTEM_FRAME(gpSystem), nAddressN64);
+
+    aiDevice = pCPU->aiDevice;
+    apDevice = pCPU->apDevice;
+
+    if (!cpuGetAddressBuffer(pCPU, (void**)&opcode, nAddressN64)) {
+        return false;
+    }
+
+    nOpcode = *opcode;
+    pCPU->nPC = nAddressN64 + 4;
+    if (nOpcode == 0xACBF011C) { // sw $ra,0x11C($a1)
+        save = pCPU->aGPR[31].u64;
+        restore = 1;
+        pCPU->aGPR[31].s32 = pCPU->nReturnAddrLast;
+    }
+
+    switch (MIPS_OP(nOpcode)) {
+        case 0x00: // special
+            switch (MIPS_FUNCT(nOpcode)) {
+                case 0x00: // sll
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s32 = pCPU->aGPR[MIPS_RT(nOpcode)].s32 << MIPS_SA(nOpcode);
                     break;
-                case SPEC_SRL: // SRL
-                    cpu->gpr[MIPS_RD(inst)].w[1] = cpu->gpr[MIPS_RT(inst)].w[1] >> MIPS_SA(inst);
+                case 0x02: // srl
+                    pCPU->aGPR[MIPS_RD(nOpcode)].u32 = pCPU->aGPR[MIPS_RT(nOpcode)].u32 >> MIPS_SA(nOpcode);
                     break;
-                case SPEC_SRA: // SRA
-                    cpu->gpr[MIPS_RD(inst)].sw[1] = cpu->gpr[MIPS_RT(inst)].sw[1] >> MIPS_SA(inst);
+                case 0x03: // sra
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s32 = pCPU->aGPR[MIPS_RT(nOpcode)].s32 >> MIPS_SA(nOpcode);
                     break;
-                case SPEC_SLLV: // SLLV
-                    cpu->gpr[MIPS_RD(inst)].w[1] = 
-                        cpu->gpr[MIPS_RT(inst)].w[1] << (cpu->gpr[MIPS_RS(inst)].w[1] & 0x1F);
+                case 0x04: // sllv
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s32 = pCPU->aGPR[MIPS_RT(nOpcode)].s32
+                                                       << (pCPU->aGPR[MIPS_RS(nOpcode)].s32 & 0x1F);
                     break;
-                case SPEC_SRLV: // SRLV
-                    cpu->gpr[MIPS_RD(inst)].w[1] = 
-                        cpu->gpr[MIPS_RT(inst)].w[1] >> (cpu->gpr[MIPS_RS(inst)].w[1] & 0x1F);
+                case 0x06: // srlv
+                    pCPU->aGPR[MIPS_RD(nOpcode)].u32 =
+                        pCPU->aGPR[MIPS_RT(nOpcode)].u32 >> (pCPU->aGPR[MIPS_RS(nOpcode)].s32 & 0x1F);
                     break;
-                case SPEC_SRAV: // SRAV
-                    cpu->gpr[MIPS_RD(inst)].sw[1] = 
-                        cpu->gpr[MIPS_RT(inst)].sw[1] >> (cpu->gpr[MIPS_RS(inst)].sw[1] & 0x1F);
+                case 0x07: // srav
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s32 =
+                        pCPU->aGPR[MIPS_RT(nOpcode)].s32 >> (pCPU->aGPR[MIPS_RS(nOpcode)].s32 & 0x1F);
                     break;
-                case SPEC_JR: // JR
-                    cpu->unk_0x24 = cpu->gpr[MIPS_RS(inst)].w[1];
+                case 0x08: // jr
+                    pCPU->nWaitPC = pCPU->aGPR[MIPS_RS(nOpcode)].u32;
                     break;
-                case SPEC_JALR: // JALR
-                    cpu->unk_0x24 = cpu->gpr[MIPS_RS(inst)].w[1];
-                    cpu->gpr[MIPS_RD(inst)].d = cpu->pc + 4;
+                case 0x09: // jalr
+                    pCPU->nWaitPC = pCPU->aGPR[MIPS_RS(nOpcode)].u32;
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s64 = pCPU->nPC + 4;
                     break;
-                case SPEC_SYSCALL: // SYSCALL
-                    cpuException(cpu, 8, 0);
+                case 0x0C: // syscall
+                    cpuException(pCPU, CEC_SYSCALL, 0);
                     break;
-                case SPEC_BREAK: // BREAk
-                    cpuException(cpu, 9, 0);
+                case 0x0D: // break
+                    cpuException(pCPU, CEC_BREAK, 0);
                     break;
-                case SPEC_MFHI: // MFHI
-                    cpu->gpr[MIPS_RD(inst)].d = cpu->hi.d;
+                case 0x10: // mfhi
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s64 = pCPU->nHi;
                     break;
-                case SPEC_MTHI: // MTHI
-                    cpu->hi.d = cpu->gpr[MIPS_RS(inst)].d;
+                case 0x11: // mthi
+                    pCPU->nHi = pCPU->aGPR[MIPS_RS(nOpcode)].s64;
                     break;
-                case SPEC_MFLO: // MFLO
-                    cpu->gpr[MIPS_RD(inst)].d = cpu->lo.d;
+                case 0x12: // mflo
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s64 = pCPU->nLo;
                     break;
-                case SPEC_MTLO: // MTLO
-                    cpu->lo.d = cpu->gpr[MIPS_RS(inst)].d;
+                case 0x13: // mtlo
+                    pCPU->nLo = pCPU->aGPR[MIPS_RS(nOpcode)].s64;
                     break;
-                case SPEC_DSLLV: // DSLLV
-                    cpu->gpr[MIPS_RD(inst)].d = cpu->gpr[MIPS_RT(inst)].d << (cpu->gpr[MIPS_RS(inst)].d & 0x3F);
+                case 0x14: // dsllv
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s64 = pCPU->aGPR[MIPS_RT(nOpcode)].s64
+                                                       << (pCPU->aGPR[MIPS_RS(nOpcode)].s64 & 0x3F);
                     break;
-                case SPEC_DSRLV: // DSRLV
-                    cpu->gpr[MIPS_RD(inst)].d = cpu->gpr[MIPS_RT(inst)].d >> (cpu->gpr[MIPS_RS(inst)].d & 0x3F);
+                case 0x16: // dsrlv
+                    pCPU->aGPR[MIPS_RD(nOpcode)].u64 =
+                        pCPU->aGPR[MIPS_RT(nOpcode)].u64 >> (pCPU->aGPR[MIPS_RS(nOpcode)].s64 & 0x3F);
                     break;
-                case SPEC_DSRAV: // DRAV
-                    cpu->gpr[MIPS_RD(inst)].sd = cpu->gpr[MIPS_RT(inst)].sd >> (cpu->gpr[MIPS_RS(inst)].sd & 0x3F);
+                case 0x17: // dsrav
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s64 =
+                        pCPU->aGPR[MIPS_RT(nOpcode)].s64 >> (pCPU->aGPR[MIPS_RS(nOpcode)].s64 & 0x3F);
                     break;
-                case SPEC_MULT: // MULT
-                    {
-                        tmp.d = (s64)((s64)cpu->gpr[MIPS_RS(inst)].sw[1] * (s64)cpu->gpr[MIPS_RT(inst)].sw[1]);
-                        cpu->lo.sd = (s32)(tmp.sd & 0xFFFFFFFF);
-                        cpu->hi.sd = (s32)(tmp.sd >> 32);
+                case 0x18: // mult
+                    nData64 = (s64)pCPU->aGPR[MIPS_RS(nOpcode)].s32 * (s64)pCPU->aGPR[MIPS_RT(nOpcode)].s32;
+                    pCPU->nLo = (s32)(nData64 & 0xFFFFFFFF);
+                    pCPU->nHi = (s32)(nData64 >> 32);
+                    break;
+                case 0x19: // multu
+                    nData64 = (u64)pCPU->aGPR[MIPS_RS(nOpcode)].u32 * (u64)pCPU->aGPR[MIPS_RT(nOpcode)].u32;
+                    pCPU->nLo = (s32)(nData64 & 0xFFFFFFFF);
+                    pCPU->nHi = (s32)(nData64 >> 32);
+                    break;
+                case 0x1A: // div
+                    if (pCPU->aGPR[MIPS_RT(nOpcode)].s32 != 0) {
+                        pCPU->nLo = pCPU->aGPR[MIPS_RS(nOpcode)].s32 / pCPU->aGPR[MIPS_RT(nOpcode)].s32;
+                        pCPU->nHi = pCPU->aGPR[MIPS_RS(nOpcode)].s32 % pCPU->aGPR[MIPS_RT(nOpcode)].s32;
                     }
                     break;
-                case SPEC_MULTU: // MULTU
-                    {
-                        tmp.d = (s64)((u64)cpu->gpr[MIPS_RS(inst)].w[1] * (u64)cpu->gpr[MIPS_RT(inst)].w[1]);
-                        cpu->lo.sd = (s32)(tmp.sd & 0xFFFFFFFF);
-                        cpu->hi.sd = (s32)(tmp.sd >> 32);
+                case 0x1B: // divu
+                    if (pCPU->aGPR[MIPS_RT(nOpcode)].u32 != 0) {
+                        pCPU->nLo = (s32)(pCPU->aGPR[MIPS_RS(nOpcode)].u32 / pCPU->aGPR[MIPS_RT(nOpcode)].u32);
+                        pCPU->nHi = (s32)(pCPU->aGPR[MIPS_RS(nOpcode)].u32 % pCPU->aGPR[MIPS_RT(nOpcode)].u32);
                     }
                     break;
-                case SPEC_DIV: // DIV
-                    {
-                        if(cpu->gpr[MIPS_RT(inst)].w[1] == 0) {
+                case 0x1C: // dmult
+                    pCPU->nLo = pCPU->aGPR[MIPS_RS(nOpcode)].s64 * pCPU->aGPR[MIPS_RT(nOpcode)].s64;
+                    pCPU->nHi = (pCPU->nLo < 0) ? -1 : 0;
+                    break;
+                case 0x1D: // dmultu
+                    pCPU->nLo = pCPU->aGPR[MIPS_RS(nOpcode)].u64 * pCPU->aGPR[MIPS_RT(nOpcode)].u64;
+                    pCPU->nHi = (pCPU->nLo < 0) ? -1 : 0;
+                    break;
+                case 0x1E: // ddiv
+                    if (pCPU->aGPR[MIPS_RT(nOpcode)].s64 != 0) {
+                        pCPU->nLo = pCPU->aGPR[MIPS_RS(nOpcode)].s64 / pCPU->aGPR[MIPS_RT(nOpcode)].s64;
+                        pCPU->nHi = pCPU->aGPR[MIPS_RS(nOpcode)].s64 % pCPU->aGPR[MIPS_RT(nOpcode)].s64;
+                    }
+                    break;
+                case 0x1F: // ddivu
+                    if (pCPU->aGPR[MIPS_RT(nOpcode)].u64 != 0) {
+                        pCPU->nLo = pCPU->aGPR[MIPS_RS(nOpcode)].u64 / pCPU->aGPR[MIPS_RT(nOpcode)].u64;
+                        pCPU->nHi = pCPU->aGPR[MIPS_RS(nOpcode)].u64 % pCPU->aGPR[MIPS_RT(nOpcode)].u64;
+                    }
+                    break;
+                case 0x20: // add
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s32 =
+                        pCPU->aGPR[MIPS_RS(nOpcode)].s32 + pCPU->aGPR[MIPS_RT(nOpcode)].s32;
+                    break;
+                case 0x21: // addu
+                    pCPU->aGPR[MIPS_RD(nOpcode)].u32 =
+                        pCPU->aGPR[MIPS_RS(nOpcode)].u32 + pCPU->aGPR[MIPS_RT(nOpcode)].u32;
+                    break;
+                case 0x22: // sub
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s32 =
+                        pCPU->aGPR[MIPS_RS(nOpcode)].s32 - pCPU->aGPR[MIPS_RT(nOpcode)].s32;
+                    break;
+                case 0x23: // subu
+                    pCPU->aGPR[MIPS_RD(nOpcode)].u32 =
+                        pCPU->aGPR[MIPS_RS(nOpcode)].u32 - pCPU->aGPR[MIPS_RT(nOpcode)].u32;
+                    break;
+                case 0x24: // and
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s32 =
+                        pCPU->aGPR[MIPS_RS(nOpcode)].s32 & pCPU->aGPR[MIPS_RT(nOpcode)].s32;
+                    break;
+                case 0x25: // or
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s32 =
+                        pCPU->aGPR[MIPS_RS(nOpcode)].s32 | pCPU->aGPR[MIPS_RT(nOpcode)].s32;
+                    break;
+                case 0x26: // xor
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s32 =
+                        pCPU->aGPR[MIPS_RS(nOpcode)].s32 ^ pCPU->aGPR[MIPS_RT(nOpcode)].s32;
+                    break;
+                case 0x27: // nor
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s32 =
+                        ~(pCPU->aGPR[MIPS_RS(nOpcode)].s32 | pCPU->aGPR[MIPS_RT(nOpcode)].s32);
+                    break;
+                case 0x2A: // slt
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s32 =
+                        (pCPU->aGPR[MIPS_RS(nOpcode)].s32 < pCPU->aGPR[MIPS_RT(nOpcode)].s32) ? 1 : 0;
+                    break;
+                case 0x2B: // sltu
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s32 =
+                        (pCPU->aGPR[MIPS_RS(nOpcode)].u32 < pCPU->aGPR[MIPS_RT(nOpcode)].u32) ? 1 : 0;
+                    break;
+                case 0x2C: // dadd
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s64 =
+                        pCPU->aGPR[MIPS_RS(nOpcode)].s64 + pCPU->aGPR[MIPS_RT(nOpcode)].s64;
+                    break;
+                case 0x2D: // daddu
+                    pCPU->aGPR[MIPS_RD(nOpcode)].u64 =
+                        pCPU->aGPR[MIPS_RS(nOpcode)].u64 + pCPU->aGPR[MIPS_RT(nOpcode)].u64;
+                    break;
+                case 0x2E: // dsub
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s64 =
+                        pCPU->aGPR[MIPS_RS(nOpcode)].s64 - pCPU->aGPR[MIPS_RT(nOpcode)].s64;
+                    break;
+                case 0x2F: // dsubu
+                    pCPU->aGPR[MIPS_RD(nOpcode)].u64 =
+                        pCPU->aGPR[MIPS_RS(nOpcode)].u64 - pCPU->aGPR[MIPS_RT(nOpcode)].u64;
+                    break;
+                case 0x30: // tge
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 >= pCPU->aGPR[MIPS_RT(nOpcode)].s32) {
+                        cpuException(pCPU, CEC_TRAP, 0);
+                    }
+                    break;
+                case 0x31: // tgeu
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].u32 >= pCPU->aGPR[MIPS_RT(nOpcode)].u32) {
+                        cpuException(pCPU, CEC_TRAP, 0);
+                    }
+                    break;
+                case 0x32: // tlt
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 < pCPU->aGPR[MIPS_RT(nOpcode)].s32) {
+                        cpuException(pCPU, CEC_TRAP, 0);
+                    }
+                    break;
+                case 0x33: // tltu
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].u32 < pCPU->aGPR[MIPS_RT(nOpcode)].u32) {
+                        cpuException(pCPU, CEC_TRAP, 0);
+                    }
+                    break;
+                case 0x34: // teq
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 == pCPU->aGPR[MIPS_RT(nOpcode)].s32) {
+                        cpuException(pCPU, CEC_TRAP, 0);
+                    }
+                    break;
+                case 0x36: // tne
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 != pCPU->aGPR[MIPS_RT(nOpcode)].s32) {
+                        cpuException(pCPU, CEC_TRAP, 0);
+                    }
+                    break;
+                case 0x38: // dsll
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s64 = pCPU->aGPR[MIPS_RT(nOpcode)].s64 << MIPS_SA(nOpcode);
+                    break;
+                case 0x3A: // dsrl
+                    pCPU->aGPR[MIPS_RD(nOpcode)].u64 = pCPU->aGPR[MIPS_RT(nOpcode)].u64 >> MIPS_SA(nOpcode);
+                    break;
+                case 0x3B: // dsra
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s64 = pCPU->aGPR[MIPS_RT(nOpcode)].s64 >> MIPS_SA(nOpcode);
+                    break;
+                case 0x3C: // dsll32
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s64 = pCPU->aGPR[MIPS_RT(nOpcode)].s64 << (MIPS_SA(nOpcode) + 32);
+                    break;
+                case 0x3E: // dsrl32
+                    pCPU->aGPR[MIPS_RD(nOpcode)].u64 = pCPU->aGPR[MIPS_RT(nOpcode)].u64 >> (MIPS_SA(nOpcode) + 32);
+                    break;
+                case 0x3F: // dsra32
+                    pCPU->aGPR[MIPS_RD(nOpcode)].s64 = pCPU->aGPR[MIPS_RT(nOpcode)].s64 >> (MIPS_SA(nOpcode) + 32);
+                    break;
+            }
+            break;
+        case 0x01: // regimm
+            switch (MIPS_RT(nOpcode)) {
+                case 0x00: // bltz
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 < 0) {
+                        pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+                    }
+                    break;
+                case 0x01: // bgez
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 >= 0) {
+                        pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+                    }
+                    break;
+                case 0x02: // bltzl
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 < 0) {
+                        pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+                    } else {
+                        pCPU->nMode |= 4;
+                        pCPU->nPC += 4;
+                    }
+                    break;
+                case 0x03: // bgezl
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 >= 0) {
+                        pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+                    } else {
+                        pCPU->nMode |= 4;
+                        pCPU->nPC += 4;
+                    }
+                    break;
+                case 0x08: // tgei
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 >= MIPS_IMM_S16(nOpcode)) {
+                        cpuException(pCPU, CEC_TRAP, 0);
+                    }
+                    break;
+                case 0x09: // tgeiu
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].u32 >= MIPS_IMM_S16(nOpcode)) {
+                        cpuException(pCPU, CEC_TRAP, 0);
+                    }
+                    break;
+                case 0x0A: // tlti
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 < MIPS_IMM_S16(nOpcode)) {
+                        cpuException(pCPU, CEC_TRAP, 0);
+                    }
+                    break;
+                case 0x0B: // tltiu
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].u32 < MIPS_IMM_S16(nOpcode)) {
+                        cpuException(pCPU, CEC_TRAP, 0);
+                    }
+                    break;
+                case 0x0C: // teqi
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 == MIPS_IMM_S16(nOpcode)) {
+                        cpuException(pCPU, CEC_TRAP, 0);
+                    }
+                    break;
+                case 0x0E: // tnei
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 != MIPS_IMM_S16(nOpcode)) {
+                        cpuException(pCPU, CEC_TRAP, 0);
+                    }
+                    break;
+                case 0x10: // bltzal
+                    pCPU->aGPR[31].s32 = pCPU->nPC + 4;
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 < 0) {
+                        pCPU->nWaitPC = pCPU->nCallLast = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+                    }
+                    break;
+                case 0x11: // bgezal
+                    pCPU->aGPR[31].s32 = pCPU->nPC + 4;
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 >= 0) {
+                        pCPU->nWaitPC = pCPU->nCallLast = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+                    }
+                    break;
+                case 0x12: // bltzall
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 < 0) {
+                        pCPU->aGPR[31].s32 = pCPU->nPC + 4;
+                        pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+                    } else {
+                        pCPU->nMode |= 4;
+                        pCPU->nPC = pCPU->nPC + 4;
+                    }
+                    break;
+                case 0x13: // bgezall
+                    if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 >= 0) {
+                        pCPU->aGPR[31].s32 = pCPU->nPC + 4;
+                        pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+                    } else {
+                        pCPU->nMode |= 4;
+                        pCPU->nPC = pCPU->nPC + 4;
+                    }
+                    break;
+            }
+            break;
+        case 0x02: // j
+            pCPU->nWaitPC = (pCPU->nPC & 0xF0000000) | (MIPS_TARGET(nOpcode) << 2);
+            if (pCPU->nWaitPC == pCPU->nPC - 4) {
+                if (!cpuCheckInterrupts(pCPU)) {
+                    return false;
+                }
+            }
+            break;
+        case 0x03: // jal
+            pCPU->aGPR[31].s32 = pCPU->nPC + 4;
+            pCPU->nWaitPC = pCPU->nCallLast = (pCPU->nPC & 0xF0000000) | (MIPS_TARGET(nOpcode) << 2);
+            cpuFindFunction(pCPU, pCPU->nWaitPC, &pFunction);
+            break;
+        case 0x04: // beq
+            if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 == (s32)pCPU->aGPR[MIPS_RT(nOpcode)].s32) {
+                pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+            }
+            if (pCPU->nWaitPC == pCPU->nPC - 4) {
+                if (!cpuCheckInterrupts(pCPU)) {
+                    return false;
+                }
+                break;
+            }
+            break;
+        case 0x05: // bne
+            if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 != (s32)pCPU->aGPR[MIPS_RT(nOpcode)].s32) {
+                pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+            }
+            break;
+        case 0x06: // blez
+            if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 <= 0) {
+                pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+            }
+            break;
+        case 0x07: // bgtz
+            if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 > 0) {
+                pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+            }
+            break;
+        case 0x08: // addi
+            pCPU->aGPR[MIPS_RT(nOpcode)].s32 = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            break;
+        case 0x09: // addiu
+            pCPU->aGPR[MIPS_RT(nOpcode)].u32 = pCPU->aGPR[MIPS_RS(nOpcode)].u32 + MIPS_IMM_S16(nOpcode);
+            break;
+        case 0x0A: // slti
+            pCPU->aGPR[MIPS_RT(nOpcode)].s32 = (pCPU->aGPR[MIPS_RS(nOpcode)].s32 < MIPS_IMM_S16(nOpcode)) ? 1 : 0;
+            break;
+        case 0x0B: // sltiu
+            pCPU->aGPR[MIPS_RT(nOpcode)].s32 = (pCPU->aGPR[MIPS_RS(nOpcode)].u32 < MIPS_IMM_S16(nOpcode)) ? 1 : 0;
+            break;
+        case 0x0C: // andi
+            pCPU->aGPR[MIPS_RT(nOpcode)].s32 = pCPU->aGPR[MIPS_RS(nOpcode)].s32 & MIPS_IMM_U16(nOpcode);
+            break;
+        case 0x0D: // ori
+            pCPU->aGPR[MIPS_RT(nOpcode)].s32 = pCPU->aGPR[MIPS_RS(nOpcode)].s32 | MIPS_IMM_U16(nOpcode);
+            break;
+        case 0x0E: // xori
+            pCPU->aGPR[MIPS_RT(nOpcode)].s32 = pCPU->aGPR[MIPS_RS(nOpcode)].s32 ^ MIPS_IMM_U16(nOpcode);
+            break;
+        case 0x0F: // lui
+            pCPU->aGPR[MIPS_RT(nOpcode)].s32 = MIPS_IMM_S16(nOpcode) << 16;
+            break;
+        case 0x10: // cop0
+            switch (MIPS_FUNCT(nOpcode)) {
+                case 0x01: // tlbr
+                    iEntry = pCPU->anCP0[0] & 0x3F;
+                    pCPU->anCP0[2] = pCPU->aTLB[iEntry][0];
+                    pCPU->anCP0[3] = pCPU->aTLB[iEntry][1];
+                    pCPU->anCP0[10] = pCPU->aTLB[iEntry][2];
+                    pCPU->anCP0[5] = pCPU->aTLB[iEntry][3];
+                    break;
+                case 0x02: // tlbwi
+                    iEntry = pCPU->anCP0[0] & 0x3F;
+                    cpuSetTLB(pCPU, iEntry);
+                    break;
+                case 0x05: // tlbwr
+                    iEntry = cpuTLBRandom(pCPU);
+                    pCPU->anCP0[1] = iEntry;
+                    cpuSetTLB(pCPU, iEntry);
+                    break;
+                case 0x08: // tlbp
+                    pCPU->anCP0[0] |= 0x80000000;
+                    for (iEntry = 0; iEntry < 48; iEntry++) {
+                        if ((pCPU->aTLB[iEntry][0] & 2) && pCPU->aTLB[iEntry][2] == pCPU->anCP0[10]) {
+                            pCPU->anCP0[0] = iEntry;
                             break;
                         }
-
-                        cpu->lo.sd = cpu->gpr[MIPS_RS(inst)].sw[1] / cpu->gpr[MIPS_RT(inst)].sw[1];
-
-                        cpu->hi.sd = cpu->gpr[MIPS_RS(inst)].sw[1] % cpu->gpr[MIPS_RT(inst)].sw[1];
                     }
                     break;
-                case SPEC_DIVU: // DIVU
-                    {
-                        if(cpu->gpr[MIPS_RT(inst)].w[1] == 0) {
-                            break;
-                        }
-
-                        cpu->lo.sd = (s32)(cpu->gpr[MIPS_RS(inst)].w[1] / cpu->gpr[MIPS_RT(inst)].w[1]);
-                        cpu->hi.sd = (s32)(cpu->gpr[MIPS_RS(inst)].w[1] % cpu->gpr[MIPS_RT(inst)].w[1]);
-                    }
-                    break;
-
-                case SPEC_DMULT: // DMULT
-                    {
-                        cpu->lo.d = cpu->gpr[MIPS_RS(inst)].d * cpu->gpr[MIPS_RT(inst)].d;
-                        cpu->hi.sd = -(cpu->lo.sd < 0);
-                    }
-                    break;
-                case SPEC_DMULTU: // DMULTU
-                    {
-                        cpu->lo.d = cpu->gpr[MIPS_RS(inst)].d * cpu->gpr[MIPS_RT(inst)].d;
-                        cpu->hi.sd = -(cpu->lo.sd < 0);
-                    }
-                    break;
-                case SPEC_DDIV: // DDIV
-                    if(cpu->gpr[MIPS_RT(inst)].d == 0) {
-                        break;
-                    }
-
-                    cpu->lo.sd = cpu->gpr[MIPS_RS(inst)].sd / cpu->gpr[MIPS_RT(inst)].sd;
-                    cpu->hi.sd = cpu->gpr[MIPS_RS(inst)].sd % cpu->gpr[MIPS_RT(inst)].sd;
-                    break;
-
-                case SPEC_DDIVU: // DDIVU
-                    if(cpu->gpr[MIPS_RT(inst)].d == 0) {
-                        break;
-                    }
-
-                    cpu->lo.d = cpu->gpr[MIPS_RS(inst)].d / cpu->gpr[MIPS_RT(inst)].d;
-                    cpu->hi.d = cpu->gpr[MIPS_RS(inst)].d % cpu->gpr[MIPS_RT(inst)].d;
-                    break;
-                case SPEC_ADD: // ADD
-                    cpu->gpr[MIPS_RD(inst)].sw[1] = cpu->gpr[MIPS_RS(inst)].sw[1] + cpu->gpr[MIPS_RT(inst)].sw[1];
-                    break;
-                case SPEC_ADDU: // ADDU
-                    cpu->gpr[MIPS_RD(inst)].w[1] = cpu->gpr[MIPS_RS(inst)].w[1] + cpu->gpr[MIPS_RT(inst)].w[1];
-                    break;
-                case SPEC_SUB:  // SUB
-                    cpu->gpr[MIPS_RD(inst)].sw[1] = cpu->gpr[MIPS_RS(inst)].sw[1] - cpu->gpr[MIPS_RT(inst)].sw[1];
-                    break;
-                case SPEC_SUBU: // SUBU
-                    cpu->gpr[MIPS_RD(inst)].sw[1] = cpu->gpr[MIPS_RS(inst)].sw[1] - cpu->gpr[MIPS_RT(inst)].sw[1];
-                    break;
-                case SPEC_AND: // AND
-                    cpu->gpr[MIPS_RD(inst)].w[1] = cpu->gpr[MIPS_RS(inst)].w[1] & cpu->gpr[MIPS_RT(inst)].w[1];
-                    break;
-                case SPEC_OR: // OR
-                    cpu->gpr[MIPS_RD(inst)].w[1] = cpu->gpr[MIPS_RS(inst)].w[1] | cpu->gpr[MIPS_RT(inst)].w[1];
-                    break;
-                case SPEC_XOR: // XOR
-                    cpu->gpr[MIPS_RD(inst)].w[1] = cpu->gpr[MIPS_RS(inst)].w[1] ^ cpu->gpr[MIPS_RT(inst)].w[1];
-                    break;
-                case SPEC_NOR: // NOR
-                    cpu->gpr[MIPS_RD(inst)].w[1] = ~(cpu->gpr[MIPS_RS(inst)].w[1] | cpu->gpr[MIPS_RT(inst)].w[1]);
-                    break;
-                case SPEC_SLT: // SLT
-                    cpu->gpr[MIPS_RD(inst)].sw[1] = !!(cpu->gpr[MIPS_RS(inst)].sw[1] < cpu->gpr[MIPS_RT(inst)].sw[1]);
-                    break;
-                case SPEC_SLTU: // SLTU
-                    cpu->gpr[MIPS_RD(inst)].w[1] = !!(cpu->gpr[MIPS_RS(inst)].w[1] < cpu->gpr[MIPS_RT(inst)].w[1]);
-                    break;
-                case SPEC_DADD: // DADD
-                    cpu->gpr[MIPS_RD(inst)].sd = cpu->gpr[MIPS_RS(inst)].sd + cpu->gpr[MIPS_RT(inst)].sd;
-                    break;
-                case SPEC_DADDU: // DADDU
-                    cpu->gpr[MIPS_RD(inst)].d = cpu->gpr[MIPS_RS(inst)].d + cpu->gpr[MIPS_RT(inst)].d;
-                    break;
-                case SPEC_DSUB: // DSUB
-                    cpu->gpr[MIPS_RD(inst)].sd = cpu->gpr[MIPS_RS(inst)].sd - cpu->gpr[MIPS_RT(inst)].sd;
-                    break;
-                case SPEC_DSUBU: // DSUBU
-                    cpu->gpr[MIPS_RD(inst)].sd = cpu->gpr[MIPS_RS(inst)].sd - cpu->gpr[MIPS_RT(inst)].sd;
-                    break;
-                case SPEC_TGE: // TGE
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] >= cpu->gpr[MIPS_RT(inst)].sw[1]) {
-                        cpuException(cpu, 0xD, 0);
-                    }
-                    break;
-                case SPEC_TGEU: // TGEU
-                    if(cpu->gpr[MIPS_RS(inst)].w[1] >= cpu->gpr[MIPS_RT(inst)].w[1]) {
-                        cpuException(cpu, 0xD, 0);
-                    }
-                    break;
-                case SPEC_TLT: // TGE
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] < cpu->gpr[MIPS_RT(inst)].sw[1]) {
-                        cpuException(cpu, 0xD, 0);
-                    }
-                    break;
-                case SPEC_TLTU: // TGEU
-                    if(cpu->gpr[MIPS_RS(inst)].w[1] < cpu->gpr[MIPS_RT(inst)].w[1]) {
-                        cpuException(cpu, 0xD, 0);
-                    }
-                    break;
-                case SPEC_TEQ: // TEQ
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] == cpu->gpr[MIPS_RT(inst)].sw[1]) {
-                        cpuException(cpu, 0xD, 0);
-                    }
-                    break;
-                case SPEC_TNE: // TNE
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] != cpu->gpr[MIPS_RT(inst)].sw[1]) {
-                        cpuException(cpu, 0xD, 0);
-                    }
-                    break;
-                case SPEC_DSLL: // DSLL
-                    cpu->gpr[MIPS_RD(inst)].d = cpu->gpr[MIPS_RT(inst)].d << MIPS_SA(inst);
-                    break;
-                case SPEC_DSRL: // DSRL
-                    cpu->gpr[MIPS_RD(inst)].d = cpu->gpr[MIPS_RT(inst)].d >> MIPS_SA(inst);
-                    break;
-                case SPEC_DSRA: // DSRA
-                    cpu->gpr[MIPS_RD(inst)].sd = cpu->gpr[MIPS_RT(inst)].sd >> MIPS_SA(inst);
-                    break;
-                case SPEC_DSLL32: // DSLL32
-                    cpu->gpr[MIPS_RD(inst)].d = cpu->gpr[MIPS_RT(inst)].d << (MIPS_SA(inst) + 32);
-                    break;
-                case SPEC_DSRL32: // DSRL32
-                    cpu->gpr[MIPS_RD(inst)].d = cpu->gpr[MIPS_RT(inst)].d >> (MIPS_SA(inst) + 32);
-                    break;
-                case SPEC_DSRA32: // DSRA32
-                    cpu->gpr[MIPS_RD(inst)].sd = cpu->gpr[MIPS_RT(inst)].sd >> (MIPS_SA(inst) + 32);
-                    break;
-
-            }       
-            break;
-        case OPC_REGIMM:
-            switch(REGIMM_SUB(inst)) {
-                case REGIMM_BLTZ: // BLTZ
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] < 0) {
-                        cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
-                    }
-                    break;
-                case REGIMM_BGEZ: // BGEZ
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] >= 0) {
-                        cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
-                    }
-                    break;
-                case REGIMM_BLTZL: // BLTZL
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] < 0) {
-                        cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
+                case 0x18: // eret
+                    if (pCPU->anCP0[12] & 4) {
+                        pCPU->nPC = pCPU->anCP0[30];
+                        pCPU->anCP0[12] &= ~4;
                     } else {
-                        cpu->status |= 4;
-                        cpu->pc += 4;
+                        pCPU->nPC = pCPU->anCP0[14];
+                        pCPU->anCP0[12] &= ~2;
                     }
+                    pCPU->nMode |= 4;
+                    pCPU->nMode |= 0x20;
                     break;
-                case REGIMM_BGEZL: // BGEZL
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] >= 0) {
-                        cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
-                    } else {
-                        cpu->status |= 4;
-                        cpu->pc += 4;
-                    }
-                    break;
-                case REGIMM_TGEI: // TGEI
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] >= MIPS_IMM(inst) ) {
-                        cpuException(cpu, 0xD, 0);
-                    }
-                    break;
-                case REGIMM_TGEIU: // TGEIU
-                    if(cpu->gpr[MIPS_RS(inst)].w[1] >= MIPS_IMM(inst) ) {
-                        cpuException(cpu, 0xD, 0);
-                    }
-                    break;
-                case REGIMM_TLTI: // TLTI
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] < MIPS_IMM(inst) ) {
-                        cpuException(cpu, 0xD, 0);
-                    }
-                    break;
-                case REGIMM_TLTIU: // TLTIU
-                    if(cpu->gpr[MIPS_RS(inst)].w[1] < MIPS_IMM(inst) ) {
-                        cpuException(cpu, 0xD, 0);
-                    }
-                    break;
-                case REGIMM_TEQI: // TEQI
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] == MIPS_IMM(inst) ) {
-                        cpuException(cpu, 0xD, 0);
-                    }
-                    break;
-                case REGIMM_TNEI: // TNEI
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] != MIPS_IMM(inst) ) {
-                        cpuException(cpu, 0xD, 0);
-                    }
-                    break;
-                case REGIMM_BLTZAL: // BLTZAL
-                    cpu->gpr[0x1F].w[1] = cpu->pc + 4;
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] < 0) {
-                        cpu->unk_0x24 = cpu->unk_0x28 = cpu->pc + (MIPS_IMM(inst) * 4);
-                    }
-                    break;
-                case REGIMM_BGEZAL: // BGEZAL
-                    cpu->gpr[0x1F].w[1] = cpu->pc + 4;
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] >= 0) {
-                        cpu->unk_0x24 = cpu->unk_0x28 = cpu->pc + (MIPS_IMM(inst) * 4);
-                    }
-                    break;
-                case REGIMM_BLTZALL: // BLTZALL
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] < 0) {
-                        cpu->gpr[0x1F].sw[1] = cpu->pc + 4;
-                        cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
-                    } else {
-                        cpu->status |= 4;
-                        cpu->pc += 4;
-                    }
-                    break;
-                case REGIMM_BGEZALL: // BGEZALL
-                    if(cpu->gpr[MIPS_RS(inst)].sw[1] >= 0) {
-                        cpu->gpr[0x1F].sw[1] = cpu->pc + 4;
-                        cpu->unk_0x24 = cpu->pc + (MIPS_IMM(inst) * 4);
-                    } else {
-                        cpu->status |= 4;
-                        cpu->pc += 4;
-                    }
-                    break;
-            }
-            break;
-        case OPC_J: // J
-            {
-                cpu->unk_0x24 = (cpu->pc & 0xF0000000) | ((inst & 0x3FFFFFF) << 2);
-                if(cpu->unk_0x24 != cpu->pc - 4) {
-                    break;
-                }
-
-                if(!checkRetrace()) {
-                    return NULL;
-                }
-            }
-            break;
-        case OPC_JAL: //JAL
-            {
-                recomp_node_t *node;
-    
-                cpu->gpr[MREG_RA].w[1] = cpu->pc + 4;
-                cpu->unk_0x24 = cpu->unk_0x28 = (cpu->pc & 0xF0000000) | ((inst & 0x3FFFFFF) << 2);
-                cpuFindFunction(cpu, cpu->unk_0x24, &node);
-            }
-            break;
-        case OPC_BEQ: // BEQ
-             if(cpu->gpr[MIPS_RS(inst)].sw[1] == cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                 cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
-             }
-
-             if(cpu->unk_0x24 != cpu->pc - 4) {
-                 break;
-             }
-
-             if(!checkRetrace()) {
-                 return NULL;
-             }
-             break;
-        case OPC_BNE: // BNE
-            if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] != cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
-            }
-            break;
-        case OPC_BLEZ: // BLEZ
-            if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] <= 0) {
-                cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
-            }
-            break;
-        case OPC_BGTZ: // BGTZ
-            if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] > 0) {
-                cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
-            }
-            break;
-        case OPC_ADDI: // ADDI
-            cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + MIPS_IMM(inst) ;
-            break;
-        case OPC_ADDIU: // ADDIU
-            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst) ;
-            break;
-        case OPC_SLTI: // SLTI
-            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = !!(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] < MIPS_IMM(inst) );
-            break;
-        case OPC_SLTIU: // SLTIU
-            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = !!(cpu->gpr[(inst >> 0x15) & 0x1F].w[1] < MIPS_IMM(inst) );
-            break;
-        case OPC_ANDI: // ANDI
-            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] & (inst & 0xFFFF);
-            break;
-        case OPC_ORI: // ORI
-            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] | (inst & 0xFFFF);
-            break;
-        case OPC_XORI: // XORI
-            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] ^ (inst & 0xFFFF);
-            break; 
-        case OPC_LUI: // LUI
-            cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = (inst & 0xFFFF) << 0x10;
-            
-            break;
-        case OPC_CP0: // CP0
-            switch(inst & 0x3F) {
-                case 1: // TLBR
-                    cpu->cp0[CP0_ENTRYLO0].d = cpu->tlb[cpu->cp0[CP0_INDEX].w[1] & 0x3F].entry_lo0.d;
-                    cpu->cp0[CP0_ENTRYLO1].d = cpu->tlb[cpu->cp0[CP0_INDEX].w[1] & 0x3F].entry_lo1.d;
-                    cpu->cp0[CP0_ENTRYHI].d = cpu->tlb[cpu->cp0[CP0_INDEX].w[1] & 0x3F].entry_hi.d;
-                    cpu->cp0[CP0_PAGEMASK].d = cpu->tlb[cpu->cp0[CP0_INDEX].w[1] & 0x3F].page_mask.d;
-                    break;
-                case 2: // TLBWI
-                    cpuSetTLB(cpu, cpu->cp0[CP0_INDEX].w[1] & 0x3F);
-                    break;
-                case 5: // TLBWR
-                    {
-                        setCP0Random(cpu);
-                    }
-                    break;
-                case 8: // TLBP
-                    {
-                        cpu->cp0[CP0_INDEX].d |= 0x80000000;
-
-                        for(i = 0; i < 48; i++) {
-                            if(cpu->tlb[i].entry_lo0.w[1] & 2) {
-                                if(!(cpu->cp0[CP0_ENTRYHI].d ^ cpu->tlb[i].entry_hi.d)) {
-                                    cpu->cp0[CP0_INDEX].d = i;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case 24: // ERET
-                    if(cpu->cp0[12].d & 4) {
-                        cpu->pc = cpu->cp0[CP0_ERROREPC].w[1];
-                        cpu->cp0[CP0_STATUS].d &= ~STATUS_ERL;
-                    } else {
-                        cpu->pc = cpu->cp0[CP0_EPC].w[1];
-                        cpu->cp0[CP0_STATUS].d &= ~STATUS_EXL;
-                    }
-                    cpu->status |= 0x24;
-                    break;
-                case 0:
                 default:
-                    switch((inst >> 0x15) & 0x1F) {
-                        case 0: // MFC0
-                            {
-                                if(!cpuGetRegisterCP0(cpu, (inst >> 0xB) & 0x1F, &tmp.d)) {
-                                    break;
-                                }
-
-                                cpu->gpr[(inst >> 0x10) & 0x1F].sd = tmp.sd & 0xFFFFFFFFULL;
+                    switch (MIPS_RS(nOpcode)) {
+                        case 0x00: // mfc0
+                            if (cpuGetRegisterCP0(pCPU, MIPS_RD(nOpcode), &nData64)) {
+                                pCPU->aGPR[MIPS_RT(nOpcode)].s64 = nData64 & 0xFFFFFFFF;
                             }
                             break;
-                        case 1: // DMFC0
-                            {
-                                if(!cpuGetRegisterCP0(cpu, (inst >> 0xB) & 0x1F, &tmp.d)) {
-                                    break;
-                                }
-
-                                cpu->gpr[(inst >> 0x10) & 0x1F].d = tmp.d;
+                        case 0x01: // dmfc0
+                            if (cpuGetRegisterCP0(pCPU, MIPS_RD(nOpcode), &nData64)) {
+                                pCPU->aGPR[MIPS_RT(nOpcode)].s64 = nData64;
                             }
                             break;
-                        case 2:
+                        case 0x02:
                             break;
-                        case 4: // MTC0
-                            cpuSetRegisterCP0(cpu, (inst >> 0xB) & 0x1F, cpu->gpr[(inst >> 0x10) & 0x1F].w[1]);
+                        case 0x04: // mtc0
+                            cpuSetRegisterCP0(pCPU, MIPS_RD(nOpcode), pCPU->aGPR[MIPS_RT(nOpcode)].u32);
                             break;
-                        case 5: // DMTC0
-                            cpuSetRegisterCP0(cpu, (inst >> 0xB) & 0x1F, cpu->gpr[(inst >> 0x10) & 0x1F].d);
+                        case 0x05: // dmtc0
+                            cpuSetRegisterCP0(pCPU, MIPS_RD(nOpcode), pCPU->aGPR[MIPS_RT(nOpcode)].u64);
                             break;
-                        case 8:
+                        case 0x08:
                             break;
                     }
                     break;
             }
             break;
-        case OPC_CP1:
-            if(MIPS_FDT(inst) == 0) {
-                if(MIPS_FSUB(inst) < 0x10) {
-                    switch(MIPS_FSUB(inst)) {
-                        case MIPS_FSUB_MFC:
-                            if(MIPS_FS(inst) & 1) {
-                                cpu->gpr[MIPS_RT(inst)].w[1] = cpu->fpr[MIPS_FS(inst) - 1].w[0];
-                            } else {
-                                cpu->gpr[MIPS_RT(inst)].w[1] = cpu->fpr[MIPS_FS(inst)].w[1];
-                            }
-                            break;
-                        case MIPS_FSUB_DMFC:
-                            cpu->gpr[MIPS_RT(inst)].d = cpu->fpr[MIPS_FS(inst)].d;
-                            break;
-                        case MIPS_FSUB_CFC:
-                            cpu->gpr[MIPS_RT(inst)].w[1] = cpu->fscr[MIPS_FS(inst)];
-                            break;
-                        case MIPS_FSUB_MTC:
-                            if(MIPS_FS(inst) & 1) {
-                                cpu->fpr[MIPS_FS(inst) - 1].d = cpu->fpr[MIPS_FS(inst) - 1].d & 0xFFFFFFFFUL;
-                                cpu->fpr[MIPS_FS(inst) - 1].d |= ((u64)cpu->gpr[MIPS_RT(inst)].w[1] << 32);
-
-                            } else {
-                                cpu->fpr[MIPS_FS(inst)].w[1] = cpu->gpr[MIPS_RT(inst)].w[1];
-                            }
-                            break;
-                        case MIPS_FSUB_DMTC:
-                            cpu->fpr[MIPS_FS(inst)].d = cpu->gpr[MIPS_RT(inst)].d;
-                            break;
-                        case MIPS_FSUB_CTC:
-                            cpu->fscr[MIPS_FS(inst)] = cpu->gpr[MIPS_RT(inst)].w[1];
-                            break;
-                    }
-                    break;
-                }
-            }
-            
-            // Condition Code
-            if(MIPS_FFMT(inst) == 8) {
-                switch((inst >> 0x10) & 0x1F) {
-                    case 0: // BC1F
-                        if(!(cpu->fscr[0x1F] & 0x800000)) {
-                            cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
-                        }
-                        break;
-                    case 1: // BC1T
-                        if(cpu->fscr[0x1F] & 0x800000) {
-                            cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
-                        }
-                        break;
-                    case 2: // BC1FL
-                        if(!(cpu->fscr[0x1F] & 0x800000)) {
-                            cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
+        case 0x11: // cop1
+            if ((nOpcode & 0x7FF) == 0 && MIPS_FMT(nOpcode) < 0x10) {
+                switch ((u8)MIPS_FMT(nOpcode)) {
+                    case 0x00: // mfc1
+                        if (MIPS_FS(nOpcode) & 1) {
+                            pCPU->aGPR[MIPS_RT(nOpcode)].s32 = pCPU->aFPR[MIPS_FS(nOpcode) - 1].u64 >> 32;
                         } else {
-                            cpu->status |= 4;
-                            cpu->pc += 4;
+                            pCPU->aGPR[MIPS_RT(nOpcode)].s32 = pCPU->aFPR[MIPS_FS(nOpcode)].s32;
                         }
                         break;
-                    case 3: // BC1TL
-                        if(cpu->fscr[0x1F] & 0x800000) {
-                            cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
+                    case 0x01: // dmfc1
+                        pCPU->aGPR[MIPS_RT(nOpcode)].s64 = pCPU->aFPR[MIPS_FS(nOpcode)].s64;
+                        break;
+                    case 0x02: // cfc1
+                        pCPU->aGPR[MIPS_RT(nOpcode)].s32 = pCPU->anFCR[MIPS_FS(nOpcode)];
+                        break;
+                    case 0x04: // mtc1
+                        if (MIPS_FS(nOpcode) & 1) {
+                            pCPU->aFPR[MIPS_FS(nOpcode) - 1].s64 &= 0xFFFFFFFF;
+                            pCPU->aFPR[MIPS_FS(nOpcode) - 1].s64 |= (u64)pCPU->aGPR[MIPS_RT(nOpcode)].u32 << 32;
                         } else {
-                            cpu->status |= 4;
-                            cpu->pc += 4;
+                            pCPU->aFPR[MIPS_FS(nOpcode)].s32 = pCPU->aGPR[MIPS_RT(nOpcode)].s32;
+                        }
+                        break;
+                    case 0x05: // dmtc1
+                        pCPU->aFPR[MIPS_FS(nOpcode)].s64 = pCPU->aGPR[MIPS_RT(nOpcode)].s64;
+                        break;
+                    case 0x06: // ctc1
+                        pCPU->anFCR[MIPS_FS(nOpcode)] = pCPU->aGPR[MIPS_RT(nOpcode)].s32;
+                        break;
+                }
+            } else if (MIPS_FMT(nOpcode) == 0x08) {
+                switch (MIPS_FT(nOpcode)) {
+                    case 0x00: // bc1f
+                        if (!(pCPU->anFCR[31] & 0x800000)) {
+                            pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+                        }
+                        break;
+                    case 0x01: // bc1t
+                        if (pCPU->anFCR[31] & 0x800000) {
+                            pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+                        }
+                        break;
+                    case 0x02: // bc1fl
+                        if (!(pCPU->anFCR[31] & 0x800000)) {
+                            pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+                        } else {
+                            pCPU->nMode |= 4;
+                            pCPU->nPC += 4;
+                        }
+                        break;
+                    case 0x03: // bc1tl
+                        if (pCPU->anFCR[31] & 0x800000) {
+                            pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+                        } else {
+                            pCPU->nMode |= 4;
+                            pCPU->nPC += 4;
                         }
                         break;
                 }
-                break;
-            }
-
-            switch(MIPS_FFMT(inst)) {
-                case MIPS_FMT_SINGLE:
-                    switch(MIPS_FFUNC(inst)) {
-                        case 0: // ADD.S
-                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1] + cpu->fpr[(inst >> 0x10) & 0x1F].f[1];
-                            break;
-                        case 1: // SUB.S
-                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1] - cpu->fpr[(inst >> 0x10) & 0x1F].f[1];
-                            break;
-                        case 2: // MUL.S
-                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1] * cpu->fpr[(inst >> 0x10) & 0x1F].f[1];
-                            break;
-                        case 3: // DIV.S
-                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1] / cpu->fpr[(inst >> 0x10) & 0x1F].f[1];
-                            break;
-                        case 4: // SQRT.S
-                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = sqrt(cpu->fpr[(inst >> 0xB) & 0x1F].f[1]);
-                            break;
-                        case 5: // ABS.S
-                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = __fabs(cpu->fpr[(inst >> 0xB) & 0x1F].f[1]);
-                            break;
-                        case 6: // MOV.S
-                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
-                            break;
-                        case 7: // NEG.S
-                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = -cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
-                            break;
-                        case 8: // ROUND.L.S
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = 0.5f + cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
-                            break;
-                        case 9: // TRUNC.L.S
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
-                            break;
-                        case 10: // CEIL.L.S
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].f[1]);
-                            break;
-                        case 11: // FLOOR.L.S
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = floor(cpu->fpr[(inst >> 0xB) & 0x1F].f[1]);
-                            break;
-                        case 12: // ROUND.W.S
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = 0.5f + cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
-                            break;
-                        case 13: // TRUNC.W.S
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
-                            break;
-                        case 14: // CEIL.W.S
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].f[1]);
-                            break;
-                        case 15: // FLOOR.W.S
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = floor(cpu->fpr[(inst >> 0xB) & 0x1F].f[1]);
-                            break;
-                        case 32: // CVT.S.S
-                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
-                            break;
-                        case 33: // CVT.D.S
-                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
-                            break;
-                        case 34:
-                        case 35:
-                            break;
-                        case 37: // CVT.W.S
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
-                            break;
-                        case 38: // CVT.L.S
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].f[1];
-                            break;
-                        case 48: // C.F.S
-                            cpu->fscr[0x1F] &= ~0x00800000;
-                            break;
-                        case 49: // C.UN.S
-                            cpu->fscr[0x1F] &= ~0x00800000;
-                            break;
-                        case 50: // C.EQ.S
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] == cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 51: // C.UEQ.S
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] == cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 52: // C.OLT.S
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] < cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 53: // C.ULT.S
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] < cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 54: // C.OLE.S
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 55: // C.ULE.S
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 56: // C.SF.S
-                            cpu->fscr[0x1F] &= ~0x00800000;
-                            break;
-                        case 57: // C.NGLE.S
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 58: // C.SEQ.S
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] == cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 59: // C.NGL.S
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] == cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 60: // C.LT.S
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] < cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 61: // C.NGE.S
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] < cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 62:  // C.LE.S
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 63: // C.NGT.S
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].f[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].f[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                    }
-                    break;
-                case MIPS_FMT_DOUBLE:
-                    switch(MIPS_FFUNC(inst)) {
-                        case 0: // ADD.D
-                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].fd + cpu->fpr[(inst >> 0x10) & 0x1F].fd;
-                            break;
-                        case 1: // SUB.D
-                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].fd - cpu->fpr[(inst >> 0x10) & 0x1F].fd;
-                            break;
-                        case 3: // MUL.D
-                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].fd * cpu->fpr[(inst >> 0x10) & 0x1F].fd;
-                            break;
-                        case 4: // DIV.D
-                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].fd / cpu->fpr[(inst >> 0x10) & 0x1F].fd;
-                            break;
-                        case 5: // SQRT.D
-                            cpu->fpr[(inst >> 6) & 0x1F].fd = sqrt(cpu->fpr[(inst >> 0xB) & 0x1F].fd);
-                            break;
-                        case 6: // ABS.D
-                            cpu->fpr[(inst >> 6) & 0x1F].fd = __fabs(cpu->fpr[(inst >> 0xB) & 0x1F].fd);
-                            break;
-                        case 7: // MOV.D
-                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
-                            break;
-                        case 8: // NEG.D
-                            cpu->fpr[(inst >> 6) & 0x1F].fd = -cpu->fpr[(inst >> 0xB) & 0x1F].fd;
-                            break;
-                        case 9: // ROUND.L.D
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = 0.5 + cpu->fpr[(inst >> 0xB) & 0x1F].fd;
-                            break;
-                        case 10: // TRUNC.L.D
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
-                            break;
-                        case 11: // CEIL.L.D
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].fd);
-                            break;
-                        case 12: // FLOOR.L.D
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = floor(cpu->fpr[(inst >> 0xB) & 0x1F].fd);
-                            break;
-                        case 13: // ROUND.W.D
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = 0.5 + cpu->fpr[(inst >> 0xB) & 0x1F].fd;
-                            break;
-                        case 14: // TRUNC.W.D
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
-                            break;
-                        case 15: // CEIL.W.D
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].fd);
-                            break;
-                        case 16: // FLOOR.W.D
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = floor(cpu->fpr[(inst >> 0xB) & 0x1F].fd);
-                            break;
-                        case 33: // CVT.S.D
-                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
-                            break;
-                        case 34: // CVT.D.D
-                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
-                            break;
-                        case 37: // CVT.W.D
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
-                            break;
-                        case 38: // CVT.L.D
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].fd;
-                            break;
-                        case 48: // C.F.D
-                            cpu->fscr[0x1F] &= ~0x00800000;
-                            break;
-                        case 49: // C.UN.D
-                            cpu->fscr[0x1F] &= ~0x00800000;
-                            break;
-                        case 50: // C.EQ.D
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd == cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 51: // C.UEQ.D
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd == cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 52: // C.OLT.D
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd < cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 53: // C.ULT.D
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd < cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 54: // C.OLE.D
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd <= cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 55: // C.ULE.D
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd <= cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 56: // C.SF.D
-                            cpu->fscr[0x1F] &= ~0x00800000;
-                            break;
-                        case 57: // C.NGLE.D
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd <= cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 58: // C.SEQ.D
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd == cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 59: // C.NGL.D
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd == cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 60: // C.LT.D
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd < cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 61: // C.NGE.D
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd < cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 62:  // C.LE.D
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd <= cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 63: // C.NGT.D
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].fd <= cpu->fpr[(inst >> 0x10) & 0x1F].fd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                    }
-                    break;
-                case MIPS_FMT_WORD:
-                    switch(MIPS_FFUNC(inst)) {
-                        case 0: // ADD.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] + cpu->fpr[(inst >> 0x10) & 0x1F].sw[1];
-                            break;
-                        case 1: // SUB.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] - cpu->fpr[(inst >> 0x10) & 0x1F].sw[1];
-                            break;
-                        case 2: // MUL.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] * cpu->fpr[(inst >> 0x10) & 0x1F].sw[1];
-                            break;
-                        case 3: // DIV.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] / cpu->fpr[(inst >> 0x10) & 0x1F].sw[1];
-                            break;
-                        case 4: // SQRT.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = sqrt(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1]);
-                            break;
-                        case 5: // ABS.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = __fabs(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1]);
-                            break;
-                        case 6: // MOV.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
-                            break;
-                        case 7: // NEG.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = -cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
-                            break;
-                        case 8: // ROUND.L.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
-                            break;
-                        case 9: // TRUNC.L.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
-                            break;
-                        case 10: // CEIL.L.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1]);
-                            break;
-                        case 11: // FLOOR.L.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = floor(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1]);
-                            break;
-                        case 12: // ROUND.W.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
-                            break;
-                        case 13: // TRUNC.W.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
-                            break;
-                        case 14: // CEIL.W.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1]);
-                            break;
-                        case 15: // FLOOR.W.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = floor(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1]);
-                            break;
-                        case 32: // CVT.S.W
-                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
-                            break;
-                        case 33: // CVT.D.W
-                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
-                            break;
-                        case 37: // CVT.W.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
-                            break;
-                        case 38: // CVT.L.W
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sw[1];
-                            break;
-                        case 48: // C.F.W
-                            cpu->fscr[0x1F] &= ~0x00800000;
-                            break;
-                        case 49: // C.UN.W
-                            cpu->fscr[0x1F] &= ~0x00800000;
-                            break;
-                        case 50: // C.EQ.W
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] == cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 51: // C.UEQ.W
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] == cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 52: // C.OLT.W
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] < cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 53: // C.ULT.W
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] < cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 54: // C.OLE.W
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 55: // C.ULE.W
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 56: // C.SF.W
-                            cpu->fscr[0x1F] &= ~0x00800000;
-                            break;
-                        case 57: // C.NGLE.W
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 58: // C.SEQ.W
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] == cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 59: // C.NGL.W
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] == cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 60: // C.LT.W
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] < cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 61: // C.NGE.W
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] < cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 62:  // C.LE.W
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 63: // C.NGT.W
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sw[1] <= cpu->fpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                    }
-                    break;
-                case MIPS_FMT_DBLWORD:
-                    switch(MIPS_FFUNC(inst)) {
-                        case 0: // ADD.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd + cpu->fpr[(inst >> 0x10) & 0x1F].sd;
-                            break;
-                        case 1: // SUB.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd - cpu->fpr[(inst >> 0x10) & 0x1F].sd;
-                            break;
-                        case 2: // MUL.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd * cpu->fpr[(inst >> 0x10) & 0x1F].sd;
-                            break;
-                        case 3: // DIV.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd / cpu->fpr[(inst >> 0x10) & 0x1F].sd;
-                            break;
-                        case 4: // SQRT.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = sqrt(cpu->fpr[(inst >> 0xB) & 0x1F].sd);
-                            break;
-                        case 5: // ABS.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = __fabs(cpu->fpr[(inst >> 0xB) & 0x1F].sd);
-                            break;
-                        case 6: // MOV.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
-                            break;
-                        case 7: // NEG.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = -cpu->fpr[(inst >> 0xB) & 0x1F].sd;
-                            break;
-                        case 8: // ROUND.L.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
-                            break;
-                        case 9: // TRUNC.L.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
-                            break;
-                        case 10: // CEIL.L.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].sd);
-                            break;
-                        case 11: // FLOOR.L.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = floor(cpu->fpr[(inst >> 0xB) & 0x1F].sd);
-                            break;
-                        case 12: // ROUND.W.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
-                            break;
-                        case 13: // TRUNC.W.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
-                            break;
-                        case 14: // CEIL.W.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = ceil(cpu->fpr[(inst >> 0xB) & 0x1F].sd);
-                            break;
-                        case 15: // FLOOR.W.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = floor(cpu->fpr[(inst >> 0xB) & 0x1F].sd);
-                            break;
-                        case 32: // CVT.S.L
-                            cpu->fpr[(inst >> 6) & 0x1F].f[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
-                            break;
-                        case 33: // CVT.D.L
-                            cpu->fpr[(inst >> 6) & 0x1F].fd = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
-                            break;
-                        case 37: // CVT.W.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sw[1] = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
-                            break;
-                        case 38: // CVT.L.L
-                            cpu->fpr[(inst >> 6) & 0x1F].sd = cpu->fpr[(inst >> 0xB) & 0x1F].sd;
-                            break;
-                        case 48: // C.F.L
-                            cpu->fscr[0x1F] &= ~0x00800000;
-                            break;
-                        case 49: // C.UN.L
-                            cpu->fscr[0x1F] &= ~0x00800000;
-                            break;
-                        case 50: // C.EQ.L
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd == cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 51: // C.UEQ.L
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd == cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 52: // C.OLT.L
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd < cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 53: // C.ULT.L
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd < cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 54: // C.OLE.L
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd <= cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 55: // C.ULE.L
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd <= cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 56: // C.SF.L
-                            cpu->fscr[0x1F] &= ~0x00800000;
-                            break;
-                        case 57: // C.NGLE.L
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd <= cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 58: // C.SEQ.L
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd == cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 59: // C.NGL.L
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd == cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 60: // C.LT.L
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd < cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 61: // C.NGE.L
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd < cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 62:  // C.LE.L
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd <= cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                        case 63: // C.NGT.L
-                            if(cpu->fpr[(inst >> 0xB) & 0x1F].sd <= cpu->fpr[(inst >> 0x10) & 0x1F].sd) {
-                                cpu->fscr[0x1F] |= 0x00800000;
-                            } else {
-                                cpu->fscr[0x1F] &= ~0x00800000;
-                            }
-                            break;
-                    }
-                    break;
-            }
-            break;
-        case 20: // BEQL
-            if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] == cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
             } else {
-                cpu->status |= 4;
-                cpu->pc += 4;
+                switch ((u8)MIPS_FMT(nOpcode)) {
+                    case 0x10: // s
+                        switch (MIPS_FUNCT(nOpcode)) {
+                            case 0x00: // add.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f32 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].f32 + pCPU->aFPR[MIPS_FT(nOpcode)].f32;
+                                break;
+                            case 0x01: // sub.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f32 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].f32 - pCPU->aFPR[MIPS_FT(nOpcode)].f32;
+                                break;
+                            case 0x02: // mul.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f32 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].f32 * pCPU->aFPR[MIPS_FT(nOpcode)].f32;
+                                break;
+                            case 0x03: // div.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f32 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].f32 / pCPU->aFPR[MIPS_FT(nOpcode)].f32;
+                                break;
+                            case 0x04: // sqrt.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f32 = sqrt(pCPU->aFPR[MIPS_FS(nOpcode)].f32);
+                                break;
+                            case 0x05: // abs.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f32 = fabs(pCPU->aFPR[MIPS_FS(nOpcode)].f32);
+                                break;
+                            case 0x06: // mov.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f32 = pCPU->aFPR[MIPS_FS(nOpcode)].f32;
+                                break;
+                            case 0x07: // neg.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f32 = -pCPU->aFPR[MIPS_FS(nOpcode)].f32;
+                                break;
+                            case 0x08: // round.l.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = pCPU->aFPR[MIPS_FS(nOpcode)].f32 + 0.5f;
+                                break;
+                            case 0x09: // trunc.l.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = pCPU->aFPR[MIPS_FS(nOpcode)].f32;
+                                break;
+                            case 0x0A: // ceil.l.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = ceil(pCPU->aFPR[MIPS_FS(nOpcode)].f32);
+                                break;
+                            case 0x0B: // floor.l.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = floor(pCPU->aFPR[MIPS_FS(nOpcode)].f32);
+                                break;
+                            case 0x0C: // round.w.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = pCPU->aFPR[MIPS_FS(nOpcode)].f32 + 0.5f;
+                                break;
+                            case 0x0D: // trunc.w.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = pCPU->aFPR[MIPS_FS(nOpcode)].f32;
+                                break;
+                            case 0x0E: // ceil.w.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = ceil(pCPU->aFPR[MIPS_FS(nOpcode)].f32);
+                                break;
+                            case 0x0F: // floor.w.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = floor(pCPU->aFPR[MIPS_FS(nOpcode)].f32);
+                                break;
+                            case 0x20: // cvt.s.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f32 = pCPU->aFPR[MIPS_FS(nOpcode)].f32;
+                                break;
+                            case 0x21: // cvt.d.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f64 = pCPU->aFPR[MIPS_FS(nOpcode)].f32;
+                                break;
+                            case 0x24: // cvt.w.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = pCPU->aFPR[MIPS_FS(nOpcode)].f32;
+                                break;
+                            case 0x25: // cvt.l.s
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = pCPU->aFPR[MIPS_FS(nOpcode)].f32;
+                                break;
+                            case 0x30: // c.f.s
+                                pCPU->anFCR[31] &= ~0x800000;
+                                break;
+                            case 0x31: // c.un.s
+                                pCPU->anFCR[31] &= ~0x800000;
+                                break;
+                            case 0x32: // c.eq.s
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f32 == pCPU->aFPR[MIPS_FT(nOpcode)].f32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x33: // c.ueq.s
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f32 == pCPU->aFPR[MIPS_FT(nOpcode)].f32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x34: // c.olt.s
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f32 < pCPU->aFPR[MIPS_FT(nOpcode)].f32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x35: // c.ult.s
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f32 < pCPU->aFPR[MIPS_FT(nOpcode)].f32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x36: // c.ole.s
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f32 <= pCPU->aFPR[MIPS_FT(nOpcode)].f32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x37: // c.ule.s
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f32 <= pCPU->aFPR[MIPS_FT(nOpcode)].f32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x38: // c.sf.s
+                                pCPU->anFCR[31] &= ~0x800000;
+                                break;
+                            case 0x39: // c.ngle.s
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f32 <= pCPU->aFPR[MIPS_FT(nOpcode)].f32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3A: // c.seq.s
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f32 == pCPU->aFPR[MIPS_FT(nOpcode)].f32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3B: // c.ngl.s
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f32 == pCPU->aFPR[MIPS_FT(nOpcode)].f32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3C: // c.lt.s
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f32 < pCPU->aFPR[MIPS_FT(nOpcode)].f32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3D: // c.nge.s
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f32 < pCPU->aFPR[MIPS_FT(nOpcode)].f32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3E: // c.le.s
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f32 <= pCPU->aFPR[MIPS_FT(nOpcode)].f32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3F: // c.ngt.s
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f32 <= pCPU->aFPR[MIPS_FT(nOpcode)].f32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                        }
+                        break;
+                    case 0x11: // d
+                        switch (MIPS_FUNCT(nOpcode)) {
+                            case 0x00: // add.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f64 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].f64 + pCPU->aFPR[MIPS_FT(nOpcode)].f64;
+                                break;
+                            case 0x01: // sub.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f64 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].f64 - pCPU->aFPR[MIPS_FT(nOpcode)].f64;
+                                break;
+                            case 0x02: // mul.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f64 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].f64 * pCPU->aFPR[MIPS_FT(nOpcode)].f64;
+                                break;
+                            case 0x03: // div.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f64 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].f64 / pCPU->aFPR[MIPS_FT(nOpcode)].f64;
+                                break;
+                            case 0x04: // sqrt.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f64 = sqrt(pCPU->aFPR[MIPS_FS(nOpcode)].f64);
+                                break;
+                            case 0x05: // abs.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f64 = fabs(pCPU->aFPR[MIPS_FS(nOpcode)].f64);
+                                break;
+                            case 0x06: // mov.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f64 = pCPU->aFPR[MIPS_FS(nOpcode)].f64;
+                                break;
+                            case 0x07: // neg.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f64 = -pCPU->aFPR[MIPS_FS(nOpcode)].f64;
+                                break;
+                            case 0x08: // round.l.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = pCPU->aFPR[MIPS_FS(nOpcode)].f64 + 0.5f;
+                                break;
+                            case 0x09: // trunc.l.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = pCPU->aFPR[MIPS_FS(nOpcode)].f64;
+                                break;
+                            case 0x0A: // ceil.l.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = ceil(pCPU->aFPR[MIPS_FS(nOpcode)].f64);
+                                break;
+                            case 0x0B: // floor.l.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = floor(pCPU->aFPR[MIPS_FS(nOpcode)].f64);
+                                break;
+                            case 0x0C: // round.w.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = pCPU->aFPR[MIPS_FS(nOpcode)].f64 + 0.5f;
+                                break;
+                            case 0x0D: // trunc.w.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = pCPU->aFPR[MIPS_FS(nOpcode)].f64;
+                                break;
+                            case 0x0E: // ceil.w.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = ceil(pCPU->aFPR[MIPS_FS(nOpcode)].f64);
+                                break;
+                            case 0x0F: // floor.w.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = floor(pCPU->aFPR[MIPS_FS(nOpcode)].f64);
+                                break;
+                            case 0x20: // cvt.s.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f32 = pCPU->aFPR[MIPS_FS(nOpcode)].f64;
+                                break;
+                            case 0x21: // cvt.d.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f64 = pCPU->aFPR[MIPS_FS(nOpcode)].f64;
+                                break;
+                            case 0x24: // cvt.w.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = pCPU->aFPR[MIPS_FS(nOpcode)].f64;
+                                break;
+                            case 0x25: // cvt.l.d
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = pCPU->aFPR[MIPS_FS(nOpcode)].f64;
+                                break;
+                            case 0x30: // c.f.d
+                                pCPU->anFCR[31] &= ~0x800000;
+                                break;
+                            case 0x31: // c.un.d
+                                pCPU->anFCR[31] &= ~0x800000;
+                                break;
+                            case 0x32: // c.eq.d
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f64 == pCPU->aFPR[MIPS_FT(nOpcode)].f64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x33: // c.ueq.d
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f64 == pCPU->aFPR[MIPS_FT(nOpcode)].f64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x34: // c.olt.d
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f64 < pCPU->aFPR[MIPS_FT(nOpcode)].f64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x35: // c.ult.d
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f64 < pCPU->aFPR[MIPS_FT(nOpcode)].f64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x36: // c.ole.d
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f64 <= pCPU->aFPR[MIPS_FT(nOpcode)].f64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x37: // c.ule.d
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f64 <= pCPU->aFPR[MIPS_FT(nOpcode)].f64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x38: // c.sf.d
+                                pCPU->anFCR[31] &= ~0x800000;
+                                break;
+                            case 0x39: // c.ngle.d
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f64 <= pCPU->aFPR[MIPS_FT(nOpcode)].f64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3A: // c.seq.d
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f64 == pCPU->aFPR[MIPS_FT(nOpcode)].f64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3B: // c.ngl.d
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f64 == pCPU->aFPR[MIPS_FT(nOpcode)].f64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3C: // c.lt.d
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f64 < pCPU->aFPR[MIPS_FT(nOpcode)].f64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3D: // c.nge.d
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f64 < pCPU->aFPR[MIPS_FT(nOpcode)].f64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3E: // c.le.d
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f64 <= pCPU->aFPR[MIPS_FT(nOpcode)].f64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3F: // c.ngt.d
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].f64 <= pCPU->aFPR[MIPS_FT(nOpcode)].f64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                        }
+                        break;
+                    case 0x14: // w
+                        switch (MIPS_FUNCT(nOpcode)) {
+                            case 0x00: // add.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].s32 + pCPU->aFPR[MIPS_FT(nOpcode)].s32;
+                                break;
+                            case 0x01: // sub.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].s32 - pCPU->aFPR[MIPS_FT(nOpcode)].s32;
+                                break;
+                            case 0x02: // mul.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].s32 * pCPU->aFPR[MIPS_FT(nOpcode)].s32;
+                                break;
+                            case 0x03: // div.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].s32 / pCPU->aFPR[MIPS_FT(nOpcode)].s32;
+                                break;
+                            case 0x04: // sqrt.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = sqrt(pCPU->aFPR[MIPS_FS(nOpcode)].s32);
+                                break;
+                            case 0x05: // abs.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = fabs(pCPU->aFPR[MIPS_FS(nOpcode)].s32);
+                                break;
+                            case 0x06: // mov.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = pCPU->aFPR[MIPS_FS(nOpcode)].s32;
+                                break;
+                            case 0x07: // neg.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = -pCPU->aFPR[MIPS_FS(nOpcode)].s32;
+                                break;
+                            case 0x08: // round.l.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = pCPU->aFPR[MIPS_FS(nOpcode)].s32;
+                                break;
+                            case 0x09: // trunc.l.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = pCPU->aFPR[MIPS_FS(nOpcode)].s32;
+                                break;
+                            case 0x0A: // ceil.l.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = ceil(pCPU->aFPR[MIPS_FS(nOpcode)].s32);
+                                break;
+                            case 0x0B: // floor.l.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = floor(pCPU->aFPR[MIPS_FS(nOpcode)].s32);
+                                break;
+                            case 0x0C: // round.w.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = pCPU->aFPR[MIPS_FS(nOpcode)].s32;
+                                break;
+                            case 0x0D: // trunc.w.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = pCPU->aFPR[MIPS_FS(nOpcode)].s32;
+                                break;
+                            case 0x0E: // ceil.w.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = ceil(pCPU->aFPR[MIPS_FS(nOpcode)].s32);
+                                break;
+                            case 0x0F: // floor.w.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = floor(pCPU->aFPR[MIPS_FS(nOpcode)].s32);
+                                break;
+                            case 0x20: // cvt.s.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f32 = pCPU->aFPR[MIPS_FS(nOpcode)].s32;
+                                break;
+                            case 0x21: // cvt.d.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f64 = pCPU->aFPR[MIPS_FS(nOpcode)].s32;
+                                break;
+                            case 0x24: // cvt.w.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = pCPU->aFPR[MIPS_FS(nOpcode)].s32;
+                                break;
+                            case 0x25: // cvt.l.w
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = pCPU->aFPR[MIPS_FS(nOpcode)].s32;
+                                break;
+                            case 0x30: // c.f.w
+                                pCPU->anFCR[31] &= ~0x800000;
+                                break;
+                            case 0x31: // c.un.w
+                                pCPU->anFCR[31] &= ~0x800000;
+                                break;
+                            case 0x32: // c.eq.w
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s32 == pCPU->aFPR[MIPS_FT(nOpcode)].s32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x33: // c.ueq.w
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s32 == pCPU->aFPR[MIPS_FT(nOpcode)].s32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x34: // c.olt.w
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s32 < pCPU->aFPR[MIPS_FT(nOpcode)].s32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x35: // c.ult.w
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s32 < pCPU->aFPR[MIPS_FT(nOpcode)].s32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x36: // c.ole.w
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s32 <= pCPU->aFPR[MIPS_FT(nOpcode)].s32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x37: // c.ule.w
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s32 <= pCPU->aFPR[MIPS_FT(nOpcode)].s32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x38: // c.sf.w
+                                pCPU->anFCR[31] &= ~0x800000;
+                                break;
+                            case 0x39: // c.ngle.w
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s32 <= pCPU->aFPR[MIPS_FT(nOpcode)].s32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3A: // c.seq.w
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s32 == pCPU->aFPR[MIPS_FT(nOpcode)].s32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3B: // c.ngl.w
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s32 == pCPU->aFPR[MIPS_FT(nOpcode)].s32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3C: // c.lt.w
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s32 < pCPU->aFPR[MIPS_FT(nOpcode)].s32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3D: // c.nge.w
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s32 < pCPU->aFPR[MIPS_FT(nOpcode)].s32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3E: // c.le.w
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s32 <= pCPU->aFPR[MIPS_FT(nOpcode)].s32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3F: // c.ngt.w
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s32 <= pCPU->aFPR[MIPS_FT(nOpcode)].s32) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                        }
+                        break;
+                    case 0x15: // l
+                        switch (MIPS_FUNCT(nOpcode)) {
+                            case 0x00: // add.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].s64 + pCPU->aFPR[MIPS_FT(nOpcode)].s64;
+                                break;
+                            case 0x01: // sub.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].s64 - pCPU->aFPR[MIPS_FT(nOpcode)].s64;
+                                break;
+                            case 0x02: // mul.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].s64 * pCPU->aFPR[MIPS_FT(nOpcode)].s64;
+                                break;
+                            case 0x03: // div.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 =
+                                    pCPU->aFPR[MIPS_FS(nOpcode)].s64 / pCPU->aFPR[MIPS_FT(nOpcode)].s64;
+                                break;
+                            case 0x04: // sqrt.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = sqrt(pCPU->aFPR[MIPS_FS(nOpcode)].s64);
+                                break;
+                            case 0x05: // abs.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = fabs(pCPU->aFPR[MIPS_FS(nOpcode)].s64);
+                                break;
+                            case 0x06: // mov.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = pCPU->aFPR[MIPS_FS(nOpcode)].s64;
+                                break;
+                            case 0x07: // neg.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = -pCPU->aFPR[MIPS_FS(nOpcode)].s64;
+                                break;
+                            case 0x08: // round.l.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = pCPU->aFPR[MIPS_FS(nOpcode)].s64;
+                                break;
+                            case 0x09: // trunc.l.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = pCPU->aFPR[MIPS_FS(nOpcode)].s64;
+                                break;
+                            case 0x0A: // ceil.l.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = ceil(pCPU->aFPR[MIPS_FS(nOpcode)].s64);
+                                break;
+                            case 0x0B: // floor.l.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = floor(pCPU->aFPR[MIPS_FS(nOpcode)].s64);
+                                break;
+                            case 0x0C: // round.w.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = pCPU->aFPR[MIPS_FS(nOpcode)].s64;
+                                break;
+                            case 0x0D: // trunc.w.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = pCPU->aFPR[MIPS_FS(nOpcode)].s64;
+                                break;
+                            case 0x0E: // ceil.w.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = ceil(pCPU->aFPR[MIPS_FS(nOpcode)].s64);
+                                break;
+                            case 0x0F: // floor.w.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = floor(pCPU->aFPR[MIPS_FS(nOpcode)].s64);
+                                break;
+                            case 0x20: // cvt.s.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f32 = pCPU->aFPR[MIPS_FS(nOpcode)].s64;
+                                break;
+                            case 0x21: // cvt.d.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].f64 = pCPU->aFPR[MIPS_FS(nOpcode)].s64;
+                                break;
+                            case 0x24: // cvt.w.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s32 = pCPU->aFPR[MIPS_FS(nOpcode)].s64;
+                                break;
+                            case 0x25: // cvt.l.l
+                                pCPU->aFPR[MIPS_FD(nOpcode)].s64 = pCPU->aFPR[MIPS_FS(nOpcode)].s64;
+                                break;
+                            case 0x30: // c.f.l
+                                pCPU->anFCR[31] &= ~0x800000;
+                                break;
+                            case 0x31: // c.un.l
+                                pCPU->anFCR[31] &= ~0x800000;
+                                break;
+                            case 0x32: // c.eq.l
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s64 == pCPU->aFPR[MIPS_FT(nOpcode)].s64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x33: // c.ueq.l
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s64 == pCPU->aFPR[MIPS_FT(nOpcode)].s64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x34: // c.olt.l
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s64 < pCPU->aFPR[MIPS_FT(nOpcode)].s64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x35: // c.ult.l
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s64 < pCPU->aFPR[MIPS_FT(nOpcode)].s64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x36: // c.ole.l
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s64 <= pCPU->aFPR[MIPS_FT(nOpcode)].s64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x37: // c.ule.l
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s64 <= pCPU->aFPR[MIPS_FT(nOpcode)].s64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x38: // c.sf.l
+                                pCPU->anFCR[31] &= ~0x800000;
+                                break;
+                            case 0x39: // c.ngle.l
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s64 <= pCPU->aFPR[MIPS_FT(nOpcode)].s64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3A: // c.seq.l
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s64 == pCPU->aFPR[MIPS_FT(nOpcode)].s64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3B: // c.ngl.l
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s64 == pCPU->aFPR[MIPS_FT(nOpcode)].s64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3C: // c.lt.l
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s64 < pCPU->aFPR[MIPS_FT(nOpcode)].s64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3D: // c.nge.l
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s64 < pCPU->aFPR[MIPS_FT(nOpcode)].s64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3E: // c.le.l
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s64 <= pCPU->aFPR[MIPS_FT(nOpcode)].s64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                            case 0x3F: // c.ngt.l
+                                if (pCPU->aFPR[MIPS_FS(nOpcode)].s64 <= pCPU->aFPR[MIPS_FT(nOpcode)].s64) {
+                                    pCPU->anFCR[31] |= 0x800000;
+                                } else {
+                                    pCPU->anFCR[31] &= ~0x800000;
+                                }
+                                break;
+                        }
+                        break;
+                }
             }
             break;
-        case 21: // BNEL
-            if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] != cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]) {
-                cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
+        case 0x14: // beq
+            if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 == (s32)pCPU->aGPR[MIPS_RT(nOpcode)].s32) {
+                pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
             } else {
-                cpu->status |= 4;
-                cpu->pc += 4;
+                pCPU->nMode |= 4;
+                pCPU->nPC += 4;
             }
             break;
-        case 22: // BLEZL
-            if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] <= 0) {
-                cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
+        case 0x15: // bne
+            if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 != (s32)pCPU->aGPR[MIPS_RT(nOpcode)].s32) {
+                pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
             } else {
-                cpu->status |= 4;
-                cpu->pc += 4;
+                pCPU->nMode |= 4;
+                pCPU->nPC += 4;
             }
             break;
-        case 23: // BGTZL
-            if(cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] > 0) {
-                cpu->unk_0x24 = cpu->pc + MIPS_IMM(inst)  * 4;
+        case 0x16: // blez
+            if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 <= 0) {
+                pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
             } else {
-                cpu->status |= 4;
-                cpu->pc += 4;
+                pCPU->nMode |= 4;
+                pCPU->nPC += 4;
             }
             break;
-        case 24: // DADDI
-            cpu->gpr[(inst >> 0x10) & 0x1F].sd = cpu->gpr[(inst >> 0x15) & 0x1F].sd + MIPS_IMM(inst) ;
-            break;
-        case 25: // DADDIU
-            cpu->gpr[(inst >> 0x10) & 0x1F].d = cpu->gpr[(inst >> 0x15) & 0x1F].d + MIPS_IMM(inst);
-            break;
-        case 31: // precompiled function.
-            if(!func_8005D614(gSystem->unk_0x0058, cpu, MIPS_IMM(inst) )) {
-                return NULL;
+        case 0x17: // bgtz
+            if (pCPU->aGPR[MIPS_RS(nOpcode)].s32 > 0) {
+                pCPU->nWaitPC = pCPU->nPC + MIPS_IMM_S16(nOpcode) * 4;
+            } else {
+                pCPU->nMode |= 4;
+                pCPU->nPC += 4;
             }
             break;
-        case 26: // LDL
-            {
-                sh = 0x38;
-                ea = cpu->gpr[MIPS_RS(inst)].sd + MIPS_IMM(inst);
-                do {
-                    dev = get_dev(devs, dev_idx, ea);
-                    if(dev->lb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf)) {
-                        tmp.d = (u64)byteBuf << (u64)(sh);
-                        cpu->gpr[(inst >> 0x10) & 0x1F].d = tmp.d | (cpu->gpr[(inst >> 0x10) & 0x1F].d & ~((u64)0xFF << (sh)));
-                    }
-                    
-                    ea++;
-                    sh -= 8;
-
-                } while(((ea - 1) & 7));
+        case 0x18: // daddi
+            pCPU->aGPR[MIPS_RT(nOpcode)].s64 = pCPU->aGPR[MIPS_RS(nOpcode)].s64 + MIPS_IMM_S16(nOpcode);
+            break;
+        case 0x19: // daddiu
+            pCPU->aGPR[MIPS_RT(nOpcode)].u64 = pCPU->aGPR[MIPS_RS(nOpcode)].u64 + MIPS_IMM_S16(nOpcode);
+            break;
+        case 0x1F: // library call
+            if (!libraryCall(SYSTEM_LIBRARY(gpSystem), pCPU, MIPS_IMM_S16(nOpcode))) {
+                return false;
             }
             break;
-        case 27: // LDR
-            {
-                sh = 0;
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sd + MIPS_IMM(inst);
-
-                do {
-                    if(devs[dev_idx[ea >> 0x10]]->lb(devs[dev_idx[ea >> 0x10]]->dev_obj, ea + devs[dev_idx[ea >> 0x10]]->addr_offset, (s8*)&byteBuf)) {
-                        tmp.d = (u64)byteBuf << sh;
-                        cpu->gpr[(inst >> 0x10) & 0x1F].d = tmp.d | (cpu->gpr[(inst >> 0x10) & 0x1F].d & ~((u64)0xFF << sh));
-                    }
-                    ea--;
-                    sh += 8;
-                } while((ea + 1) & 7);
+        case 0x1A: // ldl
+            nCount = 0x38;
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s64 + MIPS_IMM_S16(nOpcode);
+            do {
+                if (CPU_DEVICE_GET8(apDevice, aiDevice, nAddress, &nData8)) {
+                    nData64 = ((s64)nData8 & 0xFF) << nCount;
+                    pCPU->aGPR[MIPS_RT(nOpcode)].s64 =
+                        nData64 | (pCPU->aGPR[MIPS_RT(nOpcode)].s64 & ~((s64)0xFF << nCount));
+                }
+                nCount -= 8;
+            } while ((nAddress++ & 7) != 0);
+            break;
+        case 0x1B: // ldr
+            nCount = 0;
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s64 + MIPS_IMM_S16(nOpcode);
+            do {
+                if (CPU_DEVICE_GET8(apDevice, aiDevice, nAddress, &nData8)) {
+                    nData64 = ((s64)nData8 & 0xFF) << nCount;
+                    pCPU->aGPR[MIPS_RT(nOpcode)].s64 =
+                        nData64 | (pCPU->aGPR[MIPS_RT(nOpcode)].s64 & ~((s64)0xFF << nCount));
+                }
+                nCount += 8;
+            } while ((nAddress-- & 7) != 0);
+            break;
+        case 0x27: // lwu
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s64 + MIPS_IMM_S16(nOpcode);
+            if (CPU_DEVICE_GET32(apDevice, aiDevice, nAddress, &nData32)) {
+                pCPU->aGPR[MIPS_RT(nOpcode)].u64 = (u32)nData32;
             }
             break;
-        case 39: // LWU
-            {
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sd + MIPS_IMM(inst);
-                dev = devs[dev_idx[ea >> 0x10]];
-
-                if(dev->lw(dev->dev_obj, ea + dev->addr_offset, (s32*)&wordBuf)) {
-                    cpu->gpr[(inst >> 0x10) & 0x1F].d = wordBuf;
+        case 0x20: // lb
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            if (CPU_DEVICE_GET8(apDevice, aiDevice, nAddress, &nData8)) {
+                pCPU->aGPR[MIPS_RT(nOpcode)].s32 = nData8;
+            }
+            break;
+        case 0x21: // lh
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            if (CPU_DEVICE_GET16(apDevice, aiDevice, nAddress, &nData16)) {
+                pCPU->aGPR[MIPS_RT(nOpcode)].s32 = nData16;
+            }
+            break;
+        case 0x22: // lwl
+            nCount = 0x18;
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            do {
+                if (CPU_DEVICE_GET8(apDevice, aiDevice, nAddress, &nData8)) {
+                    nData32 = ((u32)nData8 & 0xFF) << nCount;
+                    pCPU->aGPR[MIPS_RT(nOpcode)].s32 = nData32 | (pCPU->aGPR[MIPS_RT(nOpcode)].s32 & ~(0xFF << nCount));
+                }
+                nCount -= 8;
+            } while ((nAddress++ & 3) != 0);
+            break;
+        case 0x23: // lw
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            if (CPU_DEVICE_GET32(apDevice, aiDevice, nAddress, &nData32)) {
+                pCPU->aGPR[MIPS_RT(nOpcode)].s32 = nData32;
+            }
+            break;
+        case 0x24: // lbu
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            if (CPU_DEVICE_GET8(apDevice, aiDevice, nAddress, &nData8)) {
+                pCPU->aGPR[MIPS_RT(nOpcode)].u32 = (u8)nData8;
+            }
+            break;
+        case 0x25: // lhu
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            if (frameGetDepth(SYSTEM_FRAME(gpSystem), (u16*)&nData16, nAddress)) {
+                pCPU->aGPR[MIPS_RT(nOpcode)].u32 = (u16)nData16;
+            } else {
+                if (CPU_DEVICE_GET16(apDevice, aiDevice, nAddress, &nData16)) {
+                    pCPU->aGPR[MIPS_RT(nOpcode)].u32 = (u16)nData16;
                 }
             }
             break;
-        case 32: // LB
-            {
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-
-                if(dev->lb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf)) {
-                    cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = (s8)byteBuf;
+        case 0x26: // lwr
+            nCount = 0;
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            do {
+                if (CPU_DEVICE_GET8(apDevice, aiDevice, nAddress, &nData8)) {
+                    nData32 = ((u32)nData8 & 0xFF) << nCount;
+                    pCPU->aGPR[MIPS_RT(nOpcode)].s32 = nData32 | (pCPU->aGPR[MIPS_RT(nOpcode)].s32 & ~(0xFF << nCount));
                 }
+                nCount += 8;
+            } while ((nAddress-- & 3) != 0);
+            break;
+        case 0x28: // sb
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            CPU_DEVICE_PUT8(apDevice, aiDevice, nAddress, &pCPU->aGPR[MIPS_RT(nOpcode)].s8);
+            break;
+        case 0x29: // sh
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            CPU_DEVICE_PUT16(apDevice, aiDevice, nAddress, &pCPU->aGPR[MIPS_RT(nOpcode)].s16);
+            break;
+        case 0x2A: // swl
+            nCount = 0x18;
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            do {
+                nData8 = (pCPU->aGPR[MIPS_RT(nOpcode)].u32 >> nCount) & 0xFF;
+                CPU_DEVICE_PUT8(apDevice, aiDevice, nAddress, &nData8);
+                nCount -= 8;
+            } while ((nAddress++ & 3) != 0);
+            break;
+        case 0x2B: // sw
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            CPU_DEVICE_PUT32(apDevice, aiDevice, nAddress, &pCPU->aGPR[MIPS_RT(nOpcode)].s32);
+            break;
+        case 0x2C: // sdl
+            nCount = 0x38;
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s64 + MIPS_IMM_S16(nOpcode);
+            do {
+                nData8 = (pCPU->aGPR[MIPS_RT(nOpcode)].u64 >> nCount) & 0xFF;
+                CPU_DEVICE_PUT8(apDevice, aiDevice, nAddress, &nData8);
+                nCount -= 8;
+            } while ((nAddress++ & 7) != 0);
+            break;
+        case 0x2D: // sdr
+            nCount = 0;
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            do {
+                nData8 = (pCPU->aGPR[MIPS_RT(nOpcode)].u64 >> nCount) & 0xFF;
+                CPU_DEVICE_PUT8(apDevice, aiDevice, nAddress, &nData8);
+                nCount += 8;
+            } while ((nAddress-- & 7) != 0);
+            break;
+        case 0x2E: // swr
+            nCount = 0;
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            do {
+                nData8 = (pCPU->aGPR[MIPS_RT(nOpcode)].u32 >> nCount) & 0xFF;
+                CPU_DEVICE_PUT8(apDevice, aiDevice, nAddress, &nData8);
+                nCount += 8;
+            } while ((nAddress-- & 3) != 0);
+            break;
+        case 0x30: // ll
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            if (CPU_DEVICE_GET32(apDevice, aiDevice, nAddress, &nData32)) {
+                pCPU->aGPR[MIPS_RT(nOpcode)].s32 = nData32;
             }
             break;
-        case 33: // LH
-            {
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-
-                if(dev->lh(dev->dev_obj, ea + dev->addr_offset, (s16*)&halfBuf)) {
-                    cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = (s16)halfBuf;
-                }
-            }
-            break;
-        case 34: // LWL
-            {
-                sh = 0x18;
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + MIPS_IMM(inst);
-
-                do {
-                    dev = get_dev(devs, dev_idx, ea);
-                    if(dev->lb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf)) {
-                        wordBuf = (u32)byteBuf << sh;
-                        cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = wordBuf | (cpu->gpr[(inst >> 0x10) & 0x1F].w[1] & ~((u32)0xFF << sh));
-                    }
-                    ea++;
-                    sh -= 8;
-                } while((ea - 1) & 3);
-            }
-            break;
-        case 35: // LW
-            {
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-
-                if(dev->lw(dev->dev_obj, ea + dev->addr_offset, (s32*)&wordBuf)) {
-                    cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = wordBuf;
-                }
-            }
-            break;
-        case 36: // LBU
-            {
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-
-                if(dev->lb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf)) {
-                    cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = byteBuf;
-                }
-            }
-            break;
-        case 37: // LHU
-            {
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
-
-                if(func_80052D68(gSystem->frame, &halfBuf, ea)) {
-                    cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = halfBuf;
-                    break;
-                }
-                
-                dev = get_dev(devs, dev_idx, ea);
-
-                if(dev->lh(dev->dev_obj, ea + dev->addr_offset, (s16*)&halfBuf)) {
-                    cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = halfBuf;
-                }
-            }
-            break;
-        case 38: // LWR
-            {
-                sh = 0;
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + MIPS_IMM(inst);
-
-                do {
-                    dev = get_dev(devs, dev_idx, ea);
-                    if(dev->lb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf)) {
-                        wordBuf = (u32)byteBuf << sh;
-                        cpu->gpr[(inst >> 0x10) & 0x1F].w[1] = wordBuf | (cpu->gpr[(inst >> 0x10) & 0x1F].w[1] & ~((u32)0xFF << sh));
-                    }
-                    ea--;
-                    sh += 8;
-                } while((ea + 1) & 3);
-            }
-            break;
-        case 40: // SB
-            {
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-
-                dev->sb(dev->dev_obj, ea + dev->addr_offset, (s8*)&cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]);
-            }
-            break;
-        case 41: // SH
-            {
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-
-                dev->sh(dev->dev_obj, ea + dev->addr_offset, (s16*)&cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]);
-            }
-            break;
-        case 42: // SWL
-            {
-                sh = 0x18;
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + MIPS_IMM(inst);
-
-                do {
-                    byteBuf = cpu->gpr[(inst >> 0x10) & 0x1F].w[1] >> sh;
-                    dev = get_dev(devs, dev_idx, ea);
-                    dev->sb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf);
-                    ea++;
-                    sh -= 8;
-                } while((ea - 1) & 3);
-            }
-            break;
-        case 43: // SW
-            {
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-
-                dev->sw(dev->dev_obj, ea + dev->addr_offset, &cpu->gpr[(inst >> 0x10) & 0x1F].sw[1]);
-            }
-            break;
-        case 44: // SDL
-            {
-                sh = 0x38;
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sd + MIPS_IMM(inst);
-
-                do {
-                    byteBuf = cpu->gpr[(inst >> 0x10) & 0x1F].d >> sh;
-                    dev = get_dev(devs, dev_idx, ea);
-                    dev->sb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf);
-                    ea++;
-                    sh -= 8;
-                } while((ea - 1) & 7);
-            }
-            break;
-        case 45: // SDR
-            {
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
-                sh = 0;
-
-                do {
-                    byteBuf = cpu->gpr[(inst >> 0x10) & 0x1F].d >> sh;
-                    dev = get_dev(devs, dev_idx, ea);
-                    dev->sb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf);
-                    ea--;
-                    sh += 8;
-                } while((ea + 1) & 7);
-            }
-            break;
-        case 46: // SWR
-            {
-                sh = 0;
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sw[1] + MIPS_IMM(inst);
-
-                do {
-                    byteBuf = cpu->gpr[(inst >> 0x10) & 0x1F].w[1] >> sh;
-                    dev = get_dev(devs, dev_idx, ea);
-                    dev->sb(dev->dev_obj, ea + dev->addr_offset, (s8*)&byteBuf);
-                    ea--;
-                    sh += 8;
-                } while((ea + 1) & 3);
-            }
-            break;
-        case 48: // LL
-            {
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-
-                if(dev->lw(dev->dev_obj, ea + dev->addr_offset, (s32*)&wordBuf)) {
-                    cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = wordBuf;
-                }
-            }
-            break;
-        case 49: // LWC1
-            {
-                ea = cpu->gpr[MIPS_RS(inst)].w[1] + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-
-                if(dev->lw(dev->dev_obj, ea + dev->addr_offset, (s32*)&wordBuf)) {
-                    if(MIPS_RT(inst) & 1) {
-
-                        cpu->fpr[MIPS_FT(inst) - 1].d = cpu->fpr[MIPS_FT(inst) - 1].d & 0xFFFFFFFF;
-                        cpu->fpr[MIPS_FT(inst) - 1].d |= ((u64)wordBuf << 32);
-                    } else {
-                        cpu->fpr[(inst >> 0x10) & 0x1F].sw[1] = wordBuf;
-                    }
-                }
-            }
-            break;
-        case 52: // LLD
-            {
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].sd + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-
-                if(dev->ld(dev->dev_obj, ea + dev->addr_offset, &tmp.sd)) {
-                    cpu->gpr[(inst >> 0x10) & 0x1F].d = tmp.sd;
-                }
-            }
-            break;
-        case 53: // LDC1 
-            {
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-
-                if(dev->ld(dev->dev_obj, ea + dev->addr_offset, &tmp.sd)) {
-                    cpu->fpr[(inst >> 0x10) & 0x1F].d = tmp.sd;
-                }
-            }
-            break;
-        case 55: // LD
-            {
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-
-                if(dev->ld(dev->dev_obj, ea + dev->addr_offset, &tmp.sd)) {
-                    cpu->gpr[(inst >> 0x10) & 0x1F].d = tmp.sd;
-                }
-            }
-            break;
-        case 56: // SC
-            {
-                wordBuf = cpu->gpr[MIPS_RT(inst)].w[1];
-                ea = cpu->gpr[MIPS_RS(inst)].w[1] + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-                
-                cpu->gpr[(inst >> 0x10) & 0x1F].sw[1] = !!dev->sw(dev->dev_obj, ea + dev->addr_offset, (s32*)&wordBuf);
-            }
-            break;
-        case 57: // SWC1
-            {
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
-
-                if(MIPS_RT(inst) & 1) {
-                    wordBuf = cpu->fpr[((inst >> 0x10) & 0x1F) - 1].w[0];
+        case 0x31: // lwc1
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            if (CPU_DEVICE_GET32(apDevice, aiDevice, nAddress, &nData32)) {
+                if (MIPS_RT(nOpcode) & 1) {
+                    pCPU->aFPR[MIPS_RT(nOpcode) - 1].u64 &= 0xFFFFFFFF;
+                    pCPU->aFPR[MIPS_RT(nOpcode) - 1].u64 |= (s64)nData32 << 32;
                 } else {
-                    wordBuf = cpu->fpr[(inst >> 0x10) & 0x1F].w[1];
+                    pCPU->aFPR[MIPS_RT(nOpcode)].s32 = nData32;
                 }
-
-                dev = get_dev(devs, dev_idx, ea);
-                dev->sw(dev->dev_obj, ea + dev->addr_offset, (s32*)&wordBuf);
             }
             break;
-        case 60: // SCD
-            {
-                tmp.d = cpu->gpr[MIPS_RT(inst)].d; 
-                ea = cpu->gpr[MIPS_RS(inst)].sd + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-                
-                cpu->gpr[(inst >> 0x10) & 0x1F].sd = !!dev->sd(dev->dev_obj, ea + dev->addr_offset, &tmp.sd);
+        case 0x34: // lld
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s64 + MIPS_IMM_S16(nOpcode);
+            if (CPU_DEVICE_GET64(apDevice, aiDevice, nAddress, &nData64)) {
+                pCPU->aGPR[MIPS_RT(nOpcode)].s64 = nData64;
             }
             break;
-        case 61: // SDC1
-            {
-                tmp.d = cpu->fpr[(inst >> 0x10) & 0x1F].d;
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-
-                dev->sd(dev->dev_obj, ea + dev->addr_offset, (s64*)&tmp.d);
+        case 0x35: // ldc1
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            if (CPU_DEVICE_GET64(apDevice, aiDevice, nAddress, &nData64)) {
+                pCPU->aFPR[MIPS_RT(nOpcode)].s64 = nData64;
             }
             break;
-        case OPC_SD:
-            {
-                tmp.d = cpu->gpr[(inst >> 0x10) & 0x1F].d;
-                ea = cpu->gpr[(inst >> 0x15) & 0x1F].w[1] + MIPS_IMM(inst);
-                dev = get_dev(devs, dev_idx, ea);
-
-                dev->sd(dev->dev_obj, ea + dev->addr_offset, (s64*)&tmp.d);
+        case 0x37: // ld
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            if (CPU_DEVICE_GET64(apDevice, aiDevice, nAddress, &nData64)) {
+                pCPU->aGPR[MIPS_RT(nOpcode)].s64 = nData64;
             }
             break;
-
+        case 0x38: // sc
+            nData32 = pCPU->aGPR[MIPS_RT(nOpcode)].s32;
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            pCPU->aGPR[MIPS_RT(nOpcode)].s32 = (CPU_DEVICE_PUT32(apDevice, aiDevice, nAddress, &nData32)) ? 1 : 0;
+            break;
+        case 0x39: // swc1
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            if (MIPS_RT(nOpcode) & 1) {
+                nData32 = pCPU->aFPR[MIPS_RT(nOpcode) - 1].u64 >> 32;
+            } else {
+                nData32 = pCPU->aFPR[MIPS_RT(nOpcode)].s32;
+            }
+            CPU_DEVICE_PUT32(apDevice, aiDevice, nAddress, &nData32);
+            break;
+        case 0x3C: // scd
+            nData64 = pCPU->aGPR[MIPS_RT(nOpcode)].s64;
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s64 + MIPS_IMM_S16(nOpcode);
+            pCPU->aGPR[MIPS_RT(nOpcode)].s64 = (CPU_DEVICE_PUT64(apDevice, aiDevice, nAddress, &nData64)) ? 1 : 0;
+            break;
+        case 0x3D: // sdc1
+            nData64 = pCPU->aFPR[MIPS_RT(nOpcode)].s64;
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            CPU_DEVICE_PUT64(apDevice, aiDevice, nAddress, &nData64);
+            break;
+        case 0x3F: // sd
+            nData64 = pCPU->aGPR[MIPS_RT(nOpcode)].s64;
+            nAddress = pCPU->aGPR[MIPS_RS(nOpcode)].s32 + MIPS_IMM_S16(nOpcode);
+            CPU_DEVICE_PUT64(apDevice, aiDevice, nAddress, &nData64);
+            break;
     }
 
-    if(!cpuExecuteUpdate(cpu, &ret, tick + 1)) {
-        return NULL;
+    if (!cpuExecuteUpdate(pCPU, &nAddressGCN, nTick + 1)) {
+        return false;
     }
-
-    if(save_ra) {
-        cpu->gpr[0x1F].d = prev_ra;
+    if (restore) {
+        pCPU->aGPR[31].u64 = save;
     }
+    pCPU->nWaitPC = -1;
+    pCPU->nTickLast = OSGetTick();
 
-    cpu->unk_0x24 = -1;
-    cpu->tick = OSGetTick();
-
-    return ret;
+    PAD_STACK();
+    PAD_STACK();
+    return nAddressGCN;
 }
-#else
-void *cpuExecuteOpcode(cpu_class_t *cpu, s32 arg1, u32 addr, u32 *ret);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecuteOpcode.s")
-#endif
-#undef NON_MATCHING
 
-#ifdef NON_MATCHING
-void *cpuExecuteIdle(cpu_class_t *cpu, u32 arg1, u32 addr, u32 *ret) {
-    rom_class_t *rom = gSystem->rom;
-    u32 tick = OSGetTick();
+static bool cpuExecuteIdle(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAddressGCN) {
+    Rom* pROM;
 
-    if(cpu->unk_0x24 != 0) {
-        cpu->status |= 8;
+    pROM = SYSTEM_ROM(gpSystem);
+
+    nCount = OSGetTick();
+    if (pCPU->nWaitPC != 0) {
+        pCPU->nMode |= 8;
     } else {
-        cpu->status &= ~8;
+        pCPU->nMode &= ~8;
     }
 
-    cpu->pc = addr;
-    cpu->status |= 0x80;
-
-    if(!(cpu->status & 0x40) && !rom->unk_19A34) {
-        videoForceRetrace(gSystem->video);
+    pCPU->nMode |= 0x80;
+    pCPU->nPC = nAddressN64;
+    if (!(pCPU->nMode & 0x40) && pROM->copy.nSize == 0) {
+        viForceRetrace(SYSTEM_VI(gpSystem));
     }
 
-    if(!cpuExecuteUpdate(cpu, &ret, tick)) {
-        return NULL;
+    if (!cpuExecuteUpdate(pCPU, &nAddressGCN, nCount)) {
+        return false;
     }
 
-    cpu->tick = OSGetTick();
-    
-    return ret;
+    pCPU->nTickLast = OSGetTick();
+    return nAddressGCN;
 }
-#else
-void *cpuExecuteIdle(cpu_class_t *cpu, u32 r4, u32 addr, u32 *ret);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecuteIdle.s")
-#endif
 
-void *cpuExecuteJump(cpu_class_t *cpu, u32 r4, u32 addr, u32 *ret) {
-    u32 tick = OSGetTick();
+static bool cpuExecuteJump(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAddressGCN) {
+    nCount = OSGetTick();
 
-    if(cpu->unk_0x24 != 0) {
-        cpu->status |= 8;
+    if (pCPU->nWaitPC != 0) {
+        pCPU->nMode |= 8;
     } else {
-        cpu->status &= ~8;
+        pCPU->nMode &= ~8;
     }
 
-    cpu->pc = addr;
-    cpu->status |= 4;
-    if(!cpuExecuteUpdate(cpu, &ret, tick)) {
-        return NULL;
+    pCPU->nMode |= 4;
+    pCPU->nPC = nAddressN64;
+
+    if (!cpuExecuteUpdate(pCPU, &nAddressGCN, nCount)) {
+        return false;
     }
 
-    cpu->tick = OSGetTick();
-
-    return ret;
+    pCPU->nTickLast = OSGetTick();
+    return nAddressGCN;
 }
 
-inline void findExternalCall(cpu_class_t *cpu, s32 addr, u32 *ret) {
-    s32 i;
-    recomp_node_t *node;
-    ext_call_t *ext_call;
-    u32 *ret_p = ret - 1;
-    
-    cpu->call_cnt++;
-    cpuFindFunction(cpu, cpu->n64_ra - 8, &node);
+static bool cpuExecuteCall(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAddressGCN) {
+    s32 pad;
+    s32 nReg;
+    s32 count;
+    s32* anCode;
+    s32 saveGCN;
+    CpuFunction* node;
+    CpuCallerID* block;
+    s32 nDeltaAddress;
 
-    ext_call = node->ext_calls;
-    for(i = 0; i < node->ext_call_cnt; ext_call++, i++) {
-        if(addr == ext_call->n64_addr) {
-            if(ext_call->vc_addr == NULL) {
-                node->ext_calls[i].vc_addr = ret_p;
-                return;
-            }
+    nCount = OSGetTick();
+    if (pCPU->nWaitPC != 0) {
+        pCPU->nMode |= 8;
+    } else {
+        pCPU->nMode &= ~8;
+    }
+
+    pCPU->nMode |= 4;
+    pCPU->nPC = nAddressN64;
+
+    pCPU->aGPR[31].s32 = nAddressGCN;
+    saveGCN = nAddressGCN - 4;
+
+    pCPU->survivalTimer++;
+
+    cpuFindFunction(pCPU, pCPU->nReturnAddrLast - 8, &node);
+
+    block = node->block;
+    for (count = 0; count < node->callerID_total; count++) {
+        if (block[count].N64address == nAddressN64 && block[count].GCNaddress == 0) {
+            block[count].GCNaddress = saveGCN;
+            break;
         }
     }
+
+    saveGCN = (ganMapGPR[31] & 0x100) ? true : false;
+    anCode = (s32*)nAddressGCN - (saveGCN ? 4 : 3);
+    if (saveGCN) {
+        anCode[0] = 0x3CA00000 | ((u32)nAddressGCN >> 16); // lis r5,nAddressGCN@h
+        anCode[1] = 0x60A50000 | ((u32)nAddressGCN & 0xFFFF); // ori r5,r5,nAddressGCN@l
+        DCStoreRange(anCode, 8);
+        ICInvalidateRange(anCode, 8);
+    } else {
+        nReg = ganMapGPR[31];
+        anCode[0] = 0x3C000000 | ((u32)nAddressGCN >> 16) | (nReg << 21); // lis ri,nAddressGCN@h
+        anCode[1] = 0x60000000 | ((u32)nAddressGCN & 0xFFFF) | (nReg << 21) | (nReg << 16); // ori ri,ri,nAddressGCN@l
+        DCStoreRange(anCode, 8);
+        ICInvalidateRange(anCode, 8);
+    }
+
+    // bug: If cpuExecuteUpdate decides to delete the function we're trying to
+    // call here, our lis/ori will be reverted by treeCallerCheck since we've
+    // already marked this call site in the callerID for-loop above. The
+    // reverted lis/ori will store the return N64 address instead of a GCN
+    // address, so the next time this recompiled call is executed, the CPU will
+    // jump to that N64 return address in GCN address space and bad things
+    // happen (usually an invalid instruction or invalid load/store). This is
+    // known as a "VC crash".
+    //
+    // For more details, see https://pastebin.com/V6ANmXt8
+    if (!cpuExecuteUpdate(pCPU, &nAddressGCN, nCount)) {
+        return false;
+    }
+
+    nDeltaAddress = (u8*)nAddressGCN - (u8*)&anCode[3];
+    if (saveGCN) {
+        anCode[3] = 0x48000000 | (nDeltaAddress & 0x03FFFFFC); // b nDeltaAddress
+        DCStoreRange(anCode, 16);
+        ICInvalidateRange(anCode, 16);
+    } else {
+        anCode[2] = 0x48000000 | (nDeltaAddress & 0x03FFFFFC); // b nDeltaAddress
+        DCStoreRange(anCode, 12);
+        ICInvalidateRange(anCode, 12);
+    }
+
+    pCPU->nTickLast = OSGetTick();
+
+    return nAddressGCN;
 }
 
-/**
- * @brief Executes a call from the dyanrec environment
- * 
- * @param cpu The emulated VR4300.
- * @param arg1 
- * @param addr Address of the call.
- * @param ret Return address after the call has completed.
- * @return void* A pointer to the recompiled called function.
- */
-void *cpuExecuteCall(cpu_class_t *cpu, u32 arg1, s32 addr, u32 *ret) {
-    recomp_node_t *node;
-    s32 i;
-    s32 flg;
-    u32 offset;
-    u32 *ret_p;
-    u32 tick = OSGetTick();
+static bool cpuExecuteLoadStore(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAddressGCN) {
+    u32* opcode;
+    s32 iRegisterA;
+    s32 iRegisterB;
+    u8 device;
+    s32 address;
+    s32 total;
+    s32 count;
+    s32 save;
+    s32 interpret;
+    s32* before;
+    s32* after;
+    s32 check2;
+    s32* anCode;
+    s32 pad;
 
-    if(cpu->unk_0x24 != 0) {
-        cpu->status |= 8;
+    count = 0;
+    save = 0;
+    interpret = 0;
+    check2 = 0x90C30000 + OFFSETOF(pCPU, nWaitPC);
+
+    if (!cpuGetAddressBuffer(pCPU, (void**)&opcode, nAddressN64)) {
+        return false;
+    }
+
+    address = pCPU->aGPR[MIPS_RS(*opcode)].s32 + MIPS_IMM_S16(*opcode);
+    device = pCPU->aiDevice[(u32)(address) >> 16];
+
+    if (pCPU->nCompileFlag & 0x100) {
+        anCode = (s32*)nAddressGCN - 3;
+        before = anCode - 2;
+        after = (s32*)nAddressGCN + 3;
     } else {
-        cpu->status &= ~8;
+        anCode = (s32*)nAddressGCN - 3;
+        before = anCode - 2;
+        after = (s32*)nAddressGCN + 2;
     }
 
-    cpu->status |= 4;
-    cpu->pc = addr;
-    cpu->gpr[MREG_RA].w[1] = (u32)ret;
-
-    findExternalCall(cpu, addr, ret);
-
-    flg = (reg_map[MREG_RA] & 0x100) != 0;
-    ret_p = ret - (!!flg + 3);
-    if(flg) {
-        /**
-         * lis r5, hi(ret)
-         * ori r5, r5, lo(ret)
-         */
-        ret_p[0] = (15 << 26) | ((u32)ret >> 0x10) | (5 << 0x15) | (0 << 0x10);
-        ret_p[1] = (24 << 26) | ((u32)ret & 0xFFFF) |(5 << 0x15) | (5 << 0x10);
-        DCStoreRange(ret_p, 8);
-        ICInvalidateRange(ret_p, 8);
-    } else {
-        u32 reg = reg_map[MREG_RA];
-        /**
-         * lis rA, hi(ret)
-         * ori rA, rA, lo(ret)
-         */
-        ret_p[0] = (15 << 26) | ((u32)ret >> 0x10) | (reg << 0x15) | (0 << 0x10);
-        ret_p[1] = (24 << 26) | ((u32)ret & 0xFFFF) | (reg << 0x15) | (reg << 0x10);  
-        DCStoreRange(ret_p, 8);
-        ICInvalidateRange(ret_p, 8);
+    if (((u32)address >> 28) < 0x08) {
+        interpret = 1;
     }
 
-    if(!cpuExecuteUpdate(cpu, &ret, tick)) {
-        return NULL;
-    }
-
-    offset = (u32)ret - (u32)&ret_p[3];
-    if(flg) {
-        /**
-         * b ret
-         */
-        ret_p[3] = (offset & 0x3FFFFFC) | 0x48000000;
-        DCStoreRange(ret_p, 16);
-        ICInvalidateRange(ret_p, 16);
-    } else {
-        /**
-         * b ret
-         */
-        ret_p[2] = (offset & 0x3FFFFFC) | 0x48000000;
-        DCStoreRange(ret_p, 12);
-        ICInvalidateRange(ret_p, 12);
-    }
-
-    cpu->tick = OSGetTick();
-
-    return ret;
-}
-
-
-#ifdef NON_MATCHING
-// very minor regalloc
-/**
- * @brief Recompiles a VR4300 load/store instruction
- * 
- * @param cpu The emulated VR4300.
- * @param arg1 
- * @param addr The address of the Load/Store instruction.
- * @param ret A pointer to the location where recompiled code should be stored.
- * @return void* The location where the dynarec block should continue executing.
- */
-void *cpuExecuteLoadStore(cpu_class_t *cpu, u32 arg1, u32 addr, u32 *ret) {
-    s32 pos = 0;
-    s32 tmp3 = 0;
-    s32 tmp1 = 0;
-    u32 *buf;
-    u32 rt;
-    u32 base;
-    s32 i;
-    u8 dev_idx;
-    u32 *tmp2;
-    u32 *puVar2;
-    s32 inst_search = 0x90C30000 + ((u32)&cpu->unk_0x24 - (u32)cpu);
-    u32 *ret_p;
-    u32 ea;
-
-    if(!cpuGetAddressBuffer(cpu, (void**)&buf, addr)) {
-        return 0;
-    }
-
-    ea = cpu->gpr[MIPS_RS(*buf)].sw[1] + MIPS_IMM(*buf);
-    dev_idx = cpu->mem_hi_map[ea >> 16];
-    if(cpu->unk_0x12224 & 0x100) {
-        ret_p = &ret[-3];
-        puVar2 = ret + 3;
-        tmp2 =  &ret_p[-2];
-    } else {
-        ret_p = &ret[-3];
-        puVar2 = ret + 2;
-        tmp2 = &ret_p[-2];  
-    }
-
-    if((ea >> 0x1C) < 8) {
-        tmp1 = 1;
-    }
-
-    if(!tmp1 && dev_idx >= 128) {
-        switch(MIPS_OP(*buf)) {
-            case OPC_LB:
-                rt = reg_map[MIPS_RT(*buf)];
-                if(rt & 0x100) {
-                    rt = 5;
+    if (!interpret && device >= 0x80) {
+        switch (MIPS_OP(*opcode)) {
+            case 0x20: // lb
+                if ((iRegisterA = ganMapGPR[MIPS_RT(*opcode)]) & 0x100) {
+                    iRegisterA = 5;
+                }
+                if ((iRegisterB = ganMapGPR[MIPS_RS(*opcode)]) & 0x100) {
+                    iRegisterB = 6;
+                    anCode[count++] = 0x80C30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RS(*opcode)]) + 4) & 0xFFFF);
                 }
 
-                base = reg_map[MIPS_RS(*buf)];
-                if(base & 0x100) {
-                    base = 6;
-
-                    ret_p[pos++] = 0x80c30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
-                }
-
-                if(cpu->unk_0x12224 & 0x100) {
-                    if(cpu->unk_0x12224 & 0x1000) {
-                        ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                    } else {
-                        if((ea >> 0x1C) >= 10) {
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                        }
+                if (pCPU->nCompileFlag & 0x100) {
+                    if (pCPU->nCompileFlag & 0x1000) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
+                    } else if (((u32)address >> 28) >= 10) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
                     }
                 }
 
-                ret_p[pos++] = 0x7CE04214 | (base << 16);
-                ret_p[pos++] = 0x88070000 | (rt << 21) | (*buf & 0xFFFF);
-                ret_p[pos++] = 0x7C000774 | (rt << 21) | (rt << 16);
-
-                if(reg_map[MIPS_RT(*buf)] & 0x100) {
-                    ret_p[pos++] = 0x90A30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                anCode[count++] = 0x7C000000 | (7 << 21) | (iRegisterB << 16) | (8 << 11) | 0x214;
+                anCode[count++] = 0x88070000 | (iRegisterA << 21) | MIPS_IMM_U16(*opcode);
+                anCode[count++] = 0x7C000774 | (iRegisterA << 21) | (iRegisterA << 16);
+                if (ganMapGPR[MIPS_RT(*opcode)] & 0x100) {
+                    anCode[count++] = 0x90A30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RT(*opcode)]) + 4) & 0xFFFF);
                 }
-
                 break;
-            case OPC_LBU:
-                rt = reg_map[MIPS_RT(*buf)];
-                if(rt & 0x100) {
-                    rt = 5;
+            case 0x24: // lbu
+                if ((iRegisterA = ganMapGPR[MIPS_RT(*opcode)]) & 0x100) {
+                    iRegisterA = 5;
+                }
+                if ((iRegisterB = ganMapGPR[MIPS_RS(*opcode)]) & 0x100) {
+                    iRegisterB = 6;
+                    anCode[count++] = 0x80C30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RS(*opcode)]) + 4) & 0xFFFF);
                 }
 
-                base = reg_map[MIPS_RS(*buf)];
-                if(base & 0x100) {
-                    base = 6;
-
-                    ret_p[pos++] = 0x80c30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
-                }
-
-                if(cpu->unk_0x12224 & 0x100) {
-                    if(cpu->unk_0x12224 & 0x1000) {
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                    } else {
-                        if((ea >> 0x1C) >= 10) {
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                        }
+                if (pCPU->nCompileFlag & 0x100) {
+                    if (pCPU->nCompileFlag & 0x1000) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
+                    } else if (((u32)address >> 28) >= 10) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
                     }
                 }
 
-                ret_p[pos++] = 0x7CE04214 | (base << 16);
-                ret_p[pos++] = 0x88070000 | (rt << 21) | (*buf & 0xFFFF);
-
-                if(reg_map[MIPS_RT(*buf)] & 0x100) {
-                    ret_p[pos++] = 0x90A30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                anCode[count++] = 0x7C000214 | (7 << 21) | (iRegisterB << 16) | (8 << 11);
+                anCode[count++] = 0x88070000 | (iRegisterA << 21) | MIPS_IMM_U16(*opcode);
+                if (ganMapGPR[MIPS_RT(*opcode)] & 0x100) {
+                    anCode[count++] = 0x90A30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RT(*opcode)]) + 4) & 0xFFFF);
                 }
-
                 break;
-            case OPC_LH:
-                rt = reg_map[MIPS_RT(*buf)];
-                if(rt & 0x100) {
-                    rt = 5;
+            case 0x21: // lh
+                if ((iRegisterA = ganMapGPR[MIPS_RT(*opcode)]) & 0x100) {
+                    iRegisterA = 5;
+                }
+                if ((iRegisterB = ganMapGPR[MIPS_RS(*opcode)]) & 0x100) {
+                    iRegisterB = 6;
+                    anCode[count++] = 0x80C30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RS(*opcode)]) + 4) & 0xFFFF);
                 }
 
-                base = reg_map[MIPS_RS(*buf)];
-                if(base & 0x100) {
-                    base = 6;
-
-                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] -(u32)cpu + 4);
-                }
-
-                if(cpu->unk_0x12224 & 0x100) {
-                    if(cpu->unk_0x12224 & 0x1000) {
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                    } else {
-                        if((ea >> 0x1C) >= 10) {
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                        }
+                if (pCPU->nCompileFlag & 0x100) {
+                    if (pCPU->nCompileFlag & 0x1000) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
+                    } else if (((u32)address >> 28) >= 10) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
                     }
                 }
 
-                ret_p[pos++] = 0x7CE04214 | (base << 16);
-                ret_p[pos++] = 0xA0070000 | (rt << 21) | (*buf & 0xFFFF);
-                ret_p[pos++] = 0x7C000734 | (rt << 21) | (rt << 16);
-
-                if(reg_map[MIPS_RT(*buf)] & 0x100) {
-                    ret_p[pos++] = 0x90A30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                anCode[count++] = 0x7C000214 | (7 << 21) | (iRegisterB << 16) | (8 << 11);
+                anCode[count++] = 0xA0070000 | (iRegisterA << 21) | MIPS_IMM_U16(*opcode);
+                anCode[count++] = 0x7C000734 | (iRegisterA << 21) | (iRegisterA << 16);
+                if (ganMapGPR[MIPS_RT(*opcode)] & 0x100) {
+                    anCode[count++] = 0x90A30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RT(*opcode)]) + 4) & 0xFFFF);
                 }
-
                 break;
-
-            case OPC_LHU:
-                rt = reg_map[MIPS_RT(*buf)];
-                if(rt & 0x100) {
-                    rt = 5;
+            case 0x25: // lhu
+                if ((iRegisterA = ganMapGPR[MIPS_RT(*opcode)]) & 0x100) {
+                    iRegisterA = 5;
+                }
+                if ((iRegisterB = ganMapGPR[MIPS_RS(*opcode)]) & 0x100) {
+                    iRegisterB = 6;
+                    anCode[count++] = 0x80C30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RS(*opcode)]) + 4) & 0xFFFF);
                 }
 
-                base = reg_map[MIPS_RS(*buf)];
-                if(base & 0x100) {
-                    base = 6;
-
-                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] -(u32)cpu + 4);
-                }
-
-                if(cpu->unk_0x12224 & 0x100) {
-                    if(cpu->unk_0x12224 & 0x1000) {
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                    } else {
-                        if((ea >> 0x1C) >= 10) {
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                        }
+                if (pCPU->nCompileFlag & 0x100) {
+                    if (pCPU->nCompileFlag & 0x1000) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
+                    } else if (((u32)address >> 28) >= 10) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
                     }
                 }
 
-                ret_p[pos++] = 0x7CE04214 | (base << 16);
-                ret_p[pos++] = 0xA0070000 | (rt << 21) | (*buf & 0xFFFF);
-
-                if(reg_map[MIPS_RT(*buf)] & 0x100) {
-                    ret_p[pos++] = 0x90A30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                anCode[count++] = 0x7C000214 | (7 << 21) | (iRegisterB << 16) | (8 << 11);
+                anCode[count++] = 0xA0070000 | (iRegisterA << 21) | MIPS_IMM_U16(*opcode);
+                if (ganMapGPR[MIPS_RT(*opcode)] & 0x100) {
+                    anCode[count++] = 0x90A30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RT(*opcode)]) + 4) & 0xFFFF);
                 }
-
                 break;
-            case OPC_LW:
-                rt = reg_map[MIPS_RT(*buf)];
-                if(rt & 0x100) {
-                    rt = 5;
+            case 0x23: // lw
+                if ((iRegisterA = ganMapGPR[MIPS_RT(*opcode)]) & 0x100) {
+                    iRegisterA = 5;
+                }
+                if ((iRegisterB = ganMapGPR[MIPS_RS(*opcode)]) & 0x100) {
+                    iRegisterB = 6;
+                    anCode[count++] = 0x80C30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RS(*opcode)]) + 4) & 0xFFFF);
                 }
 
-                base = reg_map[MIPS_RS(*buf)];
-                if(base & 0x100) {
-                    base = 6;
-
-                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
-                }
-
-                if(cpu->unk_0x12224 & 0x100) {
-                    if(cpu->unk_0x12224 & 0x1000) {
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                    } else {
-                        if((ea >> 0x1C) >= 10) {
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                        }
+                if (pCPU->nCompileFlag & 0x100) {
+                    if (pCPU->nCompileFlag & 0x1000) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
+                    } else if (((u32)address >> 28) >= 10) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
                     }
                 }
 
-                ret_p[pos++] = 0x7CE04214 | (base << 16);
-                ret_p[pos++] = 0x80070000 | (rt << 21) | (*buf & 0xFFFF);
-
-                if(reg_map[MIPS_RT(*buf)] & 0x100) {
-                    ret_p[pos++] = 0x90A30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                anCode[count++] = 0x7C000214 | (7 << 21) | (iRegisterB << 16) | (8 << 11);
+                anCode[count++] = 0x80070000 | (iRegisterA << 21) | MIPS_IMM_U16(*opcode);
+                if (ganMapGPR[MIPS_RT(*opcode)] & 0x100) {
+                    anCode[count++] = 0x90A30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RT(*opcode)]) + 4) & 0xFFFF);
                 }
-
                 break;
-            case OPC_SB:
-                rt = reg_map[MIPS_RT(*buf)];
-                if(rt & 0x100) {
-                    rt = 6;
-                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+            case 0x28: // sb
+                if ((iRegisterA = ganMapGPR[MIPS_RT(*opcode)]) & 0x100) {
+                    iRegisterA = 6;
+                    anCode[count++] = 0x80C30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RT(*opcode)]) + 4) & 0xFFFF);
+                }
+                if ((iRegisterB = ganMapGPR[MIPS_RS(*opcode)]) & 0x100) {
+                    iRegisterB = 7;
+                    anCode[count++] = 0x80E30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RS(*opcode)]) + 4) & 0xFFFF);
                 }
 
-                base = reg_map[MIPS_RS(*buf)];
-                if(base & 0x100) {
-                    base = 7;
-                    ret_p[pos++] = 0x80E30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
-                }
-
-                if(cpu->unk_0x12224 & 0x100) {
-                    if(cpu->unk_0x12224 & 0x1000) { 
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                    } else {
-                        if((ea >> 0x1C) >= 10) {
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                        }
+                if (pCPU->nCompileFlag & 0x100) {
+                    if (pCPU->nCompileFlag & 0x1000) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
+                    } else if (((u32)address >> 28) >= 10) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
                     }
                 }
-
-                ret_p[pos++] = 0x7CE04214 | (base << 16);
-                ret_p[pos++] = 0x98070000 | (rt << 21) | (*buf & 0xFFFF);
+                anCode[count++] = 0x7CE00000 | (iRegisterB << 16) | 0x4214;
+                anCode[count++] = 0x98070000 | (iRegisterA << 21) | MIPS_IMM_U16(*opcode);
                 break;
-            case OPC_SH:
-                rt = reg_map[MIPS_RT(*buf)];
-                if(rt & 0x100) {
-                    rt = 6;
-                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+            case 0x29: // sh
+                if ((iRegisterA = ganMapGPR[MIPS_RT(*opcode)]) & 0x100) {
+                    iRegisterA = 6;
+                    anCode[count++] = 0x80C30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RT(*opcode)]) + 4) & 0xFFFF);
+                }
+                if ((iRegisterB = ganMapGPR[MIPS_RS(*opcode)]) & 0x100) {
+                    iRegisterB = 7;
+                    anCode[count++] = 0x80E30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RS(*opcode)]) + 4) & 0xFFFF);
                 }
 
-                base = reg_map[MIPS_RS(*buf)];
-                if(base & 0x100) {
-                    base = 7;
-                    ret_p[pos++] = 0x80E30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
-                }
-
-                if(cpu->unk_0x12224 & 0x100) {
-                    if(cpu->unk_0x12224 & 0x1000) { 
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                    } else {
-                        if((ea >> 0x1C) >= 10) {
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                        }
+                if (pCPU->nCompileFlag & 0x100) {
+                    if (pCPU->nCompileFlag & 0x1000) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
+                    } else if (((u32)address >> 28) >= 10) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
                     }
                 }
-
-                ret_p[pos++] = 0x7CE04214 | (base << 16);
-                ret_p[pos++] = 0xB0070000 | (rt << 21) | (*buf & 0xFFFF);
+                anCode[count++] = 0x7CE00000 | (iRegisterB << 16) | 0x4214;
+                anCode[count++] = 0xB0070000 | (iRegisterA << 21) | MIPS_IMM_U16(*opcode);
                 break;
-            case OPC_SW:
-                rt = reg_map[MIPS_RT(*buf)];
-                if(rt & 0x100) {
-                    rt = 6;
-                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+            case 0x2B: // sw
+                if ((iRegisterA = ganMapGPR[MIPS_RT(*opcode)]) & 0x100) {
+                    iRegisterA = 6;
+                    anCode[count++] = 0x80C30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RT(*opcode)]) + 4) & 0xFFFF);
+                }
+                if ((iRegisterB = ganMapGPR[MIPS_RS(*opcode)]) & 0x100) {
+                    iRegisterB = 7;
+                    anCode[count++] = 0x80E30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RS(*opcode)]) + 4) & 0xFFFF);
                 }
 
-                base = reg_map[MIPS_RS(*buf)];
-                if(base & 0x100) {
-                    base = 7;
-                    ret_p[pos++] = 0x80E30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
-                }
-
-                if(cpu->unk_0x12224 & 0x100) {
-                    if(cpu->unk_0x12224 & 0x1000) { 
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                    } else {
-                        if((ea >> 0x1C) >= 10) {
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                        }
+                if (pCPU->nCompileFlag & 0x100) {
+                    if (pCPU->nCompileFlag & 0x1000) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
+                    } else if (((u32)address >> 28) >= 10) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
                     }
                 }
-
-                ret_p[pos++] = 0x7CE04214 | (base << 16);
-                ret_p[pos++] = 0x90070000 | (rt << 21) | (*buf & 0xFFFF);
+                anCode[count++] = 0x7CE00000 | (iRegisterB << 16) | 0x4214;
+                anCode[count++] = 0x90070000 | (iRegisterA << 21) | MIPS_IMM_U16(*opcode);
                 break;
             default:
-                invalidInst();
+                xlExit();
                 break;
-        }   
+        }
     } else {
-        // regalloc is here, the or of 0x3CA00000 and hi bits of addr are placed in r4 instead of r3
-        tmp1 = 1;
-        ret_p[pos++] = 0x3CA00000 | (addr >> 0x10);
-        ret_p[pos++] = 0x60A50000 | (addr & 0xFFFF);
-        ret_p[pos++] = 0x48000001 | (((u32)cpu->execute_opcode - (u32)&ret_p[pos]) & 0x3FFFFFC);
+        interpret = 1;
+        anCode[count++] = 0x3CA00000 | ((u32)nAddressN64 >> 16);
+        anCode[count++] = 0x60A50000 | ((u32)nAddressN64 & 0xFFFF);
+        anCode[count++] = 0x48000000 | (((u32)pCPU->pfStep - (u32)&anCode[count]) & 0x03FFFFFC) | 1;
     }
 
-    if(cpu->unk_0x12224 & 0x100) {
-        if((6 - pos) >= 2) {
-            tmp3 = pos;
-            ret_p[pos++] = 0x48000000 | (u16)((u32)&ret_p[6] - (u32)&ret_p[pos]);
+    if (pCPU->nCompileFlag & 0x100) {
+        if (6 - count >= 2) {
+            save = count;
+            anCode[count++] = 0x48000000 | (((u32)&anCode[6] - (u32)&anCode[count]) & 0xFFFF);
         }
-
-        while(pos <= 5) {
-            ret_p[pos++] = 0x60000000;
+        while (count <= 5) {
+            anCode[count++] = 0x60000000;
         }
-
-        pos = 6;
+        total = 6;
     } else {
-        if((5 - pos) >= 2) {
-            tmp3 = pos;
-            ret_p[pos++] = 0x48000000 | (u16)((u32)&ret_p[5] - (u32)&ret_p[pos]);
+        if (5 - count >= 2) {
+            save = count;
+            anCode[count++] = 0x48000000 | (((u32)&anCode[5] - (u32)&anCode[count]) & 0xFFFF);
         }
-
-        while(pos <= 4) {
-            ret_p[pos++] = 0x60000000;
+        while (count <= 4) {
+            anCode[count++] = 0x60000000;
         }
-
-        pos = 5;
+        total = 5;
     }
 
-    if(!tmp1 && tmp2[0] == 0x38C00000 && (s32)tmp2[1] == inst_search) {
-        s32 pos2 = 0;
-        tmp2[pos2++] = 0x48000000 | (u16)((u32)&tmp2[2] - (u32)tmp2);
-        tmp2[pos2++] = 0x60000000;
-        DCStoreRange(tmp2, pos2 * sizeof(*tmp2));
-        ICInvalidateRange(tmp2, pos2 * sizeof(*tmp2));
-        if(tmp3 != 0) {
-            ret_p[tmp3] = 0x48000000 | (u16)((u32)&puVar2[2] - (u32)&ret_p[tmp3]);
-        }
+    if (!interpret && before[0] == 0x38C00000 && before[1] == check2) {
+        before[0] = 0x48000000 | (((u32)&before[2] - (u32)&before[0]) & 0xFFFF);
+        before[1] = 0x60000000;
+        DCStoreRange(before, 8);
+        ICInvalidateRange(before, 8);
 
-        puVar2[0] = 0x60000000;
-        puVar2[1] = 0x60000000;
-        cpu->unk_0x24 = -1;
-        pos += 2;
+        if (save != 0) {
+            anCode[save] = 0x48000000 | (((u32)&after[2] - (u32)&anCode[save]) & 0xFFFF);
+        }
+        after[0] = 0x60000000;
+        after[1] = 0x60000000;
+
+        total += 2;
+        pCPU->nWaitPC = -1;
     }
 
-    DCStoreRange(ret_p, pos * 4);
-    ICInvalidateRange(ret_p, pos * 4);
-
-    return ret_p;
+    DCStoreRange(anCode, total * 4);
+    ICInvalidateRange(anCode, total * 4);
+    return (s32)anCode;
 }
-#else
-void *cpuExecuteLoadStore(cpu_class_t *cpu, u32 arg1, u32 addr, u32 *ret);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecuteLoadStore.s")
-#endif
-#undef NON_MATCHING
 
+static bool cpuExecuteLoadStoreF(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAddressGCN) {
+    u32* opcode;
+    s32 iRegisterA;
+    s32 iRegisterB;
+    u8 device;
+    s32 address;
+    s32 total;
+    s32 count;
+    s32 save;
+    s32 interpret;
+    s32* before;
+    s32* after;
+    s32 check2;
+    s32* anCode;
+    s32 rt;
+    s32 pad;
 
-#ifdef NON_MATCHING
-/**
- * @brief Recompiles a VR4300 load/store instruction on COP1 or doubleword load/store.
- * 
- * @param cpu The emulated VR4300.
- * @param arg1 
- * @param addr The address of the Load/Store instruction.
- * @param ret A pointer to the location where recompiled code should be stored.
- * @return void* The location where the dynarec block should continue executing.
- */
-void *cpuExecuteLoadStoreF(cpu_class_t *cpu, u32 arg1, u32 addr, u32 *ret) {
-    u32 tmp3;
-    u32 tmp1;
-    s32 inst_search = 0x90C30000 + ((u32)&cpu->unk_0x24 - (u32)cpu);
-    u32 *tmp2;
-    u32 *puVar2;
-    u32 *ret_p;
-    s32 pos;
-    u32 ea;
-    u8 dev_idx;
-    u32 *buf;
-    u32 rt;
-    u32 base;
-    s32 ft;
+    count = 0;
+    save = 0;
+    interpret = 0;
+    check2 = 0x90C30000 + OFFSETOF(pCPU, nWaitPC);
 
-    pos = 0;
-    tmp3 = 0;
-    tmp1 = 0;
-    if(!cpuGetAddressBuffer(cpu, (void**)&buf, addr)) {
-        return NULL;
+    if (!cpuGetAddressBuffer(pCPU, (void**)&opcode, nAddressN64)) {
+        return false;
     }
 
-    ea = cpu->gpr[MIPS_RS(*buf)].sw[1] + MIPS_IMM(*buf);
-    dev_idx = cpu->mem_hi_map[ea >> 16];
-    if(cpu->unk_0x12224 & 0x100) {
-        ret_p = &ret[-3];
-        puVar2 = ret + 4;
-        tmp2 = &ret_p[-2];
+    address = pCPU->aGPR[MIPS_RS(*opcode)].s32 + MIPS_IMM_S16(*opcode);
+    device = pCPU->aiDevice[(u32)(address) >> 16];
+
+    if (pCPU->nCompileFlag & 0x100) {
+        anCode = (s32*)nAddressGCN - 3;
+        before = anCode - 2;
+        after = (s32*)nAddressGCN + 4;
     } else {
-        ret_p = &ret[-3];
-        puVar2 = ret + 3;
-        tmp2 = &ret_p[-2];
+        anCode = (s32*)nAddressGCN - 3;
+        before = anCode - 2;
+        after = (s32*)nAddressGCN + 3;
     }
 
-    if((ea >> 0x1C) < 8) {
-        tmp1 = 1;
+    if (((u32)address >> 28) < 0x08) {
+        interpret = 1;
     }
 
-    if(!tmp1 && dev_idx >= 128) {
-        ft = MIPS_FT(*buf);
-        switch(MIPS_OP(*buf)) {
-            case OPC_LWC1:
-                base = reg_map[MIPS_RS(*buf)];
-                if(base & 0x100) {
-                    base = 6;
-                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+    if (!interpret && device >= 0x80) {
+        rt = MIPS_RT(*opcode);
+        switch (MIPS_OP(*opcode)) {
+            case 0x31: // lwc1
+                if ((iRegisterB = ganMapGPR[MIPS_RS(*opcode)]) & 0x100) {
+                    iRegisterB = 6;
+                    anCode[count++] = 0x80C30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RS(*opcode)]) + 4) & 0xFFFF);
                 }
 
-                if(cpu->unk_0x12224 & 0x100 && ((ea >> 0x1C) >= 10)) {
-                    ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                if ((pCPU->nCompileFlag & 0x100) && ((u32)address >> 28) >= 10) {
+                    anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
                 }
 
-                ret_p[pos++] = 0x7CE04214 | (base << 16);
+                anCode[count++] = 0x7C000000 | (7 << 21) | (iRegisterB << 16) | (8 << 11) | 0x214;
 
-                if((ft % 2) == 1) {
-                    ret_p[pos++] = 0x80A70000 | (*buf & 0xFFFF);
-                    ret_p[pos++] = 0x90A30000 + ((u32)&cpu->fpr[ft - 1] - (u32)cpu);
+                if (rt % 2 == 1) {
+                    anCode[count++] = 0x80A70000 | MIPS_IMM_U16(*opcode);
+                    anCode[count++] = 0x90A30000 + OFFSETOF(pCPU, aFPR[rt - 1]);
                 } else {
-                    ret_p[pos++] = 0x80A70000 | (*buf & 0xFFFF);
-                    ret_p[pos++] = 0x90A30000 + ((u32)&cpu->fpr[ft] - (u32)cpu + 4);
+                    anCode[count++] = 0x80A70000 | MIPS_IMM_U16(*opcode);
+                    anCode[count++] = 0x90A30000 + (OFFSETOF(pCPU, aFPR[rt]) + 4);
                 }
                 break;
-            case OPC_SWC1:
-                base = reg_map[MIPS_RS(*buf)];
-                if(base & 0x100) {
-                    base = 6;
-                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+            case 0x39: // swc1
+                if ((iRegisterB = ganMapGPR[MIPS_RS(*opcode)]) & 0x100) {
+                    iRegisterB = 6;
+                    anCode[count++] = 0x80C30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RS(*opcode)]) + 4) & 0xFFFF);
                 }
 
-                if(cpu->unk_0x12224 & 0x100 && ((ea >> 0x1C) >= 10)) {
-                    ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                if ((pCPU->nCompileFlag & 0x100) && ((u32)address >> 28) >= 10) {
+                    anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
                 }
 
-                ret_p[pos++] = 0x7CE04214 | (base << 16);
-                if((ft % 2) == 1){  
-                    ret_p[pos++] = 0x80A30000 + ((u32)&cpu->fpr[ft - 1] - (u32)cpu);
+                anCode[count++] = 0x7C000000 | (7 << 21) | (iRegisterB << 16) | (8 << 11) | 0x214;
+                if (rt % 2 == 1) {
+                    anCode[count++] = 0x80A30000 + OFFSETOF(pCPU, aFPR[rt - 1]);
                 } else {
-                    ret_p[pos++] = 0x80A30000 + ((u32)&cpu->fpr[ft] - (u32)cpu + 4);
+                    anCode[count++] = 0x80A30000 + OFFSETOF(pCPU, aFPR[rt]) + 4;
                 }
-
-                ret_p[pos++] = 0x90A70000 | (*buf & 0xFFFF);
+                anCode[count++] = 0x90A70000 | MIPS_IMM_U16(*opcode);
                 break;
-            case OPC_LDC1:
-                base = reg_map[MIPS_RS(*buf)];
-                if(base & 0x100) {
-                    base = 6;
-                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+            case 0x35: // ldc1
+                if ((iRegisterB = ganMapGPR[MIPS_RS(*opcode)]) & 0x100) {
+                    iRegisterB = 6;
+                    anCode[count++] = 0x80C30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RS(*opcode)]) + 4) & 0xFFFF);
                 }
 
-                if(cpu->unk_0x12224 & 0x100 && ((ea >> 0x1C) >= 10)) {
-                    ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                if ((pCPU->nCompileFlag & 0x100) && ((u32)address >> 28) >= 10) {
+                    anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
                 }
 
-                ret_p[pos++] = 0x7CE04214 | (base << 16);
-                ret_p[pos++] = 0x80A70000 | (*buf & 0xFFFF);
-                ret_p[pos++] = 0x90A30000 + ((u32)&cpu->fpr[ft] - (u32)cpu);
-                ret_p[pos++] = 0x80A70000 | ((*buf & 0xFFFF) + 4);
-                ret_p[pos++] = 0x90A30000 + ((u32)&cpu->fpr[ft] - (u32)cpu + 4);
+                anCode[count++] = 0x7C000000 | (7 << 21) | (iRegisterB << 16) | (8 << 11) | 0x214;
+                anCode[count++] = 0x80A70000 | MIPS_IMM_U16(*opcode);
+                anCode[count++] = 0x90A30000 + OFFSETOF(pCPU, aFPR[rt]);
+                anCode[count++] = 0x80A70000 | (MIPS_IMM_U16(*opcode) + 4);
+                anCode[count++] = 0x90A30000 + (OFFSETOF(pCPU, aFPR[rt]) + 4);
                 break;
-            case OPC_SDC1:
-                base = reg_map[MIPS_RS(*buf)];
-                if(base & 0x100) {
-                    base = 6;
-                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+            case 0x3D: // sdc1
+                if ((iRegisterB = ganMapGPR[MIPS_RS(*opcode)]) & 0x100) {
+                    iRegisterB = 6;
+                    anCode[count++] = 0x80C30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RS(*opcode)]) + 4) & 0xFFFF);
                 }
 
-                if(cpu->unk_0x12224 & 0x100 && ((ea >> 0x1C) >= 10)) {
-                    ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
+                if ((pCPU->nCompileFlag & 0x100) && ((u32)address >> 28) >= 10) {
+                    anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
                 }
 
-                ret_p[pos++] = 0x7CE04214 | (base << 16);
-                ret_p[pos++] = 0x80A30000 + ((u32)&cpu->fpr[ft] - (u32)cpu);
-                ret_p[pos++] = 0x90A70000 | (*buf & 0xFFFF);
-                ret_p[pos++] = 0x80A30000 + ((u32)&cpu->fpr[ft] - (u32)cpu + 4);
-                ret_p[pos++] = 0x90A70000 | ((*buf & 0xFFFF) + 4);
+                anCode[count++] = 0x7C000000 | (7 << 21) | (iRegisterB << 16) | (8 << 11) | 0x214;
+                anCode[count++] = 0x80A30000 + OFFSETOF(pCPU, aFPR[rt]);
+                anCode[count++] = 0x90A70000 | MIPS_IMM_U16(*opcode);
+                anCode[count++] = 0x80A30000 + (OFFSETOF(pCPU, aFPR[rt]) + 4);
+                anCode[count++] = 0x90A70000 | (MIPS_IMM_U16(*opcode) + 4);
                 break;
-            case OPC_LD:
-                rt = reg_map[MIPS_RT(*buf)];
-                if(rt & 0x100) {
-                    rt = 5;
+            case 0x37: // ld
+                if ((iRegisterA = ganMapGPR[MIPS_RT(*opcode)]) & 0x100) {
+                    iRegisterA = 5;
+                }
+                if ((iRegisterB = ganMapGPR[MIPS_RS(*opcode)]) & 0x100) {
+                    iRegisterB = 6;
+                    anCode[count++] = 0x80C30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RS(*opcode)]) + 4) & 0xFFFF);
                 }
 
-                base = reg_map[MIPS_RS(*buf)];
-                if(base & 0x100) {
-                    base = 6;
-                    ret_p[pos++] = 0x80C30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
-                }
-
-                if(cpu->unk_0x12224 & 0x100) {
-                    if(cpu->unk_0x12224 & 0x1000) {
-                        ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                    } else {
-                        if((ea >> 0x1C) >= 10) {
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                        }
+                if (pCPU->nCompileFlag & 0x100) {
+                    if (pCPU->nCompileFlag & 0x1000) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
+                    } else if (((u32)address >> 28) >= 10) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
                     }
                 }
 
-                ret_p[pos++] = 0x7CE04214 | (base << 16);
-                ret_p[pos++] = 0x80A70000 | (*buf & 0xFFFF);
-                ret_p[pos++] = 0x90A30000  + ((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu);
-                ret_p[pos++] = 0x80070000 | (rt << 21) | ((*buf & 0xFFFF) + 4);
-                ret_p[pos++] = (0x90030000 | (rt << 21)) + ((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
+                anCode[count++] = 0x7C000000 | (7 << 21) | (iRegisterB << 16) | (8 << 11) | 0x214;
+                anCode[count++] = 0x80A70000 | MIPS_IMM_U16(*opcode);
+                anCode[count++] = 0x90A30000 + OFFSETOF(pCPU, aGPR[MIPS_RT(*opcode)]);
+                anCode[count++] = 0x80070000 | (iRegisterA << 21) | (MIPS_IMM_U16(*opcode) + 4);
+                anCode[count++] = (0x90030000 | (iRegisterA << 21)) + (OFFSETOF(pCPU, aGPR[MIPS_RT(*opcode)]) + 4);
                 break;
-            case OPC_SD:
-                base = reg_map[MIPS_RS(*buf)];
-                if(base & 0x100) {
-                    base = 7;
-                    ret_p[pos++] = 0x80E30000 + (u16)((u32)&cpu->gpr[MIPS_RS(*buf)] - (u32)cpu + 4);
+            case 0x3F: // sd
+                if ((iRegisterB = ganMapGPR[MIPS_RS(*opcode)]) & 0x100) {
+                    iRegisterB = 7;
+                    anCode[count++] = 0x80E30000 + ((OFFSETOF(pCPU, aGPR[MIPS_RS(*opcode)]) + 4) & 0xFFFF);
                 }
 
-                if(cpu->unk_0x12224 & 0x100) {
-                    if(cpu->unk_0x12224 & 0x1000) {
-                        ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                    } else {
-                        if((ea >> 0x1C) >= 10) {
-                            ret_p[pos++] = 0x7C000038 | (base << 21) | (base << 16) | 0x4800;
-                        }
+                if (pCPU->nCompileFlag & 0x100) {
+                    if (pCPU->nCompileFlag & 0x1000) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
+                    } else if (((u32)address >> 28) >= 10) {
+                        anCode[count++] = 0x7C000038 | (iRegisterB << 21) | (iRegisterB << 16) | (9 << 11);
                     }
                 }
 
-                ret_p[pos++] = 0x7CE04214 | (base << 16);
-                ret_p[pos++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu);
-                ret_p[pos++] = 0x90C70000 | (*buf & 0xFFFF);
-                rt = reg_map[MIPS_RT(*buf)];
-                if(rt & 0x100) {
-                    rt = 6;
-                    ret_p[pos++] = 0x80C30000 + ((u32)&cpu->gpr[MIPS_RT(*buf)] - (u32)cpu + 4);
-                }
+                anCode[count++] = 0x7C000000 | (7 << 21) | (iRegisterB << 16) | (8 << 11) | 0x214;
+                anCode[count++] = 0x80C30000 + OFFSETOF(pCPU, aGPR[MIPS_RT(*opcode)]);
+                anCode[count++] = 0x90C70000 | MIPS_IMM_U16(*opcode);
 
-                ret_p[pos++] = 0x90070000 | (rt << 21) | ((*buf & 0xFFFF) + 4);
+                if ((iRegisterA = ganMapGPR[MIPS_RT(*opcode)]) & 0x100) {
+                    iRegisterA = 6;
+                    anCode[count++] = 0x80C30000 + (OFFSETOF(pCPU, aGPR[MIPS_RT(*opcode)]) + 4);
+                }
+                anCode[count++] = 0x90070000 | (iRegisterA << 21) | (MIPS_IMM_U16(*opcode) + 4);
                 break;
             default:
-                invalidInst();
+                xlExit();
                 break;
         }
     } else {
-        tmp1 = 1;
-        ret_p[pos++] = 0x3CA00000 | (addr >> 0x10);
-        ret_p[pos++] = 0x60A50000 | (addr & 0xFFFF);
-        ret_p[pos++] = 0x48000001 | (((u32)cpu->execute_opcode - (u32)&ret_p[pos]) & 0x3FFFFFC);
+        interpret = 1;
+        anCode[count++] = 0x3CA00000 | ((u32)nAddressN64 >> 16);
+        anCode[count++] = 0x60A50000 | ((u32)nAddressN64 & 0xFFFF);
+        anCode[count++] = 0x48000000 | (((u32)pCPU->pfStep - (u32)&anCode[count]) & 0x03FFFFFC) | 1;
     }
 
-    if(cpu->unk_0x12224 & 0x100) {
-        if((7 - pos) >= 2) {
-            tmp3 = pos;
-            ret_p[pos++] = 0x48000000 | (u16)((u32)&ret_p[7] - (u32)&ret_p[pos]);
+    if (pCPU->nCompileFlag & 0x100) {
+        if (7 - count >= 2) {
+            save = count;
+            anCode[count++] = 0x48000000 | (((u32)&anCode[7] - (u32)&anCode[count]) & 0xFFFF);
         }
-
-        while(pos <= 6) {
-            ret_p[pos++] = 0x60000000;
+        while (count <= 6) {
+            anCode[count++] = 0x60000000;
         }
-
-        pos = 7;
+        total = 7;
     } else {
-        if((6 - pos) >= 2) {
-            tmp3 = pos;
-            ret_p[pos++] = 0x48000000 | (u16)((u32)&ret_p[6] - (u32)&ret_p[pos]);
+        if (6 - count >= 2) {
+            save = count;
+            anCode[count++] = 0x48000000 | (((u32)&anCode[6] - (u32)&anCode[count]) & 0xFFFF);
         }
-
-        while(pos <= 5) {
-            ret_p[pos++] = 0x60000000;
+        while (count <= 5) {
+            anCode[count++] = 0x60000000;
         }
-
-        pos = 6;
+        total = 6;
     }
 
-    if(!tmp1 && tmp2[0] == 0x38C00000 && (s32)tmp2[1] == inst_search) {
-        s32 pos2 = 0;
-        tmp2[pos2++] = 0x48000000 | (u16)((u32)&tmp2[2] - (u32)tmp2);
-        tmp2[pos2++] = 0x60000000;
-        DCStoreRange(tmp2, pos2 * sizeof(*tmp2));
-        ICInvalidateRange(tmp2, pos2 * sizeof(*tmp2));
-        if(tmp3 != 0) {
-            ret_p[tmp3] = 0x48000000 | (u16)((u32)&puVar2[2] - (u32)&ret_p[tmp3]);
-        }
+    if (!interpret && before[0] == 0x38C00000 && before[1] == check2) {
+        before[0] = 0x48000000 | (((u32)&before[2] - (u32)&before[0]) & 0xFFFF);
+        before[1] = 0x60000000;
+        DCStoreRange(before, 8);
+        ICInvalidateRange(before, 8);
 
-        puVar2[0] = 0x60000000;
-        puVar2[1] = 0x60000000;
-        cpu->unk_0x24 = -1;
-        pos += 2;
+        if (save != 0) {
+            anCode[save] = 0x48000000 | (((u32)&after[2] - (u32)&anCode[save]) & 0xFFFF);
+        }
+        after[0] = 0x60000000;
+        after[1] = 0x60000000;
+
+        total += 2;
+        pCPU->nWaitPC = -1;
     }
 
-    DCStoreRange(ret_p, pos * sizeof(*ret_p));
-    ICInvalidateRange(ret_p, pos * sizeof(*ret_p));
-
-    return ret_p;
+    DCStoreRange(anCode, total * 4);
+    ICInvalidateRange(anCode, total * 4);
+    return (s32)anCode;
 }
-#else
-void *cpuExecuteLoadStoreF(cpu_class_t *cpu, u32 arg1, u32 addr, u32 *ret);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecuteLoadStoreF.s")
-#endif
-#undef NON_MATCHING
 
-class_t gClassCPU = {
-    cpu_class_name,
-    sizeof(cpu_class_t),
-    0,
-    cpuEvent
-};
+static bool cpuMakeLink(Cpu* pCPU, CpuExecuteFunc* ppfLink, CpuExecuteFunc pfFunction) {
+    s32 iGPR;
+    s32* pnCode;
+    s32 nData;
+    s32 pad;
 
-/**
- * @brief Generates a call to a virtual-console function from within the dynarec envrionment
- * Dedicated PPC registers are saved to the cpu object, and restored once the virtual-console function has finished.
- * Jump to the return value of the virtual-console function
- * @param cpu The emulated VR4300.
- * @param link_code A pointer to store the gneerated PPC code.
- * @param handler The virtual-console function to call.
- * @return s32 1 on success, 0 otherwise.
- */
-s32 cpuMakeLink(cpu_class_t *cpu, u32 **link_code, void *handler) {
-    u32 *code;
-    s32 i;
-    u32 paddr;
-    s32 cnt = sizeof(reg_map) / sizeof(*reg_map);
-    
-    if(!xlHeapTake((void**)&code, 0x30000200)) {
-        return 0;
+    if (!xlHeapTake((void**)&pnCode, 0x200 | 0x30000000)) {
+        return false;
     }
+    *ppfLink = (CpuExecuteFunc)pnCode;
 
-    *link_code = code;
+    *pnCode++ = 0x7CC802A6;
 
-    // mflr r6
-    *code++ = 0x7CC802A6;
-
-    for(i = 1; i < 32; i++) {
-        if(!(reg_map[i] & 0x100)) {
-            // stw rx, off(r3)
-            *code++ = (((u32)&cpu->gpr[i] - (u32)cpu) + 4) | (reg_map[i] << 0x15) | 0x90030000;
+    for (iGPR = 1; iGPR < 32; iGPR++) {
+        if (!(ganMapGPR[iGPR] & 0x100)) {
+            nData = OFFSETOF(pCPU, aGPR[iGPR]) + 4;
+            *pnCode++ = 0x90030000 | (ganMapGPR[iGPR] << 21) | nData; // lwz ri,(aGPR[i] + 4)(r3)
         }
     }
 
-    /**
-     * bl handler
-     * mtlr r3
-     * lis r3, hi(cpu)
-     * ori r3, lo(cpu)
-     * lwz r4, cpu->call_cntz
-     */
-    *code++ = (((u32)handler - (u32)code) & 0x3FFFFFC) | 0x48000001;
-    *code++ = 0x7C6803A6;
-    *code++ = ((u32)cpu >> 0x10) | 0x3C600000;
-    *code++ = ((u32)cpu & 0xFFFF) | 0x60630000;
-    *code++ = (((s32)&cpu->call_cnt - (s32)cpu)) + 0x80830000;
+    *pnCode++ = 0x48000000 | (((u8*)pfFunction - (u8*)pnCode) & 0x03FFFFFC) | 1; // bl pfFunction
+    *pnCode++ = 0x7C6803A6; // mtlr r3
+    *pnCode++ = 0x3C600000 | ((u32)pCPU >> 16); // lis r3,pCPU@h
+    *pnCode++ = 0x60630000 | ((u32)pCPU & 0xFFFF); // ori r3,r3,pCPU@l
+    *pnCode++ = 0x80830000 + OFFSETOF(pCPU, survivalTimer); // lwz r4,survivalTimer(r3)
 
-    paddr = (u32)gSystem->ram->dram - 0x80000000;
-
-    // lui r8, hi(dram)
-    *code++ = (paddr >> 0x10) | 0x3D000000;
-    if(cpu->unk_0x12224 & 0x100) {
-        /**
-         * lis r9, 0xDFFF
-         * ori r8, r8, lo(dram)
-         * ori r9, r9, 0xFFFF
-         */
-        *code++ = 0x3D20DFFF;
-        *code++ = (paddr & 0xFFFF) | 0x61080000;
-        *code++ = 0x6129FFFF;
-    } else if(cpu->unk_0x12224 & 1) {
-        /**
-         * addi r9, r3, 0xF60
-         * ori r8, r8, lo(dram)
-         */
-        *code++ = (((u32)cpu->mem_hi_map - (u32)cpu)) + 0x39230000;                                   
-        *code++ = (paddr & 0xFFFF) | 0x61080000;
+    nData = (u32)(SYSTEM_RAM(gpSystem)->pBuffer) - 0x80000000;
+    *pnCode++ = 0x3D000000 | ((u32)nData >> 16); // lis r8,ramOffset@h
+    if (pCPU->nCompileFlag & 0x100) {
+        *pnCode++ = 0x3D20DFFF; // lis r9,0xDFFF
+        *pnCode++ = 0x61080000 | ((u32)nData & 0xFFFF); // ori r8,r8,ramOffset@l
+        *pnCode++ = 0x6129FFFF; // ori r9,r9,0xFFFF
+    } else if (pCPU->nCompileFlag & 1) {
+        *pnCode++ = 0x39230000 + OFFSETOF(pCPU, aiDevice); // addi r9,r3,aiDevice
+        *pnCode++ = 0x61080000 | ((u32)nData & 0xFFFF); // ori r8,r8,ramOffset@l
     }
 
-
-    // li r10, 0
-    *code++ = (reg_map[0] << 0x15) | 0x38000000;
-
-    for(i = 1; i < 32; i++) {
-        if(!(reg_map[i] & 0x100)) {
-            // lwz rx, off(r3)
-            *code++ = (((u32)&cpu->gpr[i] - (u32)cpu) + 4) | (reg_map[i] << 0x15) | 0x80030000;
+    *pnCode++ = 0x38000000 | (ganMapGPR[0] << 21); // li r0,0
+    for (iGPR = 1; iGPR < 32; iGPR++) {
+        if (!(ganMapGPR[iGPR] & 0x100)) {
+            nData = OFFSETOF(pCPU, aGPR[iGPR]) + 4;
+            *pnCode++ = 0x80030000 | (ganMapGPR[iGPR] << 21) | nData; // stw ri,(aGPR[i] + 4)(r3)
         }
     }
 
-    // blr
-    *code++ = 0x4E800020;
+    *pnCode++ = 0x4E800020; // blr
 
-    DCStoreRange(*link_code, 0x200);
-    ICInvalidateRange(*link_code, 0x200);
-
-    return 1;
+    DCStoreRange(*ppfLink, 0x200);
+    ICInvalidateRange(*ppfLink, 0x200);
+    return true;
 }
 
-#ifdef NON_MATCHING
-extern void (*lbl_8025CFE8)(u32);
-
-inline s32 __free(void **ptr) {
-    void ***tmp = &ptr;
-    if(!xlHeapFree((void**)tmp)) {
-        return 0;
+static inline bool cpuFreeLink(Cpu* pCPU, CpuExecuteFunc* ppfLink) {
+    if (!xlHeapFree((void**)&ppfLink)) {
+        return false;
+    } else {
+        *ppfLink = NULL;
+        return true;
     }
-
-    **tmp = NULL;
-    return 1;
 }
 
-inline s32 cpuCompile_DADD(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
+bool cpuExecute(Cpu* pCPU, u64 nAddressBreak) {
+    s32 pad1;
+    s32 iGPR;
+    s32* pnCode;
+    s32 nData;
+    s32 pad2;
+    CpuFunction* pFunction;
+    void (*pfCode)(void);
 
-    if(!xlHeapTake((void**)&buf, 0x3000000C)) {
-        return 0;
+    if (pCPU->nCompileFlag & 0x1000) {
+        pCPU->nCompileFlag |= 0x100;
     }
 
-    *code = buf;
-    buf[0] = 0x7CA53814; // addc r5, r5, r7
-    buf[1] = 0x7CC64114; // adde r6, r6, r8
-    buf[2] = 0x4E800020; // blr
-    DCStoreRange(buf, 12);
-    ICInvalidateRange(buf, 12);
-
-    return 1;
-}
-
-inline s32 cpuCompile_DADDU(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x3000000C)) {
-        return 0;
+    if (!cpuMakeLink(pCPU, &pCPU->pfStep, &cpuExecuteOpcode)) {
+        return false;
+    }
+    if (!cpuMakeLink(pCPU, &pCPU->pfJump, &cpuExecuteJump)) {
+        return false;
+    }
+    if (!cpuMakeLink(pCPU, &pCPU->pfCall, &cpuExecuteCall)) {
+        return false;
+    }
+    if (!cpuMakeLink(pCPU, &pCPU->pfIdle, &cpuExecuteIdle)) {
+        return false;
+    }
+    if (!cpuMakeLink(pCPU, &pCPU->pfRam, &cpuExecuteLoadStore)) {
+        return false;
+    }
+    if (!cpuMakeLink(pCPU, &pCPU->pfRamF, &cpuExecuteLoadStoreF)) {
+        return false;
     }
 
-    *code = buf;
-    buf[0] = 0x7CA53814; // addc r5, r5, r7
-    buf[1] = 0x7CC64114; // adde r6, r6, r8
-    buf[2] = 0x4E800020; // blr
-    DCStoreRange(buf, 12);
-    ICInvalidateRange(buf, 12);
+    cpuCompile_DSLLV(pCPU, &cpuCompile_DSLLV_function);
+    cpuCompile_DSRLV(pCPU, &cpuCompile_DSRLV_function);
+    cpuCompile_DSRAV(pCPU, &cpuCompile_DSRAV_function);
+    cpuCompile_DMULT(pCPU, &cpuCompile_DMULT_function);
+    cpuCompile_DMULTU(pCPU, &cpuCompile_DMULTU_function);
+    cpuCompile_DDIV(pCPU, &cpuCompile_DDIV_function);
+    cpuCompile_DDIVU(pCPU, &cpuCompile_DDIVU_function);
+    cpuCompile_DADD(pCPU, &cpuCompile_DADD_function);
+    cpuCompile_DADDU(pCPU, &cpuCompile_DADDU_function);
+    cpuCompile_DSUB(pCPU, &cpuCompile_DSUB_function);
+    cpuCompile_DSUBU(pCPU, &cpuCompile_DSUBU_function);
+    cpuCompile_S_SQRT(pCPU, &cpuCompile_S_SQRT_function);
+    cpuCompile_D_SQRT(pCPU, &cpuCompile_D_SQRT_function);
+    cpuCompile_W_CVT_SD(pCPU, &cpuCompile_W_CVT_SD_function);
+    cpuCompile_L_CVT_SD(pCPU, &cpuCompile_L_CVT_SD_function);
+    cpuCompile_CEIL_W(pCPU, &cpuCompile_CEIL_W_function);
+    cpuCompile_FLOOR_W(pCPU, &cpuCompile_FLOOR_W_function);
+    cpuCompile_ROUND_W(&cpuCompile_ROUND_W_function);
+    cpuCompile_TRUNC_W(&cpuCompile_TRUNC_W_function);
+    cpuCompile_LB(pCPU, &cpuCompile_LB_function);
+    cpuCompile_LH(pCPU, &cpuCompile_LH_function);
+    cpuCompile_LW(pCPU, &cpuCompile_LW_function);
+    cpuCompile_LBU(pCPU, &cpuCompile_LBU_function);
+    cpuCompile_LHU(pCPU, &cpuCompile_LHU_function);
+    cpuCompile_SB(pCPU, &cpuCompile_SB_function);
+    cpuCompile_SH(pCPU, &cpuCompile_SH_function);
+    cpuCompile_SW(pCPU, &cpuCompile_SW_function);
+    cpuCompile_LDC(pCPU, &cpuCompile_LDC_function);
+    cpuCompile_SDC(pCPU, &cpuCompile_SDC_function);
+    cpuCompile_LWL(pCPU, &cpuCompile_LWL_function);
+    cpuCompile_LWR(pCPU, &cpuCompile_LWR_function);
 
-    return 1;
-}
-
-inline s32 cpuCompile_DSUB(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x3000000C)) {
-        return 0;
-    }
-
-    *code = buf;
-    buf[0] = 0x7CA53814; // addc r5, r5, r7
-    buf[1] = 0x7CC64114; // adde r6, r6, r8
-    buf[2] = 0x4E800020; // blr
-    DCStoreRange(buf, 12);
-    ICInvalidateRange(buf, 12);
-
-    return 1;
-}
-
-inline s32 cpuCompile_DSUBU(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x3000000C)) {
-        return 0;
-    }
-
-    *code = buf;
-    buf[0] = 0x7CA53814; // addc r5, r5, r7
-    buf[1] = 0x7CC64114; // adde r6, r6, r8
-    buf[2] = 0x4E800020; // blr
-    DCStoreRange(buf, 12);
-    ICInvalidateRange(buf, 12);
-
-    return 1;
-}
-
-inline s32 cpuCompile_ROUND_W(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x3000000C)) {
-        return 0;
-    }
-
-    *code = buf;
-    buf[0] = 0xFC00081C; // addc r5, r5, r7
-    buf[1] = 0x7C051FAE; // adde r6, r6, r8
-    buf[2] = 0x4E800020; // blr
-    DCStoreRange(buf, 12);
-    ICInvalidateRange(buf, 12);
-
-    return 1;
-}
-
-inline s32 cpuCompile_TRUNC_W(cpu_class_t *cpu, u32 **code) {
-    u32 *buf;
-
-    if(!xlHeapTake((void**)&buf, 0x3000000C)) {
-        return 0;
-    }
-
-    *code = buf;
-    buf[0] = 0xFC00081C; // addc r5, r5, r7
-    buf[1] = 0x7C051FAE; // adde r6, r6, r8
-    buf[2] = 0x4E800020; // blr
-    DCStoreRange(buf, 12);
-    ICInvalidateRange(buf, 12);
-
-    return 1;
-}
-
-/**
- * @brief Begins execution of the emulated VR4300
- * 
- * @param cpu The emulated VR4300
- * @return s32 1 on success, 0 otherwise.
- */
-s32 cpuExecute(cpu_class_t *cpu) {
-    u32 *dadd_buf;
-    u32 *daddu_buf;
-    u32 *dsub_buf;
-    u32 *dsubu_buf;
-    u32 *round_w_buf;
-    u32 *trunc_w_buf;
-    u32 *entry_buf;
-    u32 *entry_p;
-    s32 entry_pos;
-    recomp_node_t *entry_node;
-    u32 ram;
-    s32 i;
-
-    if(cpu->unk_0x12224 & 0x1000) {
-        cpu->unk_0x12224 |= 0x100;
-    }
-
-    if(!cpuMakeLink(cpu, (u32**)&cpu->execute_opcode, cpuExecuteOpcode)) {
-        return 0;
-    }
-
-    if(!cpuMakeLink(cpu, (u32**)&cpu->execute_jump, cpuExecuteJump)) {
-        return 0;
-    }
-
-    if(!cpuMakeLink(cpu, (u32**)&cpu->execute_call, cpuExecuteCall)) {
-        return 0;
-    }
-
-    if(!cpuMakeLink(cpu, (u32**)&cpu->execute_idle, cpuExecuteIdle)) {
-        return 0;
-    }
-
-    if(!cpuMakeLink(cpu, (u32**)&cpu->execute_loadstore, cpuExecuteLoadStore)) {
-        return 0;
-    }
-
-    if(!cpuMakeLink(cpu, (u32**)&cpu->execute_loadstoref, cpuExecuteLoadStoreF)) {
-        return 0;
-    }
-
-    cpuCompile_DSLLV(cpu, &cpuCompile_DSLLV_function);
-    cpuCompile_DSRLV(cpu, &cpuCompile_DSRLV_function);
-    cpuCompile_DSRAV(cpu, &cpuCompile_DSRAV_function);
-    cpuCompile_DMULT(cpu, &cpuCompile_DMULT_function);
-    cpuCompile_DMULTU(cpu, &cpuCompile_DMULTU_function);
-    cpuCompile_DDIV(cpu, &cpuCompile_DDIV_function);
-    cpuCompile_DDIVU(cpu, &cpuCompile_DDIVU_function);
-
-    // inlined
-    cpuCompile_DADD(cpu, &cpuCompile_DADD_function);
-    cpuCompile_DADDU(cpu, &cpuCompile_DADDU_function);
-    cpuCompile_DADDU(cpu, &cpuCompile_DSUB_function);
-    cpuCompile_DADDU(cpu, &cpuCompile_DSUBU_function);
-
-    cpuCompile_S_SQRT(cpu, &cpuCompile_S_SQRT_function);
-    cpuCompile_D_SQRT(cpu, &cpuCompile_D_SQRT_function);
-    cpuCompile_W_CVT_SD(cpu, &cpuCompile_W_CVT_SD_function);
-    cpuCompile_L_CVT_SD(cpu, &cpuCompile_L_CVT_SD_function);
-    cpuCompile_CEIL_W(cpu, &cpuCompile_CEIL_W_function);
-    cpuCompile_FLOOR_W(cpu, &cpuCompile_FLOOR_W_function);
-
-    // inlined
-    cpuCompile_ROUND_W(cpu, &cpuCompile_ROUND_W_function);
-    cpuCompile_TRUNC_W(cpu, &cpuCompile_TRUNC_W_function);
-
-    cpuCompile_LB(cpu, &cpuCompile_LB_function);
-    cpuCompile_LH(cpu, &cpuCompile_LH_function);
-    cpuCompile_LW(cpu, &cpuCompile_LW_function);
-    cpuCompile_LBU(cpu, &cpuCompile_LBU_function);
-    cpuCompile_LHU(cpu, &cpuCompile_LHU_function);
-    cpuCompile_SB(cpu, &cpuCompile_SB_function);
-    cpuCompile_SH(cpu, &cpuCompile_SH_function);
-    cpuCompile_SW(cpu, &cpuCompile_SW_function);
-    cpuCompile_LDC(cpu, &cpuCompile_LDC_function);
-    cpuCompile_SDC(cpu, &cpuCompile_SDC_function);
-    cpuCompile_LWL(cpu, &cpuCompile_LWL_function);
-    cpuCompile_LWR(cpu, &cpuCompile_LWR_function);
-
-    if(cpuMakeFunction(cpu, &entry_node, cpu->pc)) {
-        if(!xlHeapTake((void**)&entry_buf, 0x30000100)) {
-            return 0;
+    if (cpuMakeFunction(pCPU, &pFunction, pCPU->nPC)) {
+        if (!xlHeapTake((void**)&pnCode, 0x100 | 0x30000000)) {
+            return false;
         }
 
-        entry_pos = 0;
-        entry_p = entry_buf;
-        *entry_p++ = 0x3c600000 | ((u32)cpu >> 16);
-        *entry_p++ = 0x60630000 | ((u32)cpu & 0xFFFFF);
-        *entry_p++ = 0x80830000 | ((u32)&cpu->call_cnt - (u32)cpu);
-        ram = (u32)gSystem->ram->dram - 0x80000000;
-        *entry_p++ = 0x3d000000 | (ram >> 16);
-        *entry_p++ = 0x61080000 | (ram & 0xFFFF);
-        if(cpu->unk_0x12224 & 0x100) {
-            *entry_p++ = 0x3D20DFFF;
-            *entry_p++ = 0x6129FFFF;
-        } else {
-            if(cpu->unk_0x12224 & 1) {
-                *entry_p++ = 0x39230000 | ((u32)cpu->mem_hi_map - (u32)cpu);
+        pfCode = (void (*)(void))pnCode;
+
+        *pnCode++ = 0x3C600000 | ((u32)pCPU >> 0x10); // lis r3,pCPU@h
+        *pnCode++ = 0x60630000 | ((u32)pCPU & 0xFFFF); // ori r3,r3,pCPU@l
+
+        *pnCode++ = 0x80830000 + OFFSETOF(pCPU, survivalTimer); // lwz r4,survivalTimer(r3)
+
+        nData = (u32)(SYSTEM_RAM(gpSystem)->pBuffer) - 0x80000000;
+        *pnCode++ = 0x3D000000 | ((u32)nData >> 16); // lis r8,ramOffset@h
+        *pnCode++ = 0x61080000 | ((u32)nData & 0xFFFF); // ori r8,r8,ramOffset@l
+
+        if (pCPU->nCompileFlag & 0x100) {
+            *pnCode++ = 0x3D20DFFF; // lis r9,0xDFFF
+            *pnCode++ = 0x6129FFFF; // ori r9,r9,0xFFFF
+        } else if (pCPU->nCompileFlag & 1) {
+            *pnCode++ = 0x39230000 + OFFSETOF(pCPU, aiDevice); // addi r9,r3,aiDevice
+        }
+
+        for (iGPR = 0; iGPR < ARRAY_COUNT(ganMapGPR); iGPR++) {
+            if (!(ganMapGPR[iGPR] & 0x100)) {
+                nData = OFFSETOF(pCPU, aGPR[iGPR]) + 4;
+                *pnCode++ = 0x80030000 | (ganMapGPR[iGPR] << 21) | nData; // lwz ri,(aGPR[i] + 4)(r3)
             }
         }
 
-        for(i = 0; i < sizeof(reg_map) / sizeof(*reg_map); i++) {
-            if(!(reg_map[i] & 0x100)) {
-                *entry_p++ = 0x80030000 | ((u32)&cpu->gpr[i] - (u32)cpu + 4) | (reg_map[i] << 0x15);
-            }
-        }
-        *entry_p++ = 0x48000000 | (((u32)entry_node->recompiled_func - (u32)entry_p) & 0x3FFFFFC);
-        DCStoreRange(entry_buf, 0x100);
-        ICInvalidateRange(entry_buf, 0x100);
-        cpu->unk_0x40 = 0;
-        cpu->unk_0x3C = 0;
+        *pnCode++ = 0x48000000 | (((u32)pFunction->pfCode - (u32)pnCode) & 0x03FFFFFC); // b pFunction->pfCode
+
+        DCStoreRange(pfCode, 0x100);
+        ICInvalidateRange(pfCode, 0x100);
+
+        pCPU->nRetrace = pCPU->nRetraceUsed = 0;
+
         VIWaitForRetrace();
-        lbl_8025CFE8 = VISetPostRetraceCallback(func_80032B74);
-        ((void(*)())entry_buf)(); // Does not return normally.
-        if(!xlHeapFree((void**)&entry_buf)) {
-            return 0;
+        __cpuRetraceCallback = VISetPostRetraceCallback(&cpuRetraceCallback);
+
+        pfCode();
+
+        if (!xlHeapFree((void**)&pfCode)) {
+            return false;
         }
 
-        if(!__free((void**)&cpu->execute_idle)) {
-            return 0;
+        if (!cpuFreeLink(pCPU, &pCPU->pfIdle)) {
+            return false;
+        }
+        if (!cpuFreeLink(pCPU, &pCPU->pfCall)) {
+            return false;
+        }
+        if (!cpuFreeLink(pCPU, &pCPU->pfJump)) {
+            return false;
+        }
+        if (!cpuFreeLink(pCPU, &pCPU->pfStep)) {
+            return false;
+        }
+        if (!cpuFreeLink(pCPU, &pCPU->pfRam)) {
+            return false;
+        }
+        if (!cpuFreeLink(pCPU, &pCPU->pfRamF)) {
+            return false;
         }
 
-        if(!__free((void**)&cpu->execute_call)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_DSLLV_function)) {
+            return false;
         }
-
-        if(!__free((void**)&cpu->execute_jump)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_DSRLV_function)) {
+            return false;
         }
-
-        if(!__free((void**)&cpu->execute_opcode)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_DSRAV_function)) {
+            return false;
         }
-
-        if(!__free((void**)&cpu->execute_loadstore)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_DMULT_function)) {
+            return false;
         }
-
-        if(!__free((void**)&cpu->execute_loadstoref)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_DMULTU_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_DSLLV_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_DDIV_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_DSRLV_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_DDIVU_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_DSRAV_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_DADD_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_DMULT_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_DADDU_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_DMULTU_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_DSUB_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_DDIV_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_DSUBU_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_DDIVU_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_S_SQRT_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_DADD_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_D_SQRT_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_DADDU_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_W_CVT_SD_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_DSUB_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_L_CVT_SD_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_DSUBU_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_CEIL_W_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_S_SQRT_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_FLOOR_W_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_D_SQRT_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_TRUNC_W_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_W_CVT_SD_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_ROUND_W_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_L_CVT_SD_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_LB_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_CEIL_W_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_LH_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_FLOOR_W_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_LW_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_TRUNC_W_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_LBU_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_ROUND_W_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_LHU_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_LB_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_SB_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_LH_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_SH_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_LW_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_SW_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_LBU_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_LDC_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_LHU_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_SDC_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_SB_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_LWL_function)) {
+            return false;
         }
-
-        if(!xlHeapFree((void**)&cpuCompile_SH_function)) {
-            return 0;
-        }
-
-        if(!xlHeapFree((void**)&cpuCompile_SW_function)) {
-            return 0;
-        }
-
-        if(!xlHeapFree((void**)&cpuCompile_LDC_function)) {
-            return 0;
-        }
-
-        if(!xlHeapFree((void**)&cpuCompile_SDC_function)) {
-            return 0;
-        }
-
-        if(!xlHeapFree((void**)&cpuCompile_LWL_function)) {
-            return 0;
-        }
-
-        if(!xlHeapFree((void**)&cpuCompile_LWR_function)) {
-            return 0;
+        if (!xlHeapFree((void**)&cpuCompile_LWR_function)) {
+            return false;
         }
     }
 
-    return 1;
+    return true;
 }
-#else
-s32 cpuExecute(cpu_class_t *cpu);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuExecute.s")
-#endif
-#undef NON_MATCHING
 
-/**
- * @brief Maps an object to a cpu device.
- * 
- * @param cpu The emulated VR4300.
- * @param dev The device that will handle requests for this memory space.
- * @param address_start The start of the memory space for which the device will be responsible.
- * @param address_end The end of the memory space for which the device will be responsible.
- * @param create_arg An argument which will be passed back to the device on creation.
- * @return s32 1 on success, 0 otherwise.
- */
-s32 cpuMapObject(cpu_class_t *cpu, void *dev, u32 address_start, u32 address_end, u32 create_arg){
-    u32 size = address_end - address_start + 1;
-    u32 dev_idx;
+bool cpuMapObject(Cpu* pCPU, void* pObject, u32 nAddress0, u32 nAddress1, s32 nType) {
+    u32 nSize;
+    s32 iDevice;
 
-    if(address_start == 0 && address_end == 0xFFFFFFFF) {
-        if(!cpuMakeDevice(cpu, &dev_idx, dev, 0, 0, size, create_arg)) {
-            return 0;
+    nSize = nAddress1 - nAddress0 + 1;
+
+    if (nAddress0 == 0 && nAddress1 == 0xFFFFFFFF) {
+        if (!cpuMakeDevice(pCPU, &iDevice, pObject, 0, 0, nSize, nType)) {
+            return false;
         }
 
-        cpu->mem_dev_idx = dev_idx;
+        pCPU->iDeviceDefault = iDevice;
     } else {
-        if(!cpuMakeDevice(cpu, &dev_idx, dev, address_start | 0x80000000, address_start, size, create_arg)) {
-            return 0;
+        if (!cpuMakeDevice(pCPU, &iDevice, pObject, nAddress0 | 0x80000000, nAddress0, nSize, nType)) {
+            return false;
         }
 
-        if(!cpuMakeDevice(cpu, &dev_idx, dev, address_start | 0xA0000000, address_start, size, create_arg)) {
-            return 0;
+        if (!cpuMakeDevice(pCPU, &iDevice, pObject, nAddress0 | 0xA0000000, nAddress0, nSize, nType)) {
+            return false;
         }
     }
 
-    return 1;
+    return true;
 }
 
-s32 cpuGetBlock(cpu_class_t *cpu, cpu_blk_req_t *req) {
-    u32 dev_addr;
-    cpu_dev_t *dev;
-    s32 i;
-    
-    dev_addr = req->dev_addr;
-    if(dev_addr < 0x4000000) {
-        dev_addr = req->dst_phys_ram;
+bool cpuGetBlock(Cpu* pCPU, CpuBlock* pBlock) {
+    u32 nAddress;
+    CpuDevice* pDevice;
+    s32 iDevice;
+
+    nAddress = pBlock->nAddress0;
+
+    if (nAddress < 0x04000000) {
+        nAddress = pBlock->nAddress1;
     }
-    
-    i = 1;
-    while(cpu->devices[i] != NULL) {
-        dev = cpu->devices[i];
-        if(dev->paddr_start <= dev_addr && dev_addr <= dev->paddr_end) {
-            if(dev->get_blk != NULL) {
-                return dev->get_blk(dev->dev_obj, req);
+
+    for (iDevice = 1; pCPU->apDevice[iDevice] != NULL; iDevice++) {
+        pDevice = pCPU->apDevice[iDevice];
+
+        if (pDevice->nAddressPhysical0 <= nAddress && nAddress <= pDevice->nAddressPhysical1) {
+            if (pDevice->pfGetBlock != NULL) {
+                return pDevice->pfGetBlock(pDevice->pObject, pBlock);
             }
 
-            return 0;
-        }
-        i++;
-    }
-
-    dev = cpu->devices[cpu->mem_dev_idx];
-    if(dev != NULL && dev->get_blk != NULL) {
-        return dev->get_blk(dev->dev_obj, req);
-    }
-
-    return 0;
-}
-
-s32 cpuSetGetBlock(cpu_class_t* cpu, cpu_dev_t* dev, void* get_blk) {
-    dev->get_blk = get_blk;
-
-    return 1;
-}
-
-/**
- * @brief Sets load handlers for a device.
- * 
- * @param cpu The emulated VR4300.
- * @param dev The device which handles the load operations.
- * @param lb byte handler.
- * @param lh halfword handler.
- * @param lw word handler.
- * @param ld doubleword handler.
- * @return s32 1 on success, 0 otherwise.
- */
-s32 cpuSetDeviceGet(cpu_class_t* cpu, cpu_dev_t* dev, lb_func_t lb, lh_func_t lh, lw_func_t lw, ld_func_t ld)  {
-    dev->lb = lb;
-    dev->lh = lh;
-    dev->lw = lw;
-    dev->ld = ld;
-
-    return 1;
-}
-
-/**
- * @brief Sets store handlers for a device.
- * 
- * @param cpu The emulated VR4300.
- * @param dev The device which handles the store operations.
- * @param lb byte handler.
- * @param lh halfword handler.
- * @param lw word handler.
- * @param ld doubleword handler.
- * @return s32 1 on success, 0 otherwise.
-*/
-s32 cpuSetDevicePut(cpu_class_t* cpu, cpu_dev_t* dev, sb_func_t sb, sh_func_t sh, sw_func_t sw, sd_func_t sd)  {
-    dev->sb = sb;
-    dev->sh = sh;
-    dev->sw = sw;
-    dev->sd = sd;
-
-    return 1;
-}
-
-s32 cpuSetCodeHack(cpu_class_t *cpu, u32 addr, u32 repl, s32 end) {
-    s32 i;
-
-    for(i = 0; i < cpu->hack_cnt; i++) {
-        if(addr == cpu->hacks[i].addr) {
-            return 0;
+            return false;
         }
     }
 
-    cpu->hacks[i].addr = addr;
-    cpu->hacks[i].expected = repl;
-    cpu->hacks[i].replacement = end;
-    cpu->hack_cnt++;
+    pDevice = pCPU->apDevice[pCPU->iDeviceDefault];
 
-    return 1;
+    if (pDevice != NULL && pDevice->pfGetBlock != NULL) {
+        return pDevice->pfGetBlock(pDevice->pObject, pBlock);
+    }
+
+    return false;
 }
 
-#ifdef NON_MATCHING
-// Matches except for  double constant.
-inline s32 clearblk(u32 *blk, s32 cnt) {
-    s32 i;
-    for(i = 0; i < cnt; i++) {
-        blk[i] = 0;
-    }
+bool cpuSetGetBlock(Cpu* pCPU, CpuDevice* pDevice, GetBlockFunc pfGetBlock) {
+    pDevice->pfGetBlock = pfGetBlock;
+    return true;
 }
 
-s32 cpuReset(cpu_class_t *cpu) {
-    s32 i;
-    cpu->unk_0x04 = 0;
-    cpu->hack_cnt = 0;
-    cpu->status = 0x40;
-    cpu->execute_opcode = NULL;
-
-    for(i = 0; i < 48; i += 4) {
-        // Maybe fake?  Could be manual un rolling
-        cpu->tlb[i + 0].entry_lo0.d = 0;
-        cpu->tlb[i + 0].entry_lo1.d = 0;
-        cpu->tlb[i + 0].entry_hi.d = 0;
-        cpu->tlb[i + 0].page_mask.d = 0;
-        cpu->tlb[i + 0].dev_status.d = -1;
-
-        cpu->tlb[i + 1].entry_lo0.d = 0;
-        cpu->tlb[i + 1].entry_lo1.d = 0;
-        cpu->tlb[i + 1].entry_hi.d = 0;
-        cpu->tlb[i + 1].page_mask.d = 0;
-        cpu->tlb[i + 1].dev_status.d = -1;
-
-        cpu->tlb[i + 2].entry_lo0.d = 0;
-        cpu->tlb[i + 2].entry_lo1.d = 0;
-        cpu->tlb[i + 2].entry_hi.d = 0;
-        cpu->tlb[i + 2].page_mask.d = 0;
-        cpu->tlb[i + 2].dev_status.d = -1;
-        
-        cpu->tlb[i + 3].entry_lo0.d = 0;
-        cpu->tlb[i + 3].entry_lo1.d = 0;
-        cpu->tlb[i + 3].entry_hi.d = 0;
-        cpu->tlb[i + 3].page_mask.d = 0;
-        cpu->tlb[i + 3].dev_status.d = -1;
-    }
-
-    cpu->lo.d = 0;
-    cpu->hi.d = 0;
-    cpu->pc = 0x80000400;
-    cpu->unk_0x24 = -1;
-
-    for(i = 0; i < 32; i++) {
-        cpu->gpr[i].d = 0;
-    }
-
-    for(i = 0; i < 32; i++) {
-        cpu->fpr[i].fd = 0.0;
-    }
-
-    for(i = 0; i < 32; i++) {
-        cpu->fscr[i] = 0;
-    }
-
-    cpu->gpr[0x14].d = 1;
-    cpu->gpr[0x16].d = 0x3F;
-    cpu->gpr[0x1D].d = 0xA4001FF0;
-    
-    for(i = 0; i < 32; i++) {
-        cpu->cp0[i].d = 0;
-    }
-
-    cpu->cp0[0xF].d = 0xB00;
-    cpu->cp0[0x9].d = 0x10000000;
-
-    cpuSetCP0Status(cpu, 0x20010000,0x2000FF01, 1);
-
-    cpu->cp0[0x10].d = 0x6E463;
-    cpu->cache_cnt = 0;
-
-    if(cpuHackHandler(cpu)) {
-        cpu->status |= 0x10;
-    }
-
-
-    clearblk(cpu->sm_blk_status, SM_BLK_CNT);
-
-    if(cpu->sm_blk_code == NULL && !xlHeapTake(&cpu->sm_blk_code, 0x30300000)) {
-        return 0;
-    }
-
-    clearblk(cpu->lg_blk_status, LG_BLK_CNT);
-
-    if(cpu->lg_blk_code == NULL && !xlHeapTake(&cpu->lg_blk_code, 0x30104000)) {
-        return 0;
-    }
-
-    clearblk(cpu->tree_blk_status, TREE_BLK_CNT);
-
-    if(cpu->recomp_tree != NULL) {
-        treeKill(cpu);
-    }
-
-    cpu->unk_0x12224 = 1;
-    cpu->unk_0x12228 = 0;
-    cpu->unk_0x1222C = 0;
-    cpu->unk_0x12230 = 0;
-    cpu->unk_0x12234 = 0;
-    cpu->unk_0x12238 = 0;
-    cpu->unk_0x1223C = 0;
-    cpu->unk_0x12240 = 0;
-    cpu->unk_0x12244 = 0;
-    cpu->unk_0x12248 = 0;
-    cpu->unk_0x1224C = 0;
-    cpu->unk_0x12250 = 0;
-    cpu->unk_0x12254 = 0;
-    cpu->unk_0x12258 = 0;
-    cpu->unk_0x1225C = 0;
-    cpu->unk_0x12260 = 0;
-    cpu->unk_0x12264 = 0;
-    cpu->unk_0x12268 = 0;
-    cpu->unk_0x1226C = 0;
-
-    return 1;
-}
-#else
-s32 cpuReset(cpu_class_t *cpu);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuReset.s")
-#endif
-
-s32 cpuGetXPC(cpu_class_t *cpu, u64 *pc, u64 *lo, u64 *hi) {
-    if(!xlObjectTest(cpu, &gClassCPU)) {
-        return 0;
-    }
-
-    if(pc != NULL) {
-        *pc = cpu->pc;
-    }
-
-    if(lo != NULL) {
-        *lo = cpu->lo.d;
-    }
-
-    if(hi != NULL) {
-        *hi = cpu->hi.d;
-    }
-
-    return 1;
+bool cpuSetDeviceGet(Cpu* pCPU, CpuDevice* pDevice, Get8Func pfGet8, Get16Func pfGet16, Get32Func pfGet32,
+                     Get64Func pfGet64) {
+    pDevice->pfGet8 = pfGet8;
+    pDevice->pfGet16 = pfGet16;
+    pDevice->pfGet32 = pfGet32;
+    pDevice->pfGet64 = pfGet64;
+    return true;
 }
 
-s32 cpuSetXPC(cpu_class_t *cpu, u32 r4, u64 pc, u64 lo, u64 hi) {
-    if(!xlObjectTest(cpu, &gClassCPU)) {
-        return 0;
-    }
-    
-    cpu->pc = pc;
-    cpu->status |= 4;
-    cpu->lo.d = lo;
-    cpu->hi.d = hi;
-
-    return 1;
+bool cpuSetDevicePut(Cpu* pCPU, CpuDevice* pDevice, Put8Func pfPut8, Put16Func pfPut16, Put32Func pfPut32,
+                     Put64Func pfPut64) {
+    pDevice->pfPut8 = pfPut8;
+    pDevice->pfPut16 = pfPut16;
+    pDevice->pfPut32 = pfPut32;
+    pDevice->pfPut64 = pfPut64;
+    return true;
 }
 
-inline s32 cpuClearDevice(cpu_class_t *cpu, s32 i) {
-    s32 ret;
-    if(!xlHeapFree((void**)&cpu->devices[i])) {
-        ret = 0;
-    } else {
-        s32 j;
-        cpu->devices[i] = NULL;
+bool cpuSetCodeHack(Cpu* pCPU, s32 nAddress, s32 nOpcodeOld, s32 nOpcodeNew) {
+    s32 iHack;
 
-        for(j = 0; j < 0x10000; j++) {
-            if(cpu->mem_hi_map[j] == i) {
-                cpu->mem_hi_map[j] = cpu->mem_dev_idx;
-            }
+    for (iHack = 0; iHack < pCPU->nCountCodeHack; iHack++) {
+        if (pCPU->aCodeHack[iHack].nAddress == nAddress) {
+            return false;
         }
-        ret = 1;
     }
 
-    return ret;
+    pCPU->aCodeHack[iHack].nAddress = nAddress;
+    pCPU->aCodeHack[iHack].nOpcodeOld = nOpcodeOld;
+    pCPU->aCodeHack[iHack].nOpcodeNew = nOpcodeNew;
+    pCPU->nCountCodeHack++;
+    return true;
 }
 
-s32 cpuEvent(void* obj, s32 event, void *arg) {
-    cpu_class_t *cpu = obj;
+static inline bool cpuHeapReset(u32* array, s32 count) {
     s32 i;
 
-    switch(event) {
+    for (i = 0; i < count; i++) {
+        array[i] = 0;
+    }
+
+    return true;
+}
+
+bool cpuReset(Cpu* pCPU) {
+    s32 iRegister;
+    s32 iTLB;
+
+    pCPU->nTick = 0;
+    pCPU->nCountCodeHack = 0;
+    pCPU->nMode = 0x40;
+    pCPU->pfStep = NULL;
+
+    for (iTLB = 0; iTLB < ARRAY_COUNT(pCPU->aTLB); iTLB++) {
+        for (iRegister = 0; iRegister < 5; iRegister++) {
+            pCPU->aTLB[iTLB][iRegister] = 0;
+        }
+        pCPU->aTLB[iTLB][4] = -1;
+    }
+
+    pCPU->nLo = 0;
+    pCPU->nHi = 0;
+    pCPU->nPC = 0x80000400;
+    pCPU->nWaitPC = -1;
+
+    for (iRegister = 0; iRegister < ARRAY_COUNT(pCPU->aGPR); iRegister++) {
+        pCPU->aGPR[iRegister].u64 = 0;
+    }
+
+    for (iRegister = 0; iRegister < ARRAY_COUNT(pCPU->aFPR); iRegister++) {
+        pCPU->aFPR[iRegister].f64 = 0.0;
+    }
+
+    for (iRegister = 0; iRegister < ARRAY_COUNT(pCPU->anFCR); iRegister++) {
+        pCPU->anFCR[iRegister] = 0;
+    }
+
+    pCPU->aGPR[20].u64 = 1;
+    pCPU->aGPR[22].u64 = 0x3F;
+    pCPU->aGPR[29].u64 = 0xA4001FF0;
+
+    for (iRegister = 0; iRegister < ARRAY_COUNT(pCPU->anCP0); iRegister++) {
+        pCPU->anCP0[iRegister] = 0;
+    }
+
+    pCPU->anCP0[15] = 0xB00;
+    pCPU->anCP0[9] = 0x10000000;
+    cpuSetCP0_Status(pCPU, 0x2000FF01, 1);
+    pCPU->anCP0[16] = 0x6E463;
+
+    pCPU->nCountAddress = 0;
+    if (cpuHackHandler(pCPU)) {
+        pCPU->nMode |= 0x10;
+    }
+
+    if (!cpuHeapReset(pCPU->aHeap1Flag, ARRAY_COUNT(pCPU->aHeap1Flag))) {
+        return false;
+    }
+    if (pCPU->gHeap1 == NULL && !xlHeapTake(&pCPU->gHeap1, 0x300000 | 0x30000000)) {
+        return false;
+    }
+
+    if (!cpuHeapReset(pCPU->aHeap2Flag, ARRAY_COUNT(pCPU->aHeap2Flag))) {
+        return false;
+    }
+    if (pCPU->gHeap2 == NULL && !xlHeapTake(&pCPU->gHeap2, 0x104000 | 0x30000000)) {
+        return false;
+    }
+
+    if (!cpuHeapReset(pCPU->aHeapTreeFlag, ARRAY_COUNT(pCPU->aHeapTreeFlag))) {
+        return false;
+    }
+
+    if (pCPU->gTree != NULL) {
+        treeKill(pCPU);
+    }
+
+    pCPU->nCompileFlag = 1;
+    pCPU->unk_12228 = 0;
+
+    //! TODO: make this struct match
+    // pCPU->alarmRetrace.handler = NULL;
+    // pCPU->alarmRetrace.tag = 0;
+    // pCPU->alarmRetrace.end = 0;
+    // pCPU->alarmRetrace.prev = NULL;
+    // pCPU->alarmRetrace.next = NULL;
+    // pCPU->alarmRetrace.period = 0;
+    // pCPU->alarmRetrace.start = 0;
+    // pCPU->alarmRetrace.userData = NULL;
+    pCPU->alarmRetrace[0] = 0;
+    pCPU->alarmRetrace[1] = 0;
+    pCPU->alarmRetrace[2] = 0;
+    pCPU->alarmRetrace[3] = 0;
+    pCPU->alarmRetrace[4] = 0;
+    pCPU->alarmRetrace[5] = 0;
+    pCPU->alarmRetrace[6] = 0;
+    pCPU->alarmRetrace[7] = 0;
+    pCPU->alarmRetrace[8] = 0;
+    pCPU->alarmRetrace[9] = 0;
+    pCPU->alarmRetrace[10] = 0;
+    pCPU->alarmRetrace[11] = 0;
+
+    pCPU->unk_1225C = 0;
+    pCPU->unk_12260 = 0;
+    pCPU->unk_12264 = 0;
+    pCPU->unk_12268 = 0;
+    pCPU->unk_1226C = 0;
+    return true;
+}
+
+bool cpuGetXPC(Cpu* pCPU, s64* pnPC, s64* pnLo, s64* pnHi) {
+    if (!xlObjectTest(pCPU, &gClassCPU)) {
+        return false;
+    }
+
+    if (pnPC != NULL) {
+        *pnPC = pCPU->nPC;
+    }
+
+    if (pnLo != NULL) {
+        *pnLo = pCPU->nLo;
+    }
+
+    if (pnHi != NULL) {
+        *pnHi = pCPU->nHi;
+    }
+
+    return true;
+}
+
+bool cpuSetXPC(Cpu* pCPU, s64 nPC, s64 nLo, s64 nHi) {
+    if (!xlObjectTest(pCPU, &gClassCPU)) {
+        return false;
+    }
+
+    pCPU->nMode |= 4;
+    pCPU->nPC = nPC;
+    pCPU->nLo = nLo;
+    pCPU->nHi = nHi;
+
+    return true;
+}
+
+static inline bool cpuInitAllDevices(Cpu* pCPU) {
+    s32 i;
+
+    for (i = 0; i < ARRAY_COUNT(pCPU->apDevice); i++) {
+        pCPU->apDevice[i] = NULL;
+    }
+
+    return true;
+}
+
+bool cpuEvent(Cpu* pCPU, s32 nEvent, void* pArgument) {
+    s32 i;
+
+    switch (nEvent) {
         case 1:
-            if(!cpuReset(cpu)) {
-                return 0;
+            if (!cpuReset(pCPU)) {
+                return false;
             }
             break;
-
         case 2:
-            for(i = 0; i < 256; i++) {
-                cpu->devices[i] = NULL;
+            cpuInitAllDevices(pCPU);
+
+            if (!cpuReset(pCPU)) {
+                return false;
             }
 
-            if(!cpuReset(cpu)) {
-                return 0;
-            }
-
-            if(!xlHeapTake((void**)&cpu->recomp_tree_nodes, 0x30046500)) { 
-                return 0;
+            if (!xlHeapTake((void**)&pCPU->gHeapTree, 0x46500 | 0x30000000)) {
+                return false;
             }
             break;
         case 3:
-            for(i = 0; i < 256; i++) {
-                if(cpu->devices[i] != NULL) {
-                    if(!cpuClearDevice(cpu, i)) {
-                        return 0;
+            // using `cpuFreeAllDevices` doesn't work
+            for (i = 0; i < ARRAY_COUNT(pCPU->apDevice); i++) {
+                if (pCPU->apDevice[i] != NULL) {
+                    if (!cpuFreeDevice(pCPU, i)) {
+                        return false;
                     }
-
                 }
             }
             break;
         case 0:
-        case 0x1007:
-        case 0x1004:
         case 0x1003:
+        case 0x1004:
+        case 0x1007:
             break;
         default:
-            return 0;
+            return false;
     }
 
-    return 1;
+    return true;
 }
 
-s32 cpuGetAddressOffset(cpu_class_t *cpu, u32 *buffer, u32 addr) {
-    if(addr >= 0x80000000 && addr < 0xC0000000) {
-        *buffer = addr & 0x7FFFFF;
-    } else if(cpu->devices[cpu->mem_hi_map[addr >> 0x10]]->create_arg & 0x100) {
-        *buffer = addr + cpu->devices[cpu->mem_hi_map[addr >> 0x10]]->addr_offset & 0x7FFFFF;
+bool cpuGetAddressOffset(Cpu* pCPU, s32* pnOffset, u32 nAddress) {
+    s32 iDevice;
+
+    if (0x80000000 <= nAddress && nAddress < 0xC0000000) {
+        *pnOffset = nAddress & 0x7FFFFF;
     } else {
-        return 0;
+        iDevice = pCPU->aiDevice[nAddress >> 0x10];
+
+        if (pCPU->apDevice[iDevice]->nType & 0x100) {
+            *pnOffset = (nAddress + pCPU->apDevice[iDevice]->nOffsetAddress) & 0x7FFFFF;
+        } else {
+            return false;
+        }
     }
 
-    return 1;
+    return true;
 }
 
-s32 cpuGetAddressBuffer(cpu_class_t *cpu, void **buffer, u32 addr) {
-    cpu_dev_t *dev = cpu->devices[cpu->mem_hi_map[addr >> 0x10]];
+bool cpuGetAddressBuffer(Cpu* pCPU, void** ppBuffer, u32 nAddress) {
+    CpuDevice* pDevice = pCPU->apDevice[pCPU->aiDevice[nAddress >> 0x10]];
 
-    if(dev->dev_obj == gSystem->ram) {
-        if(!ramGetBuffer((ram_class_t*)dev->dev_obj, buffer, addr + dev->addr_offset, NULL)) {
-            return 0;
+    if ((Ram*)pDevice->pObject == SYSTEM_RAM(gpSystem)) {
+        if (!ramGetBuffer(pDevice->pObject, ppBuffer, nAddress + pDevice->nOffsetAddress, NULL)) {
+            return false;
         }
-    } else if(dev->dev_obj == gSystem->rom) {
-        if(!romGetBuffer(dev->dev_obj, buffer, addr + dev->addr_offset, NULL)) {
-            return 0;
+    } else if ((Rom*)pDevice->pObject == SYSTEM_ROM(gpSystem)) {
+        if (!romGetBuffer(pDevice->pObject, ppBuffer, nAddress + pDevice->nOffsetAddress, NULL)) {
+            return false;
         }
-    } else if(dev->dev_obj == gSystem->rsp) {
-        if(!rspGetBuffer(dev->dev_obj, buffer, addr + dev->addr_offset, NULL)) {
-            return 0;
+    } else if ((Rsp*)pDevice->pObject == SYSTEM_RSP(gpSystem)) {
+        if (!rspGetBuffer(pDevice->pObject, ppBuffer, nAddress + pDevice->nOffsetAddress, NULL)) {
+            return false;
         }
     } else {
-        return 0;
+        return false;
     }
 
-    return 1;
+    return true;
 }
 
-#ifdef NON_MATCHING
-// Some minor reordering at the start
-s32 cpuGetOffsetAddress(cpu_class_t *cpu, s32 *arg1, s32 *arg2, s32 paddr, s32 len) {
-    u32 page_size;
-    u32 page_mask;
-    s32 i;
-    s32 uVar2 = 0;
-    u32 tmp2;
+bool cpuGetOffsetAddress(Cpu* pCPU, u32* anAddress, s32* pnCount, u32 nOffset, u32 nSize) {
+    s32 iEntry;
+    s32 iAddress = 0;
+    u32 nAddress;
+    u32 nMask;
+    u32 nSizeMapped;
 
-    arg1[uVar2++] = paddr | 0x80000000;
-    arg1[uVar2++] = paddr | 0xA0000000;
-    
-    for(i = 0; i < 48; i++) {
-        if(cpu->tlb[i].entry_lo0.d & 2) {
-            page_mask = cpu->tlb[i].page_mask.d | 0x1FFF;
-            switch(page_mask) {
+    anAddress[iAddress++] = nOffset | 0x80000000;
+    anAddress[iAddress++] = nOffset | 0xA0000000;
+
+    for (iEntry = 0; iEntry < ARRAY_COUNT(pCPU->aTLB); iEntry++) {
+        if (pCPU->aTLB[iEntry][0] & 2) {
+            nMask = pCPU->aTLB[iEntry][3] | 0x1FFF;
+
+            switch (nMask) {
                 case 0x1FFF:
-                    page_size = 4 * 1024;
+                    nSizeMapped = 4 * 1024;
                     break;
                 case 0x7FFF:
-                    page_size = 16 * 1024;
+                    nSizeMapped = 16 * 1024;
                     break;
                 case 0x1FFFF:
-                    page_size = 64 * 1024;
+                    nSizeMapped = 64 * 1024;
                     break;
                 case 0x7FFFF:
-                    page_size = 256 * 1024;
+                    nSizeMapped = 256 * 1024;
                     break;
                 case 0x1FFFFF:
-                    page_size = 1 * 1024 * 1024;
+                    nSizeMapped = 1 * 1024 * 1024;
                     break;
                 case 0x7FFFFF:
-                    page_size = 4 * 1024 * 1024;
+                    nSizeMapped = 4 * 1024 * 1024;
                     break;
                 case 0x1FFFFFF:
-                    page_size = 16 * 1024 * 1024;
+                    nSizeMapped = 16 * 1024 * 1024;
                     break;
                 default:
-                    return 0;
+                    return false;
             }
-            
-            tmp2 = ((u32)((cpu->tlb[i].entry_lo0.d & 0xFFFFFFC0) << 6) + (paddr & page_mask));
-            if(tmp2 < (paddr + len - 1) && (tmp2 + page_size - 1) >= paddr) {
-                tmp2 = (cpu->tlb[i].entry_hi.d & 0xFFFFE000);
-                arg1[uVar2++] = (tmp2 & ~page_mask) | (paddr & page_mask);
+
+            nAddress = ((u32)(pCPU->aTLB[iEntry][0] & ~0x3F) << 6) + (nOffset & nMask);
+            if (nAddress < (nOffset + nSize - 1) && (nAddress + nSizeMapped - 1) >= nOffset) {
+                nAddress = pCPU->aTLB[iEntry][2] & 0xFFFFE000;
+                anAddress[iAddress++] = ((nAddress) & ~nMask) | (nOffset & nMask);
             }
         }
     }
 
-    *arg2 = uVar2;
-    return 1;
-}
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuGetOffsetAddress.s")
-#endif
-
-s32 cpuInvalidateCache(cpu_class_t *cpu, u32 param_2, s32 param_3) {
-    if((param_2 & 0xF0000000) == 0xA0000000) {
-        return 1;
-    }
-
-    if(!cpuFreeCachedAddress(cpu, param_2, param_3)) {
-        return 0;
-    }
-
-    func_8003E604(cpu, param_2, param_3);
-    return 1;
+    *pnCount = iAddress;
+    return true;
 }
 
-s32 cpuGetFunctionChecksum(cpu_class_t *cpu, s32 *cs_out, recomp_node_t *node) {
-    u32 *buf;
-    s32 i;
-    s32 size;
-    s32 cs;
-    u32 tmp;
-
-    if(node->checksum != 0) {
-        *cs_out = node->checksum;
-        return 1;
+bool cpuInvalidateCache(Cpu* pCPU, s32 nAddress0, s32 nAddress1) {
+    if ((nAddress0 & 0xF0000000) == 0xA0000000) {
+        return true;
     }
 
-    if(cpuGetAddressBuffer(cpu, (void**)&buf, node->n64_start_addr)) {
-        cs = 0;
-        size = ((node->n64_end_addr - node->n64_start_addr) >> 2) + 1;
-        
-        while(size > 0) {
-            size--;
-            tmp = *buf;
-            tmp = tmp >> 0x1A;
-            tmp = tmp << ((size % 5) * 6);
-            cs += tmp;
-            buf++;
+    if (!cpuFreeCachedAddress(pCPU, nAddress0, nAddress1)) {
+        return false;
+    }
+
+    cpuDMAUpdateFunction(pCPU, nAddress0, nAddress1);
+    return true;
+}
+
+bool cpuGetFunctionChecksum(Cpu* pCPU, u32* pnChecksum, CpuFunction* pFunction) {
+    s32 nSize;
+    u32* pnBuffer;
+    u32 nChecksum;
+    u32 nData;
+    u32 pad;
+
+    if (pFunction->nChecksum != 0) {
+        *pnChecksum = pFunction->nChecksum;
+        return true;
+    }
+
+    if (cpuGetAddressBuffer(pCPU, (void**)&pnBuffer, pFunction->nAddress0)) {
+        nChecksum = 0;
+        nSize = ((pFunction->nAddress1 - pFunction->nAddress0) >> 2) + 1;
+
+        while (nSize > 0) {
+            nSize--;
+            nData = *pnBuffer;
+            nData = nData >> 0x1A;
+            nData = nData << ((nSize % 5) * 6);
+            nChecksum += nData;
+            pnBuffer++;
         }
 
-        *cs_out = cs;
-        node->checksum = cs;
+        *pnChecksum = nChecksum;
+        pFunction->nChecksum = nChecksum;
 
-        return 1;
+        return true;
     }
 
-    return 0;
+    return false;
 }
 
-#ifdef NON_MATCHING
-s32 cpuHeapTake(char **code, cpu_class_t *cpu, recomp_node_t *func, s32 size) {
-    s32 smblk_needed = (size + (0x200 - 1)) / 0x200;
-    s32 lgblk_needed = (size + (0xA00 - 1)) / 0xA00;
-    s32 type_swapped = 0;
-    s32 chunk_found = 0;
-    s32 blk_cnt;
-    u32 *blks;
-    s32 blks_needed;
-    s32 i;
-    s32 i2;
-    s32 jstart;
-    s32 j;
-    u32 mask;
+bool cpuHeapTake(void* heap, Cpu* pCPU, CpuFunction* pFunction, int memory_size) {
+    s32 done;
+    s32 second;
+    u32* anPack;
+    s32 nPackCount;
+    int nBlockCount;
+    s32 nOffset;
+    s32 nCount;
+    s32 iPack;
+    u32 nPack;
+    u32 nMask;
+    u32 nMask0;
 
-    do {
-        if(func->alloc_type == -1) {
-            if(size > 0x3200) {
-                func->alloc_type = 2;
+    done = 0;
+    second = 0;
+    for (;;) {
+        if (pFunction->heapID == -1) {
+            if (memory_size > 0x3200) {
+                pFunction->heapID = 2;
             } else {
-                func->alloc_type = 1;
+                pFunction->heapID = 1;
             }
-        } else if(func->alloc_type == 1) {
-            func->alloc_type = 2;
-            type_swapped = 1;
-        } else if(func->alloc_type == 2) {
-            func->alloc_type = 1;
-            type_swapped = 1;
+        } else if (pFunction->heapID == 1) {
+            pFunction->heapID = 2;
+            second = 1;
+        } else if (pFunction->heapID == 2) {
+            pFunction->heapID = 1;
+            second = 1;
         }
 
-        if(func->alloc_type == 1) {
-            func->alloc_type = 1;
-            blk_cnt = sizeof(cpu->sm_blk_status) / sizeof(*cpu->sm_blk_status);
-            blks = cpu->sm_blk_status;
-            blks_needed = smblk_needed;
-            if(type_swapped && smblk_needed >= 32) {
-                func->alloc_type = 3;
-                func->unk_0x34 = 0xFFFFFFFF;
-                return !!xlHeapTake((void**)code, size);
+        if (pFunction->heapID == 1) {
+            pFunction->heapID = 1;
+            nBlockCount = (memory_size + 0x1FF) / 0x200;
+            nPackCount = ARRAY_COUNT(pCPU->aHeap1Flag);
+            anPack = pCPU->aHeap1Flag;
+
+            if (second && nBlockCount >= 32) {
+                pFunction->heapID = 3;
+                pFunction->heapWhere = -1;
+                if (!xlHeapTake(heap, memory_size)) {
+                    return false;
+                }
+                return true;
             }
-        } else if(func->alloc_type == 2) {
-            func->alloc_type = 2;
-            blk_cnt = sizeof(cpu->lg_blk_status) / sizeof(*cpu->lg_blk_status);
-            blks = cpu->lg_blk_status;
-            blks_needed = lgblk_needed;
+        } else if (pFunction->heapID == 2) {
+            pFunction->heapID = 2;
+            nBlockCount = (memory_size + 0x9FF) / 0xA00;
+            nPackCount = ARRAY_COUNT(pCPU->aHeap2Flag);
+            anPack = pCPU->aHeap2Flag;
         }
 
-        if(blks_needed >= 32) {
-            func->alloc_type = 3;
-            func->unk_0x34 = 0xFFFFFFFF;
-            return !!xlHeapTake((void**)code, size);
+        if (nBlockCount >= 32) {
+            pFunction->heapID = 3;
+            pFunction->heapWhere = -1;
+            if (!xlHeapTake(heap, memory_size)) {
+                return false;
+            }
+            return true;
         }
-        
-        for(i = 0, i2 = 0; i < blk_cnt; blks++, i++, i2 += 32) {
 
-            if(*blks != 0xFFFFFFFF) {
-                j = jstart = 33 - blks_needed;
-                mask = (1 << blks_needed) - 1;
+        nCount = 33 - nBlockCount;
+        nMask0 = (1 << nBlockCount) - 1;
+        for (iPack = 0; iPack < nPackCount; iPack++) {
+            if ((nPack = anPack[iPack]) != -1) {
+                nMask = nMask0;
+                nOffset = nCount;
                 do {
-                    if(!(*blks & mask)) {
-                        chunk_found = 1;
-                        *blks |= mask;
-                        func->unk_0x34 = (blks_needed << 0x10) | (i2 + (jstart - j));
+                    if (!(nPack & nMask)) {
+                        anPack[iPack] |= nMask;
+                        pFunction->heapWhere = (nBlockCount << 16) | ((iPack << 5) + (nCount - nOffset));
+                        done = 1;
                         break;
                     }
+                    nMask = nMask << 1;
+                    nOffset--;
+                } while (nOffset != 0);
+            }
 
-                    mask <<= 1;
-                    j--;
-                } while(j != 0);
-
-                if(chunk_found) {
-                    break;
-                }
+            if (done) {
+                break;
             }
         }
 
-        if(chunk_found) {
-            if(func->alloc_type == 1) {
-                *code = (char*)cpu->sm_blk_code + ((func->unk_0x34 & 0xFFFF) * 0x200);
-            } else {
-                *code = (char*)cpu->lg_blk_code + ((func->unk_0x34 & 0xFFFF) * 0xA00);
-            }
-
-            return 1;
+        if (done) {
+            break;
         }
 
-    } while (!type_swapped);
-
-    if(type_swapped) {
-        func->alloc_type = -1;
-        func->unk_0x34 = 0xFFFFFFFF;
+        if (second) {
+            pFunction->heapID = -1;
+            pFunction->heapWhere = -1;
+            return false;
+        }
     }
 
-    return 0;
-}
-#else
-s32 cpuHeapTake(char **code, cpu_class_t *cpu, recomp_node_t *func, s32 size);
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuHeapTake.s")
-#endif
-
-s32 cpuHeapFree(cpu_class_t *cpu, recomp_node_t *func) {
-    u32 mask;
-    u32 blk_idx;
-    u32 *blk;
-    
-    if(func->alloc_type == 1) {
-        blk = cpu->sm_blk_status;
-    } else if(func->alloc_type == 2) {
-        blk = cpu->lg_blk_status;
+    if (pFunction->heapID == 1) {
+        *((s32*)heap) = (s32)pCPU->gHeap1 + (pFunction->heapWhere & 0xFFFF) * 0x200;
     } else {
-        if(func->unk_0x00 != 0) {
-            if(!xlHeapFree((void**)&func->unk_0x00)) {
-                return 0;
+        *((s32*)heap) = (s32)pCPU->gHeap2 + (pFunction->heapWhere & 0xFFFF) * 0xA00;
+    }
+
+    return true;
+}
+
+static bool cpuHeapFree(Cpu* pCPU, CpuFunction* pFunction) {
+    u32* anPack;
+    s32 iPack;
+    u32 nMask;
+
+    if (pFunction->heapID == 1) {
+        anPack = pCPU->aHeap1Flag;
+    } else if (pFunction->heapID == 2) {
+        anPack = pCPU->aHeap2Flag;
+    } else {
+        if (pFunction->pnBase != NULL) {
+            if (!xlHeapFree(&pFunction->pnBase)) {
+                return false;
             }
         } else {
-            if(!xlHeapFree((void**)&func->recompiled_func)) {
-                return 0;
+            if (!xlHeapFree(&pFunction->pfCode)) {
+                return false;
             }
         }
 
-        return 1;
+        return true;
     }
 
-    if(func->unk_0x34 == -1) {
-        return 0;
+    if (pFunction->heapWhere == -1) {
+        return false;
     }
 
-    mask = ((1 << (func->unk_0x34 >> 0x10)) - 1) << (func->unk_0x34 & 0x1F);
-    blk_idx = (func->unk_0x34 >> 5) & 0x7FF;
-    
-    if((blk[blk_idx] & mask) == mask) {
-        blk[blk_idx] &= ~mask;
-        func->alloc_type = -1;
-        func->unk_0x34 = -1;
-        return 1;
+    nMask = ((1 << (pFunction->heapWhere >> 16)) - 1) << (pFunction->heapWhere & 0x1F);
+    iPack = ((pFunction->heapWhere & 0xFFFF) >> 5);
+
+    if ((anPack[iPack] & nMask) == nMask) {
+        anPack[iPack] &= ~nMask;
+        pFunction->heapID = -1;
+        pFunction->heapWhere = -1;
+        return true;
     }
 
-    return 0;
+    return false;
 }
 
-s32 cpuTreeTake(recomp_node_t **node, u32 *node_pos, size_t size) {
-    u32 *node_status = gSystem->cpu->tree_blk_status;
-    u32 i2;
-    s32 node_found = 0;
-    s32 i;
-    s32 j;
-    u32 mask;
+static bool cpuTreeTake(void* heap, s32* where, s32 size) {
+    bool done;
+    s32 nOffset;
+    s32 nCount;
+    s32 iPack;
+    u32 nPack;
+    u32 nMask;
+    u32 nMask0;
+    u32* paHeapTreeFlag = SYSTEM_CPU(gpSystem)->aHeapTreeFlag;
 
-    for(i = 0, i2 = 0; i < 125; node_status++, i++, i2 += 32) {
-        if(*node_status != 0xFFFFFFFF) {
-            mask = 1;
-
-            j = 32;
+    done = false;
+    for (iPack = 0; iPack < 125; iPack++) {
+        if ((nPack = paHeapTreeFlag[iPack]) != -1) {
+            nMask = 1;
+            nOffset = 32;
             do {
-                if(!(*node_status & mask)) {
-                    node_found = 1;
-                    *node_status |= mask;
-                    *node_pos = 0x10000 | (i2 + (32 - j));
+                if (!(nPack & nMask)) {
+                    paHeapTreeFlag[iPack] |= nMask;
+                    *where = (1 << 16) | ((iPack << 5) + (32 - nOffset));
+                    done = true;
                     break;
                 }
-                mask <<= 1;
-                j--;
-            } while(j != 0);
+                nMask = nMask << 1;
+                nOffset--;
+            } while (nOffset != 0);
         }
 
-        if(node_found) {
+        if (done) {
             break;
         }
     }
 
-    if(!node_found) {
-        *node_pos = 0xFFFFFFFF;
-        return 0;
+    if (!done) {
+        *where = -1;
+        return false;
     }
 
-    *node = &gSystem->cpu->recomp_tree_nodes[*node_pos & 0xFFFF];
+    *((s32*)heap) = (s32)SYSTEM_CPU(gpSystem)->gHeapTree + ((*where & 0xFFFF) * sizeof(CpuFunction));
 
-    return 1;
+    return true;
 }
 
-#ifdef NON_MATCHING
-inline s32 search_both_roots(recomp_tree_t *tree, s32 addr, recomp_node_t **out_node) {
-    s32 ret;
-    if(addr < tree->code_boundary) {
-        ret = treeSearchNode(tree->code_root, addr, out_node);
-    } else {
-        ret = treeSearchNode(tree->ovl_root, addr, out_node);
-    }
+bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
+    CpuDevice** apDevice;
+    u8* aiDevice;
+    u32 opcode;
+    u8 follow;
+    u8 valid;
+    u8 check;
+    u8 end_flag;
+    u8 save_restore;
+    u8 alert;
+    s32 beginAddress;
+    s32 cheat_address;
+    s32 current_address;
+    s32 temp_address;
+    s32 branch;
+    int anAddr[3];
+    s32 pad;
 
-    return ret;
-}
-
-s32 cpuFindFunction(cpu_class_t *cpu, u32 addr, recomp_node_t **out_node) {
-    u32 tree_was_init;
-    s32 node_found;
-    cpu_dev_t **devs;
-    cpu_dev_t *dev;
-    u8 *dev_idxs;
-    u32 inst;
-    s32 fetch_next;
-    s32 cur_addr;
-    s32 start_addr;
-    s32 possible_j_target;
-    s32 branch_target;
-    s32 delay_flags;
-    s32 fwd_branch;
-    s32 branch = 0;
-    s32 ra_saved = 0;
-    s32 branch_dist;
-    s32 next_addr;
-    s32 jmp_addr;
-    u32  no_branch_addr;
-    s32 bVar2;
-
-    if(cpu->recomp_tree == NULL) {
-        tree_was_init = 0;
-        cpu->unk_0x34 = 1;
-        if(!xlHeapTake((void**)&cpu->recomp_tree, 0x84)) {
-            return 0;
+    save_restore = false;
+    alert = false;
+    cheat_address = 0;
+    if (pCPU->gTree == NULL) {
+        check = 0;
+        pCPU->survivalTimer = 1;
+        if (!xlHeapTake((void**)&pCPU->gTree, sizeof(CpuTreeRoot))) {
+            return false;
         }
-        
-        treeInit(cpu, 0x80150002);
+        treeInit(pCPU, 0x80150002);
     } else {
-        tree_was_init = 1;
-        
-        if(search_both_roots(cpu->recomp_tree, addr, out_node)) {
-            cpu->running_node = *out_node;
-            return 1;
+        check = 1;
+        if (treeSearch(pCPU, theAddress, tree_node)) {
+            pCPU->pFunctionLast = *tree_node;
+            return true;
         }
     }
 
-    dev_idxs = cpu->mem_hi_map;
-    devs = cpu->devices;
-    start_addr = 0;
-    cur_addr = addr;
-    branch_target= addr;
-    possible_j_target = 0;
-    fwd_branch = 0;
+    anAddr[0] = 0;
+    anAddr[1] = 0;
+    anAddr[2] = 0;
+    aiDevice = pCPU->aiDevice;
+    apDevice = pCPU->apDevice;
+    beginAddress = branch = theAddress;
+    current_address = theAddress;
+
     do {
-        dev = devs[dev_idxs[addr >> 0x10]];
-        dev->lw(dev->dev_obj, cur_addr + dev->addr_offset, (s32*)&inst);
-        bVar2 = 1;
-        if(!tree_was_init) {
-            if(inst != 0 && start_addr == 0) {
-                start_addr = cur_addr;
+        CPU_DEVICE_GET32(apDevice, aiDevice, current_address, &opcode);
+        follow = true;
+
+        if (check == 0) {
+            if (opcode != 0 && anAddr[0] == 0) {
+                anAddr[0] = current_address;
             }
         } else {
-            if(start_addr == 0) {
-                start_addr = cur_addr;
+            if (anAddr[0] == 0) {
+                anAddr[0] = current_address;
             }
         }
 
-        fetch_next = 1;
-        delay_flags = 0;
-        switch(MIPS_OP(inst)) {
-            case OPC_SPECIAL:
-                switch(SPEC_FUNCT(inst)) {
-                        case SPEC_JR:
-                            if(!ra_saved && (fwd_branch == 0 || cur_addr > fwd_branch) && (possible_j_target == 0 || cur_addr >= possible_j_target)) {
-                                delay_flags = 0x6F;
-                            }
-                            break;
-                        case SPEC_BREAK:
-                            if((fwd_branch == 0 || cur_addr > fwd_branch) && (possible_j_target == 0 || cur_addr >= possible_j_target)) {
-                                delay_flags = 0x6F;
-                                ra_saved = 0;
-                            }
-                            break;
-                        default:
-                            fetch_next = lbl_801709C0[SPEC_FUNCT(inst)];
-                            break;
+        valid = true;
+        end_flag = 0;
+
+        switch ((u8)MIPS_OP(opcode)) {
+            case 0x00: { // special
+                switch ((u8)MIPS_FUNCT(opcode)) {
+                    case 0x08: // jr
+                        if (!save_restore && (anAddr[1] == 0 || current_address > anAddr[1]) &&
+                            (anAddr[2] == 0 || current_address >= anAddr[2])) {
+                            end_flag = 111;
+                        }
+                        break;
+                    case 0x0D: // break
+                        if ((anAddr[1] == 0 || current_address > anAddr[1]) &&
+                            (anAddr[2] == 0 || current_address >= anAddr[2])) {
+                            end_flag = 111;
+                            save_restore = false;
+                        }
+                        break;
+                    default:
+                        valid = SpecialOpcode[MIPS_FUNCT(opcode)];
+                        break;
                 }
                 break;
-            case OPC_J:
-                jmp_addr = (inst & 0x3FFFFFF) << 2 | (cur_addr & 0xF0000000);
-                if(jmp_addr >= cur_addr && (jmp_addr - cur_addr) <= 0x1000) {
-                    if(possible_j_target == 0) {
-                        possible_j_target = jmp_addr;
-                    } else if(jmp_addr > possible_j_target) {
-                        possible_j_target = jmp_addr;
+            }
+            case 0x02: // j
+                if ((branch = (MIPS_TARGET(opcode) << 2) | (current_address & 0xF0000000)) >= current_address &&
+                    branch - current_address <= 0x1000) {
+                    if (anAddr[2] == 0) {
+                        anAddr[2] = branch;
+                    } else if (branch > anAddr[2]) {
+                        anAddr[2] = branch;
                     }
                 }
                 break;
-            case OPC_REGIMM:
-                switch(REGIMM_SUB(inst)) {
-                    case REGIMM_BLTZ:
-                    case REGIMM_BGEZ:
-                    case REGIMM_BLTZL:
-                    case REGIMM_BGEZL:
-                    case REGIMM_BLTZAL:
-                    case REGIMM_BGEZAL:
-                    case REGIMM_BLTZALL:
-                    case REGIMM_BGEZALL:
-                        branch_dist = MIPS_IMM(inst) * 4;
-                        if(branch_dist < 0) {
-                            if(tree_was_init == 1 && (cur_addr + (branch_dist + 4)) < branch_target) {
-                                start_addr = 0;
-                                fwd_branch = 0;
-                                possible_j_target = 0;
-                                branch = 1;
-                                next_addr = branch_target = (cur_addr + (branch_dist + 4));
+            case 0x01: // regimm
+                switch ((u8)MIPS_RT(opcode)) {
+                    case 0x00: // bltz
+                    case 0x01: // bgez
+                    case 0x02: // bltzl
+                    case 0x03: // bgezl
+                    case 0x10: // bltzal
+                    case 0x11: // bgezal
+                    case 0x12: // bltzall
+                    case 0x13: // bgezall
+                        branch = MIPS_IMM_S16(opcode) * 4;
+                        if (branch < 0) {
+                            if (check == 1 && current_address + branch + 4 < beginAddress) {
+                                anAddr[0] = 0;
+                                anAddr[1] = 0;
+                                anAddr[2] = 0;
+                                beginAddress = current_address + branch + 4;
+                                current_address = current_address + branch + 4;
+                                alert = true;
                                 continue;
                             }
                         } else {
-                            if(fwd_branch == 0) {
-                                fwd_branch = cur_addr + branch_dist;
-                            } else {
-                                if(cur_addr + branch_dist > fwd_branch) {
-                                    fwd_branch = cur_addr + branch_dist;
-                                }
+                            if (anAddr[1] == 0) {
+                                anAddr[1] = current_address + branch;
+                            } else if (current_address + branch > anAddr[1]) {
+                                anAddr[1] = current_address + branch;
                             }
                         }
                         break;
                     default:
-                        fetch_next = lbl_80170A00[REGIMM_SUB(inst)];
+                        valid = RegimmOpcode[MIPS_RT(opcode)];
                         break;
                 }
                 break;
-            case OPC_BEQ:
-            case OPC_BEQL:
-                branch_dist = MIPS_IMM(inst) * 4;
-                if(branch_dist < 0) {
-                    if(tree_was_init == 1 && ((cur_addr + branch_dist + 4) < branch_target)) {
-                        start_addr = 0;
-                        fwd_branch = 0;
-                        possible_j_target = 0;
-                        branch = 1;
-                        branch_target = (cur_addr + branch_dist + 4);
+            case 0x04: // beq
+            case 0x14: // beql
+                branch = MIPS_IMM_S16(opcode) * 4;
+                if (branch < 0) {
+                    if (check == 1 && current_address + branch + 4 < beginAddress) {
+                        anAddr[0] = 0;
+                        anAddr[1] = 0;
+                        anAddr[2] = 0;
+                        beginAddress = current_address + branch + 4;
+                        current_address = current_address + branch + 4;
+                        alert = true;
                         continue;
                     }
 
-                    no_branch_addr = cur_addr + 8;
-                    dev = devs[dev_idxs[no_branch_addr >> 0x10]];
-                    dev->lw(dev->dev_obj, no_branch_addr + dev->addr_offset, (s32*)&inst);
-                    if(inst == 0) {
+                    temp_address = current_address + 8;
+                    CPU_DEVICE_GET32(apDevice, aiDevice, temp_address, &opcode);
+                    if (opcode == 0) {
                         do {
-                            cur_addr = no_branch_addr;
-                            no_branch_addr += 4;
-                            dev = devs[dev_idxs[no_branch_addr >> 0x10]];
-                            dev->lw(dev->dev_obj, no_branch_addr + dev->addr_offset, (s32*)&inst);
-                         } while(inst == 0);
+                            temp_address += 4;
+                            CPU_DEVICE_GET32(apDevice, aiDevice, temp_address, &opcode);
+                        } while (opcode == 0);
 
-                        if(MIPS_OP(inst) != OPC_LW) {
-                            cur_addr -= 4;
-                            if((fwd_branch == 0 || cur_addr > fwd_branch) && (possible_j_target == 0 || cur_addr >= possible_j_target)) {
-                                delay_flags = 0x6F;
-                                ra_saved = 0;
+                        if (MIPS_OP(opcode) != 0x23) { // lw
+                            current_address = temp_address - 8;
+                            if ((anAddr[1] == 0 || current_address > anAddr[1]) &&
+                                (anAddr[2] == 0 || current_address >= anAddr[2])) {
+                                end_flag = 111;
+                                save_restore = false;
                             }
+                        } else {
+                            current_address = temp_address - 4;
                         }
                     }
                 } else {
-                    if(fwd_branch == 0) {
-                        fwd_branch = cur_addr + branch_dist;
-                    }else if(fwd_branch < cur_addr + branch_dist) {
-                        fwd_branch = cur_addr + branch_dist;
+                    if (anAddr[1] == 0) {
+                        anAddr[1] = current_address + branch;
+                    } else if (current_address + branch > anAddr[1]) {
+                        anAddr[1] = current_address + branch;
                     }
                 }
                 break;
-            case OPC_BNE:
-            case OPC_BLEZ:
-            case OPC_BGTZ:
-            case OPC_BNEL:
-            case OPC_BLEZL:
-            case OPC_BGTZL:
-                branch_dist = MIPS_IMM(inst) * 4;
-                if(branch_dist < 0) {
-                    if(tree_was_init == 1) {
-                        next_addr = cur_addr + branch_dist + 4;
-                        if(next_addr < branch_target) {
-                            start_addr = 0;
-                            fwd_branch = 0;
-                            possible_j_target = 0;
-                            branch = 1;
-                            branch_target = next_addr;
-                            continue;
-                        }
+            case 0x05: // bne
+            case 0x06: // blez
+            case 0x07: // bgtz
+            case 0x15: // bnel
+            case 0x16: // blezl
+            case 0x17: // bgtzl
+                branch = MIPS_IMM_S16(opcode) * 4;
+                if (branch < 0) {
+                    if (check == 1 && current_address + branch + 4 < beginAddress) {
+                        anAddr[0] = 0;
+                        anAddr[1] = 0;
+                        anAddr[2] = 0;
+                        beginAddress = current_address + branch + 4;
+                        current_address = current_address + branch + 4;
+                        alert = true;
+                        continue;
                     }
                 } else {
-                    if(fwd_branch == 0) {
-                        fwd_branch = cur_addr + branch_dist;
-                    } else {
-                        if(fwd_branch < cur_addr + branch_dist) {
-                            fwd_branch = cur_addr + branch_dist;
-                        }
+                    if (anAddr[1] == 0) {
+                        anAddr[1] = current_address + branch;
+                    } else if (current_address + branch > anAddr[1]) {
+                        anAddr[1] = current_address + branch;
                     }
                 }
                 break;
-            case OPC_CP0:
-                switch(inst & 0x3F) {
-                    case 0x18:
-                        if((fwd_branch == 0 || cur_addr > fwd_branch) && (possible_j_target == 0 || cur_addr >= possible_j_target)) {
-                            delay_flags = 0xDE;
-                            ra_saved = 0;
+            case 0x10: // cop0
+                switch ((u8)MIPS_FUNCT(opcode)) {
+                    case 0x01: // tlbr
+                    case 0x02: // tlbwi
+                    case 0x05: // tlbwr
+                    case 0x08: // tlbp
+                        break;
+                    case 0x18: // eret
+                        if ((anAddr[1] == 0 || current_address > anAddr[1]) &&
+                            (anAddr[2] == 0 || current_address >= anAddr[2])) {
+                            end_flag = 222;
+                            save_restore = false;
                         }
                         break;
                     default:
-                        if(((inst >> 21) & 0x1F) == 8 && ((inst >> 16) & 0x1F) < 4) {
-                            branch_dist = MIPS_IMM(inst) * 4;
-                            if(branch < 0) {
-                                if(tree_was_init == 1) {
-                                    next_addr = cur_addr + branch_dist + 4;
-                                    if(next_addr < branch_target) {
-                                        start_addr = 0;
-                                        fwd_branch = 0;
-                                        possible_j_target = 0;
-                                        branch = 1;
-                                        branch_target = next_addr;
-                                        continue;
-                                    }
+                        switch ((u8)MIPS_FMT(opcode)) {
+                            case 0x08:
+                                switch (MIPS_FT(opcode)) {
+                                    case 0x00:
+                                    case 0x01:
+                                    case 0x02:
+                                    case 0x03:
+                                        branch = MIPS_IMM_S16(opcode) * 4;
+                                        if (branch < 0) {
+                                            if (check == 1 && current_address + branch + 4 < beginAddress) {
+                                                anAddr[0] = 0;
+                                                anAddr[1] = 0;
+                                                anAddr[2] = 0;
+                                                beginAddress = current_address + branch + 4;
+                                                current_address = current_address + branch + 4;
+                                                alert = true;
+                                                continue;
+                                            }
+                                        } else {
+                                            if (anAddr[1] == 0) {
+                                                anAddr[1] = current_address + branch;
+                                            } else if (current_address + branch > anAddr[1]) {
+                                                anAddr[1] = current_address + branch;
+                                            }
+                                        }
+                                        break;
+                                }
+                                break;
+                        }
+                        break;
+                }
+                break;
+            case 0x11: // cop1
+                if (MIPS_FMT(opcode) == 0x08) {
+                    switch ((u8)MIPS_FT(opcode)) {
+                        case 0x00:
+                        case 0x01:
+                        case 0x02:
+                        case 0x03:
+                            branch = MIPS_IMM_S16(opcode) * 4;
+                            if (branch < 0) {
+                                if (check == 1 && current_address + branch + 4 < beginAddress) {
+                                    anAddr[0] = 0;
+                                    anAddr[1] = 0;
+                                    anAddr[2] = 0;
+                                    beginAddress = current_address + branch + 4;
+                                    current_address = current_address + branch + 4;
+                                    alert = true;
+                                    continue;
                                 }
                             } else {
-                                if(fwd_branch == 0) {
-                                    fwd_branch = cur_addr + branch_dist;
-                                } else if(fwd_branch < cur_addr + branch_dist) {
-                                    fwd_branch = cur_addr + branch_dist;
+                                if (anAddr[1] == 0) {
+                                    anAddr[1] = current_address + branch;
+                                } else if (current_address + branch > anAddr[1]) {
+                                    anAddr[1] = current_address + branch;
                                 }
                             }
-                        }
-                        break;
-                    case 1:
-                    case 2:
-                    case 5:
-                    case 8:
-                        break;
+                            break;
+                    }
                 }
                 break;
-            case OPC_CP1:
-                if(((inst >> 21) & 0x1F) == 8 && ((inst >> 16) & 0x1F) < 4) {
-                    branch_dist = MIPS_IMM(inst) * 4;
-                    if(branch_dist < 0) {
-                        if(tree_was_init == 1) {
-                            next_addr = cur_addr + branch_dist + 4;
-                            if(next_addr < branch_target) {
-                                start_addr = 0;
-                                fwd_branch = 0;
-                                possible_j_target = 0;
-                                branch = 1;
-                                branch_target = next_addr;
-                                continue;
+            case 0x2B: // sw
+                if (MIPS_RT(opcode) == 31) {
+                    save_restore = true;
+                }
+                break;
+            case 0x23: // lw
+                if (MIPS_RT(opcode) == 31) {
+                    save_restore = false;
+                    if (check == 1 && alert) {
+                        current_address = beginAddress;
+
+                        while (true) {
+                            CPU_DEVICE_GET32(apDevice, aiDevice, current_address, &opcode);
+                            if (MIPS_OP(opcode) == 0x2B && MIPS_RT(opcode) == 31) { // sw ra, ...
+                                break;
                             }
+                            current_address -= 4;
                         }
-                    } else {
-                        if(fwd_branch == 0) {
-                            fwd_branch = cur_addr + branch_dist;
-                        } else if(fwd_branch < cur_addr + branch_dist) {
-                            fwd_branch = cur_addr + branch_dist;
-                        }
+
+                        do {
+                            current_address -= 4;
+                            CPU_DEVICE_GET32(apDevice, aiDevice, current_address, &opcode);
+                            if (opcode != 0 && treeSearch(pCPU, current_address - 4, tree_node)) {
+                                break;
+                            }
+                        } while (opcode != 0);
+
+                        anAddr[0] = 0;
+                        anAddr[1] = 0;
+                        anAddr[2] = 0;
+                        current_address = beginAddress = current_address + 4;
+                        alert = false;
+                        continue;
                     }
-                }
-                break;
-            case OPC_LW:
-                if(MIPS_RT(inst) != MREG_RA) {
-                    break;
-                }
-
-                ra_saved = 0;
-                if(!tree_was_init || !branch) {
-                    break;
-                }
-
-                while(1) {
-                    dev = devs[dev_idxs[branch_target >> 0x10]];
-                    dev->lw(dev->dev_obj, branch_target + dev->addr_offset, (s32*)&inst);
-                    if(MIPS_OP(inst) == OPC_SW && MIPS_RT(inst) == MREG_RA) {
-                        break;
-                    }
-                    branch_target -= 4;
-                }
-
-                do {
-                    next_addr = branch_target;
-                    branch_target -= 4;
-                    dev = devs[dev_idxs[branch_target >> 16]];
-                    dev->lw(dev->dev_obj, branch_target + dev->addr_offset, (s32*)&inst);
-                    if(inst != 0) {
-                        fwd_branch = next_addr - 8;
-
-                        if(search_both_roots(cpu->recomp_tree, fwd_branch, out_node)) {
-                            break;
-                        }
-
-                        if(node_found) {
-                            break;
-                        }
-                    }
-                } while(inst != 0);
-
-                start_addr = 0;
-                fwd_branch = 0;
-                possible_j_target = 0;
-                branch = 0;
-                branch_target = next_addr;
-                continue;
-            case OPC_SW:
-                if(MIPS_RT(inst) == MREG_RA) {
-                    ra_saved = 1;
                 }
                 break;
             default:
-                fetch_next = lbl_80170980[MIPS_OP(inst)];
+                valid = Opcode[MIPS_OP(opcode)];
                 break;
         }
 
-        next_addr = cur_addr;
-        if(delay_flags != 0) {
-            if(delay_flags == 0x6F) {
-                next_addr += 8;
-                cur_addr += 4;
+        if (end_flag != 0) {
+            if (end_flag == 111) {
+                anAddr[2] = current_address + 4;
+                current_address += 8;
             } else {
-                next_addr += 4;
+                anAddr[2] = current_address;
+                current_address += 4;
             }
 
-            if(tree_was_init) {
-                if(gSystem->rom_id == 'NM8E') {
-                    if(cur_addr == 0x802F1FF0) {
-                        start_addr = 0x802F1F50;
-                    } else if(cur_addr == 0x80038308) {
-                        start_addr = 0x800382F0;
+            if (check == 1) {
+                if (gpSystem->eTypeROM == 'NM8E') {
+                    if (anAddr[2] == 0x802F1FF0) {
+                        anAddr[0] = 0x802F1F50;
+                    } else if (anAddr[2] == 0x80038308) {
+                        anAddr[0] = 0x800382F0;
                     }
-                } else if(gSystem->rom_id == 'NMFE') {
-                    if(cur_addr == 0x8009E420) {
-                        start_addr = 0x8009E380;
+                } else if (gpSystem->eTypeROM == 'NMFE') {
+                    if (anAddr[2] == 0x8009E420) {
+                        anAddr[0] = 0x8009E380;
                     }
-                } else if(gSystem->rom_id == 'NMQE' || gSystem->rom_id == 'NMQJ' || gSystem->rom_id == 'NMQP') {
-                    if(start_addr == 0x802C88FC) {
-                        cur_addr = 0x802C8974;
-                    } else if(start_addr = 0x802C8978) {
-                        cur_addr = 0x802C8A5C;
-                    } else if(start_addr == 0x802C8A60) {
-                        cur_addr = 0x802C8C60;
+                } else if (gpSystem->eTypeROM == 'NMQE' || gpSystem->eTypeROM == 'NMQJ' ||
+                           gpSystem->eTypeROM == 'NMQP') {
+                    if (anAddr[0] == 0x802C88FC) {
+                        anAddr[2] = 0x802C8974;
+                    } else if (anAddr[0] = 0x802C8978) {
+                        anAddr[2] = 0x802C8A5C;
+                    } else if (anAddr[0] == 0x802C8A60) {
+                        anAddr[2] = 0x802C8C60;
                     }
                 }
             }
 
-            if(!treeInsert(cpu, start_addr, cur_addr)) {
-                return 0;
+            if (!treeInsert(pCPU, anAddr[0], anAddr[2])) {
+                return false;
             }
 
-            if(tree_was_init) {
-                if(!search_both_roots(cpu->recomp_tree, addr, out_node)) {
-                    return 0;
+            if (cheat_address != 0) {
+                treeSearch(pCPU, cheat_address, tree_node);
+                cheat_address = 0;
+                (*tree_node)->timeToLive = 0;
+            }
 
+            if (check == 1) {
+                if (treeSearch(pCPU, theAddress, tree_node)) {
+                    pCPU->pFunctionLast = *tree_node;
+                    return true;
+                } else {
+                    return false;
                 }
-
-                cpu->running_node = *out_node;
-                return 1;
             }
 
-            start_addr = 0;
-            fwd_branch = 0;
-            possible_j_target = 0;
-            bVar2 = 0;
-
-            if(!tree_was_init && cpu->recomp_tree->node_cnt > 0xF82) {
-                fetch_next = 0;
+            follow = false;
+            anAddr[0] = 0;
+            anAddr[1] = 0;
+            anAddr[2] = 0;
+            if (check == 0 && pCPU->gTree->total > 3970) {
+                valid = false;
             }
         }
 
-        if(bVar2) {
-            next_addr += 4;
+        if (follow) {
+            current_address += 4;
         }
+    } while (valid);
 
-        cur_addr = next_addr;
-    } while(fetch_next);
+    if (check == 0) {
+        treeInsert(pCPU, 0x80000180, 0x8000018C);
+        treeSearch(pCPU, 0x80000180, tree_node);
+        (*tree_node)->timeToLive = 0;
 
-    if(tree_was_init) {
-        return 0;
+        if (treeSearch(pCPU, theAddress, tree_node)) {
+            pCPU->pFunctionLast = *tree_node;
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    treeInsert(cpu, 0x80000180, 0x8000018C);
-    if(cpu->recomp_tree->n64_end <= 0x80000180) {
-        treeSearchNode(cpu->recomp_tree->ovl_root, 0x80000180, out_node);
-    } else {
-        treeSearchNode(cpu->recomp_tree->code_root, 0x80000180, out_node);
-    }
-
-    (*out_node)->unk_0x28 = 0;
-
-    if(!search_both_roots(cpu->recomp_tree, addr, out_node)) {
-        return 0;
-    }
-
-    cpu->running_node = *out_node;
-    return 1;
+    return false;
 }
-#else
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/cpu/cpuFindFunction.s")
-#endif
 
-s32 func_8003E604(cpu_class_t *cpu, s32 arg1, s32 arg2) {
-    recomp_tree_t *tree = cpu->recomp_tree;
-    s32 amt;
+static bool cpuDMAUpdateFunction(Cpu* pCPU, s32 start, s32 end) {
+    CpuTreeRoot* root = pCPU->gTree;
+    s32 count;
+    bool cancel;
 
-    if(tree == NULL) {
-        return 1;
+    if (root == NULL) {
+        return true;
     }
 
-    if(arg1 < tree->code_boundary && arg2 > tree->code_boundary) {
-        treeAdjustRoot(cpu, arg1, arg2);
+    if ((start < root->root_address) && (end > root->root_address)) {
+        treeAdjustRoot(pCPU, start, end);
     }
 
-    if(tree->unk_0x70 != 0 && tree->unk_0x7C != NULL) {
-        s32 ret = 0;
-        if(arg1 <= tree->unk_0x7C->n64_start_addr) {
-            if (arg2 >= tree->unk_0x7C->n64_end_addr || arg2 >= tree->unk_0x7C->n64_start_addr) {
-                ret = 1;
+    if (root->kill_limit != 0) {
+        if (root->restore != NULL) {
+            cancel = false;
+            if (start <= root->restore->nAddress0) {
+                if ((end >= root->restore->nAddress1) || (end >= root->restore->nAddress0)) {
+                    cancel = true;
+                }
+            } else {
+                if ((end >= root->restore->nAddress1) &&
+                    ((start <= root->restore->nAddress0) || (start <= root->restore->nAddress1))) {
+                    cancel = true;
+                }
             }
-        } else if(arg2 >= tree->unk_0x7C->n64_end_addr) {
-            if(arg1 <= tree->unk_0x7C->n64_start_addr || arg1 <= tree->unk_0x7C->n64_end_addr) {
-                ret = 1;
+            if (cancel) {
+                root->restore = NULL;
+                root->restore_side = 0;
             }
         }
-        
-        if(ret) { 
-            tree->unk_0x7C = NULL;
-            tree->unk_0x80 = 0;
-        }
     }
 
-    if(arg1 < tree->code_boundary) {
+    if (start < root->root_address) {
         do {
-            amt = treeKillRange(cpu, tree->code_root, arg1, arg2);
-            tree->node_cnt -= amt;
-        } while(amt != 0);
+            count = treeKillRange(pCPU, root->left, start, end);
+            root->total = root->total - count;
+        } while (count != 0);
     } else {
         do {
-            amt = treeKillRange(cpu, tree->ovl_root, arg1, arg2);
-            tree->node_cnt -= amt;
-        } while(amt != 0);
+            count = treeKillRange(pCPU, root->right, start, end);
+            root->total = root->total - count;
+        } while (count != 0);
     }
-    
-    return 1;
+
+    return true;
+}
+
+static bool treeCallerCheck(Cpu* pCPU, CpuFunction* tree, bool flag, s32 nAddress0, s32 nAddress1) {
+    s32 count;
+    s32 saveGCN;
+    s32 saveN64;
+    s32* addr_function;
+    s32* addr_call;
+    s32 pad;
+
+    if (tree->callerID_total == 0) {
+        return false;
+    }
+
+    if (tree->block != NULL) {
+        CpuCallerID* block = tree->block;
+
+        for (count = 0; count < tree->callerID_total; count++) {
+            saveN64 = block[count].N64address;
+            saveGCN = block[count].GCNaddress;
+            if (saveN64 >= nAddress0 && saveN64 <= nAddress1 && saveGCN != 0) {
+                addr_function = (s32*)saveGCN;
+                addr_call = addr_function - (flag ? 3 : 2);
+
+                addr_call[0] = 0x3CA00000 | ((u32)saveN64 >> 16);
+                addr_call[1] = 0x60A50000 | ((u32)saveN64 & 0xFFFF);
+                addr_function[0] = 0x48000000 | (((u32)pCPU->pfCall - saveGCN) & 0x03FFFFFC) | 1;
+
+                block[count].GCNaddress = 0;
+                DCStoreRange(addr_call, 16);
+                ICInvalidateRange(addr_call, 16);
+            }
+        }
+    }
+
+    return true;
+}
+
+static bool treeInit(Cpu* pCPU, s32 root_address) {
+    CpuTreeRoot* root = pCPU->gTree;
+
+    if (root == NULL) {
+        return false;
+    }
+
+    root->total = 0;
+    root->total_memory = 0;
+    root->root_address = root_address;
+    root->start_range = 0;
+    root->end_range = 0x80000000;
+    root->left = NULL;
+    root->right = NULL;
+    root->kill_limit = 0;
+    root->kill_number = 0;
+    root->side = 0;
+    root->restore = NULL;
+    root->restore_side = 0;
+    return true;
+}
+
+static bool treeInitNode(CpuFunction** tree, CpuFunction* prev, s32 start, s32 end) {
+    CpuFunction* node;
+    s32 where;
+
+    if (!cpuTreeTake(&node, &where, sizeof(CpuFunction))) {
+        return false;
+    }
+
+    node->nAddress0 = start;
+    node->nAddress1 = end;
+    node->block = NULL;
+    node->callerID_total = 0;
+    node->callerID_flag = 0x21;
+    node->pnBase = NULL;
+    node->pfCode = NULL;
+    node->nCountJump = 0;
+    node->aJump = NULL;
+    node->nChecksum = 0;
+    node->timeToLive = 1;
+    node->memory_size = 0;
+    node->heapID = -1;
+    node->heapWhere = -1;
+    node->treeheapWhere = where;
+    node->prev = prev;
+    node->left = NULL;
+    node->right = NULL;
+
+    *tree = node;
+    return true;
+}
+
+static inline bool cpuTreeFree(CpuFunction* pFunction) {
+    u32* anPack;
+    s32 iPack;
+    u32 nMask;
+
+    if (pFunction->treeheapWhere == -1) {
+        return false;
+    }
+
+    anPack = SYSTEM_CPU(gpSystem)->aHeapTreeFlag;
+    nMask = ((1 << (pFunction->treeheapWhere >> 16)) - 1) << (pFunction->treeheapWhere & 0x1F);
+    iPack = (pFunction->treeheapWhere & 0xFFFF) >> 5;
+    if ((anPack[iPack] & nMask) == nMask) {
+        anPack[iPack] &= ~nMask;
+        return true;
+    }
+
+    return false;
+}
+
+static bool treeKill(Cpu* pCPU) {
+    CpuTreeRoot* root;
+    s32 count;
+
+    count = 0;
+    root = pCPU->gTree;
+    if (root->left != NULL) {
+        count += treeKillNodes(pCPU, root->left);
+        treeCallerKill(pCPU, root->left);
+        if (root->left->pfCode != NULL) {
+            cpuHeapFree(pCPU, root->left);
+        }
+        if (!cpuTreeFree(root->left)) {
+            return false;
+        }
+        PAD_STACK();
+        PAD_STACK();
+
+        count++;
+    }
+
+    if (root->right != NULL) {
+        count += treeKillNodes(pCPU, root->right);
+        treeCallerKill(pCPU, root->right);
+        if (root->right->pfCode != NULL) {
+            cpuHeapFree(pCPU, root->right);
+        }
+        if (!cpuTreeFree(root->right)) {
+            return false;
+        }
+        PAD_STACK();
+        PAD_STACK();
+
+        count++;
+    }
+
+    root->total -= count;
+    if (!xlHeapFree((void**)&pCPU->gTree)) {
+        return false;
+    }
+
+    pCPU->gTree = NULL;
+    return true;
+}
+
+static bool treeKillNodes(Cpu* pCPU, CpuFunction* tree) {
+    CpuFunction* current;
+    CpuFunction* kill;
+    s32 count;
+
+    count = 0;
+    if (tree == NULL) {
+        return false;
+    }
+    current = tree;
+
+    do {
+        while (current->left != NULL) {
+            current = current->left;
+        }
+
+        do {
+            if (current->right != NULL) {
+                current = current->right;
+                break;
+            }
+
+            if (current == tree) {
+                return count;
+            }
+
+            while (current != current->prev->left) {
+                kill = current;
+                current = current->prev;
+
+                if (!fn_80031D4C(pCPU, kill, 2)) {
+                    treeCallerKill(pCPU, kill);
+                    if (kill->pfCode != NULL) {
+                        cpuHeapFree(pCPU, kill);
+                    }
+                }
+
+                // TODO: regalloc hacks
+                (void)kill->treeheapWhere;
+                if (!cpuTreeFree(kill)) {
+                    return false;
+                }
+                PAD_STACK();
+                PAD_STACK();
+
+                count += 1;
+                if (current == tree) {
+                    return count;
+                }
+            }
+
+            kill = current;
+            current = current->prev;
+
+            if (!fn_80031D4C(pCPU, kill, 2)) {
+                treeCallerKill(pCPU, kill);
+                if (kill->pfCode != NULL) {
+                    cpuHeapFree(pCPU, kill);
+                }
+            }
+
+            // TODO: regalloc hacks
+            (void)kill->treeheapWhere;
+            if (!cpuTreeFree(kill)) {
+                return false;
+            }
+            PAD_STACK();
+            PAD_STACK();
+
+            count += 1;
+        } while (current != NULL);
+    } while (current != NULL);
+
+    return count;
+}
+
+static bool treeDeleteNode(Cpu* pCPU, CpuFunction** top, CpuFunction* kill) {
+    CpuTreeRoot* root;
+    CpuFunction* save1;
+    CpuFunction* save2;
+    CpuFunction* connect;
+
+    root = pCPU->gTree;
+    if (kill == NULL) {
+        return false;
+    }
+
+    root->total--;
+    connect = kill->prev;
+    save1 = kill->left;
+    save2 = kill->right;
+
+    if (connect != NULL) {
+        if (save1 != NULL) {
+            if (connect->left == kill) {
+                connect->left = save1;
+            } else {
+                connect->right = save1;
+            }
+            save1->prev = connect;
+            if (save2 != NULL) {
+                while (save1->right != NULL) {
+                    save1 = save1->right;
+                }
+                save1->right = save2;
+                save2->prev = save1;
+            }
+        } else if (save2 != NULL) {
+            if (connect->left == kill) {
+                connect->left = save2;
+            } else {
+                connect->right = save2;
+            }
+            save2->prev = connect;
+        } else if (connect->left == kill) {
+            connect->left = NULL;
+        } else {
+            connect->right = NULL;
+        }
+    } else if (save1 != NULL) {
+        *top = save1;
+        if (root->left == kill) {
+            root->left = save1;
+        } else {
+            root->right = save1;
+        }
+        save1->prev = NULL;
+        if (save2 != NULL) {
+            while (save1->right != NULL) {
+                save1 = save1->right;
+            }
+            save1->right = save2;
+            save2->prev = save1;
+        }
+    } else if (save2 != NULL) {
+        *top = save2;
+        if (root->left == kill) {
+            root->left = save2;
+        } else {
+            root->right = save2;
+        }
+        save2->prev = NULL;
+    } else {
+        *top = NULL;
+        if (root->left == kill) {
+            root->left = NULL;
+        } else {
+            root->right = NULL;
+        }
+    }
+
+    if (root->start_range == kill->nAddress0) {
+        if (save2 != NULL) {
+            while (save2->left != NULL) {
+                save2 = save2->left;
+            }
+            root->start_range = save2->nAddress0;
+        } else if (connect != NULL) {
+            root->start_range = connect->nAddress0;
+        } else {
+            root->start_range = root->root_address;
+        }
+    }
+
+    if (root->end_range == kill->nAddress1) {
+        if (save1 != NULL) {
+            while (save1->right != NULL) {
+                save1 = save1->right;
+            }
+            root->end_range = save1->nAddress1;
+        } else if (connect != NULL) {
+            root->end_range = connect->nAddress1;
+        } else {
+            root->end_range = root->root_address;
+        }
+    }
+
+    if (!fn_80031D4C(pCPU, kill, 2)) {
+        treeCallerKill(pCPU, kill);
+        if (kill->pfCode != NULL) {
+            cpuHeapFree(pCPU, kill);
+        }
+    }
+
+    // TODO: regalloc hacks
+    (void)kill->treeheapWhere;
+    if (!cpuTreeFree(kill)) {
+        return false;
+    }
+    PAD_STACK();
+    PAD_STACK();
+
+    return true;
+}
+
+bool fn_8003F330(Cpu* pCPU, CpuFunction* pFunction) {
+    CpuFunction* top;
+
+    if (cpuFreeCachedAddress(pCPU, pFunction->nAddress0, pFunction->nAddress1) == 0) {
+        return false;
+    }
+
+    return !!treeDeleteNode(pCPU, &top, pFunction);
+}
+
+static bool treeInsert(Cpu* pCPU, s32 start, s32 end) {
+    CpuTreeRoot* root;
+    CpuFunction* current;
+    s32 flag;
+
+    root = pCPU->gTree;
+    if (root == NULL) {
+        return false;
+    }
+    if (start < root->root_address && end > root->root_address) {
+        treeAdjustRoot(pCPU, start, end);
+    }
+    root->total++;
+    root->total_memory += sizeof(CpuFunction);
+    if (start != 0x80000180) {
+        if (start < root->start_range) {
+            root->start_range = start;
+        }
+        if (end > root->end_range) {
+            root->end_range = end;
+        }
+    }
+    if (start < root->root_address) {
+        flag = treeInsertNode(&root->left, start, end, &current);
+    } else if (start > root->root_address) {
+        flag = treeInsertNode(&root->right, start, end, &current);
+    } else {
+        return false;
+    }
+
+    if (flag != 0) {
+        return treeBalance(root);
+    }
+    return false;
+}
+
+static bool treeInsertNode(CpuFunction** tree, s32 start, s32 end, CpuFunction** ppFunction) {
+    CpuFunction** current;
+    CpuFunction* prev;
+
+    current = tree;
+    if (*tree == NULL) {
+        if (treeInitNode(current, NULL, start, end)) {
+            *ppFunction = *current;
+            return true;
+        }
+        return false;
+    }
+
+    do {
+        if (start < (*current)->nAddress0) {
+            prev = *current;
+            current = &(*current)->left;
+        } else if (start > (*current)->nAddress0) {
+            prev = *current;
+            current = &(*current)->right;
+        } else {
+            return false;
+        }
+    } while (*current != NULL);
+
+    if (treeInitNode(current, prev, start, end)) {
+        *ppFunction = *current;
+        return true;
+    }
+    return false;
+}
+
+static bool treeBalance(CpuTreeRoot* root) {
+    CpuFunction* tree;
+    CpuFunction* current;
+    CpuFunction* save;
+    s32 total;
+    s32 count;
+
+    for (total = 0; total < 2; total++) {
+        if (total == 0) {
+            tree = root->left;
+        } else {
+            tree = root->right;
+        }
+
+        if (tree != NULL) {
+            current = tree;
+            count = 0;
+
+            while (current->right != NULL) {
+                current = current->right;
+                count++;
+            }
+
+            if (count >= 12) {
+                current = tree;
+                save = tree->right;
+                count = count / 2;
+
+                while (count-- != 0) {
+                    current = current->right;
+                }
+
+                current->prev->right = NULL;
+                tree->right = current;
+                current->prev = tree;
+
+                while (current->left != NULL) {
+                    current = current->left;
+                }
+
+                current->left = save;
+                save->prev = current;
+            }
+
+            current = tree;
+            count = 0;
+
+            while (current->left != NULL) {
+                current = current->left;
+                count++;
+            }
+
+            if (count >= 12) {
+                current = tree;
+                save = tree->left;
+                count = count / 2;
+
+                while (count-- != 0) {
+                    current = current->left;
+                }
+
+                current->prev->left = NULL;
+                tree->left = current;
+                current->prev = tree;
+
+                while (current->right != NULL) {
+                    current = current->right;
+                }
+
+                current->right = save;
+                save->prev = current;
+            }
+        }
+    }
+
+    return true;
+}
+
+static bool treeAdjustRoot(Cpu* pCPU, s32 new_start, s32 new_end) {
+    s32 old_root;
+    s32 new_root = new_end + 2;
+    s32 kill_start = 0;
+    s32 check1 = 0;
+    s32 check2 = 0;
+    u16 total;
+    s32 total_memory;
+    s32 address;
+    CpuTreeRoot* root = pCPU->gTree;
+    CpuFunction* node = NULL;
+    CpuFunction* change = NULL;
+
+    old_root = root->root_address;
+    total = root->total;
+    total_memory = root->total_memory;
+    address = old_root + 2;
+
+    do {
+        node = NULL;
+        treeSearchNode(root->right, address, &node);
+        if (node != NULL) {
+            if (kill_start == 0) {
+                kill_start = address;
+            }
+
+            root->root_address = new_root;
+            if (!treeInsert(pCPU, node->nAddress0, node->nAddress1)) {
+                return false;
+            }
+            if (!treeSearchNode(root->left, address, &change)) {
+                return false;
+            }
+
+            change->timeToLive = node->timeToLive;
+            change->memory_size = node->memory_size;
+            if (node->pfCode != NULL) {
+                change->pfCode = node->pfCode;
+                node->pfCode = NULL;
+            }
+            change->nCountJump = node->nCountJump;
+            if (node->aJump != NULL) {
+                change->aJump = node->aJump;
+                node->aJump = NULL;
+            }
+            change->nChecksum = node->nChecksum;
+            change->callerID_flag = node->callerID_flag;
+            change->callerID_total = node->callerID_total;
+            if (node->callerID_total != 0) {
+                change->block = node->block;
+                node->block = NULL;
+            }
+
+            address = node->nAddress1;
+            root->root_address = old_root;
+            check2 += treeKillRange(pCPU, root->right, node->nAddress0, node->nAddress1 - 4);
+        }
+
+        address += 4;
+    } while (address <= new_end);
+
+    root->root_address = new_root;
+    root->total = total;
+    root->total_memory = total_memory;
+    return true;
+}
+
+static bool treeSearchNode(CpuFunction* tree, s32 target, CpuFunction** node) {
+    CpuFunction* current;
+
+    current = tree;
+    if (current == NULL) {
+        return false;
+    }
+
+    do {
+        if (target >= current->nAddress0 && target < current->nAddress1) {
+            *node = current;
+            return true;
+        }
+        if (target < current->nAddress0) {
+            current = current->left;
+        } else if (target > current->nAddress0) {
+            current = current->right;
+        } else {
+            current = NULL;
+        }
+    } while (current != NULL);
+
+    return false;
+}
+
+static bool treeKillRange(Cpu* pCPU, CpuFunction* tree, s32 start, s32 end) {
+    CpuTreeRoot* root = pCPU->gTree;
+    CpuFunction* node1 = NULL;
+    CpuFunction* node2 = NULL;
+    CpuFunction* save1;
+    CpuFunction* save2;
+    CpuFunction* connect;
+    bool update = false;
+    s32 count = 0;
+
+    if (start < root->start_range && end < root->start_range) {
+        return false;
+    }
+    if (start > root->end_range && end > root->end_range) {
+        return false;
+    }
+
+    do {
+        treeSearchNode(tree, start, &node1);
+        if (node1 != NULL) {
+            break;
+        }
+        start += 4;
+    } while (start < end);
+
+    if (node1 != NULL) {
+        connect = node1->prev;
+        node1->prev = NULL;
+        save1 = node1->left;
+        node1->left = NULL;
+        save2 = node1->right;
+
+        while (save2 != NULL) {
+            if (save2->nAddress0 < end) {
+                if (save2->nAddress1 == root->end_range) {
+                    update = true;
+                }
+                save2 = save2->right;
+            } else if (save2 == NULL) {
+                break;
+            } else {
+                save2->prev->right = NULL;
+                break;
+            }
+        }
+
+        if (connect != NULL) {
+            if (save1 != NULL) {
+                if (connect->left == node1) {
+                    connect->left = save1;
+                } else {
+                    connect->right = save1;
+                }
+                save1->prev = connect;
+                if (save2 != NULL) {
+                    while (save1->right != NULL) {
+                        save1 = save1->right;
+                    }
+                    save1->right = save2;
+                    save2->prev = save1;
+                }
+            } else if (save2 != NULL) {
+                if (connect->left == node1) {
+                    connect->left = save2;
+                } else {
+                    connect->right = save2;
+                }
+                save2->prev = connect;
+            } else if (connect->left == node1) {
+                connect->left = NULL;
+            } else {
+                connect->right = NULL;
+            }
+        } else if (save1 != NULL) {
+            tree = save1;
+            if (root->left == node1) {
+                root->left = save1;
+            } else {
+                root->right = save1;
+            }
+            save1->prev = NULL;
+            if (save2 != NULL) {
+                while (save1->right != NULL) {
+                    save1 = save1->right;
+                }
+                save1->right = save2;
+                save2->prev = save1;
+            }
+        } else if (save2 != NULL) {
+            tree = save2;
+            if (root->left == node1) {
+                root->left = save2;
+            } else {
+                root->right = save2;
+            }
+            save2->prev = NULL;
+        } else {
+            tree = NULL;
+            if (root->left == node1) {
+                root->left = NULL;
+            } else {
+                root->right = NULL;
+            }
+        }
+        if (root->start_range == node1->nAddress0) {
+            if (save2 != NULL) {
+                while (save2->left != NULL) {
+                    save2 = save2->left;
+                }
+                root->start_range = save2->nAddress0;
+            } else if (connect != NULL) {
+                root->start_range = connect->nAddress0;
+            } else {
+                root->start_range = root->root_address;
+            }
+        }
+
+        if (update) {
+            if (save1 != NULL) {
+                while (save1->right != NULL) {
+                    save1 = save1->right;
+                }
+                root->end_range = save1->nAddress1;
+            } else if (connect != NULL) {
+                root->end_range = connect->nAddress1;
+            } else {
+                root->end_range = root->root_address;
+            }
+        }
+
+        count += treeKillNodes(pCPU, node1);
+
+        if (!fn_80031D4C(pCPU, node1, 2)) {
+            treeCallerKill(pCPU, node1);
+            if (node1->pfCode != NULL) {
+                cpuHeapFree(pCPU, node1);
+            }
+        }
+
+        if (!cpuTreeFree(node1)) {
+            return false;
+        }
+        PAD_STACK();
+        PAD_STACK();
+
+        count++;
+    }
+
+    do {
+        treeSearchNode(tree, end, &node2);
+        if (node2 != NULL) {
+            break;
+        }
+        end -= 4;
+    } while (start < end);
+
+    if (node2 != NULL) {
+        connect = node2->prev;
+        node2->prev = NULL;
+        save1 = node2->left;
+        save2 = node2->right;
+        node2->right = NULL;
+
+        while (save1 != NULL) {
+            if (save1->nAddress0 > start) {
+                save1 = save1->left;
+            } else if (save1 != NULL) {
+                save1->prev->left = NULL;
+                break;
+            } else {
+                break;
+            }
+        }
+
+        if (connect != NULL) {
+            if (save2 != NULL) {
+                if (connect->left == node2) {
+                    connect->left = save2;
+                } else {
+                    connect->right = save2;
+                }
+                save2->prev = connect;
+                if (save1 != NULL) {
+                    while (save2->left != NULL) {
+                        save2 = save2->left;
+                    }
+                    save2->left = save1;
+                    save1->prev = save2;
+                }
+            } else if (save1 != NULL) {
+                if (connect->left == node2) {
+                    connect->left = save1;
+                } else {
+                    connect->right = save1;
+                }
+                save1->prev = connect;
+            } else if (connect->left == node2) {
+                connect->left = NULL;
+            } else {
+                connect->right = NULL;
+            }
+        } else if (save2 != NULL) {
+            if (root->left == node2) {
+                root->left = save2;
+            } else {
+                root->right = save2;
+            }
+            save2->prev = NULL;
+            if (save1 != NULL) {
+                while (save2->left != NULL) {
+                    save2 = save2->left;
+                }
+                save2->left = save1;
+                save1->prev = save2;
+            }
+        } else if (save1 != NULL) {
+            if (root->left == node2) {
+                root->left = save1;
+            } else {
+                root->right = save1;
+            }
+            save1->prev = NULL;
+        } else if (root->left == node2) {
+            root->left = NULL;
+        } else {
+            root->right = NULL;
+        }
+
+        if (root->end_range == node2->nAddress1) {
+            if (save1 != NULL) {
+                while (save1->right != NULL) {
+                    save1 = save1->right;
+                }
+                root->end_range = save1->nAddress1;
+            } else if (connect != NULL) {
+                root->end_range = connect->nAddress1;
+            } else {
+                root->end_range = root->root_address;
+            }
+        }
+
+        count += treeKillNodes(pCPU, node2);
+
+        if (!fn_80031D4C(pCPU, node2, 2)) {
+            treeCallerKill(pCPU, node2);
+            if (node2->pfCode != NULL) {
+                cpuHeapFree(pCPU, node2);
+            }
+        }
+
+        if (!cpuTreeFree(node2)) {
+            return false;
+        }
+        PAD_STACK();
+        PAD_STACK();
+
+        count++;
+    }
+
+    return count;
+}
+
+static bool treeTimerCheck(Cpu* pCPU) {
+    CpuTreeRoot* root;
+    s32 begin;
+    s32 end;
+
+    if (pCPU->survivalTimer > 0x7FFFF000) {
+        root = pCPU->gTree;
+        if (root->kill_limit != 0) {
+            return false;
+        }
+        begin = 0;
+        end = 0x7FFFF000;
+        if (root->left != NULL) {
+            treePrintNode(pCPU, root->left, 0x100, &begin, &end);
+        }
+        if (root->right != NULL) {
+            treePrintNode(pCPU, root->right, 0x100, &begin, &end);
+        }
+        begin = end - 3;
+        if (root->left != NULL) {
+            treePrintNode(pCPU, root->left, 0x1000, &begin, &end);
+        }
+        if (root->right != NULL) {
+            treePrintNode(pCPU, root->right, 0x1000, &begin, &end);
+        }
+        pCPU->survivalTimer -= begin;
+        return true;
+    }
+    return false;
+}
+
+bool treeCleanUpCheck(Cpu* pCPU, CpuFunction* node) {
+    s32 kill_limit = pCPU->survivalTimer - 200;
+
+    if (!treeForceCleanUp(pCPU, pCPU->pFunctionLast, kill_limit)) {
+        return false;
+    }
+
+    if (!treeForceCleanUp(pCPU, pCPU->pFunctionLast, kill_limit)) {
+        return false;
+    }
+
+    return true;
+}
+
+static bool treeCleanUp(Cpu* pCPU, CpuTreeRoot* root) {
+    bool done = false;
+    bool complete = false;
+    s32 pad;
+
+    if (root->side == 0) {
+        done = treeCleanNodes(pCPU, root->left);
+    }
+    if ((root->side != 0 || done) && treeCleanNodes(pCPU, root->right)) {
+        complete = true;
+    }
+    if (!complete) {
+        return false;
+    }
+
+    if (treeMemory(pCPU) > 0x400000) {
+        root->kill_limit = pCPU->survivalTimer - 10;
+    } else if (treeMemory(pCPU) > 3250000) {
+        root->kill_limit += 95;
+        if (root->kill_limit > pCPU->survivalTimer - 10) {
+            root->kill_limit = pCPU->survivalTimer - 10;
+        }
+    } else {
+        root->kill_limit = 0;
+        root->restore = NULL;
+        root->restore_side = 0;
+    }
+
+    return true;
+}
+
+static bool treeCleanNodes(Cpu* pCPU, CpuFunction* top) {
+    CpuFunction** current;
+    CpuFunction* kill = NULL;
+    CpuTreeRoot* root = pCPU->gTree;
+    s32 kill_limit = root->kill_limit;
+    CpuFunction* temp;
+
+    if (top == NULL) {
+        root->side ^= 1;
+        return true;
+    }
+
+    current = &root->restore;
+    if (root->restore == NULL) {
+        *current = top;
+    }
+
+    while (*current != NULL) {
+        if (pCPU->nRetrace != pCPU->nRetraceUsed || root->kill_number >= 12) {
+            break;
+        }
+
+        if (root->restore_side == 0) {
+            while ((*current)->left != NULL) {
+                *current = (*current)->left;
+            }
+            root->restore_side = 1;
+        }
+
+        while (*current != NULL) {
+            if (pCPU->nRetrace != pCPU->nRetraceUsed || root->kill_number >= 12) {
+                break;
+            }
+
+            if (kill != NULL) {
+                if (!cpuFreeCachedAddress(pCPU, kill->nAddress0, kill->nAddress1)) {
+                    return false;
+                }
+                if (!treeDeleteNode(pCPU, &top, kill)) {
+                    return false;
+                }
+                kill = NULL;
+                root->kill_number++;
+            }
+
+            temp = *current;
+            if (temp->timeToLive > 0 && temp->timeToLive <= kill_limit) {
+                kill = *current;
+            }
+
+            if ((*current)->right != NULL) {
+                *current = (*current)->right;
+                root->restore_side = 0;
+                break;
+            }
+
+            if (*current == top) {
+                if (kill != NULL) {
+                    if (!cpuFreeCachedAddress(pCPU, kill->nAddress0, kill->nAddress1)) {
+                        return false;
+                    }
+                    if (!treeDeleteNode(pCPU, &top, kill)) {
+                        return false;
+                    }
+                }
+
+                root->side ^= 1;
+                *current = NULL;
+                root->restore_side = 0;
+                return true;
+            }
+
+            while (*current != (*current)->prev->left) {
+                *current = (*current)->prev;
+                if (*current == top) {
+                    if (kill != NULL) {
+                        if (!cpuFreeCachedAddress(pCPU, kill->nAddress0, kill->nAddress1)) {
+                            return false;
+                        }
+                        if (!treeDeleteNode(pCPU, &top, kill)) {
+                            return false;
+                        }
+                    }
+
+                    root->side ^= 1;
+                    *current = NULL;
+                    root->restore_side = 0;
+                    return true;
+                }
+            }
+
+            *current = (*current)->prev;
+            root->restore_side = 1;
+        }
+    }
+
+    if (kill != NULL) {
+        if (!cpuFreeCachedAddress(pCPU, kill->nAddress0, kill->nAddress1)) {
+            return false;
+        }
+        if (!treeDeleteNode(pCPU, &top, kill)) {
+            return false;
+        }
+    }
+    return false;
+}
+
+static bool treeForceCleanNodes(Cpu* pCPU, CpuFunction* tree, s32 kill_limit) {
+    CpuFunction* current;
+    CpuFunction* kill = NULL;
+
+    if (tree == NULL) {
+        return false;
+    }
+    current = tree;
+
+    do {
+        while (current->left != NULL) {
+            current = current->left;
+        }
+
+        do {
+            if (kill != NULL) {
+                if (!cpuFreeCachedAddress(pCPU, kill->nAddress0, kill->nAddress1)) {
+                    return false;
+                }
+                if (!treeDeleteNode(pCPU, &tree, kill)) {
+                    return false;
+                }
+                kill = NULL;
+            }
+
+            if (current->timeToLive > 0 && current->timeToLive <= kill_limit) {
+                kill = current;
+            }
+
+            if (current->right != NULL) {
+                current = current->right;
+                break;
+            }
+
+            if (current == tree) {
+                if (kill != NULL) {
+                    if (!cpuFreeCachedAddress(pCPU, kill->nAddress0, kill->nAddress1)) {
+                        return false;
+                    }
+                    if (!treeDeleteNode(pCPU, &tree, kill)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            while (current != current->prev->left) {
+                current = current->prev;
+                if (current == tree) {
+                    if (kill != NULL) {
+                        if (!cpuFreeCachedAddress(pCPU, kill->nAddress0, kill->nAddress1)) {
+                            return false;
+                        }
+                        if (!treeDeleteNode(pCPU, &tree, kill)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            }
+
+            current = current->prev;
+        } while (current != NULL);
+    } while (current != NULL);
+
+    return false;
+}
+
+static bool treePrintNode(Cpu* pCPU, CpuFunction* tree, s32 print_flag, s32* left, s32* right) {
+    CpuFunction* current;
+    bool flag;
+    s32 level;
+
+    level = 0;
+    if (tree == NULL) {
+        return false;
+    }
+
+    flag = ganMapGPR[31] & 0x100 ? true : false;
+    current = tree;
+
+    while (true) {
+        while (current->left != NULL) {
+            current = current->left;
+            level++;
+            if (print_flag & 1) {
+                if (level > *left) {
+                    (*left)++;
+                }
+            }
+        }
+
+        do {
+            if (print_flag & 0x10) {
+                treeCallerCheck(pCPU, current, flag, *left, *right);
+            } else if (print_flag & 0x100) {
+                if (current->timeToLive > 0) {
+                    if (current->timeToLive > *left) {
+                        *left = current->timeToLive;
+                    }
+                    if (current->timeToLive < *right) {
+                        *right = current->timeToLive;
+                    }
+                }
+            } else if (print_flag & 0x1000) {
+                if (current->timeToLive > 0) {
+                    current->timeToLive -= *left;
+                }
+            }
+
+            if (current->right != NULL) {
+                current = current->right;
+                level++;
+                if (print_flag & 1) {
+                    if (level > *right) {
+                        (*right)++;
+                    }
+                }
+                break;
+            }
+
+            if (current == tree) {
+                return true;
+            }
+
+            while (current != current->prev->left) {
+                current = current->prev;
+                level -= 1;
+                if (current == tree) {
+                    return true;
+                }
+            }
+
+            current = current->prev;
+        } while (current != NULL);
+
+        if (current == NULL) {
+            return false;
+        }
+    }
+
+    return false;
 }
