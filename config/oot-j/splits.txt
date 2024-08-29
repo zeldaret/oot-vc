@@ -125,7 +125,7 @@ emulator/library.c:
 	.sdata      start:0x8025C838 end:0x8025C848
 	.sdata2     start:0x8025DE68 end:0x8025DEA8
 
-emulator/codeGCN.c:
+emulator/codeRVL.c:
 	.text       start:0x8005E29C end:0x8005E2D0
 	.data       start:0x801743A0 end:0x801743B0
 	.sdata      start:0x8025C848 end:0x8025C850
@@ -137,7 +137,7 @@ emulator/helpRVL.c:
 	.sdata      start:0x8025C850 end:0x8025C868
 	.sdata2     start:0x8025DEA8 end:0x8025DF18
 
-emulator/soundGCN.c:
+emulator/soundRVL.c:
 	.text       start:0x80060A4C end:0x800616C0
 	.data       start:0x801744D8 end:0x801744E8
 	.sdata      start:0x8025C868 end:0x8025C870

@@ -55,7 +55,7 @@ MACROS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"typedef __builtin_va_list va_list;"), "typedef struct { char gpr; char fpr; char reserved[2]; char* input_arg_area; char* reg_save_area;} __va_list[1]; typedef __va_list va_list;"),
     (re.compile(r"\bDVD_ERROR_CMD_MAX\b"), "5"),
     (re.compile(r"\b__ungetc_buffer_size\b"), "2"),
-    (re.compile(r"\bDECOMP_DONT_INLINE\b"), ""),
+    (re.compile(r"\bNO_INLINE\b"), ""),
     (re.compile(r"\bFS_MAX_PATH\b"), "64"),
     (re.compile(r"\bNAND_BANNER_TITLE_MAX\b"), "32"),
     (re.compile(r"\bNAND_BANNER_ICON_MAX_FRAME\b"), "8"),

@@ -2,6 +2,7 @@
 #define _RVL_SDK_PAD_H
 
 #include "revolution/types.h"
+#include "macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -84,6 +85,8 @@ void PADSetSpec(u32 spec);
 void PADClamp(PADStatus* status);
 bool __PADDisableRecalibration(bool disable);
 PADSamplingCallback PADSetSamplingCallback(PADSamplingCallback callback);
+
+void ClampStick(s8* px, s8* py, s8 max, s8 min) NO_INLINE;
 
 #ifdef __cplusplus
 }

@@ -1,8 +1,6 @@
 #ifndef _MIPS_H
 #define _MIPS_H
 
-#define MIPS_OP(inst) ((inst >> 0x1A) & 0x3F)
-
 #define OPC_SPECIAL 0
 #define OPC_REGIMM 1
 #define OPC_J 2
@@ -123,15 +121,28 @@
 #define REGIMM_BLTZALL 18
 #define REGIMM_BGEZALL 19
 
-#define MIPS_RD(inst) ((inst >> 0xB) & 0x1F)
-#define MIPS_RT(inst) ((inst >> 0x10) & 0x1F)
-#define MIPS_RS(inst) ((inst >> 0x15) & 0x1F)
+// MIPS instruction encoding:
+// R-type: opcode (6 bits) | rs (5 bits) | rt (5 bits) | rd (5 bits) | sa (5 bits) | funct (6 bits)
+// I-type: opcode (6 bits) | rs (5 bits) | rt (5 bits) | imm (16 bits)
+// J-type: opcode (6 bits) | target (26 bits)
+//  float: opcode (6 bits) | fmt (5 bits) | ft (5 bits) | fs (5 bits) | fd (5 bits) | funct (6 bits)
+#define MIPS_OP(inst) ((inst) >> 26)
+#define MIPS_RS(inst) (((inst) >> 21) & 0x1F)
+#define MIPS_RT(inst) (((inst) >> 16) & 0x1F)
+#define MIPS_RD(inst) (((inst) >> 11) & 0x1F)
+#define MIPS_SA(inst) (((inst) >> 6) & 0x1F)
+#define MIPS_FUNCT(inst) ((inst) & 0x3F)
+#define MIPS_IMM_S16(inst) ((s16)((inst) & 0xFFFF))
+#define MIPS_IMM_U16(inst) ((u16)((inst) & 0xFFFF))
+#define MIPS_TARGET(inst) ((inst) & 0x3FFFFFF)
+
+#define MIPS_FMT(inst) (((inst) >> 21) & 0x1F)
+#define MIPS_FT(inst) (((inst) >> 16) & 0x1F)
+#define MIPS_FS(inst) (((inst) >> 11) & 0x1F)
+#define MIPS_FD(inst) (((inst) >> 6) & 0x1F)
 
 #define MIPS_FDT(inst) ((inst >> 0) & 0x7FF)
 #define MIPS_FR(inst) ((inst >> 0x15) & 0x1F)
-#define MIPS_FT(inst) ((inst >> 0x10) & 0x1F)
-#define MIPS_FS(inst) ((inst >> 0xB) & 0x1F)
-#define MIPS_FD(inst) ((inst >> 6) & 0x1F)
 #define MIPS_FSUB(inst) ((inst >> 0x15) & 0x1F)
 #define MIPS_FFMT(inst) ((inst >> 0x15) & 0x1F)
 #define MIPS_FFUNC(inst) ((inst >> 0x0) & 0x3F)
@@ -152,9 +163,6 @@
 #define MIPS_FSUB_MTC 4
 #define MIPS_FSUB_DMTC 5
 #define MIPS_FSUB_CTC 6
-
-#define MIPS_IMM(inst) ((s16)(inst & 0xFFFF))
-#define MIPS_SA(inst ) ((inst >> 6) & 0x1F)
 
 #define CP0_INDEX 0
 #define CP0_RANDOM 1
@@ -210,7 +218,7 @@
 #define TLB_PFN_MASK 0x3FFFFC0
 
 #define TLB_HI_ASID_MASK 0xFF
-#define TLB__HIVPN2_MASK 0xFFFFE000
+#define TLB_HIVPN2_MASK 0xFFFFE000
 
 #define CP0_EX_NONE -1
 #define CP0_EX_INTERRUPT 0
@@ -245,7 +253,6 @@
 #define CP0_EX_RFU29 29
 #define CP0_EX_RFU30 30
 #define CP0_EX_RFU31 31
-
 
 #define MREG_R0 0
 #define MREG_AT 1

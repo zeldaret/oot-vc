@@ -1,30 +1,34 @@
 #ifndef _XL_LIST_H
 #define _XL_LIST_H
 
-#include "types.h"
+#include "revolution/types.h"
+#include "macros.h"
 
-typedef struct list_item_s list_item_t;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-struct list_item_s{
-    list_item_t* next;
-    u8 data[];
-};
+// List nodes consist of a pointer to the next node followed by an arbitrary amount of data.
+#define NODE_NEXT(pNode) (*(void**)(pNode))
+#define NODE_DATA(pNode) (((u8*)(pNode) + 4))
 
-typedef struct {
-    size_t item_size;
-    s32 item_cnt;
-    list_item_t* first;
-    list_item_t* last;
-} list_type_t;
+typedef struct tXL_LIST {
+    /* 0x0 */ s32 nItemSize;
+    /* 0x4 */ s32 nItemCount;
+    /* 0x8 */ void* pNodeHead;
+    /* 0xC */ void* pNodeNext;
+} tXL_LIST; // size = 0x10
 
-s32 xlListMake(list_type_t** list, s32 item_size);
-s32 xlListFree (list_type_t** list);
-s32 xlListMakeItem(list_type_t* list, void** item);
-s32 xlListFreeItem(list_type_t* list, void** item);
-s32 xlListTestItem(list_type_t* list, void* item);
-s32 xlListSetup(void);
-s32 xlListReset(void);
+bool xlListMake(tXL_LIST** ppList, s32 nItemSize);
+bool xlListFree(tXL_LIST** ppList);
+bool xlListMakeItem(tXL_LIST* pList, void** ppItem);
+bool xlListFreeItem(tXL_LIST* pList, void** ppItem) NO_INLINE;
+bool xlListTestItem(tXL_LIST* pList, void* pItem);
+bool xlListSetup(void);
+bool xlListReset(void);
 
-extern list_type_t gListList;
+#ifdef __cplusplus
+}
+#endif
 
 #endif
