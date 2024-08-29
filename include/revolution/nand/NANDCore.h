@@ -17,7 +17,7 @@ void nandConvertPath(char* abs, const char* dir, const char* rel);
 bool nandIsPrivatePath(const char* path);
 bool nandIsUnderPrivatePath(const char* path);
 bool nandIsInitialized(void);
-void nandReportErrorCode(s32 result) DECOMP_DONT_INLINE;
+void nandReportErrorCode(s32 result) NO_INLINE;
 s32 nandConvertErrorCode(s32 result);
 void nandGenerateAbsPath(char* abs, const char* rel);
 void nandGetParentDirectory(char* dir, const char* path);

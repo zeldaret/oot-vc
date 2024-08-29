@@ -1,7 +1,7 @@
 #ifndef _SI_H
 #define _SI_H
 
-// Note: this is the `serial.h` file from oot-gc
+// Note: serial.h in oot-gc
 
 #include "emulator/xlObject.h"
 #include "revolution/types.h"
@@ -10,7 +10,6 @@
 extern "C" {
 #endif
 
-// __anon_0x78791
 typedef struct SI {
     /* 0x00 */ s32 nAddress;
 } SI; // size = 0x04

@@ -1,7 +1,7 @@
 #ifndef _MI_H
 #define _MI_H
 
-// Note: this is the `mi.h` file from oot-gc
+// Note: mips.h in oot-gc
 
 #include "emulator/xlObject.h"
 #include "revolution/types.h"
@@ -10,7 +10,6 @@
 extern "C" {
 #endif
 
-// __anon_0x39384
 typedef enum MIInterruptType {
     MIT_NONE = -1,
     MIT_SP = 0,
@@ -21,7 +20,6 @@ typedef enum MIInterruptType {
     MIT_DP = 5,
 } MIInterruptType;
 
-// __anon_0x7331D
 typedef struct MI {
     /* 0x0 */ s32 nInterrupt;
     /* 0x4 */ s32 nMask;

@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 // The VERSION macro will be set to one of these version numbers.
-#define VC_J 1
+#define OOT_J 1
 
 #define ALIGN_PREV(X, N) ((X) & ~((N) - 1))
 #define ALIGN_NEXT(X, N) ALIGN_PREV(((X) + (N) - 1), N)
@@ -21,30 +21,13 @@ extern "C" {
 #define SQ(x) ((x) * (x))
 #define CLAMP(x, l, h) (((x) > (h)) ? (h) : (((x) < (l)) ? (l) : (x)))
 
-#define DECOMP_DONT_INLINE __attribute__((never_inline))
 #define ROUND_UP(x, align) (((x) + (align) - 1) & (-(align)))
 #define ROUND_UP_PTR(x, align) ((void*)((((u32)(x)) + (align) - 1) & (~((align) - 1))))
 #define ROUND_DOWN(x, align) ((x) & (-(align)))
 #define ROUND_DOWN_PTR(x, align) ((void*)(((u32)(x)) & (~((align) - 1))))
 #define MEMCLR(x) __memclr((x), sizeof(*(x)))
 
-// Adds no-ops to increase a function's size, preventing automatic inlining
-#define NO_INLINE() \
-    (void)0;        \
-    (void)0;        \
-    (void)0;        \
-    (void)0;        \
-    (void)0;        \
-    (void)0;        \
-    (void)0;        \
-    (void)0;        \
-    (void)0;        \
-    (void)0;        \
-    (void)0;        \
-    (void)0;        \
-    (void)0;        \
-    (void)0;        \
-    (void)0
+#define NO_INLINE __attribute__((never_inline))
 
 // Adds a stack variable in an inline function, which can be used to pad the
 // stack after other functions have been inlined

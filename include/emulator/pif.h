@@ -18,7 +18,6 @@ extern "C" {
 #define PIF_GET_RAM_ADDR(pPIF, iData) (((u8*)(pPIF)->pRAM) + (iData))
 #define PIF_GET_RAM_DATA(pPIF, iData) (*PIF_GET_RAM_ADDR(pPIF, iData))
 
-// __anon_0x3C277
 typedef enum ControllerType {
     CT_NONE = -1,
     CT_CONTROLLER = 0,
@@ -31,7 +30,6 @@ typedef enum ControllerType {
     CT_COUNT = 7,
 } ControllerType;
 
-// __anon_0x3C350
 typedef struct Pif {
     /* 0x00 */ void* pROM;
     /* 0x04 */ void* pRAM;

@@ -11,14 +11,12 @@ extern "C" {
 
 typedef void (*LibraryFuncImpl)(Cpu*);
 
-// __anon_0x7AD10
 typedef struct LibraryFunc {
     /* 0x0 */ char* szName;
     /* 0x4 */ LibraryFuncImpl pfLibrary;
     /* 0x8 */ u32 anData[17];
 } LibraryFunc; // size = 0x4C
 
-// __anon_0x7AE26
 typedef struct Library {
     /* 0x00 */ s32 nFlag;
     /* 0x04 */ s32 nAddStackSwap;

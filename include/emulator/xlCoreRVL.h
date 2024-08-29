@@ -5,6 +5,7 @@
 #include "revolution/cnt.h"
 #include "revolution/gx.h"
 #include "revolution/types.h"
+#include "macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,6 +18,7 @@ typedef struct UnknownContentStruct {
     /* 0x14 */ u8 unk_08[0x14];
 } UnknownContentStruct; // size = 0x28
 
+bool xlCoreInitGX(void) NO_INLINE;
 bool xlCoreBeforeRender(void);
 bool xlCoreHiResolution(void);
 bool fn_8007FC84(void);

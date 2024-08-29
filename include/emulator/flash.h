@@ -8,7 +8,6 @@
 extern "C" {
 #endif
 
-// __anon_0x7428F
 typedef struct Flash {
     /* 0x00 */ s32 unk_00;
     /* 0x04 */ struct Store* pStore;

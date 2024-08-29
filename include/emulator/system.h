@@ -6,6 +6,7 @@
 #include "emulator/xlObject.h"
 #include "revolution/pad.h"
 #include "revolution/types.h"
+#include "macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,7 +40,7 @@ extern "C" {
 #define N64_BTN_CRIGHT (1 << 16)
 #define N64_BTN_UNSET 0
 
-// note: each stick direction count as an input
+// note: each stick direction counts as an input
 typedef enum GcnButton {
     GCN_BTN_A = 0,
     GCN_BTN_B = 1,
@@ -64,32 +65,116 @@ typedef enum GcnButton {
     GCN_BTN_COUNT = 20,
 } GcnButton;
 
-// __anon_0x394CD
 typedef enum SystemMode {
     SM_NONE = -1,
     SM_RUNNING = 0,
     SM_STOPPED = 1,
 } SystemMode;
 
-//! TODO: replace with game IDs ('NSMJ', 'NSME', ...)
 typedef enum SystemRomType {
-    SRT_NONE = 0,
-    SRT_MARIO = 0,
-    SRT_WAVERACE = 1,
-    SRT_MARIOKART = 2,
-    SRT_STARFOX = 3,
-    SRT_ZELDA1 = 4,
-    SRT_ZELDA2 = 5,
-    SRT_1080 = 6,
-    SRT_PANEL = 7,
-    SRT_MARIOPARTY1 = 8,
-    SRT_MARIOPARTY2 = 9,
-    SRT_MARIOPARTY3 = 10,
-    SRT_DRMARIO = 11,
-    SRT_UNKNOWN = 12,
+    NONE = 0,
+    NTEJ = 'NTEJ', // 1080° Snowboarding (JP)
+    NTEA = 'NTEA', // 1080° Snowboarding (US)
+    NTEP = 'NTEP', // 1080° Snowboarding (EU)
+    NBYJ = 'NBYJ', // A Bug's Life (JP)
+    NBYE = 'NBYE', // A Bug's Life (US)
+    NBYP = 'NBYP', // A Bug's Life (EU)
+    NAFJ = 'NAFJ', // Animal Forest (JP)
+    NAFE = 'NAFE', // Animal Forest (US)
+    NAFP = 'NAFP', // Animal Forest (EU)
+    NBNJ = 'NBNJ', // Bangai-O (JP)
+    NBNE = 'NBNE', // Bangai-O (US)
+    NBNP = 'NBNP', // Bangai-O (EU)
+    NBCJ = 'NBCJ', // Blast Corps (JP)
+    NBCE = 'NBCE', // Blast Corps (US)
+    NBCP = 'NBCP', // Blast Corps (EU)
+    NTSJ = 'NTSJ', // Center Court Tennis (JP)
+    NCUJ = 'NCUJ', // Cruis'n USA (JP)
+    NCUE = 'NCUE', // Cruis'n USA (US)
+    NCUP = 'NCUP', // Cruis'n USA (EU)
+    NDYJ = 'NDYJ', // Diddy Kong Racing (JP)
+    NDYE = 'NDYE', // Diddy Kong Racing (US)
+    NDYP = 'NDYP', // Diddy Kong Racing (EU)
+    NDOJ = 'NDOJ', // Donkey Kong 64 (JP)
+    NDOE = 'NDOE', // Donkey Kong 64 (US)
+    NDOP = 'NDOP', // Donkey Kong 64 (EU)
+    NN6J = 'NN6J', // Dr. Mario 64 (JP)
+    NN6E = 'NN6E', // Dr. Mario 64 (US)
+    NN6P = 'NN6P', // Dr. Mario 64 (EU)
+    NFZJ = 'NFZJ', // F-Zero X (JP)
+    CFZE = 'CFZE', // F-Zero X (US)
+    NFZP = 'NFZP', // F-Zero X (EU)
+    NSIJ = 'NSIJ', // Fushigi no Dungeon Furai no Siren 2 Oni Shuurai! Siren Shiro! (JP)
+    NK4J = 'NK4J', // Kirby 64: The Crystal Shards (JP)
+    NK4E = 'NK4E', // Kirby 64: The Crystal Shards (US)
+    NK4P = 'NK4P', // Kirby 64: The Crystal Shards (EU)
+    NLRJ = 'NLRJ', // Lode Runner 3-D (JP)
+    NLRE = 'NLRE', // Lode Runner 3-D (US)
+    NLRP = 'NLRP', // Lode Runner 3-D (EU)
+    NMFJ = 'NMFJ', // Mario Golf (JP)
+    NMFE = 'NMFE', // Mario Golf (US)
+    NKTJ = 'NKTJ', // Mario Kart 64 (JP)
+    NKTE = 'NKTE', // Mario Kart 64 (US)
+    NKTP = 'NKTP', // Mario Kart 64 (EU)
+    CLBJ = 'CLBJ', // Mario Party (JP)
+    CLBE = 'CLBE', // Mario Party (US)
+    CLBP = 'CLBP', // Mario Party (EU)
+    NMWJ = 'NMWJ', // Mario Party 2 (JP)
+    NMWE = 'NMWE', // Mario Party 2 (US)
+    NMWP = 'NMWP', // Mario Party 2 (EU)
+    NMVJ = 'NMVJ', // Mario Party 3 (JP)
+    NMVE = 'NMVE', // Mario Party 3 (US)
+    NMVP = 'NMVP', // Mario Party 3 (EU)
+    NMQJ = 'NMQJ', // Paper Mario (JP)
+    NMQE = 'NMQE', // Paper Mario (US)
+    NMQP = 'NMQP', // Paper Mario (EU)
+    NOBJ = 'NOBJ', // Ogre Battle 64: Person of Lordly Caliber (JP)
+    NOBE = 'NOBE', // Ogre Battle 64: Person of Lordly Caliber (US)
+    NOBP = 'NOBP', // Ogre Battle 64: Person of Lordly Caliber (EU)
+    NYLJ = 'NYLJ', // Panel de Pon 64 (JP)
+    NYLE = 'NYLE', // Panel de Pon 64 (US)
+    NYLP = 'NYLP', // Panel de Pon 64 (EU)
+    NPOJ = 'NPOJ', // Pokémon Stadium (JP)
+    NPOE = 'NPOE', // Pokémon Stadium (US)
+    NPOP = 'NPOP', // Pokémon Stadium (EU)
+    NPWJ = 'NPWJ', // Pilotwings 64 (JP)
+    NPWE = 'NPWE', // Pilotwings 64 (US)
+    NPWP = 'NPWP', // Pilotwings 64 (EU)
+    NQKE = 'NQKE', // Quake (EU)
+    NRXJ = 'NRXJ', // Robotron 64 (JP)
+    NRXE = 'NRXE', // Robotron 64 (US)
+    NRXP = 'NRXP', // Robotron 64 (EU)
+    NZSJ = 'NZSJ', // The Legend of Zelda: Majora's Mask (JP)
+    NZSE = 'NZSE', // The Legend of Zelda: Majora's Mask (US)
+    NZSP = 'NZSP', // The Legend of Zelda: Majora's Mask (EU)
+    CZLJ = 'CZLJ', // The Legend of Zelda: Ocarina of Time (JP)
+    CZLE = 'CZLE', // The Legend of Zelda: Ocarina of Time (US)
+    NZLP = 'NZLP', // The Legend of Zelda: Ocarina of Time (EU)
+    NRIJ = 'NRIJ', // The New Tetris (JP)
+    NRIE = 'NRIE', // The New Tetris (US)
+    NRIP = 'NRIP', // The New Tetris (EU)
+    NTUJ = 'NTUJ', // Turok: Dinosaur Hunter (JP)
+    NTUE = 'NTUE', // Turok: Dinosaur Hunter (US)
+    NTUP = 'NTUP', // Turok: Dinosaur Hunter (EU)
+    NGUJ = 'NGUJ', // Sin and Punishment: Hoshi no Keishosha (JP)
+    NFXJ = 'NFXJ', // Star Fox 64 (JP)
+    NFXE = 'NFXE', // Star Fox 64 (US)
+    NFXP = 'NFXP', // Star Fox 64 (EU)
+    NSQJ = 'NSQJ', // Starcraft 64 (JP)
+    NSQE = 'NSQE', // Starcraft 64 (US)
+    NSQP = 'NSQP', // Starcraft 64 (EU)
+    NSMJ = 'NSMJ', // Super Mario 64 (JP)
+    NSME = 'NSME', // Super Mario 64 (US)
+    NSMP = 'NSMP', // Super Mario 64 (EU)
+    NALJ = 'NALJ', // Super Smash Bros. (JP)
+    NALE = 'NALE', // Super Smash Bros. (US)
+    NWRJ = 'NWRJ', // Wave Race 64 (JP)
+    NWRE = 'NWRE', // Wave Race 64 (US)
+    NWRP = 'NWRP', // Wave Race 64 (EU)
+    NYSE = 'NYSE', // Yoshi's Story (US)
+    NYSP = 'NYSP', // Yoshi's Story (EU)
 } SystemRomType;
 
-// __anon_0x370F1
 typedef enum SystemObjectType {
     SOT_NONE = -1,
     SOT_CPU = 0,
@@ -118,7 +203,6 @@ typedef enum SystemObjectType {
     SOT_COUNT = 23,
 } SystemObjectType;
 
-// __anon_0x3979C
 typedef enum SystemInterruptType {
     SIT_NONE = -1,
     SIT_SW0 = 0,
@@ -153,7 +237,6 @@ typedef struct SystemDevice {
     /* 0x0C */ SystemDeviceInfo aDeviceSlot[3];
 } SystemDevice; // size = 0x30
 
-// __anon_0x393FF
 typedef struct SystemException {
     /* 0x00 */ char* szType;
     /* 0x04 */ u32 nMask;
@@ -162,7 +245,6 @@ typedef struct SystemException {
     /* 0x0C */ SystemInterruptType eType;
 } SystemException; // size = 0x14
 
-// __anon_0x37240
 typedef struct System {
     /* 0x00 */ bool bException;
     /* 0x04 */ SystemMode eMode;
@@ -176,7 +258,6 @@ typedef struct System {
     /* 0xC8 */ u8 anException[16];
 } System; // size = 0xD8
 
-// // __anon_0x3459E
 typedef struct SystemRomConfig {
     /* 0x0000 */ s32 controllerConfiguration[PAD_MAX_CONTROLLERS][GCN_BTN_COUNT];
     /* 0x0140 */ s32 rumbleConfiguration;
@@ -212,7 +293,7 @@ typedef struct SystemRomConfig {
 #define SYSTEM_VIDEO(pSystem) ((Video*)(((System*)(pSystem))->apObject[SOT_VIDEO]))
 #define SYSTEM_CONTROLLER(pSystem) ((Controller*)(((System*)(pSystem))->apObject[SOT_CONTROLLER]))
 
-bool systemSetStorageDevice(System* pSystem, SystemObjectType eStorageDevice, void* pArgument);
+bool systemSetStorageDevice(System* pSystem, SystemObjectType eStorageDevice, void* pArgument) NO_INLINE;
 bool systemCreateStorageDevice(System* pSystem, void* pArgument);
 bool fn_8000A6A4(System* pSystem, CpuBlock* pBlock);
 bool systemSetMode(System* pSystem, SystemMode eMode);

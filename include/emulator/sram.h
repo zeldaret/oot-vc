@@ -8,7 +8,6 @@
 extern "C" {
 #endif
 
-// __anon_0x74AB9
 typedef struct Sram {
     /* 0x00 */ s32 unk_00;
     /* 0x04 */ s32 unk_04;

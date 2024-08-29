@@ -1,7 +1,7 @@
 #ifndef _AI_H
 #define _AI_H
 
-// Note: this is the `ai.h` file from oot-gc
+// Note: audio.h in oot-gc
 
 #include "emulator/xlObject.h"
 #include "revolution/types.h"
@@ -10,7 +10,6 @@
 extern "C" {
 #endif
 
-// __anon_0x753E7
 typedef struct AI {
     /* 0x00 */ s32 nSize;
     /* 0x04 */ bool bEnable;

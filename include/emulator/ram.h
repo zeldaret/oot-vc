@@ -30,7 +30,6 @@ extern "C" {
 #define RDRAM_ADDR_SELECT 0x20
 #define RDRAM_DEVICE_MANUF 0x24
 
-// __anon_0x4BFE7
 typedef struct Ram {
     /* 0x00 */ void* pHost;
     /* 0x04 */ u8* pBuffer; // void* makes ramPut8 not matching...

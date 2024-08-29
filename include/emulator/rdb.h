@@ -8,7 +8,6 @@
 extern "C" {
 #endif
 
-// __anon_0x56A0F
 typedef struct Rdb {
     /* 0x000 */ s32 nHackCount;
     /* 0x004 */ char szString[256];

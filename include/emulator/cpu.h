@@ -4,6 +4,7 @@
 #include "emulator/xlObject.h"
 #include "revolution/os.h"
 #include "revolution/types.h"
+#include "macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,7 +62,6 @@ typedef bool (*Get16Func)(void* pObject, u32 nAddress, s16* pData);
 typedef bool (*Get32Func)(void* pObject, u32 nAddress, s32* pData);
 typedef bool (*Get64Func)(void* pObject, u32 nAddress, s64* pData);
 
-// __anon_0x3994B
 typedef enum CpuExceptionCode {
     CEC_NONE = -1,
     CEC_INTERRUPT = 0,
@@ -99,7 +99,6 @@ typedef enum CpuExceptionCode {
     CEC_COUNT = 32,
 } CpuExceptionCode;
 
-// __anon_0x44AE9
 typedef enum CpuMode {
     CM_NONE = -1,
     CM_USER = 0,
@@ -107,14 +106,12 @@ typedef enum CpuMode {
     CM_KERNEL = 2,
 } CpuMode;
 
-// __anon_0x42F73
 typedef enum CpuSize {
     CS_NONE = -1,
     CS_32BIT = 0,
     CS_64BIT = 1,
 } CpuSize;
 
-// __anon_0x3E22D
 typedef union CpuGpr {
     struct {
         /* 0x0 */ s8 _0s8;
@@ -164,7 +161,6 @@ typedef union CpuGpr {
     };
 } CpuGpr;
 
-// __anon_0x3E641
 typedef union CpuFpr {
     struct {
         /* 0x0 */ f32 _0f32;
@@ -189,7 +185,6 @@ typedef union CpuFpr {
     };
 } CpuFpr;
 
-// __anon_0x3EB4F
 typedef struct CpuDevice {
     /* 0x00 */ s32 nType;
     /* 0x04 */ void* pObject;
@@ -209,7 +204,6 @@ typedef struct CpuDevice {
     /* 0x3C */ u32 nAddressPhysical1;
 } CpuDevice; // size = 0x40
 
-// __anon_0x3DE78
 typedef struct CpuJump {
     /* 0x0 */ s32 nOffsetHost;
     /* 0x4 */ s32 nAddressN64;
@@ -270,7 +264,6 @@ typedef struct CpuAddress {
     /* 0x8 */ CpuFunction* pFunction;
 } CpuAddress; // size = 0xC
 
-// __anon_0x3F080
 typedef struct CpuCodeHack {
     /* 0x0 */ u32 nAddress;
     /* 0x4 */ u32 nOpcodeOld;
@@ -412,7 +405,7 @@ bool cpuGetXPC(Cpu* pCPU, s64* pnPC, s64* pnLo, s64* pnHi);
 bool cpuSetXPC(Cpu* pCPU, s64 nPC, s64 nLo, s64 nHi);
 bool cpuEvent(Cpu* pCPU, s32 nEvent, void* pArgument);
 bool cpuGetAddressOffset(Cpu* pCPU, s32* pnOffset, u32 nAddress);
-bool cpuGetAddressBuffer(Cpu* pCPU, void** ppBuffer, u32 nAddress);
+bool cpuGetAddressBuffer(Cpu* pCPU, void** ppBuffer, u32 nAddress) NO_INLINE;
 bool cpuGetOffsetAddress(Cpu* pCPU, u32* anAddress, s32* pnCount, u32 nOffset, u32 nSize);
 bool cpuInvalidateCache(Cpu* pCPU, s32 nAddress0, s32 nAddress1);
 bool cpuGetFunctionChecksum(Cpu* pCPU, u32* pnChecksum, CpuFunction* pFunction);

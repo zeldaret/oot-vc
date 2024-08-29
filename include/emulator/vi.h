@@ -1,7 +1,7 @@
 #ifndef _VI_H
 #define _VI_H
 
-// Note: this is the `video.h` file from oot-gc
+// Note: video.h in oot-gc
 
 #include "emulator/xlObject.h"
 #include "revolution/types.h"
@@ -10,7 +10,6 @@
 extern "C" {
 #endif
 
-// __anon_0x75B37
 typedef struct VI {
     /* 0x00 */ s32 nScan;
     /* 0x04 */ bool bBlack;

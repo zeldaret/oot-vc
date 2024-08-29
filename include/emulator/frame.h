@@ -31,13 +31,11 @@ extern "C" {
 
 typedef bool (*FrameDrawFunc)(void*, void*);
 
-// __anon_0x27B8C
 typedef enum FrameMatrixType {
     FMT_MODELVIEW = 0,
     FMT_PROJECTION = 1,
 } FrameMatrixType;
 
-// __anon_0x27E96
 typedef enum FrameModeType {
     FMT_NONE = -1,
     FMT_FOG = 0,
@@ -53,7 +51,6 @@ typedef enum FrameModeType {
     FMT_COUNT = 10,
 } FrameModeType;
 
-// __anon_0x2813A
 typedef enum FrameSize {
     FS_NONE = -1,
     FS_SOURCE = 0,
@@ -61,7 +58,6 @@ typedef enum FrameSize {
     FS_COUNT = 2,
 } FrameSize;
 
-// __anon_0x2614E
 typedef enum FrameBufferType {
     FBT_NONE = -1,
     FBT_DEPTH = 0,
@@ -71,28 +67,24 @@ typedef enum FrameBufferType {
     FBT_COUNT = 4,
 } FrameBufferType;
 
-// __anon_0x2625D
 typedef enum FrameResetType {
     FRT_NONE = -1,
     FRT_COLD = 0,
     FRT_WARM = 1,
 } FrameResetType;
 
-// __anon_0x26C3F
 typedef enum FrameLoadType {
     FLT_NONE = -1,
     FLT_TILE = 0,
     FLT_BLOCK = 1,
 } FrameLoadType;
 
-// __anon_0x25D5E
 typedef enum FrameMatrixProjection {
     FMP_NONE = -1,
     FMP_PERSPECTIVE = 0,
     FMP_ORTHOGRAPHIC = 1,
 } FrameMatrixProjection;
 
-// __anon_0x2D223
 typedef enum FrameColorType {
     FCT_NONE = -1,
     FCT_FOG,
@@ -103,13 +95,11 @@ typedef enum FrameColorType {
     FCT_COUNT
 } FrameColorType;
 
-// __anon_0x2D45B
 typedef struct Primitive {
     /* 0x0 */ s32 nCount;
     /* 0x4 */ u8 anData[768];
 } Primitive; // size = 0x304
 
-// __anon_0x23B04
 typedef struct Viewport {
     /* 0x0 */ f32 rX;
     /* 0x4 */ f32 rY;
@@ -117,7 +107,6 @@ typedef struct Viewport {
     /* 0xC */ f32 rSizeY;
 } Viewport; // size = 0x10
 
-// __anon_0x23B9E
 typedef struct FrameBuffer {
     /* 0x00 */ s32 nSize;
     /* 0x04 */ s32 nWidth;
@@ -126,14 +115,12 @@ typedef struct FrameBuffer {
     /* 0x10 */ s32 nAddress;
 } FrameBuffer; // size = 0x14
 
-// __anon_0x274AD
 typedef struct Vec3f {
     /* 0x0 */ f32 x;
     /* 0x4 */ f32 y;
     /* 0x8 */ f32 z;
 } Vec3f; // size = 0xC
 
-// __anon_0x23CAB
 typedef struct Light {
     /* 0x00 */ bool bTransformed;
     /* 0x04 */ Vec3f rVecOrigTowards;
@@ -151,7 +138,6 @@ typedef struct Light {
     /* 0x38 */ s16 coordZ;
 } Light; // size = 0x3C
 
-// __anon_0x23EDB
 typedef struct LookAt {
     /* 0x00 */ bool bTransformed;
     /* 0x04 */ Vec3f rS;
@@ -160,7 +146,6 @@ typedef struct LookAt {
     /* 0x28 */ Vec3f rTRaw;
 } LookAt; // size = 0x34
 
-// __anon_0x23FC4
 typedef struct Vertex {
     /* 0x00 */ f32 rSum;
     /* 0x04 */ f32 rS;
@@ -169,7 +154,6 @@ typedef struct Vertex {
     /* 0x18 */ u8 anColor[4];
 } Vertex; // size = 0x1C
 
-// __anon_0x24123
 typedef union TMEM_Block {
     /* 0x0 */ u8 u8[4096];
     /* 0x0 */ u16 u16[2048];
@@ -177,19 +161,16 @@ typedef union TMEM_Block {
     /* 0x0 */ u64 u64[512];
 } TMEM_Block;
 
-// __anon_0x241C0
 typedef struct TextureMemory {
     /* 0x0 */ TMEM_Block data;
 } TextureMemory; // size = 0x1000
 
-// __anon_0x25A82
 typedef struct TextureInfo {
     /* 0x0 */ s32 nSizeTextures;
     /* 0x4 */ s32 nCountTextures;
 } TextureInfo; // size = 0x8
 
 // _FRAME_TEXTURE
-// __anon_0x24462
 typedef struct FrameTexture FrameTexture;
 
 struct FrameTexture {
@@ -215,7 +196,6 @@ struct FrameTexture {
     /* 0x6C */ GXTexWrapMode eWrapT;
 }; // size = 0x70
 
-// __anon_0x247BF
 typedef struct Tile {
     /* 0x00 */ s32 nSize;
     /* 0x04 */ s32 nTMEM;
@@ -235,7 +215,6 @@ typedef struct Tile {
     /* 0x28 */ u32 nCodePixel;
 } Tile; // size = 0x2C
 
-// __anon_0x24A81
 typedef struct MatrixHint {
     /* 0x00 */ s32 nCount;
     /* 0x04 */ f32 rScale;
@@ -262,7 +241,6 @@ typedef struct Rectangle {
 } Rectangle; // size = 0x28
 
 //! TODO: fix the offsets
-// __anon_0x24C38
 typedef struct Frame {
     /* 0x00000 */ u32 anCIMGAddresses[8];
     /* 0x00020 */ u16 nNumCIMGAddresses;

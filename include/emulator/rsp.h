@@ -66,7 +66,6 @@ typedef enum RspUCodeType {
     RUT_JPEG = 13,
 } RspUCodeType;
 
-// __anon_0x44829
 typedef enum RspUpdateMode {
     RUM_NONE = 0,
     RUM_IDLE = 1,
@@ -169,7 +168,6 @@ typedef struct __anon_0x5B8F2 {
     /* 0x5C */ RspUCodeType eType;
 } __anon_0x5B8F2; // size = 0x60
 
-// __anon_0x5845E
 typedef struct Rsp {
     /* 0x0000 */ s32 nMode;
     /* 0x0004 */ RspYield yield;

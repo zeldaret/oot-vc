@@ -1,5 +1,5 @@
-#ifndef _SOUNDGCN_H
-#define _SOUNDGCN_H
+#ifndef _SOUNDRVL_H
+#define _SOUNDRVL_H
 
 #include "emulator/xlObject.h"
 #include "revolution/types.h"
@@ -10,14 +10,12 @@ extern "C" {
 
 #define VI_NTSC_CLOCK 48681812
 
-// __anon_0x221A3
 typedef enum SoundRamp {
     SR_NONE = -1,
     SR_DECREASE = 0,
     SR_INCREASE = 1,
 } SoundRamp;
 
-// __anon_0x20C8D
 typedef enum SoundBeep {
     SOUND_BEEP_ACCEPT = 0,
     SOUND_BEEP_DECLINE = 1,
@@ -32,7 +30,6 @@ typedef enum SoundPlayMode {
     SPM_RAMPPLAYED = 2,
 } SoundPlayMode;
 
-// __anon_0x208BA
 typedef struct Sound {
     /* 0x000 */ s32 unk_00;
     /* 0x004 */ void* pSrcData;

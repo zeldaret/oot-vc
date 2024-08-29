@@ -1,7 +1,7 @@
 #ifndef _PI_H
 #define _PI_H
 
-// Note: this is the `peripheral.h` file from oot-gc
+// Note: peripheral.h in oot-gc
 
 #include "emulator/xlObject.h"
 #include "revolution/types.h"
@@ -10,7 +10,6 @@
 extern "C" {
 #endif
 
-// __anon_0x83D15
 typedef struct PI {
     /* 0x00 */ s32 nStatus;
     /* 0x04 */ s32 nSizePut;

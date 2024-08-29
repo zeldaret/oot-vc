@@ -2,6 +2,7 @@
 #define _XL_LIST_H
 
 #include "revolution/types.h"
+#include "macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,7 +22,7 @@ typedef struct tXL_LIST {
 bool xlListMake(tXL_LIST** ppList, s32 nItemSize);
 bool xlListFree(tXL_LIST** ppList);
 bool xlListMakeItem(tXL_LIST* pList, void** ppItem);
-bool xlListFreeItem(tXL_LIST* pList, void** ppItem);
+bool xlListFreeItem(tXL_LIST* pList, void** ppItem) NO_INLINE;
 bool xlListTestItem(tXL_LIST* pList, void* pItem);
 bool xlListSetup(void);
 bool xlListReset(void);

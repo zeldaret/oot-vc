@@ -5,6 +5,7 @@
 #include "emulator/xlObject.h"
 #include "revolution/pad.h"
 #include "revolution/types.h"
+#include "macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,7 +47,10 @@ typedef struct Controller {
 
 bool simulatorSetControllerMap(Controller* pController, s32 channel, u32* mapData);
 bool simulatorCopyControllerMap(Controller* pController, u32* mapDataOutput, u32* mapDataInput);
+bool fn_80062E5C(void) NO_INLINE;
 bool simulatorDetectController(Controller* pController, s32 arg1);
+bool fn_800622B8(Controller* pController) NO_INLINE;
+bool fn_800623F4(Controller* pController) NO_INLINE;
 bool fn_80062C18(Controller* pController, s32 arg1, s32* arg2, s32* arg3, s32* arg4, s32* arg5, s32* arg6, s32* arg7);
 bool fn_80062CE4(Controller* pController, s32 arg1);
 bool fn_800631B8(Controller* pController, s32 arg1);

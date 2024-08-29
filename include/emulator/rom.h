@@ -14,7 +14,6 @@ extern "C" {
 typedef bool UnknownCallbackFunc(void);
 typedef bool ProgressCallbackFunc(f32 progressPercent);
 
-// __anon_0x4CF87
 typedef enum RomModeLoad {
     RLM_NONE = -1,
     RLM_PART = 0,
@@ -22,14 +21,12 @@ typedef enum RomModeLoad {
     RLM_COUNT = 2,
 } RomModeLoad;
 
-// __anon_0x5219D
 typedef enum RomCacheType {
     RCT_NONE = -1,
     RCT_RAM = 0,
     RCT_ARAM = 1,
 } RomCacheType;
 
-// __anon_0x4CFE6
 typedef struct RomBlock {
     /* 0x00 */ s32 iCache; // Stores cache index `i` if the block is in RAM, or `-(i + 1)` if the block is in ARAM
     /* 0x04 */ u32 nSize;
@@ -37,7 +34,6 @@ typedef struct RomBlock {
     /* 0x0C */ s8 keep;
 } RomBlock; // size = 0x10
 
-// __anon_0x4D0FA
 typedef struct RomCopyState {
     /* 0x00 */ bool bWait;
     /* 0x04 */ UnknownCallbackFunc* pCallback;
@@ -46,7 +42,6 @@ typedef struct RomCopyState {
     /* 0x10 */ u32 nOffset;
 } RomCopyState; // size = 0x14
 
-// __anon_0x4D1DA
 typedef struct RomLoadState {
     /* 0x00 */ bool bWait;
     /* 0x04 */ bool bDone;
@@ -62,7 +57,6 @@ typedef struct RomLoadState {
     /* 0x2C */ u32 nSizeRead;
 } RomLoadState; // size = 0x30
 
-// __anon_0x4D873
 typedef struct Rom {
     /* 0x00000 */ void* pBuffer;
     /* 0x00004 */ bool bFlip;
