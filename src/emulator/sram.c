@@ -75,7 +75,7 @@ static inline bool sramEvent_UnknownInline(Sram* pSRAM, void* pArgument) {
     }
 
     pSRAM->unk_00 = 0x8000;
-    return !!fn_80061770((void**)&pSRAM->pStore, "RAM", gpSystem->eTypeROM, pArgument);
+    return fn_80061770((void**)&pSRAM->pStore, "RAM", gpSystem->eTypeROM, pArgument) ? true : false;
 }
 
 bool sramEvent(Sram* pSRAM, s32 nEvent, void* pArgument) {

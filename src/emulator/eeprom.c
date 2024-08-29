@@ -56,9 +56,9 @@ bool fn_80044708(EEPROM* pEEPROM, s32 arg2, u32 nUnknown, void* pBuffer) {
     eTypeROM = gpSystem->eTypeROM;
 
     switch (eTypeROM) {
-        case 'NKTJ':
-        case 'NKTE':
-        case 'NKTP':
+        case NKTJ:
+        case NKTE:
+        case NKTP:
             fn_80061B88(pEEPROM->pStore, pBuffer, nOffset + 0x200, 0x20);
             break;
         default:
@@ -80,9 +80,9 @@ bool fn_8004477C(EEPROM* pEEPROM, s32 arg2, u32 nUnknown, void* pBuffer) {
     nOffset = (nUnknown & 0xFFFF) << 5;
 
     switch (eTypeROM) {
-        case 'NKTJ':
-        case 'NKTE':
-        case 'NKTP':
+        case NKTJ:
+        case NKTE:
+        case NKTP:
             fn_80061BC0(pEEPROM->pStore, pBuffer, nOffset + 0x200, 0x20);
             break;
         default:
@@ -106,7 +106,7 @@ static inline bool eepromEvent_UnknownInline(EEPROM* pEEPROM, void* pArgument) {
     }
 
     pEEPROM->unk_00 = var_r6;
-    return !!fn_80061770((void**)&pEEPROM->pStore, "PAK", gpSystem->eTypeROM, (void*)var_r6);
+    return fn_80061770((void**)&pEEPROM->pStore, "PAK", gpSystem->eTypeROM, (void*)var_r6) ? true : false;
 }
 
 bool eepromEvent(EEPROM* pEEPROM, s32 nEvent, void* pArgument) {
