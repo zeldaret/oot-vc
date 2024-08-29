@@ -229,14 +229,14 @@ config.libs = [
     EmulatorLib(
         "emulator",
         [
-            Object(NotLinked, "emulator/vc64_RVL.c"),
+            Object(LinkedFor("oot-j"), "emulator/vc64_RVL.c"),
             Object(NotLinked, "emulator/system.c"),
             Object(NotLinked, "emulator/ai.c"),
             Object(NotLinked, "emulator/vi.c"),
             Object(NotLinked, "emulator/si.c"),
             Object(NotLinked, "emulator/pi.c"),
             Object(NotLinked, "emulator/mi.c"),
-            Object(NotLinked, "emulator/disk.c"),
+            Object(LinkedFor("oot-j"), "emulator/disk.c"),
             Object(NotLinked, "emulator/cpu.c", asm_processor=True),
             Object(NotLinked, "emulator/pif.c"),
             Object(NotLinked, "emulator/ram.c"),
