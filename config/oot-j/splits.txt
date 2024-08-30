@@ -85,7 +85,7 @@ emulator/rdb.c:
 	.data       start:0x801722A0 end:0x80172310
 	.sdata      start:0x8025C770 end:0x8025C778
 
-emulator/eeprom.c:
+emulator/pak.c:
 	.text       start:0x8004467C end:0x800449B8
 	.data       start:0x80172310 end:0x80172330
 	.sdata      start:0x8025C778 end:0x8025C780
