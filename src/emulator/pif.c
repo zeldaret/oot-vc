@@ -1,6 +1,6 @@
 #include "emulator/pif.h"
 #include "emulator/controller.h"
-#include "emulator/eeprom.h"
+#include "emulator/pak.h"
 #include "emulator/flash.h"
 #include "emulator/store.h"
 #include "emulator/system.h"
@@ -132,7 +132,7 @@ bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
                     }
                     break;
                 case CT_CONTROLLER_W_PAK:
-                    fn_80044708(SYSTEM_EEPROM(gpSystem), channel, nAddress, (void*)pBuffer);
+                    fn_80044708(SYSTEM_PAK(gpSystem), channel, nAddress, (void*)pBuffer);
                     break;
                 default:
                     break;
@@ -152,7 +152,7 @@ bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
                     }
                     break;
                 case CT_CONTROLLER_W_PAK:
-                    fn_8004477C(SYSTEM_EEPROM(gpSystem), channel, nAddress, (void*)pBuffer);
+                    fn_8004477C(SYSTEM_PAK(gpSystem), channel, nAddress, (void*)pBuffer);
                     break;
                 default:
                     break;
