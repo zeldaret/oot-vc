@@ -103,7 +103,7 @@ static inline bool pifReadController(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s3
 bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
     switch (*buffer) {
         case 0x00:
-            if (!fn_80040BF4(pPIF, buffer, ptx, prx, channel)) {
+            if (!fn_80040BF4(pPIF, buffer, ptx, prx, channel % 4)) {
                 return false;
             }
             break;
@@ -112,22 +112,23 @@ bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
                 return false;
             }
             break;
-        case 0x01:
-            if (!!fn_80062E5C(SYSTEM_CONTROLLER(gpSystem), (channel << 2), (s32*)&buffer[1])) {
+        case 0x01: {
+            bool result = fn_80062E5C(SYSTEM_CONTROLLER(gpSystem), channel, (s32*)&buffer[1]) ? true : false;
+
+            if (!result) {
                 return false;
             }
             break;
+        }
         case 0x02: {
             u16 nAddress = (buffer[1] << 3) | (buffer[2] >> 5);
             u8* pBuffer = buffer + 3;
             int i;
-            char test = 0x200;
 
             switch (pPIF->eControllerType[channel]) {
                 case CT_CONTROLLER_W_RPAK:
-                    for (i = 0; (u32)i < 8; i++) {
-                        nAddress -= test;
-                        pBuffer[i] = (~(nAddress | (0x400 - nAddress)) >> 31) & 0x80;
+                    for (i = 0; i < 32U; i++) {
+                        pBuffer[i] = nAddress == 0x400 ? 0x80 : 0;
                     }
                     break;
                 case CT_CONTROLLER_W_PAK:
@@ -147,7 +148,7 @@ bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
             switch (pPIF->eControllerType[channel]) {
                 case CT_CONTROLLER_W_RPAK:
                     if (nAddress == 0x600) {
-                        fn_80062CE4(SYSTEM_CONTROLLER(gpSystem), !!*pBuffer);
+                        fn_80062CE4(SYSTEM_CONTROLLER(gpSystem), channel, *pBuffer ? true : false);
                     }
                     break;
                 case CT_CONTROLLER_W_PAK:
@@ -188,6 +189,7 @@ bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
         case 0x0B:
         case 0x0C:
         case 0x0D:
+        case 0xFE:
             break;
         default:
             return false;
@@ -195,11 +197,10 @@ bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
 
     return true;
 }
-
 bool pifProcessInputData(Pif* pPIF) {
     u8* prx;
     u8* ptx;
-    s32 iData;
+    int iData;
     s32 channel;
 
     iData = 0;
@@ -228,29 +229,36 @@ bool pifProcessInputData(Pif* pPIF) {
         channel++;
         switch (PIF_GET_RAM_DATA(pPIF, iData)) {
             case 0xFF:
-            case 0:
+            case 0x00:
                 iData += 4;
                 break;
-            case 1:
+            case 0x01:
                 iData += 5;
                 break;
-            case 2:
-            case 3:
+            case 0x02:
+            case 0x03:
                 iData += 0x24;
                 break;
-            case 4:
-            case 5:
+            case 0x04:
+            case 0x05:
                 iData += 0xA;
                 break;
-            case 6:
+            case 0x06:
                 iData += 4;
                 break;
-            case 7:
+            case 0x07:
                 iData += 0xB;
                 break;
-            case 8:
+            case 0x08:
                 iData += 0xB;
                 break;
+            case 0x09:
+            case 0x0A:
+            case 0x0B:
+            case 0x0C:
+            case 0x0D:
+            case 0xFE:
+                return false;
             default:
                 return false;
         }
@@ -263,8 +271,9 @@ bool pifProcessInputData(Pif* pPIF) {
 bool pifProcessOutputData(Pif* pPIF) {
     u8* prx;
     u8* ptx;
-    s32 iData;
+    int iData;
     s32 channel;
+    u8* address;
 
     iData = 0;
     channel = 0;
@@ -285,37 +294,46 @@ bool pifProcessOutputData(Pif* pPIF) {
         }
 
         prx = PIF_GET_RAM_ADDR(pPIF, iData++);
-        if (PIF_GET_RAM_DATA(pPIF, iData) == 1 &&
-            !pifExecuteCommand(pPIF, PIF_GET_RAM_ADDR(pPIF, iData), ptx, prx, channel)) {
-            return false;
+        address = PIF_GET_RAM_ADDR(pPIF, iData);
+        if (*address == 1) {
+            if (!pifExecuteCommand(pPIF, address, ptx, prx, channel)) {
+                return false;
+            }
         }
 
         channel++;
         switch (PIF_GET_RAM_DATA(pPIF, iData)) {
             case 0xFF:
-            case 0:
+            case 0x00:
                 iData += 4;
                 break;
-            case 1:
+            case 0x01:
                 iData += 5;
                 break;
-            case 2:
-            case 3:
+            case 0x02:
+            case 0x03:
                 iData += 0x24;
                 break;
-            case 4:
-            case 5:
+            case 0x04:
+            case 0x05:
                 iData += 0xA;
                 break;
-            case 6:
+            case 0x06:
                 iData += 4;
                 break;
-            case 7:
+            case 0x07:
                 iData += 0xB;
                 break;
-            case 8:
+            case 0x08:
                 iData += 0xB;
                 break;
+            case 0x09:
+            case 0x0A:
+            case 0x0B:
+            case 0x0C:
+            case 0x0D:
+            case 0xFE:
+                return false;
             default:
                 return false;
         }

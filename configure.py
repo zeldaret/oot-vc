@@ -238,7 +238,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "emulator/mi.c"),
             Object(LinkedFor("oot-j"), "emulator/disk.c"),
             Object(NotLinked, "emulator/cpu.c", asm_processor=True),
-            Object(NotLinked, "emulator/pif.c"),
+            Object(LinkedFor("oot-j"), "emulator/pif.c"),
             Object(LinkedFor("oot-j"), "emulator/ram.c"),
             Object(LinkedFor("oot-j"), "emulator/rom.c"),
             Object(LinkedFor("oot-j"), "emulator/rdb.c"),
