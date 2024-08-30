@@ -262,7 +262,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "emulator/xlFileRVL.c"),
             Object(LinkedFor("oot-j"), "emulator/xlText.c"),
             Object(LinkedFor("oot-j"), "emulator/xlList.c", extra_cflags=["-ipa file"]),
-            Object(NotLinked, "emulator/xlHeap.c"),
+            Object(LinkedFor("oot-j"), "emulator/xlHeap.c"),
             Object(LinkedFor("oot-j"), "emulator/xlFile.c"),
             Object(LinkedFor("oot-j"), "emulator/xlObject.c"),
         ]

@@ -1,5 +1,6 @@
 #include "emulator/xlHeap.h"
 #include "macros.h"
+#include "revolution/os.h"
 
 s32 gnSizeHeap[HEAP_COUNT];
 static u32* gpHeap[HEAP_COUNT];
@@ -28,6 +29,7 @@ u32* gnHeapOS[HEAP_COUNT];
 //! TODO: these need better names
 #define CHKSUM_HI(v) ((u32)((v) >> 26))
 #define CHKSUM_LO(v) ((u32)((v) & 0x3F))
+#define HEAP_ALIGN(v, a) (((u32)(v) + a - 1) & ~(a - 1))
 
 static bool __xlHeapGetFree(s32 iHeap, s32* pnFreeBytes) NO_INLINE;
 
@@ -249,10 +251,6 @@ static inline bool xlHeapFindUpperBlock(s32 iHeap, s32 nSize, u32** ppBlock, s32
     return true;
 }
 
-// https://decomp.me/scratch/2K9NF
-#ifndef NON_MATCHING
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapCompact.s")
-#else
 bool xlHeapCompact(s32 iHeap) {
     s32 nCount;
     s32 nBlockLarge;
@@ -268,7 +266,7 @@ bool xlHeapCompact(s32 iHeap) {
     pBlockPrevious = NULL;
     pBlock = gpHeapBlockFirst[iHeap];
     while (nBlock = *pBlock, (nBlockSize = BLOCK_SIZE(*pBlock)) != 0) {
-        pBlockNext = pBlock + nBlockSize + 1;
+        pBlockNext = pBlock + 1 + nBlockSize;
         nBlockNext = *pBlockNext;
 
         if (BLOCK_IS_FREE(nBlock)) {
@@ -301,7 +299,6 @@ bool xlHeapCompact(s32 iHeap) {
     xlHeapBlockCacheReset(iHeap);
     return true;
 }
-#endif
 
 bool xlHeapTake(void** ppHeap, s32 nByteCount) {
     bool bValid;
@@ -637,53 +634,50 @@ static bool __xlHeapGetFree(s32 iHeap, s32* pnFreeBytes) {
 
 bool xlHeapGetFree(s32* pnFreeBytes) { return __xlHeapGetFree(0, pnFreeBytes); }
 
-#ifndef NON_MATCHING
-#pragma GLOBAL_ASM("asm/non_matchings/virtual_console/xlHeap/xlHeapSetup.s")
-#else
-s32 xlHeapSetup(void) {
+bool xlHeapSetup(void) {
     s32 gpHeap_align[2];
     s32 new_lo[2];
-    u32 heap;
+    u32 iHeap;
 
-    gpHeapOS[0] = OSGetArena1Lo();
-    gpHeap_align[0] = ALIGN(gpHeapOS[0], 4);
-    new_lo[0] = (u32)OSGetArena1Hi();
+    gnHeapOS[0] = OSGetMEM1ArenaLo();
+    gpHeap_align[0] = HEAP_ALIGN(gnHeapOS[0], 4);
+    new_lo[0] = (u32)OSGetMEM1ArenaHi();
 
     if(new_lo[0] - gpHeap_align[0] > 0x4000000) {
         new_lo[0] = gpHeap_align[0] + 0x4000000;
     }
 
-    OSSetArena1Lo((void*)new_lo[0]);
+    OSSetMEM1ArenaLo((void*)new_lo[0]);
 
-    gpHeapOS[1] = OSGetArena2Lo();
-    gpHeap_align[1] = ALIGN(gpHeapOS[1], 4);
-    new_lo[1] = (u32)OSGetArena2Hi();
+    gnHeapOS[1] = OSGetMEM2ArenaLo();
+    gpHeap_align[1] = HEAP_ALIGN(gnHeapOS[1], 4);
+    new_lo[1] = (u32)OSGetMEM2ArenaHi();
 
-    if(new_lo[1] - gpHeap_align[1] > 0x4000000) {
+    if (new_lo[1] - gpHeap_align[1] > 0x4000000) {
         new_lo[1] = gpHeap_align[1] + 0x4000000;
     }
 
-    OSSetArena2Lo((void*)new_lo[1]);
+    OSSetMEM2ArenaLo((void*)new_lo[1]);
 
+    gpHeap[0] = (u32*)gpHeap_align[0];
     gnSizeHeap[0] = new_lo[0] - gpHeap_align[0];
-    gnSizeHeap[1] = new_lo[1] - gpHeap_align[0];
 
-    gpHeap[0] = gpHeap_align[0];
-    gpHeap[1] = gpHeap_align[1];
+    gpHeap[1] = (u32*)gpHeap_align[1];
+    gnSizeHeap[1] = new_lo[1] - gpHeap_align[1];
 
-    for(heap = 0; heap < 2; heap++) {
-        s32 uVar1;
+    for(iHeap = 0; iHeap < 2; iHeap++) {
+        s32 nBlockSize = (gnSizeHeap[iHeap] >> 2) - 2;
+        
+        gpHeapBlockFirst[iHeap] = (void*)gpHeap[iHeap];
+        gpHeapBlockLast[iHeap] = (void*)(gpHeap[iHeap] + nBlockSize + 1);
+        *(gpHeapBlockFirst[iHeap]) = MAKE_BLOCK(nBlockSize, FLAG_FREE);
+        *(gpHeapBlockLast[iHeap]) = 0;
 
-        gpHeapBlockFirst[heap] = (void*)gpHeap[heap];
-        gpHeapBlockLast[heap] = (u32*)gpHeap[heap] + ((gnSizeHeap[heap] >> 2) - 2);
-        *((u32*)gpHeapBlockFirst[heap]) = 0x1000000 | (((gnSizeHeap[heap] >> 2) - 2) << 0x1A) | ((gnSizeHeap[heap] >> 2) - 2);
-        *((u32*)gpHeapBlockLast[heap]) = 0;
-        xlHeapBlockCacheReset(heap);
+        xlHeapBlockCacheReset(iHeap);
     }
 
-    return 1;
+    return true;
 }
-#endif
 
 bool xlHeapReset(void) {
     OSSetMEM1ArenaLo(gnHeapOS[0]);

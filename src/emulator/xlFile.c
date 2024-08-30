@@ -20,8 +20,7 @@ bool xlFileGetSize(s32* pnSize, char* szFileName) {
     return false;
 }
 
-// xlFileLoad?
-bool xlFileReadAll(char* szFileName, void** pTarget) {
+bool xlFileLoad(char* szFileName, void** pTarget) {
     s32 pnSize;
     tXL_FILE* pFile;
     s32 temp_r3;

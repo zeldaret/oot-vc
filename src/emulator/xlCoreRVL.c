@@ -20,14 +20,9 @@ GXRenderModeObj* rmode;
 CNTFileInfo gCNTFileInfo;
 UnknownContentStruct gUnkContent;
 
-//! TODO: find these function names
-u32 fn_800B6F8C();
-
-#define EMU_ROUND_UP(v, x) (((v) + ((x) - 1)) & ~((x) - 1))
-
 static inline u32 getFBTotalSize(f32 aspectRatio) {
     u16 lineCount = GXGetNumXfbLines(rmode->efbHeight, aspectRatio);
-    u16 fbWith = EMU_ROUND_UP(rmode->fbWidth, 16);
+    u16 fbWith = ROUND_UP(rmode->fbWidth, 16);
     return fbWith * lineCount;
 }
 
@@ -46,7 +41,7 @@ static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
 
     switch (VIGetTvFormat()) {
         case VI_NTSC:
-            rmode = VIGetDTVStatus() && ((fn_800B6F8C() & 0xFF) == 1) ? &GXNtsc480Prog : &GXNtsc480IntDf;
+            rmode = VIGetDTVStatus() && SCGetProgressiveMode() == 1 ? &GXNtsc480Prog : &GXNtsc480IntDf;
             rmode->viXOrigin -= 32;
             rmode->viWidth += 64;
             break;
