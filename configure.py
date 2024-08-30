@@ -473,13 +473,13 @@ config.libs = [
     RuntimeLib(
         "runtime",
         [
-            Object(NotLinked, "runtime/__mem.c"),
+            Object(LinkedFor("oot-j"), "runtime/__mem.c"),
             Object(NotLinked, "runtime/__va_arg.c"),
-            Object(NotLinked, "runtime/global_destructor_chain.c"),
+            Object(LinkedFor("oot-j"), "runtime/global_destructor_chain.c"),
             Object(NotLinked, "runtime/code_8015263C.c"),
             Object(NotLinked, "runtime/ptmf.c"),
             Object(NotLinked, "runtime/runtime.c"),
-            Object(NotLinked, "runtime/__init_cpp_exceptions.cpp"), # TODO: matched but does not build OK
+            Object(LinkedFor("oot-j"), "runtime/__init_cpp_exceptions.cpp"),
             Object(NotLinked, "runtime/Gecko_setjmp.c"),
             Object(NotLinked, "runtime/Gecko_ExceptionPPC.c"),
         ]
@@ -487,8 +487,8 @@ config.libs = [
     MetroTRKLib(
         "metrotrk",
         [
-            Object(NotLinked, "metrotrk/mem_TRK.c"),
-            Object(NotLinked, "metrotrk/dolphin_trk.c"),
+            Object(LinkedFor("oot-j"), "metrotrk/mem_TRK.c"),
+            Object(LinkedFor("oot-j"), "metrotrk/dolphin_trk.c"),
         ]
     )
 ]
