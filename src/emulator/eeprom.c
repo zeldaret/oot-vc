@@ -11,17 +11,6 @@ _XL_OBJECTTYPE gClassEEPROM = {
     (EventFunc)eepromEvent,
 };
 
-static bool eepromPut8(EEPROM* pEEPROM, u32 nAddress, s8* pData);
-static bool eepromPut16(EEPROM* pEEPROM, u32 nAddress, s16* pData);
-static bool eepromPut32(EEPROM* pEEPROM, u32 nAddress, s32* pData);
-static bool eepromPut64(EEPROM* pEEPROM, u32 nAddress, s64* pData);
-static bool eepromGet8(EEPROM* pEEPROM, u32 nAddress, s8* pData);
-static bool eepromGet16(EEPROM* pEEPROM, u32 nAddress, s16* pData);
-static bool eepromGet32(EEPROM* pEEPROM, u32 nAddress, s32* pData);
-static bool eepromGet64(EEPROM* pEEPROM, u32 nAddress, s64* pData);
-static bool eepromGetBlock(EEPROM* pEEPROM, CpuBlock* pBlock);
-static inline bool eepromEvent_UnknownInline(EEPROM* pEEPROM, void* pArgument);
-
 static bool eepromPut8(EEPROM* pEEPROM, u32 nAddress, s8* pData) { return true; }
 
 static bool eepromPut16(EEPROM* pEEPROM, u32 nAddress, s16* pData) { return true; }
