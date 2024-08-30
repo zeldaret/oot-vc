@@ -29,7 +29,6 @@ u32* gnHeapOS[HEAP_COUNT];
 //! TODO: these need better names
 #define CHKSUM_HI(v) ((u32)((v) >> 26))
 #define CHKSUM_LO(v) ((u32)((v) & 0x3F))
-#define HEAP_ALIGN(v, a) (((u32)(v) + a - 1) & ~(a - 1))
 
 static bool __xlHeapGetFree(s32 iHeap, s32* pnFreeBytes) NO_INLINE;
 
@@ -640,7 +639,7 @@ bool xlHeapSetup(void) {
     u32 iHeap;
 
     gnHeapOS[0] = OSGetMEM1ArenaLo();
-    gpHeap_align[0] = HEAP_ALIGN(gnHeapOS[0], 4);
+    gpHeap_align[0] = ROUND_UP((u32)gnHeapOS[0], 4);
     new_lo[0] = (u32)OSGetMEM1ArenaHi();
 
     if(new_lo[0] - gpHeap_align[0] > 0x4000000) {
@@ -650,7 +649,7 @@ bool xlHeapSetup(void) {
     OSSetMEM1ArenaLo((void*)new_lo[0]);
 
     gnHeapOS[1] = OSGetMEM2ArenaLo();
-    gpHeap_align[1] = HEAP_ALIGN(gnHeapOS[1], 4);
+    gpHeap_align[1] = ROUND_UP((u32)gnHeapOS[1], 4);
     new_lo[1] = (u32)OSGetMEM2ArenaHi();
 
     if (new_lo[1] - gpHeap_align[1] > 0x4000000) {
