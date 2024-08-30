@@ -37,11 +37,13 @@ inline void padStack(void) { int pad = 0; }
 #ifdef __MWERKS__
 #define AT_ADDRESS(xyz) : (xyz)
 #define DECL_SECTION(x) __declspec(section x)
+#define EXPORT __declspec(export)
 #define WEAK __declspec(weak)
 #define ASM asm
 #else
 #define AT_ADDRESS(xyz)
 #define DECL_SECTION(x)
+#define EXPORT
 #define WEAK
 #define ASM
 #endif
