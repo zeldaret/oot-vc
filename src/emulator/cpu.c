@@ -934,7 +934,11 @@ static bool cpuMakeDevice(Cpu* pCPU, s32* piDevice, void* pObject, u32 nOffset, 
                 }
             }
 
-            return !!xlObjectEvent(pObject, 0x1002, (void*)pDevice);
+            if (!xlObjectEvent(pObject, 0x1002, (void*)pDevice)) {
+                return false;
+            }
+
+            return true;
         }
     }
 
@@ -1437,12 +1441,12 @@ static bool fn_8000E734(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3);
 // #pragma GLOBAL_ASM("asm/non_matchings/cpu/fn_8000E734.s")
 #else
 static bool fn_8000E734(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3) {
-    if (gpSystem->eTypeROM == 'CLBJ' || gpSystem->eTypeROM == 'CLBE' || gpSystem->eTypeROM == 'CLBP') {
+    if (gpSystem->eTypeROM == CLBJ || gpSystem->eTypeROM == CLBE || gpSystem->eTypeROM == CLBP) {
         // Mario Party
         if (arg1 == 0x8C9F0004 && arg2 == 0x8C9D0000 && arg3 == 0x8C900008) {
             pCPU->nFlagCODE |= 2;
         }
-    } else if (gpSystem->eTypeROM == 'NFXJ' || gpSystem->eTypeROM == 'NFXE' || gpSystem->eTypeROM == 'NFXP') {
+    } else if (gpSystem->eTypeROM == NFXJ || gpSystem->eTypeROM == NFXE || gpSystem->eTypeROM == NFXP) {
         // Star Fox 64
         if (arg1 == 0x8FBF003C && arg2 == 0 && arg3 == 0xAFB20040) {
             pCPU->nFlagCODE |= 2;
@@ -1461,7 +1465,7 @@ s32 fn_8000E81C(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3, s32 arg5, s32* arg6, s3
     s32 temp_r5_5;
     s32 temp_r5_6;
 
-    if (gpSystem->eTypeROM == 'CLBJ' || gpSystem->eTypeROM == 'CLBE' || gpSystem->eTypeROM == 'CLBP') {
+    if (gpSystem->eTypeROM == CLBJ || gpSystem->eTypeROM == CLBE || gpSystem->eTypeROM == CLBP) {
         if (arg1 == 0xAC9F0004 && arg2 == 0xAC9D0000 && arg3 == 0xAC900008) {
             if (arg6 != NULL) {
                 temp_r5 = *arg7;
@@ -1489,7 +1493,7 @@ s32 fn_8000E81C(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3, s32 arg5, s32* arg6, s3
 
             pCPU->nFlagCODE |= 2;
         }
-    } else if (gpSystem->eTypeROM == 'NFXJ' || gpSystem->eTypeROM == 'NFXE' || gpSystem->eTypeROM == 'NFXP') {
+    } else if (gpSystem->eTypeROM == NFXJ || gpSystem->eTypeROM == NFXE || gpSystem->eTypeROM == NFXP) {
         if (arg1 == 0xAFBF003C && arg2 == 0x0080A025 && arg3 == 0xAFB00018) {
             if (arg6 != NULL) {
                 temp_r5_4 = *arg7;
@@ -3097,21 +3101,21 @@ static bool cpuCompile_LWR(Cpu* pCPU, s32* addressGCN) {
 }
 
 static inline cpuUnknownMarioKartFrameSet(SystemRomType eTypeROM, void* pFrame, s32 nAddressN64) {
-    if (eTypeROM == 'NKTJ') {
+    if (eTypeROM == NKTJ) {
         if (nAddressN64 == 0x802A4118) {
             *((s32*)pFrame + 0x11) = 0;
         }
         if (nAddressN64 == 0x800729D4) {
             *((s32*)pFrame + 0x11) = 1;
         }
-    } else if (eTypeROM == 'NKTP') {
+    } else if (eTypeROM == NKTP) {
         if (nAddressN64 == 0x802A4160) {
             *((s32*)pFrame + 0x11) = 0;
         }
         if (nAddressN64 == 0x80072E34) {
             *((s32*)pFrame + 0x11) = 1;
         }
-    } else if (eTypeROM == 'NKTE') {
+    } else if (eTypeROM == NKTE) {
         if (nAddressN64 == 0x802A4160) {
             *((s32*)pFrame + 0x11) = 0;
         }
@@ -6429,18 +6433,18 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
             }
 
             if (check == 1) {
-                if (gpSystem->eTypeROM == 'NM8E') {
+                if (gpSystem->eTypeROM == NM8E) {
                     if (anAddr[2] == 0x802F1FF0) {
                         anAddr[0] = 0x802F1F50;
                     } else if (anAddr[2] == 0x80038308) {
                         anAddr[0] = 0x800382F0;
                     }
-                } else if (gpSystem->eTypeROM == 'NMFE') {
+                } else if (gpSystem->eTypeROM == NMFE) {
                     if (anAddr[2] == 0x8009E420) {
                         anAddr[0] = 0x8009E380;
                     }
-                } else if (gpSystem->eTypeROM == 'NMQE' || gpSystem->eTypeROM == 'NMQJ' ||
-                           gpSystem->eTypeROM == 'NMQP') {
+                } else if (gpSystem->eTypeROM == NMQE || gpSystem->eTypeROM == NMQJ ||
+                           gpSystem->eTypeROM == NMQP) {
                     if (anAddr[0] == 0x802C88FC) {
                         anAddr[2] = 0x802C8974;
                     } else if (anAddr[0] = 0x802C8978) {
@@ -6904,7 +6908,11 @@ bool fn_8003F330(Cpu* pCPU, CpuFunction* pFunction) {
         return false;
     }
 
-    return !!treeDeleteNode(pCPU, &top, pFunction);
+    if (!treeDeleteNode(pCPU, &top, pFunction)) {
+        return false;
+    }
+
+    return true;
 }
 
 static bool treeInsert(Cpu* pCPU, s32 start, s32 end) {
