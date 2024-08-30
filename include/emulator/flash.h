@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 typedef struct Flash {
-    /* 0x00 */ s32 unk_00;
+    /* 0x00 */ u32 unk_00;
     /* 0x04 */ struct Store* pStore;
     /* 0x08 */ s32 flashStatus;
     /* 0x0C */ s32 flashCommand;
@@ -20,7 +20,7 @@ typedef struct Flash {
 
 bool fn_80045260(Flash* pFLASH, s32 arg1, void* arg2);
 bool fn_800452B0(Flash* pFLASH, s32 arg1, void* arg2);
-bool fn_80045300(Flash* pFLASH, s32* arg1);
+bool fn_80045300(Flash* pFLASH, u32* arg1);
 bool flashEvent(Flash* pFLASH, s32 nEvent, void* pArgument);
 
 extern _XL_OBJECTTYPE gClassFlash;
