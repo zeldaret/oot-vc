@@ -251,7 +251,7 @@ config.libs = [
             Object(NotLinked, "emulator/library.c"),
             Object(LinkedFor("oot-j"), "emulator/codeRVL.c"),
             Object(NotLinked, "emulator/helpRVL.c"),
-            Object(NotLinked, "emulator/soundRVL.c"),
+            Object(LinkedFor("oot-j"), "emulator/soundRVL.c"),
             Object(LinkedFor("oot-j"), "emulator/video.c"),
             Object(NotLinked, "emulator/store.c"),
             Object(NotLinked, "emulator/controller.c"),

@@ -215,11 +215,17 @@ bool soundMakeBuffer(Sound* pSound) {
     nSize = pSound->nSndLen;
     nSamples = ((nSize * 32000) + 16000) / pSound->nFrequency;
     temp_r3 = ((nSamples >> 2) & ~7);
+    vol = pSound->unk_94;
     temp_r6 = pSound->anSizeBuffer[iBuffer] = nSamples & (~0x1F);
     curBufP = pSound->apBuffer[iBuffer];
-    vol = 0x10000;
-    sample = 0;
 
+    sampleStep = ((nSize << 14) & 0xFFFF0000) / temp_r3;
+    
+    if (pSound->unk_00) {
+        vol = 0;
+    }
+
+    sample = 0;
     for (j = 0; j < temp_r3 * 2; j += 2) {
         samp = sample >> 16;
 
@@ -232,8 +238,6 @@ bool soundMakeBuffer(Sound* pSound) {
         // required to match
         vol = (u32)vol;
 
-        sampleStep = ((nSize << 14) & 0xFFFF0000);
-        sampleStep /= temp_r3;
         sample += sampleStep;
     }
 
@@ -344,7 +348,7 @@ static inline void InitVolumeCurve(Sound* pSound) {
 
     pSound->nVolumeCurve[0] = 0;
     for (i = 1; i < ARRAY_COUNT(pSound->nVolumeCurve); i++) {
-        value = pow(10, (20.0f * log10f(SQ(256 - i) / 65536.0f)) / 20.0f);
+        value = pow(10, (f32)(20.0 * log10f(SQ(256 - i) / 65536.0f)) / 20.0f);
         pSound->nVolumeCurve[i] = (256.0f * (f32) - ((value * 256.0) - 256.0));
     }
 }
@@ -352,6 +356,7 @@ static inline void InitVolumeCurve(Sound* pSound) {
 bool soundEvent(Sound* pSound, s32 nEvent, void* pArgument) {
     s32 var_r0;
     char* sp8;
+    int i;
 
     switch (nEvent) {
         case 0:
@@ -378,23 +383,9 @@ bool soundEvent(Sound* pSound, s32 nEvent, void* pArgument) {
 
             pSound->unk_94 = var_r0;
 
-            pSound->apBuffer[0] = NULL;
-            pSound->apBuffer[1] = NULL;
-            pSound->apBuffer[2] = NULL;
-            pSound->apBuffer[3] = NULL;
-            pSound->apBuffer[4] = NULL;
-            pSound->apBuffer[5] = NULL;
-            pSound->apBuffer[6] = NULL;
-            pSound->apBuffer[7] = NULL;
-            pSound->apBuffer[8] = NULL;
-            pSound->apBuffer[9] = NULL;
-            pSound->apBuffer[10] = NULL;
-            pSound->apBuffer[11] = NULL;
-            pSound->apBuffer[12] = NULL;
-            pSound->apBuffer[13] = NULL;
-            pSound->apBuffer[14] = NULL;
-            pSound->apBuffer[15] = NULL;
-            pSound->apBuffer[16] = NULL;
+            for (i = 0; i < 16; i++) {
+                pSound->apBuffer[i] = NULL;
+            }
 
             pSound->pBufferZero = NULL;
             pSound->pBufferHold = NULL;
