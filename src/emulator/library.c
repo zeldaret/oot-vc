@@ -1,10 +1,10 @@
 #include "emulator/library.h"
 #include "emulator/ai.h"
 #include "emulator/cpu.h"
+#include "emulator/flash.h"
 #include "emulator/frame.h"
 #include "emulator/library_jumptables.h"
 #include "emulator/pi.h"
-#include "emulator/pif.h"
 #include "emulator/ram.h"
 #include "emulator/rom.h"
 #include "emulator/rsp.h"
@@ -808,38 +808,37 @@ static void __cosf(Cpu* pCPU) { pCPU->aFPR[0].f32 = cosf(pCPU->aFPR[12].f32); }
 static void __sinf(Cpu* pCPU) { pCPU->aFPR[0].f32 = sinf(pCPU->aFPR[12].f32); }
 
 void _bzero(Cpu* pCPU) {
-    s32 nSize;
+    s32 nSize = pCPU->aGPR[5].s32;
     void* pBuffer;
 
-    cpuGetAddressBuffer(pCPU, &pBuffer, pCPU->aGPR[4].u32);
-    nSize = pCPU->aGPR[5].s32;
-
-    memset(pBuffer, 0, nSize);
+    if (cpuGetAddressBuffer(pCPU, &pBuffer, pCPU->aGPR[4].u32) && nSize > 0) {
+        memset(pBuffer, 0, nSize);
+    }
 }
 
 void _bcopy(Cpu* pCPU) {
-    s32 nSize;
+    s32 nSize  = pCPU->aGPR[6].s32;
     void* pSource;
     void* pTarget;
 
-    cpuGetAddressBuffer(pCPU, &pSource, pCPU->aGPR[4].u32);
-    cpuGetAddressBuffer(pCPU, &pTarget, pCPU->aGPR[5].u32);
-    nSize = pCPU->aGPR[6].s32;
-
-    xlHeapCopy(pTarget, pSource, nSize);
+    if (cpuGetAddressBuffer(pCPU, &pSource, pCPU->aGPR[4].u32) &&
+        cpuGetAddressBuffer(pCPU, &pTarget, pCPU->aGPR[5].u32) &&
+        nSize > 0) {
+        xlHeapCopy(pTarget, pSource, nSize);
+    }
     pCPU->aGPR[2].u32 = pCPU->aGPR[5].u32;
 }
 
 void _memcpy(Cpu* pCPU) {
-    s32 nSize;
+    s32 nSize = pCPU->aGPR[6].s32;
     void* pSource;
     void* pTarget;
 
-    cpuGetAddressBuffer(pCPU, &pTarget, pCPU->aGPR[4].u32);
-    cpuGetAddressBuffer(pCPU, &pSource, pCPU->aGPR[5].u32);
-    nSize = pCPU->aGPR[6].s32;
-
-    xlHeapCopy(pTarget, pSource, nSize);
+    if (cpuGetAddressBuffer(pCPU, &pTarget, pCPU->aGPR[4].u32) &&
+        cpuGetAddressBuffer(pCPU, &pSource, pCPU->aGPR[5].u32) &&
+        nSize > 0) {
+        xlHeapCopy(pTarget, pSource, nSize);
+    }
     pCPU->aGPR[2].u32 = pCPU->aGPR[4].u32;
 }
 
@@ -898,7 +897,6 @@ void guOrthoF(Cpu* pCPU) {
 
     data0.f32 = 0.0f;
     data1.f32 = 1.0f;
-    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, pCPU->aGPR[4].u32, 0, n, f, 0.0f, 0.0f, scale);
 
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
@@ -930,6 +928,8 @@ void guOrthoF(Cpu* pCPU) {
 
     data.f32 = 1.0f;
     mf[3 * 4 + 3] = data.u32;
+
+    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, pCPU->aGPR[4].u32, 0, n, f, 0.0f, 0.0f, scale, (void*)mf);
 }
 
 void guOrtho(Cpu* pCPU) {
@@ -976,8 +976,6 @@ void guOrtho(Cpu* pCPU) {
     data.u32 = sp[7];
     scale = data.f32;
 
-    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, 0, pCPU->aGPR[4].u32, n, f, 0.0f, 0.0f, scale);
-
     mf[0][0] = 1.0f;
     mf[0][1] = 0.0f;
     mf[0][2] = 0.0f;
@@ -1002,6 +1000,8 @@ void guOrtho(Cpu* pCPU) {
     mf[3][1] = -(t + b) / (t - b);
     mf[3][2] = -(f + n) / (f - n);
     mf[3][3] = 1.0f;
+
+    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, 0, pCPU->aGPR[4].u32, n, f, 0.0f, 0.0f, scale, (void*)mf);
 
     ai = &m[0];
     af = &m[8];
@@ -1052,7 +1052,6 @@ void guPerspectiveF(Cpu* pCPU) {
 
     data0.f32 = 0.0f;
     data1.f32 = 1.0f;
-    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, scale);
 
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
@@ -1084,6 +1083,8 @@ void guPerspectiveF(Cpu* pCPU) {
 
     data.f32 = 0.0f;
     mf[3 * 4 + 3] = data.u32;
+
+    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, scale, (void*)mf);
 }
 
 void guPerspective(Cpu* pCPU) {
@@ -1123,8 +1124,6 @@ void guPerspective(Cpu* pCPU) {
     data.u32 = sp[6];
     scale = data.f32;
 
-    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, 0, pCPU->aGPR[4].u32, rNear, rFar, fovy, aspect, scale);
-
     mf[0][0] = 1.0f;
     mf[0][1] = 0.0f;
     mf[0][2] = 0.0f;
@@ -1151,6 +1150,8 @@ void guPerspective(Cpu* pCPU) {
     mf[2][3] = -1.0f;
     mf[3][2] = 2 * rNear * rFar / (rNear - rFar);
     mf[3][3] = 0.0f;
+
+    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, 0, pCPU->aGPR[4].u32, rNear, rFar, fovy, aspect, scale, (void*)mf);
 
     ai = &m[0];
     af = &m[8];
@@ -1189,7 +1190,7 @@ void GenPerspective_1080(Cpu* pCPU) {
     data.u32 = sp[4];
     rFar = data.f32;
 
-    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, 1.0f);
+    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, 1.0f, NULL);
     pFrame->iHintHack = pFrame->iHintLast;
 }
 
@@ -2550,13 +2551,14 @@ void guLookAtReflect(Cpu* pCPU) {
 }
 
 bool osAiSetFrequency(Cpu* pCPU) {
-    s32 pad1[2];
+    s32 viClock = VI_NTSC_CLOCK;
+    s32 pad1;
     u32 dacRate;
     u8 bitRate;
     u32 nData32;
     s32 pad2;
 
-    dacRate = (f32)VI_NTSC_CLOCK / pCPU->aGPR[4].u32 + 0.5f;
+    dacRate = (f32)viClock / pCPU->aGPR[4].u32 + 0.5f;
     if (dacRate > 132) {
         bitRate = dacRate / 66;
         if (bitRate > 16) {
@@ -2573,7 +2575,7 @@ bool osAiSetFrequency(Cpu* pCPU) {
             return false;
         }
 
-        pCPU->aGPR[2].s32 = VI_NTSC_CLOCK / (s32)dacRate;
+        pCPU->aGPR[2].s32 = viClock / (s32)dacRate;
     } else {
         pCPU->aGPR[2].s32 = -1;
     }
@@ -2611,15 +2613,16 @@ bool osAiSetNextBuffer(Cpu* pCPU) {
 
 bool __osEepStatus(Cpu* pCPU) {
     s32 ret;
-    s32 nSize;
+    u32 nStatus;
     u8* status;
+    Flash* pFLASH = SYSTEM_FLASH(gpSystem);
 
     if (!cpuGetAddressBuffer(pCPU, (void**)&status, pCPU->aGPR[5].u32)) {
         return false;
     }
 
-    if (pifGetEEPROMSize(SYSTEM_PIF(gpSystem), (u32*)&nSize)) {
-        status[0] = 0x80 | (nSize == 0x800 ? 0x40 : 0);
+    if (pFLASH != NULL && fn_80045300(pFLASH, &nStatus)) {
+        status[0] = 0x80 | (nStatus == 0x4000 ? 0x40 : 0);
         status[1] = 0;
         status[2] = 0;
         status[3] = 0;
@@ -2638,7 +2641,7 @@ bool __osEepStatus(Cpu* pCPU) {
 
 bool osEepromRead(Cpu* pCPU) {
     s32 pad[2];
-    u8 address;
+    s32 address;
     u8* buffer;
 
     address = pCPU->aGPR[5].u8;
@@ -2646,13 +2649,13 @@ bool osEepromRead(Cpu* pCPU) {
         return false;
     }
 
-    pCPU->aGPR[2].s32 = simulatorReadEEPROM(address, buffer) ? 0 : -1;
+    pCPU->aGPR[2].s32 = fn_80045260(SYSTEM_FLASH(gpSystem), address, buffer) ? 0 : -1;
     return true;
 }
 
 bool osEepromWrite(Cpu* pCPU) {
     s32 pad[2];
-    u8 address;
+    s32 address;
     u8* buffer;
 
     address = pCPU->aGPR[5].u8;
@@ -2660,14 +2663,14 @@ bool osEepromWrite(Cpu* pCPU) {
         return false;
     }
 
-    pCPU->aGPR[2].s32 = simulatorWriteEEPROM(address, buffer) ? 0 : -1;
+    pCPU->aGPR[2].s32 = fn_800452B0(SYSTEM_FLASH(gpSystem), address, buffer) ? 0 : -1;
     return true;
 }
 
 bool osEepromLongRead(Cpu* pCPU) {
     s32 length;
     s32 ret;
-    u8 address;
+    s32 address;
     u8* buffer;
 
     ret = 0;
@@ -2679,7 +2682,7 @@ bool osEepromLongRead(Cpu* pCPU) {
     length = pCPU->aGPR[7].s32;
 
     while (length > 0) {
-        if (!simulatorReadEEPROM(address, buffer)) {
+        if (!fn_80045260(SYSTEM_FLASH(gpSystem), address & 0xFF, buffer)) {
             ret = -1;
             break;
         }
@@ -2696,7 +2699,7 @@ bool osEepromLongRead(Cpu* pCPU) {
 bool osEepromLongWrite(Cpu* pCPU) {
     s32 length;
     s32 ret;
-    u8 address;
+    s32 address;
     u8* buffer;
 
     ret = 0;
@@ -2708,7 +2711,7 @@ bool osEepromLongWrite(Cpu* pCPU) {
     length = pCPU->aGPR[7].s32;
 
     while (length > 0) {
-        if (!simulatorWriteEEPROM(address, buffer)) {
+        if (!fn_800452B0(SYSTEM_FLASH(gpSystem), address & 0xFF, buffer)) {
             ret = -1;
             break;
         }
@@ -2723,8 +2726,7 @@ bool osEepromLongWrite(Cpu* pCPU) {
 }
 
 bool fn_8005B50C(Cpu* pCPU) {
-    // pCPU->aGPR[2]._0s32 = 0;
-    pCPU->aGPR[2].s32 &= pCPU->anCP0[9] & 1;
+    pCPU->aGPR[2].s64 = pCPU->anCP0[9] & 0xFFFFFFFF;
     return true;
 }
 
@@ -2786,7 +2788,7 @@ bool starfoxCopy(Cpu* pCPU) {
             T2 = 0;
         }
 
-        if (T2 < 0) {
+        if (T2) {
             cpuGetAddressBuffer(pCPU, (void**)&source, T9);
             cpuGetAddressBuffer(pCPU, (void**)&target, A1);
             T9 += 1;
@@ -2802,8 +2804,8 @@ bool starfoxCopy(Cpu* pCPU) {
                 cpuGetAddressBuffer(pCPU, (void**)&source, T1 - 1);
                 cpuGetAddressBuffer(pCPU, (void**)&target, A1);
                 T3 -= 1;
-                A1 += 1;
                 T1 += 1;
+                A1 += 1;
                 *target = *source;
             } while (T3 != 0);
         }
@@ -2840,58 +2842,6 @@ bool fn_8005B710(Cpu* pCPU) {
     return true;
 }
 
-bool pictureSnap_Zelda2(Cpu* pCPU) {
-    pCPU->aGPR[25].u32 = 0xFFFA0000;
-    return true;
-}
-
-bool dmaSoundRomHandler_ZELDA1(Cpu* pCPU) {
-    void* pTarget;
-    OSMesgQueue_s* mq;
-    u32* msg;
-    OSIoMesg_s* pIOMessage;
-    s32 first;
-    s32 msgCount;
-    s32 validCount;
-    s32 nSize;
-    s32 nAddress;
-    s32 nOffsetRAM;
-    s32 nOffsetROM;
-
-    nAddress = pCPU->aGPR[5].u32;
-    if (!cpuGetAddressBuffer(pCPU, (void**)&pIOMessage, nAddress)) {
-        return false;
-    }
-
-    nAddress = (u32)pIOMessage->hdr.retQueue;
-    if (!cpuGetAddressBuffer(pCPU, (void**)&mq, nAddress)) {
-        return false;
-    }
-
-    nAddress = (u32)mq->msg;
-    first = mq->first;
-    msgCount = mq->msgCount;
-    validCount = mq->validCount;
-    if (!cpuGetAddressBuffer(pCPU, (void**)&msg, nAddress)) {
-        return false;
-    }
-
-    msg[(first + validCount) % msgCount] = pCPU->aGPR[5].u32;
-    mq->validCount = validCount + 1;
-
-    nOffsetRAM = (u32)pIOMessage->dramAddr;
-    if (!cpuGetAddressBuffer(pCPU, &pTarget, nOffsetRAM)) {
-        return false;
-    }
-
-    nOffsetROM = (u32)pIOMessage->devAddr;
-    nSize = pIOMessage->size;
-    romCopyImmediate(SYSTEM_ROM(gpSystem), pTarget, nOffsetROM, nSize);
-
-    pCPU->aGPR[2].s32 = 0;
-    return true;
-}
-
 bool osViSwapBuffer_Entry(Cpu* pCPU) {
     static u32 nAddress = 0xFFFFFFFF;
 
@@ -2902,16 +2852,6 @@ bool osViSwapBuffer_Entry(Cpu* pCPU) {
             return false;
         }
     }
-    return true;
-}
-
-bool zeldaLoadSZS_Entry(Cpu* pCPU) {
-    pCPU->aGPR[29].s32 -= 0x40;
-    return true;
-}
-
-bool zeldaLoadSZS_Exit(Cpu* pCPU) {
-    pCPU->aGPR[29].s32 += 0x40;
     return true;
 }
 
@@ -3625,31 +3565,6 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)GenPerspective_1080) {
                 if (((System*)gpSystem)->eTypeROM != NTEA) {
                     bFlag = false;
-                }
-            } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)pictureSnap_Zelda2) {
-                if (((System*)gpSystem)->eTypeROM != NZSJ) {
-                    bFlag = false;
-                }
-            } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)zeldaLoadSZS_Entry) {
-                if (((System*)gpSystem)->eTypeROM != CZLJ) {
-                    bFlag = false;
-                }
-                if (bFlag) {
-                    pnCodeTemp = pnCode;
-                    bReturn = false;
-                    while (pnCodeTemp[0] != 0x27BD0040) {
-                        pnCodeTemp++;
-                    }
-                    pnCodeTemp[0] = 0x7C000000 | (iFunction + 1);
-                }
-            } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)dmaSoundRomHandler_ZELDA1) {
-                if (((System*)gpSystem)->eTypeROM != CZLJ) {
-                    bFlag = false;
-                } else {
-                    nOpcode = pnCode[2];
-                    if (iData != 0 && nOpcode != 0x0C000F3C) {
-                        bFlag = false;
-                    }
                 }
             }
 
