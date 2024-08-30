@@ -224,7 +224,7 @@ static SystemDevice gaSystemDevice[] = {
         {{0, 0x04000000, 0x040FFFFF}},
     },
     {
-        SOT_MIPS,
+        SOT_MI,
         &gClassMI,
         1,
         {{0, 0x04300000, 0x043FFFFF}},
@@ -242,7 +242,7 @@ static SystemDevice gaSystemDevice[] = {
         {{0, 0x04500000, 0x045FFFFF}},
     },
     {
-        SOT_PERIPHERAL,
+        SOT_PI,
         &gClassPI,
         1,
         {{0, 0x04600000, 0x046FFFFF}},
@@ -340,12 +340,12 @@ bool systemCreateStorageDevice(System* pSystem, void* pArgument) {
     pSystem->apObject[SOT_ROM] = NULL;
     pSystem->apObject[SOT_RSP] = NULL;
     pSystem->apObject[SOT_RDP] = NULL;
-    pSystem->apObject[SOT_MIPS] = NULL;
+    pSystem->apObject[SOT_MI] = NULL;
     pSystem->apObject[SOT_DISK] = NULL;
     pSystem->apObject[SOT_AI] = NULL;
     pSystem->apObject[SOT_VI] = NULL;
     pSystem->apObject[SOT_SI] = NULL;
-    pSystem->apObject[SOT_PERIPHERAL] = NULL;
+    pSystem->apObject[SOT_PI] = NULL;
     pSystem->apObject[SOT_RDB] = NULL;
     pSystem->apObject[SOT_EEPROM] = NULL;
     pSystem->apObject[SOT_SRAM] = NULL;

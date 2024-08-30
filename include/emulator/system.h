@@ -183,12 +183,12 @@ typedef enum SystemObjectType {
     SOT_ROM = 3,
     SOT_RSP = 4,
     SOT_RDP = 5,
-    SOT_MIPS = 6,
+    SOT_MI = 6,
     SOT_DISK = 7,
     SOT_AI = 8,
     SOT_VI = 9,
     SOT_SI = 10,
-    SOT_PERIPHERAL = 11,
+    SOT_PI = 11,
     SOT_RDB = 12,
     SOT_EEPROM = 13,
     SOT_SRAM = 14,
@@ -272,12 +272,12 @@ typedef struct SystemRomConfig {
 #define SYSTEM_ROM(pSystem) ((Rom*)(((System*)(pSystem))->apObject[SOT_ROM]))
 #define SYSTEM_RSP(pSystem) ((Rsp*)(((System*)(pSystem))->apObject[SOT_RSP]))
 #define SYSTEM_RDP(pSystem) ((Rdp*)(((System*)(pSystem))->apObject[SOT_RDP]))
-#define SYSTEM_MI(pSystem) ((MI*)(((System*)(pSystem))->apObject[SOT_MIPS]))
+#define SYSTEM_MI(pSystem) ((MI*)(((System*)(pSystem))->apObject[SOT_MI]))
 #define SYSTEM_DISK(pSystem) ((Disk*)(((System*)(pSystem))->apObject[SOT_DISK]))
 #define SYSTEM_AI(pSystem) ((AI*)(((System*)(pSystem))->apObject[SOT_AI]))
 #define SYSTEM_VI(pSystem) ((VI*)(((System*)(pSystem))->apObject[SOT_VI]))
 #define SYSTEM_SI(pSystem) ((SI*)(((System*)(pSystem))->apObject[SOT_SI]))
-#define SYSTEM_PI(pSystem) ((PI*)(((System*)(pSystem))->apObject[SOT_PERIPHERAL]))
+#define SYSTEM_PI(pSystem) ((PI*)(((System*)(pSystem))->apObject[SOT_PI]))
 #define SYSTEM_RDB(pSystem) ((Rdb*)(((System*)(pSystem))->apObject[SOT_RDB]))
 #define SYSTEM_EEPROM(pSystem) ((EEPROM*)(((System*)(pSystem))->apObject[SOT_EEPROM]))
 #define SYSTEM_SRAM(pSystem) ((Sram*)(((System*)(pSystem))->apObject[SOT_SRAM]))
