@@ -1141,9 +1141,9 @@ static bool cpuGetMode(u64 nStatus, CpuMode* peMode) {
  * @brief Determines the register size that the VR4300 is using.
  * 
  * @param nStatus Status bits for determining the register size.
- * @param peSize 1 if 64-bits are enabled for registers, 0 for 32-bit registers.
+ * @param peSize A pointer to the size determined.
  * @param peMode A pointer to the mode determined.
- * @return bool 
+ * @return bool
  */
 static bool cpuGetSize(u64 nStatus, CpuSize* peSize, CpuMode* peMode) {
     CpuMode eMode;
