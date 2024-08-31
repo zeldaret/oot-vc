@@ -1,76 +1,87 @@
-#include "types.h"
+#include "revolution/types.h"
+#include "mem_funcs.h"
+#include "macros.h"
 
-void* memcpy(void* dst, void* src, size_t len) {
-    u8* s;
-    u8* d;
+INIT void* memcpy(void* dst, const void* src, size_t n) {
+    const char* p;
+    char* q;
+    int rev = ((u32)src < (u32)dst);
 
-    if (src >= dst) {
-        for (s = (u8*)src - 1, d = (u8*)dst - 1, len++; --len;) {
-            *++d = *++s;
+    if (!rev) {
+
+        for (p = (const char*)src - 1, q = (char*)dst - 1, n++; --n;) {
+            *++q = *++p;
         }
+
     } else {
-        for (s = (u8*)src + len, d = (u8*)dst + len, len++; --len;) {
-            *--d = *--s;
+        for (p = (const char*)src + n, q = (char*)dst + n, n++; --n;) {
+            *--q = *--p;
         }
     }
-    return dst;
+    return (dst);
 }
 
-void __fill_mem(void* ptr, u32 fill, size_t len) {
+INIT void __fill_mem(void* dst, int val, size_t n) {
+    u32 v = (u8)val;
     u32 i;
-    u32* w_ptr;
-    u8* c_ptr;
-    u32 val;
 
-    val = (u8)fill;
-    c_ptr = (u8*)ptr - 1;
-    if (len >= 32) {
-        i = ~(u32)c_ptr % 4;
-        if (i != 0) {
-            len -= i;
+    dst = (void*)((u8*)dst - 1);
+
+    if (n >= 32) {
+        i = (~(u32)dst) & 3;
+
+        if (i) {
+            n -= i;
+
             do {
-                *++c_ptr = val;
+                dst = (void*)((u8*)dst + 1);
+                *(u8*)dst = v;
             } while (--i);
         }
 
-        if (val != 0) {
-            val |= (val << 0x18) | (val << 0x10) | (val << 0x8);
+        if (v) {
+            v |= v << 24 | v << 16 | v << 8;
         }
 
-        i = len / 32;
-        w_ptr = (u32*)(c_ptr - 3);
-        if (i != 0) {
+        dst = (void*)((u32*)((u8*)dst + 1) - 1);
+        i = n >> 5;
+
+        if (i) {
             do {
-                *++w_ptr = val;
-                *++w_ptr = val;
-                *++w_ptr = val;
-                *++w_ptr = val;
-                *++w_ptr = val;
-                *++w_ptr = val;
-                *++w_ptr = val;
-                *++w_ptr = val;
+                *++(((u32*)dst)) = v;
+                *++(((u32*)dst)) = v;
+                *++(((u32*)dst)) = v;
+                *++(((u32*)dst)) = v;
+                *++(((u32*)dst)) = v;
+                *++(((u32*)dst)) = v;
+                *++(((u32*)dst)) = v;
+                *++(((u32*)dst)) = v;
             } while (--i);
         }
 
-        i = (len / 4) % 8;
-        if (i != 0) {
+        i = (n & 31) >> 2;
+
+        if (i) {
             do {
-                *++w_ptr = val;
+                dst = (void*)((u32*)dst + 1);
+                *(u32*)dst = v;
             } while (--i);
         }
 
-        c_ptr = (u8*)w_ptr + 3;
-        len %= 4;
+        dst = (void*)((u8*)((u32*)dst + 1) - 1);
+        n &= 3;
     }
 
-    if (len != 0) {
+    if (n) {
         do {
-            *++c_ptr = val;
-        } while (--len);
+            dst = (void*)((u8*)dst + 1);
+            *(u8*)dst = v;
+        } while (--n);
     }
 }
 
-void* memset(void* ptr, s32 fill, size_t len) {
-    __fill_mem(ptr, fill, len);
-    return ptr;
+INIT void* memset(void* dst, int val, size_t n) {
+    __fill_mem(dst, val, n);
+
+    return (dst);
 }

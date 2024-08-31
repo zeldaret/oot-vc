@@ -125,6 +125,9 @@ typedef enum SystemRomType {
     NMVJ = 'NMVJ', // Mario Party 3 (JP)
     NMVE = 'NMVE', // Mario Party 3 (US)
     NMVP = 'NMVP', // Mario Party 3 (EU)
+    NM8J = 'NM8J', // Mario Tennis (JP)
+    NM8E = 'NM8E', // Mario Tennis (US)
+    NM8P = 'NM8P', // Mario Tennis (EU)
     NMQJ = 'NMQJ', // Paper Mario (JP)
     NMQE = 'NMQE', // Paper Mario (US)
     NMQP = 'NMQP', // Paper Mario (EU)
@@ -190,7 +193,7 @@ typedef enum SystemObjectType {
     SOT_SI = 10,
     SOT_PI = 11,
     SOT_RDB = 12,
-    SOT_EEPROM = 13,
+    SOT_PAK = 13,
     SOT_SRAM = 14,
     SOT_FLASH = 15,
     SOT_CODE = 16,
@@ -279,7 +282,7 @@ typedef struct SystemRomConfig {
 #define SYSTEM_SI(pSystem) ((SI*)(((System*)(pSystem))->apObject[SOT_SI]))
 #define SYSTEM_PI(pSystem) ((PI*)(((System*)(pSystem))->apObject[SOT_PI]))
 #define SYSTEM_RDB(pSystem) ((Rdb*)(((System*)(pSystem))->apObject[SOT_RDB]))
-#define SYSTEM_EEPROM(pSystem) ((EEPROM*)(((System*)(pSystem))->apObject[SOT_EEPROM]))
+#define SYSTEM_PAK(pSystem) ((Pak*)(((System*)(pSystem))->apObject[SOT_PAK]))
 #define SYSTEM_SRAM(pSystem) ((Sram*)(((System*)(pSystem))->apObject[SOT_SRAM]))
 #define SYSTEM_FLASH(pSystem) ((Flash*)(((System*)(pSystem))->apObject[SOT_FLASH]))
 #define SYSTEM_CODE(pSystem) ((Code*)(((System*)(pSystem))->apObject[SOT_CODE]))
