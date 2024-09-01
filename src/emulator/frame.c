@@ -854,9 +854,9 @@ static inline void frameSetZMode(Frame* pFrame) {
             }
         } else {
             switch (gpSystem->eTypeROM) {
-                case 'CZLJ':
-                case 'CZLE':
-                case 'NZLP':
+                case CZLJ:
+                case CZLE:
+                case NZLP:
                     if (mode & 0x20) {
                         GXSetZMode(GX_TRUE, GX_ALWAYS, GX_TRUE);
                     } else {
@@ -2445,7 +2445,7 @@ bool frameEnd(Frame* pFrame) {
         DCInvalidateRange(pData, N64_FRAME_WIDTH * N64_FRAME_HEIGHT * sizeof(u16));
     }
 
-    if ((gpSystem->eTypeROM == 'NABJ' || gpSystem->eTypeROM == 'NABE' || gpSystem->eTypeROM == 'NABP') &&
+    if ((gpSystem->eTypeROM == NABJ || gpSystem->eTypeROM == NABE || gpSystem->eTypeROM == NABP) &&
         pFrame->bGrabbedFrame) {
         pData = pFrame->nTempBuffer;
         CopyCFB(pData);
@@ -2458,7 +2458,7 @@ bool frameEnd(Frame* pFrame) {
     GXSetDrawDone();
     GXFlush();
 
-    if ((gpSystem->eTypeROM == 'NZSJ' || gpSystem->eTypeROM == 'NZSE' || gpSystem->eTypeROM == 'NZSP')) {
+    if ((gpSystem->eTypeROM == NZSJ || gpSystem->eTypeROM == NZSE || gpSystem->eTypeROM == NZSP)) {
         pFrame->nHackCount = 0;
         pFrame->nFrameCounter++;
         pFrame->bBlurredThisFrame = false;
@@ -4435,7 +4435,7 @@ bool frameLoadVertex(Frame* pFrame, void* pBuffer, s32 iVertex0, s32 nCount) {
         pnData16 += 0x8;
     }
 
-    if (gpSystem->eTypeROM = 'NSMJ' && pFrame->bBlurOn) {
+    if (gpSystem->eTypeROM = NSMJ && pFrame->bBlurOn) {
         pFrame->bBlurOn = false;
     }
 

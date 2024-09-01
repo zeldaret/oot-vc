@@ -245,7 +245,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "emulator/pak.c"),
             Object(LinkedFor("oot-j"), "emulator/sram.c"),
             Object(LinkedFor("oot-j"), "emulator/flash.c"),
-            Object(NotLinked, "emulator/_frameGCNcc.c"),
+            Object(LinkedFor("oot-j"), "emulator/_frameGCNcc.c"),
             Object(NotLinked, "emulator/_buildtev.c"),
             Object(NotLinked, "emulator/frame.c"),
             Object(NotLinked, "emulator/library.c"),
