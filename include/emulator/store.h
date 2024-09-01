@@ -14,7 +14,7 @@ typedef struct Store {
     /* 0x00 */ u32 unk_00;
     /* 0x08 */ char szFileName[9];
     /* 0x10 */ NANDFileInfo nandFileInfo;
-    /* 0x9C */ void* unk_9C;
+    /* 0x9C */ u8* unk_9C;
     /* 0xA0 */ SystemRomType eTypeROM;
     /* 0xA4 */ s32 unk_A4;
     /* 0xA8 */ u32 unk_A8;

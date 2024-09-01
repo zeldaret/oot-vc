@@ -52,7 +52,7 @@ bool simulatorDetectController(Controller* pController, s32 arg1);
 bool fn_800622B8(Controller* pController) NO_INLINE;
 bool fn_800623F4(Controller* pController) NO_INLINE;
 bool fn_80062C18(Controller* pController, s32 arg1, s32* arg2, s32* arg3, s32* arg4, s32* arg5, s32* arg6, s32* arg7);
-bool fn_80062CE4(Controller* pController, s32 arg1, bool);
+bool fn_80062CE4(Controller* pController, s32 arg1, bool bUnknown);
 bool fn_800631B8(Controller* pController, s32 arg1);
 bool controllerEvent(Controller* pController, s32 nEvent, void* pArgument);
 

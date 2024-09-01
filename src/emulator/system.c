@@ -1478,7 +1478,11 @@ bool fn_8000A6A4(System* pSystem, CpuBlock* pBlock) {
     pNewBlock->nAddress0 = pBlock->nAddress0;
     pNewBlock->nAddress1 = pBlock->nAddress1;
 
-    return !!cpuGetBlock(SYSTEM_CPU(gpSystem), pNewBlock);
+    if (!cpuGetBlock(SYSTEM_CPU(gpSystem), pNewBlock)) {
+        return false;
+    }
+
+    return true;
 }
 
 bool systemSetMode(System* pSystem, SystemMode eMode) {
