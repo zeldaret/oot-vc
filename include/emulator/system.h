@@ -89,6 +89,9 @@ typedef enum SystemRomType {
     NBCE = 'NBCE', // Blast Corps (US)
     NBCP = 'NBCP', // Blast Corps (EU)
     NTSJ = 'NTSJ', // Center Court Tennis (JP)
+    NFUJ = 'NFUJ', // Conker's Bad Fur Day (JP)
+    NFUE = 'NFUE', // Conker's Bad Fur Day (US)
+    NFUP = 'NFUP', // Conker's Bad Fur Day (EU)
     NCUJ = 'NCUJ', // Cruis'n USA (JP)
     NCUE = 'NCUE', // Cruis'n USA (US)
     NCUP = 'NCUP', // Cruis'n USA (EU)
@@ -113,6 +116,7 @@ typedef enum SystemRomType {
     NLRP = 'NLRP', // Lode Runner 3-D (EU)
     NMFJ = 'NMFJ', // Mario Golf (JP)
     NMFE = 'NMFE', // Mario Golf (US)
+    NMFP = 'NMFP', // Mario Golf (EU)
     NKTJ = 'NKTJ', // Mario Kart 64 (JP)
     NKTE = 'NKTE', // Mario Kart 64 (US)
     NKTP = 'NKTP', // Mario Kart 64 (EU)
@@ -125,6 +129,12 @@ typedef enum SystemRomType {
     NMVJ = 'NMVJ', // Mario Party 3 (JP)
     NMVE = 'NMVE', // Mario Party 3 (US)
     NMVP = 'NMVP', // Mario Party 3 (EU)
+    NM8J = 'NM8J', // Mario Tennis (JP)
+    NM8E = 'NM8E', // Mario Tennis (US)
+    NM8P = 'NM8P', // Mario Tennis (EU)
+    NRBJ = 'NRBJ', // Mini Racers (JP)
+    NRBE = 'NRBE', // Mini Racers (US)
+    NRBP = 'NRBP', // Mini Racers (EU)
     NMQJ = 'NMQJ', // Paper Mario (JP)
     NMQE = 'NMQE', // Paper Mario (US)
     NMQP = 'NMQP', // Paper Mario (EU)
@@ -140,11 +150,15 @@ typedef enum SystemRomType {
     NPWJ = 'NPWJ', // Pilotwings 64 (JP)
     NPWE = 'NPWE', // Pilotwings 64 (US)
     NPWP = 'NPWP', // Pilotwings 64 (EU)
-    NQKE = 'NQKE', // Quake (EU)
+    NQKJ = 'NQKJ', // Quake (JP)
+    NQKE = 'NQKE', // Quake (US)
+    NQKP = 'NQKP', // Quake (EU)
     NRXJ = 'NRXJ', // Robotron 64 (JP)
     NRXE = 'NRXE', // Robotron 64 (US)
     NRXP = 'NRXP', // Robotron 64 (EU)
     NGUJ = 'NGUJ', // Sin and Punishment: Hoshi no Keishosha (JP)
+    NGUE = 'NGUE', // Sin and Punishment: Hoshi no Keishosha (US)
+    NGUP = 'NGUP', // Sin and Punishment: Hoshi no Keishosha (EU)
     NFXJ = 'NFXJ', // Star Fox 64 (JP)
     NFXE = 'NFXE', // Star Fox 64 (US)
     NFXP = 'NFXP', // Star Fox 64 (EU)
@@ -156,6 +170,7 @@ typedef enum SystemRomType {
     NSMP = 'NSMP', // Super Mario 64 (EU)
     NALJ = 'NALJ', // Super Smash Bros. (JP)
     NALE = 'NALE', // Super Smash Bros. (US)
+    NALP = 'NALP', // Super Smash Bros. (EU)
     NZSJ = 'NZSJ', // The Legend of Zelda: Majora's Mask (JP)
     NZSE = 'NZSE', // The Legend of Zelda: Majora's Mask (US)
     NZSP = 'NZSP', // The Legend of Zelda: Majora's Mask (EU)
@@ -171,6 +186,7 @@ typedef enum SystemRomType {
     NWRJ = 'NWRJ', // Wave Race 64 (JP)
     NWRE = 'NWRE', // Wave Race 64 (US)
     NWRP = 'NWRP', // Wave Race 64 (EU)
+    NYSJ = 'NYSJ', // Yoshi's Story (JP)
     NYSE = 'NYSE', // Yoshi's Story (US)
     NYSP = 'NYSP', // Yoshi's Story (EU)
 } SystemRomType;
@@ -183,14 +199,14 @@ typedef enum SystemObjectType {
     SOT_ROM = 3,
     SOT_RSP = 4,
     SOT_RDP = 5,
-    SOT_MIPS = 6,
+    SOT_MI = 6,
     SOT_DISK = 7,
     SOT_AI = 8,
     SOT_VI = 9,
     SOT_SI = 10,
-    SOT_PERIPHERAL = 11,
+    SOT_PI = 11,
     SOT_RDB = 12,
-    SOT_EEPROM = 13,
+    SOT_PAK = 13,
     SOT_SRAM = 14,
     SOT_FLASH = 15,
     SOT_CODE = 16,
@@ -272,14 +288,14 @@ typedef struct SystemRomConfig {
 #define SYSTEM_ROM(pSystem) ((Rom*)(((System*)(pSystem))->apObject[SOT_ROM]))
 #define SYSTEM_RSP(pSystem) ((Rsp*)(((System*)(pSystem))->apObject[SOT_RSP]))
 #define SYSTEM_RDP(pSystem) ((Rdp*)(((System*)(pSystem))->apObject[SOT_RDP]))
-#define SYSTEM_MI(pSystem) ((MI*)(((System*)(pSystem))->apObject[SOT_MIPS]))
+#define SYSTEM_MI(pSystem) ((MI*)(((System*)(pSystem))->apObject[SOT_MI]))
 #define SYSTEM_DISK(pSystem) ((Disk*)(((System*)(pSystem))->apObject[SOT_DISK]))
 #define SYSTEM_AI(pSystem) ((AI*)(((System*)(pSystem))->apObject[SOT_AI]))
 #define SYSTEM_VI(pSystem) ((VI*)(((System*)(pSystem))->apObject[SOT_VI]))
 #define SYSTEM_SI(pSystem) ((SI*)(((System*)(pSystem))->apObject[SOT_SI]))
-#define SYSTEM_PI(pSystem) ((PI*)(((System*)(pSystem))->apObject[SOT_PERIPHERAL]))
+#define SYSTEM_PI(pSystem) ((PI*)(((System*)(pSystem))->apObject[SOT_PI]))
 #define SYSTEM_RDB(pSystem) ((Rdb*)(((System*)(pSystem))->apObject[SOT_RDB]))
-#define SYSTEM_EEPROM(pSystem) ((EEPROM*)(((System*)(pSystem))->apObject[SOT_EEPROM]))
+#define SYSTEM_PAK(pSystem) ((Pak*)(((System*)(pSystem))->apObject[SOT_PAK]))
 #define SYSTEM_SRAM(pSystem) ((Sram*)(((System*)(pSystem))->apObject[SOT_SRAM]))
 #define SYSTEM_FLASH(pSystem) ((Flash*)(((System*)(pSystem))->apObject[SOT_FLASH]))
 #define SYSTEM_CODE(pSystem) ((Code*)(((System*)(pSystem))->apObject[SOT_CODE]))

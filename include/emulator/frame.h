@@ -395,6 +395,9 @@ bool frameSetMatrixHint(Frame* pFrame, FrameMatrixProjection eProjection, s32 nA
                         f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale);
 bool frameInvalidateCache(Frame* pFrame, s32 nOffset0, s32 nOffset1);
 
+//! TODO: document this
+int fn_8005329C(Frame*, s32, s32, s32);
+
 // _frameGCNcc.c
 void SetNumTexGensChans(Frame* pFrame, s32 numCycles);
 void SetTevStages(Frame* pFrame, s32 cycle, s32 numCycles);
