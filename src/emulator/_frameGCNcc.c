@@ -47,19 +47,13 @@ static char* strings[] = {
 
 char unused[] = "0x%08x = ( ";
 
-// https://decomp.me/scratch/RJYIB
-#ifndef NON_MATCHING
-#pragma GLOBAL_ASM("asm/non_matchings/_frameGCNcc/SetTableTevStages.s")
-#else
-static void SetTableTevStages(Frame* pFrame, CombineModeTev* ctP) {
+void SetTableTevStages(Frame* pFrame, CombineModeTev* ctP) {
     s32 i;
-    s32 iStart;
     GXColor color;
     TevOrder* toP;
     TevColorOp* tcP;
     GXTevColorArg* cArgP;
     GXTevAlphaArg* aArgP;
-    GXTevStageID* tevStageID;
 
     if (gpSystem->eTypeROM == NFXJ || gpSystem->eTypeROM == NFXE || gpSystem->eTypeROM == NFXP) {
         if (pFrame->aMode[FMT_OTHER0] == 0x0C192078 && pFrame->aMode[FMT_OTHER1] == 0x00182C00 &&
@@ -98,20 +92,19 @@ static void SetTableTevStages(Frame* pFrame, CombineModeTev* ctP) {
         GXSetTevColor(GX_TEVREG0, pFrame->aColor[0]);
     }
 
-    for (i = 0, iStart = 0; i < ctP->numStages; iStart++, i++) {
-        tevStageID = ganNameTevStage;
-        toP = &ctP->tevOrder[iStart];
-        tcP = ctP->tevColorOpP[iStart];
-        cArgP = ctP->tevColorArg[iStart];
-        aArgP = ctP->tevAlphaArg[iStart];
+    for (i = 0; i < ctP->numStages; i++) {
+        toP = &ctP->tevOrder[i];
+        tcP = ctP->tevColorOpP[i];
+        cArgP = ctP->tevColorArg[i];
+        aArgP = ctP->tevAlphaArg[i];
 
-        GXSetTevOrder(tevStageID[iStart << 1], toP[0].coordID, toP[0].mapID, toP[0].chanID);
-        GXSetTevColorOp(tevStageID[iStart << 1], tcP[0].op, tcP[0].bias, tcP[0].scale, tcP[0].clamp, tcP[0].out_reg);
-        GXSetTevAlphaOp(tevStageID[iStart << 1], tcP[1].op, tcP[1].bias, tcP[1].scale, tcP[1].clamp, tcP[1].out_reg);
-        GXSetTevColorIn(tevStageID[iStart << 1], cArgP[0], cArgP[1], cArgP[2], cArgP[3]);
-        GXSetTevAlphaIn(tevStageID[iStart << 1], aArgP[0], aArgP[1], aArgP[2], aArgP[3]);
-        GXSetTevKColorSel(tevStageID[iStart << 1], GX_TEV_KCSEL_1);
-        GXSetTevKAlphaSel(tevStageID[iStart << 1], GX_TEV_KASEL_1);
+        GXSetTevOrder(ganNameTevStage[i], toP[0].coordID, toP[0].mapID, toP[0].chanID);
+        GXSetTevColorOp(ganNameTevStage[i], tcP[0].op, tcP[0].bias, tcP[0].scale, tcP[0].clamp, tcP[0].out_reg);
+        GXSetTevAlphaOp(ganNameTevStage[i], tcP[1].op, tcP[1].bias, tcP[1].scale, tcP[1].clamp, tcP[1].out_reg);
+        GXSetTevColorIn(ganNameTevStage[i], cArgP[0], cArgP[1], cArgP[2], cArgP[3]);
+        GXSetTevAlphaIn(ganNameTevStage[i], aArgP[0], aArgP[1], aArgP[2], aArgP[3]);
+        GXSetTevKColorSel(ganNameTevStage[i], GX_TEV_KCSEL_1);
+        GXSetTevKAlphaSel(ganNameTevStage[i], GX_TEV_KASEL_1);
     }
 
     if (((pFrame->aMode[FMT_OTHER0] >> 0x1E) == 3) && (((pFrame->aMode[FMT_OTHER0] >> 0x1A) & 3) == 1) &&
@@ -125,7 +118,6 @@ static void SetTableTevStages(Frame* pFrame, CombineModeTev* ctP) {
         GXSetTevKAlphaSel(ganNameTevStage[i], GX_TEV_KASEL_K2_A);
     }
 }
-#endif
 
 void SetNumTexGensChans(Frame* pFrame, s32 numCycles) {
     u8 nColor[4];
