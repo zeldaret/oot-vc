@@ -1,11 +1,11 @@
 #ifndef _XL_CORE_RVL_H
 #define _XL_CORE_RVL_H
 
+#include "macros.h"
 #include "revolution/arc.h"
 #include "revolution/cnt.h"
 #include "revolution/gx.h"
 #include "revolution/types.h"
-#include "macros.h"
 
 #ifdef __cplusplus
 extern "C" {

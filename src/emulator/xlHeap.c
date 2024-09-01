@@ -642,7 +642,7 @@ bool xlHeapSetup(void) {
     gpHeap_align[0] = ROUND_UP((u32)gnHeapOS[0], 4);
     new_lo[0] = (u32)OSGetMEM1ArenaHi();
 
-    if(new_lo[0] - gpHeap_align[0] > 0x4000000) {
+    if (new_lo[0] - gpHeap_align[0] > 0x4000000) {
         new_lo[0] = gpHeap_align[0] + 0x4000000;
     }
 
@@ -664,9 +664,9 @@ bool xlHeapSetup(void) {
     gpHeap[1] = (u32*)gpHeap_align[1];
     gnSizeHeap[1] = new_lo[1] - gpHeap_align[1];
 
-    for(iHeap = 0; iHeap < 2; iHeap++) {
+    for (iHeap = 0; iHeap < 2; iHeap++) {
         s32 nBlockSize = (gnSizeHeap[iHeap] >> 2) - 2;
-        
+
         gpHeapBlockFirst[iHeap] = (void*)gpHeap[iHeap];
         gpHeapBlockLast[iHeap] = (void*)(gpHeap[iHeap] + nBlockSize + 1);
         *(gpHeapBlockFirst[iHeap]) = MAKE_BLOCK(nBlockSize, FLAG_FREE);

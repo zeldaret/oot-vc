@@ -487,8 +487,7 @@ static bool frameDrawSetupFog_Zelda1(Frame* pFrame) {
             rFogFar = rFar;
             rFogMin = 0.45f * dplane + rNear;
             rFogMax = dplane + rNear;
-        } else if (gpSystem->eTypeROM == NZSJ && rOffset == -667.0f && rMultiplier == 688.0f &&
-                   rFar == 12800.0f) {
+        } else if (gpSystem->eTypeROM == NZSJ && rOffset == -667.0f && rMultiplier == 688.0f && rFar == 12800.0f) {
             f32 dplane = rFar - rNear;
 
             nFogType = GX_FOG_EXP;

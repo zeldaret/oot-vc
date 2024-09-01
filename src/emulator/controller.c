@@ -159,9 +159,7 @@ bool fn_800622B8(Controller* pController) {
     return true;
 }
 
-bool fn_800623F4(Controller* pController) {
-    return true;
-}
+bool fn_800623F4(Controller* pController) { return true; }
 
 bool simulatorDetectController(Controller* pController, s32 arg1) { return arg1 >= 0 && arg1 < 4; }
 
@@ -228,9 +226,7 @@ bool simulatorCopyControllerMap(Controller* pController, u32* mapDataOutput, u32
     return true;
 }
 
-bool fn_80062E5C(Controller* pController, s32, s32*) {
-    return true;
-}
+bool fn_80062E5C(Controller* pController, s32, s32*) { return true; }
 
 static void* controllerThread(void* pArg) {
     Controller* pController = SYSTEM_CONTROLLER(gpSystem);
