@@ -220,7 +220,7 @@ bool soundMakeBuffer(Sound* pSound) {
     curBufP = pSound->apBuffer[iBuffer];
 
     sampleStep = ((nSize << 14) & 0xFFFF0000) / temp_r3;
-    
+
     if (pSound->unk_00) {
         vol = 0;
     }

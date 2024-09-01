@@ -118,12 +118,12 @@ bool pakEvent(Pak* pPak, s32 nEvent, void* pArgument) {
             if (!cpuSetGetBlock(SYSTEM_CPU(gpSystem), (CpuDevice*)pArgument, (GetBlockFunc)pakGetBlock)) {
                 return false;
             }
-            if (!cpuSetDevicePut(SYSTEM_CPU(gpSystem), (CpuDevice*)pArgument, (Put8Func)pakPut8,
-                                 (Put16Func)pakPut16, (Put32Func)pakPut32, (Put64Func)pakPut64)) {
+            if (!cpuSetDevicePut(SYSTEM_CPU(gpSystem), (CpuDevice*)pArgument, (Put8Func)pakPut8, (Put16Func)pakPut16,
+                                 (Put32Func)pakPut32, (Put64Func)pakPut64)) {
                 return false;
             }
-            if (!cpuSetDeviceGet(SYSTEM_CPU(gpSystem), (CpuDevice*)pArgument, (Get8Func)pakGet8,
-                                 (Get16Func)pakGet16, (Get32Func)pakGet32, (Get64Func)pakGet64)) {
+            if (!cpuSetDeviceGet(SYSTEM_CPU(gpSystem), (CpuDevice*)pArgument, (Get8Func)pakGet8, (Get16Func)pakGet16,
+                                 (Get32Func)pakGet32, (Get64Func)pakGet64)) {
                 return false;
             }
         case 0:

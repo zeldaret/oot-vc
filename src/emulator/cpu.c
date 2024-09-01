@@ -124,7 +124,7 @@ void* jumptable_80170AE8[] = {0};
 
 /**
  * @brief Mapping of VR4300 to PPC registers.
- * 
+ *
  * If bit 0x100 is set the VR4300 register is not directly mapped to any PPC register,
  * Instead the register will use the emulated VR4300 object for saving/loading register values.
  */
@@ -900,7 +900,7 @@ bool cpuException(Cpu* pCPU, CpuExceptionCode eCode, s32 nMaskIP) {
 
 /**
  * @brief Creates a new device and registers memory space for that device.
- * 
+ *
  * @param pCPU The emulated VR4300.
  * @param piDevice A pointer to the index in the cpu->devices array which the device was created.
  * @param pObject The object which will handle reuqests for this device.
@@ -910,8 +910,7 @@ bool cpuException(Cpu* pCPU, CpuExceptionCode eCode, s32 nMaskIP) {
  * @param nType An argument which will be passed back to the device's event handler.
  * @return bool true on success, false otherwise.
  */
-static bool cpuMakeDevice(Cpu* pCPU, s32* piDevice, void* pObject, u32 nOffset, u32 nAddress, u32 nSize,
-                          s32 nType) {
+static bool cpuMakeDevice(Cpu* pCPU, s32* piDevice, void* pObject, u32 nOffset, u32 nAddress, u32 nSize, s32 nType) {
     CpuDevice* pDevice;
     s32 iDevice;
     s32 j;
@@ -1106,7 +1105,7 @@ static bool cpuSetTLB(Cpu* pCPU, s32 iEntry) {
 
 /**
  * @brief Gets the operating mode of the VR4300
- * 
+ *
  * @param nStatus The status bits to determine the mode for.
  * @param peMode A pointer to the mode determined.
  * @return bool true on success, false otherwise.
@@ -1139,7 +1138,7 @@ static bool cpuGetMode(u64 nStatus, CpuMode* peMode) {
 
 /**
  * @brief Determines the register size that the VR4300 is using.
- * 
+ *
  * @param nStatus Status bits for determining the register size.
  * @param peSize A pointer to the size determined.
  * @param peMode A pointer to the mode determined.
@@ -1180,7 +1179,7 @@ static bool cpuGetSize(u64 nStatus, CpuSize* peSize, CpuMode* peMode) {
 
 /**
  * @brief Sets the status bits of the VR4300
- * 
+ *
  * @param pCPU The emulated VR4300
  * @param nStatus New status.
  * @param unknown Unused.
@@ -1320,7 +1319,7 @@ bool cpuGetRegisterCP0(Cpu* pCPU, s32 iRegister, s64* pnData) {
 
 /**
  * @brief Sets CP0 values for returnning from an exception.
- * 
+ *
  * @param pCPU The emulated VR4300.
  * @return bool true on success, false otherwise
  */
@@ -1341,7 +1340,7 @@ bool __cpuERET(Cpu* pCPU) {
 
 /**
  * @brief Sets flags for handling cpu breakpoints.
- * 
+ *
  * @param pCPU The emulated VR4300.
  * @return bool true on success, false otherwise
  */
@@ -1371,7 +1370,7 @@ bool cpuFindBranchOffset(Cpu* pCPU, CpuFunction* pFunction, s32* pnOffset, s32 n
 // matches but data doesn't
 /**
  * @brief Checks the type of delay an instruction has.
- * 
+ *
  * @param opcode The instruction to determine the delay type for.
  * @return s32 The type of delay the instruction has.
  */
@@ -1486,7 +1485,7 @@ static s32 cpuCheckDelaySlot(u32 opcode) {
 
 /**
  * @brief Filles a code section of NOPs
- * 
+ *
  * @param anCode Pointer to fill nops to.
  * @param iCode Position in @code to start filling.
  * @param number The amount of NOPs to fill.
@@ -1607,13 +1606,11 @@ static bool cpuGetPPC(Cpu* pCPU, s32* pnAddress, CpuFunction* pFunction, s32* an
 // #pragma GLOBAL_ASM("asm/non_matchings/cpu/cpuGetPPC.s")
 
 //! TODO: remove NO_INLINE once this is matched
-static bool fn_80031D4C(Cpu* pCPU, CpuFunction* pFunction, s32 unknown) NO_INLINE {
-    return false;
-}
+static bool fn_80031D4C(Cpu* pCPU, CpuFunction* pFunction, s32 unknown) NO_INLINE { return false; }
 
 /**
  * @brief Creates a new recompiled function block.
- * 
+ *
  * @param pCPU The emulated VR4300.
  * @param ppFunction A pointer to an already recompiled function, or one that has been created.
  * @param nAddressN64 The N64 address of the function to find or create.
@@ -1766,7 +1763,7 @@ static bool cpuMakeFunction(Cpu* pCPU, CpuFunction** ppFunction, s32 nAddressN64
 
 /**
  * @brief Searches the recompiled block cache for an address, or creates a new block if one cannot be found.
- * 
+ *
  * @param pCPU The emulated VR4300.
  * @param nAddressN64 N64 code address to search for.
  * @param pnAddressGCN A pointer to set the found PPC code to.
@@ -4731,7 +4728,7 @@ static s32 cpuExecuteJump(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAddressGC
 
 /**
  * @brief Executes a call from the dynamic recompiler environment
- * 
+ *
  * @param pCPU The emulated VR4300.
  * @param nCount Latest tick count
  * @param nAddressN64 The N64 address of the call.
@@ -4820,7 +4817,7 @@ static s32 cpuExecuteCall(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAddressGC
 
 /**
  * @brief Recompiles a VR4300 load/store instruction
- * 
+ *
  * @param pCPU The emulated VR4300.
  * @param nCount Unused.
  * @param nAddressN64 The address of the Load/Store instruction.
@@ -5102,7 +5099,7 @@ static s32 cpuExecuteLoadStore(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAddr
 
 /**
  * @brief Recompiles a VR4300 load/store instruction on COP1 or doubleword load/store.
- * 
+ *
  * @param pCPU The emulated VR4300.
  * @param nCount Unused.
  * @param nAddressN64 The address of the Load/Store instruction.
@@ -5396,7 +5393,7 @@ static inline bool cpuFreeLink(Cpu* pCPU, CpuExecuteFunc* ppfLink) {
 
 /**
  * @brief Begins execution of the emulated VR4300
- * 
+ *
  * @param pCPU The emulated VR4300
  * @return bool true on success, false otherwise.
  */
@@ -5629,7 +5626,7 @@ bool cpuExecute(Cpu* pCPU, u64 nAddressBreak) {
 
 /**
  * @brief Maps an object to a cpu device.
- * 
+ *
  * @param pCPU The emulated VR4300.
  * @param pObject The device that will handle requests for this memory space.
  * @param nAddress0 The start of the memory space for which the device will be responsible.
@@ -5701,7 +5698,7 @@ bool cpuSetGetBlock(Cpu* pCPU, CpuDevice* pDevice, GetBlockFunc pfGetBlock) {
 
 /**
  * @brief Sets load handlers for a device.
- * 
+ *
  * @param pCPU The emulated VR4300.
  * @param pDevice The device which handles the load operations.
  * @param pfGet8 byte handler.
@@ -5721,7 +5718,7 @@ bool cpuSetDeviceGet(Cpu* pCPU, CpuDevice* pDevice, Get8Func pfGet8, Get16Func p
 
 /**
  * @brief Sets store handlers for a device.
- * 
+ *
  * @param pCPU The emulated VR4300.
  * @param pDevice The device which handles the store operations.
  * @param pfPut8 byte handler.
@@ -5729,7 +5726,7 @@ bool cpuSetDeviceGet(Cpu* pCPU, CpuDevice* pDevice, Get8Func pfGet8, Get16Func p
  * @param pfPut32 word handler.
  * @param pfPut64 doubleword handler.
  * @return bool true on success, false otherwise.
-*/
+ */
 bool cpuSetDevicePut(Cpu* pCPU, CpuDevice* pDevice, Put8Func pfPut8, Put16Func pfPut16, Put32Func pfPut32,
                      Put64Func pfPut64) {
     pDevice->pfPut8 = pfPut8;
@@ -6610,8 +6607,7 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
                     if (anAddr[2] == 0x8009E420) {
                         anAddr[0] = 0x8009E380;
                     }
-                } else if (gpSystem->eTypeROM == NMQE || gpSystem->eTypeROM == NMQJ ||
-                           gpSystem->eTypeROM == NMQP) {
+                } else if (gpSystem->eTypeROM == NMQE || gpSystem->eTypeROM == NMQJ || gpSystem->eTypeROM == NMQP) {
                     if (anAddr[0] == 0x802C88FC) {
                         anAddr[2] = 0x802C8974;
                     } else if (anAddr[0] = 0x802C8978) {

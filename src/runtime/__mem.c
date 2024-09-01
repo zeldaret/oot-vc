@@ -1,6 +1,6 @@
-#include "revolution/types.h"
-#include "mem_funcs.h"
 #include "macros.h"
+#include "mem_funcs.h"
+#include "revolution/types.h"
 
 INIT void* memcpy(void* dst, const void* src, size_t n) {
     const char* p;

@@ -1,9 +1,9 @@
 #ifndef _RVL_SDK_VI_VI3IN1_H
 #define _RVL_SDK_VI_VI3IN1_H
 
+#include "macros.h"
 #include "revolution/types.h"
 #include "revolution/vi/vitypes.h"
-#include "macros.h"
 
 #ifdef __cplusplus
 extern "C" {

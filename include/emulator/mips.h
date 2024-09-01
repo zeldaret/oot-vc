@@ -95,7 +95,7 @@
 #define SPEC_TGE 48
 #define SPEC_TGEU 49
 #define SPEC_TLT 50
-#define SPEC_TLTU 51 
+#define SPEC_TLTU 51
 #define SPEC_TEQ 52
 #define SPEC_TNE 54
 #define SPEC_DSLL 56

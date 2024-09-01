@@ -30,13 +30,9 @@ void __check_pad3(void) {
     OSResetSystem(0x0, 0x0, 0x0);
 }
 
-void __set_debug_bba(void) {
-    Debug_BBA = 1;
-}
+void __set_debug_bba(void) { Debug_BBA = 1; }
 
-u8 __get_debug_bba(void) {
-    return Debug_BBA;
-}
+u8 __get_debug_bba(void) { return Debug_BBA; }
 
 #ifdef NON_MATCHING
 void __init_data(void) {

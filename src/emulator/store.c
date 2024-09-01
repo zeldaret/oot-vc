@@ -1,6 +1,6 @@
 #include "emulator/store.h"
-#include "emulator/pak.h"
 #include "emulator/flash.h"
+#include "emulator/pak.h"
 #include "emulator/sram.h"
 #include "emulator/vc64_RVL.h"
 #include "emulator/xlHeap.h"
@@ -91,7 +91,7 @@ bool storeFreeObject(void** ppObject) {
         return false;
     }
 
-    return true; 
+    return true;
 }
 
 static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
@@ -149,7 +149,7 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
             if (var_r5 > var_r26) {
                 var_r5 = var_r26;
             }
-    
+
             for (i = 0; i < var_r5; i++, var_r25++) {
                 *var_r25 = pStore->unk_9C[var_r3 + i];
             }

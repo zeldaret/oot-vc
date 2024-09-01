@@ -1,8 +1,8 @@
 #ifndef _XL_LIST_H
 #define _XL_LIST_H
 
-#include "revolution/types.h"
 #include "macros.h"
+#include "revolution/types.h"
 
 #ifdef __cplusplus
 extern "C" {

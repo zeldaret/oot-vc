@@ -1,6 +1,6 @@
 #include "metrotrk/mem_TRK.h"
-#include "revolution/types.h"
 #include "macros.h"
+#include "revolution/types.h"
 
 static inline u8 ppc_readbyte1(const u8* ptr) {
     u32* alignedPtr = (u32*)((u32)ptr & ~3);

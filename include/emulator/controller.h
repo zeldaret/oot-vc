@@ -3,9 +3,9 @@
 
 #include "emulator/system.h"
 #include "emulator/xlObject.h"
+#include "macros.h"
 #include "revolution/pad.h"
 #include "revolution/types.h"
-#include "macros.h"
 
 #ifdef __cplusplus
 extern "C" {
