@@ -253,7 +253,7 @@ config.libs = [
             Object(NotLinked, "emulator/helpRVL.c"),
             Object(LinkedFor("oot-j"), "emulator/soundRVL.c"),
             Object(LinkedFor("oot-j"), "emulator/video.c"),
-            Object(NotLinked, "emulator/store.c"),
+            Object(LinkedFor("oot-j"), "emulator/store.c", extra_cflags=["-ipa file"]),
             Object(NotLinked, "emulator/controller.c"),
             Object(NotLinked, "emulator/rsp.c"),
             Object(NotLinked, "emulator/rdp.c"),

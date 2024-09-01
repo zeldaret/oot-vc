@@ -11,7 +11,7 @@
 #define STORE_OBJ (*(Store**)ppObject)
 
 static bool fn_800616F4(Store* pStore, s32 unknown, s32 nSize) NO_INLINE;
-static bool fn_800618D4(Store* pStore, u8* arg1, s32 arg2, s32 arg3);
+static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3);
 static void fn_80061C08(s32 nResult, NANDCommandBlock* block);
 static void fn_80061C4C(s32 nResult, NANDCommandBlock* block);
 static bool fn_80061CAC(Store* pStore);
@@ -94,24 +94,25 @@ bool storeFreeObject(void** ppObject) {
     return true; 
 }
 
-static bool fn_800618D4(Store* pStore, u8* arg1, s32 arg2, s32 arg3) {
+static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
     s32 var_r29;
     s32 var_r28;
     s32 var_r27;
     s32 var_r26;
-    s32 var_r5;
-    s32 var_r4;
+    u8* var_r25;
+    s32 var_r3;
     s32 i;
-    s32 temp_r3;
+    s32 var_r4;
+    s32 var_r5;
 
+    var_r25 = (u8*)arg1;
     while (true) {
         if (!unknownInline(pStore, 1)) {
             return false;
         }
 
         if (pStore->unk_A4 == 0) {
-            // probably fn_80061B88 inlined?
-            xlHeapCopy(arg1, (void*)(pStore->unk_A8 + arg2), arg3);
+            fn_80061B88(pStore, arg1, arg2, arg3);
             return true;
         }
 
@@ -126,13 +127,13 @@ static bool fn_800618D4(Store* pStore, u8* arg1, s32 arg2, s32 arg3) {
             break;
         }
 
-        var_r28 = (arg2 / 32) * 32;
-
-        if (NANDSeek(&pStore->nandFileInfo, var_r28, NAND_SEEK_BEG) < 0) {
+        var_r29 = arg2 / 32;
+        if (NANDSeek(&pStore->nandFileInfo, var_r29 * 32, NAND_SEEK_BEG) < 0) {
             fn_80064600(&pStore->nandFileInfo, 1);
             continue;
         }
 
+        var_r28 = var_r29 * 32;
         var_r27 = arg2;
         var_r26 = arg3;
         while (var_r26 > 0) {
@@ -143,14 +144,14 @@ static bool fn_800618D4(Store* pStore, u8* arg1, s32 arg2, s32 arg3) {
                 break;
             }
 
-            temp_r3 = var_r27 - var_r28;
-            var_r5 = 0x20 - temp_r3;
+            var_r3 = var_r27 - var_r28;
+            var_r5 = 0x20 - var_r3;
             if (var_r5 > var_r26) {
                 var_r5 = var_r26;
             }
     
-            for (i = 0; i < var_r5; i++, arg1++) {
-                *arg1 = ((u8*)pStore->unk_9C)[temp_r3 + i];
+            for (i = 0; i < var_r5; i++, var_r25++) {
+                *var_r25 = pStore->unk_9C[var_r3 + i];
             }
 
             var_r26 -= var_r5;
