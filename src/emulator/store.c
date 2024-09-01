@@ -1,5 +1,5 @@
 #include "emulator/store.h"
-#include "emulator/eeprom.h"
+#include "emulator/pak.h"
 #include "emulator/flash.h"
 #include "emulator/sram.h"
 #include "emulator/vc64_RVL.h"
@@ -11,7 +11,7 @@
 #define STORE_OBJ (*(Store**)ppObject)
 
 static bool fn_800616F4(Store* pStore, s32 unknown, s32 nSize) NO_INLINE;
-static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3);
+static bool fn_800618D4(Store* pStore, u8* arg1, s32 arg2, s32 arg3);
 static void fn_80061C08(s32 nResult, NANDCommandBlock* block);
 static void fn_80061C4C(s32 nResult, NANDCommandBlock* block);
 static bool fn_80061CAC(Store* pStore);
@@ -41,11 +41,15 @@ static bool fn_800616F4(Store* pStore, s32 unknown, s32 nSize) {
         return true;
     }
 
-    if (xlHeapTake((void**)&pStore->unk_A8, nSize | 0x30000000) == false) {
+    if (!xlHeapTake((void**)&pStore->unk_A8, nSize | 0x30000000)) {
         return false;
     }
 
-    return !!xlHeapTake(&pStore->unk_AC, nSize | 0x30000000);
+    if (!xlHeapTake(&pStore->unk_AC, nSize | 0x30000000)) {
+        return false;
+    }
+
+    return true;
 }
 
 bool fn_80061770(void** ppObject, char* szName, SystemRomType eTypeROM, void* pArgument) {
@@ -82,68 +86,81 @@ bool fn_80061770(void** ppObject, char* szName, SystemRomType eTypeROM, void* pA
     return true;
 }
 
-bool storeFreeObject(void** ppObject) { return !!xlObjectFree(ppObject); }
+bool storeFreeObject(void** ppObject) {
+    if (!xlObjectFree(ppObject)) {
+        return false;
+    }
 
-static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
-    s32 var_r4;
-    s32 var_r5;
-    s32 var_r7;
-    s32 var_r26;
-    s32 var_r27;
+    return true; 
+}
+
+static bool fn_800618D4(Store* pStore, u8* arg1, s32 arg2, s32 arg3) {
+    s32 var_r29;
     s32 var_r28;
+    s32 var_r27;
+    s32 var_r26;
+    s32 var_r5;
+    s32 var_r4;
     s32 i;
+    s32 temp_r3;
 
-    for (var_r26 = arg3; var_r26 > 0; var_r26--) {
-        while (true) {
-            if (!unknownInline(pStore, 1)) {
-                return false;
-            }
+    while (true) {
+        if (!unknownInline(pStore, 1)) {
+            return false;
+        }
 
-            if (pStore->unk_A4 == 0) {
-                // probably fn_80061B88 inlined?
-                xlHeapCopy((s32*)arg1, (void*)(pStore->unk_A8 + arg2), arg3);
-                return true;
-            }
+        if (pStore->unk_A4 == 0) {
+            // probably fn_80061B88 inlined?
+            xlHeapCopy(arg1, (void*)(pStore->unk_A8 + arg2), arg3);
+            return true;
+        }
 
-            if (arg2 == 0) {
-                DCInvalidateRange(arg1, arg3);
+        if (arg2 == 0) {
+            DCInvalidateRange(arg1, arg3);
 
-                if (NANDRead(&pStore->nandFileInfo, arg1, arg3) >= 0) {
-                    break;
-                }
-
+            if (NANDRead(&pStore->nandFileInfo, arg1, arg3) < 0) {
                 fn_80064600(&pStore->nandFileInfo, 1);
-                var_r28 = (arg2 / 32) << 5;
-
-                if (NANDSeek(&pStore->nandFileInfo, var_r28, NAND_SEEK_BEG) < 0) {
-                    break;
-                }
+                continue;
             }
+
+            break;
+        }
+
+        var_r28 = (arg2 / 32) * 32;
+
+        if (NANDSeek(&pStore->nandFileInfo, var_r28, NAND_SEEK_BEG) < 0) {
+            fn_80064600(&pStore->nandFileInfo, 1);
+            continue;
         }
 
         var_r27 = arg2;
-        DCInvalidateRange(pStore->unk_9C, 0x20);
+        var_r26 = arg3;
+        while (var_r26 > 0) {
+            DCInvalidateRange(pStore->unk_9C, 0x20);
 
-        if (NANDRead(&pStore->nandFileInfo, pStore->unk_9C, 0x20) < 0) {
-            fn_80064600(&pStore->nandFileInfo, 1);
-        }
-
-        var_r5 = var_r27 - var_r28 - 0x20;
-        if (var_r5 > var_r26) {
-            var_r5 = var_r26;
-        }
-
-        if (var_r5 > 8) {
-            // if (var_r5 >= 8 && var_r5 <= 0x7FFFFFFE) {
-            //     var_r7 = 1;
-            // }
-
-            // if (var_r7 != 0) {
-            var_r4 = 0;
-            for (i = 0; i < ((var_r5 - 8) + 7) >> 3; i++) {
-                *((u8*)arg1 + i) = *((u8*)pStore->unk_9C + i);
+            if (NANDRead(&pStore->nandFileInfo, pStore->unk_9C, 0x20) < 0) {
+                fn_80064600(&pStore->nandFileInfo, 1);
+                break;
             }
-            // }
+
+            temp_r3 = var_r27 - var_r28;
+            var_r5 = 0x20 - temp_r3;
+            if (var_r5 > var_r26) {
+                var_r5 = var_r26;
+            }
+    
+            for (i = 0; i < var_r5; i++, arg1++) {
+                *arg1 = ((u8*)pStore->unk_9C)[temp_r3 + i];
+            }
+
+            var_r26 -= var_r5;
+            var_r27 += var_r5;
+            var_r26 -= var_r5; // again?
+            var_r28 += 0x20;
+        }
+
+        if (var_r26 <= 0) {
+            break;
         }
     }
 
@@ -234,13 +251,13 @@ static inline void fn_80061DB8_Inline(Store* pStore) {
 bool fn_80061DB8(void) {
     Flash* pFlash;
     Sram* pSram;
-    EEPROM* pEEPROM;
+    Pak* pPak;
     bool interrupts;
     u8 unk_B9;
     Store* pStore;
 
     pSram = SYSTEM_SRAM(gpSystem);
-    pEEPROM = SYSTEM_EEPROM(gpSystem);
+    pPak = SYSTEM_PAK(gpSystem);
     pFlash = SYSTEM_FLASH(gpSystem);
 
     if (pFlash != NULL) {
@@ -267,7 +284,7 @@ bool fn_80061DB8(void) {
         }
     }
 
-    if (pEEPROM != NULL) {
+    if (pPak != NULL) {
         //! TODO: possible bug? it's using `pSram` instead of `pEEPROM` there
         if (pSram->pStore != NULL) {
             fn_80061DB8_Inline(pSram->pStore);

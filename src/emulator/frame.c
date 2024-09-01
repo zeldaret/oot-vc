@@ -3399,7 +3399,11 @@ static inline bool frameEvent_UnknownInline(Frame* pFrame) {
         return false;
     }
 
-    return !!frameResetCache();
+    if (!frameResetCache()) {
+        return false;
+    }
+
+    return true;
 }
 
 static inline bool frameEvent_UnknownInline2(Frame* pFrame) {

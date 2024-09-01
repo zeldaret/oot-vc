@@ -200,7 +200,7 @@ bool fn_80062C18(Controller* pController, s32 arg1, s32* arg2, s32* arg3, s32* a
     return false;
 }
 
-bool fn_80062CE4(Controller* pController, s32 arg1) {
+bool fn_80062CE4(Controller* pController, s32 arg1, bool bUnknown) {
     if (arg1 >= 0 && arg1 < 4) {
         return true;
     }
@@ -228,7 +228,7 @@ bool simulatorCopyControllerMap(Controller* pController, u32* mapDataOutput, u32
     return true;
 }
 
-bool fn_80062E5C(void) {
+bool fn_80062E5C(Controller* pController, s32, s32*) {
     return true;
 }
 
@@ -265,6 +265,14 @@ bool fn_800631B8(Controller* pController, s32 arg1) {
     return true;
 }
 
+static inline bool controllerEvent_Inline() {
+    if (!fn_800607C4(SYSTEM_HELP(gpSystem), 0)) {
+        return false;
+    }
+
+    return true;
+}
+
 bool controllerEvent(Controller* pController, s32 nEvent, void* pArgument) {
     s32 var_r31;
 
@@ -294,13 +302,12 @@ bool controllerEvent(Controller* pController, s32 nEvent, void* pArgument) {
             }
 
             if (!unk4C_UnknownInline(pController)) {
-                bool bRet;
                 pController->unk_24C = pController->unk_248 = OSGetTime();
                 pController->unk_21C = 8;
                 fn_80063D78(8);
                 pController->unk_21C = -1;
 
-                if (!!fn_800607C4(SYSTEM_HELP(gpSystem), 0)) {
+                if (!controllerEvent_Inline()) {
                     return false;
                 }
 
