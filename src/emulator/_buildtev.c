@@ -90,7 +90,7 @@ void SetColor(u8* stageValues, u32 colorVal, u8 cycle) {
             if (stageValues[i] == 0) {
                 stageValues[i] = 0xF;
             } else if (stageValues[i] == 7) {
-                if (gpSystem->eTypeROM == 'NZSJ' || gpSystem->eTypeROM == 'NZSE' || gpSystem->eTypeROM == 'NZSP') {
+                if (gpSystem->eTypeROM == NZSJ || gpSystem->eTypeROM == NZSE || gpSystem->eTypeROM == NZSP) {
                     stageValues[i] = 6;
                 } else {
                     stageValues[i] = 0xF;
@@ -199,7 +199,7 @@ void BuildCycle(CombineModeTev* tvP, u8 (*stageValues)[4]) {
     }
 }
 
-CombineModeTev* BuildCombineModeTev(u32 color1, u32 alpha1, u32 color2, u32 alpha2, u32 numCycles) {
+CombineModeTev* BuildCombineModeTev(u32 color1, u32 alpha1, u32 color2, u32 alpha2, u32 numCycles, u32 arg5, u32 arg6) {
     u8 stageValues[2][2][4];
     s32 i;
     s32 j;
