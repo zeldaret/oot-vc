@@ -1,36 +1,36 @@
-#include "types.h"
+#include "emulator/xlText.h"
 
-s32 xlTextLen(char* str) {
-    s32 iVar1 = 0;
+s32 xlTextGetLength(char* szTextSource) {
+    s32 nCount = 0;
 
-    while (str[iVar1] != '\x00') {
-        iVar1++;
+    while (szTextSource[nCount] != '\0') {
+        nCount++;
     }
-    return iVar1;
+
+    return nCount;
 }
 
-s32 xlTextCopy(char* str1, char* str2) {
-    s32 iVar2 = 0;
+s32 xlTextCopy(char* acTextTarget, char* szTextSource) {
+    s32 iCharacter;
 
-    while (str2[iVar2] != '\x00') {
-        str1[iVar2] = str2[iVar2];
-        iVar2++;
+    for (iCharacter = 0; szTextSource[iCharacter] != '\0'; iCharacter++) {
+        acTextTarget[iCharacter] = szTextSource[iCharacter];
     }
-    str1[iVar2] = '\x00';
-    return iVar2;
+
+    acTextTarget[iCharacter] = '\0';
+    return iCharacter;
 }
 
-s32 xlTextConcat(char* str1, char* str2) {
-    s32 iVar3;
-    s32 iVar4 = 0;
+s32 xlTextAppend(char* acTextTarget, char* szTextSource) {
+    s32 iSource;
+    s32 iTarget;
 
-    while (str1[iVar4] != '\x00') {
-        iVar4++;
+    for (iTarget = 0; acTextTarget[iTarget] != '\0'; iTarget++) {}
+
+    for (iSource = 0; szTextSource[iSource] != '\0';) {
+        acTextTarget[iTarget++] = szTextSource[iSource++];
     }
-    iVar3 = 0;
-    while (str2[iVar3] != '\x00') {
-        str1[iVar4++] = str2[iVar3++];
-    }
-    str1[iVar4] = '\x00';
-    return iVar3;
+
+    acTextTarget[iTarget] = '\0';
+    return iSource;
 }

@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 bool xlFileGetSize(s32* pnSize, char* szFileName);
-bool xlFileReadAll(char* szFileName, void** pTarget);
+bool xlFileLoad(char* szFileName, void** pTarget);
 
 #ifdef __cplusplus
 }
