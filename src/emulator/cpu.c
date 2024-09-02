@@ -5394,10 +5394,12 @@ static inline bool cpuFreeLink(Cpu* pCPU, CpuExecuteFunc* ppfLink) {
 /**
  * @brief Begins execution of the emulated VR4300
  *
- * @param pCPU The emulated VR4300
+ * @param pCPU The emulated VR4300.
+ * @param nCount Unused.
+ * @param nAddressBreak Unused.
  * @return bool true on success, false otherwise.
  */
-bool cpuExecute(Cpu* pCPU, u64 nAddressBreak) {
+bool cpuExecute(Cpu* pCPU, s32 nCount, u64 nAddressBreak) {
     s32 pad1;
     s32 iGPR;
     s32* pnCode;

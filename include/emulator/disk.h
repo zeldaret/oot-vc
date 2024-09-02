@@ -14,7 +14,7 @@ typedef struct Disk {
 
 bool diskEvent(Disk* pDisk, s32 nEvent, void* pArgument);
 
-extern _XL_OBJECTTYPE gClassDisk;
+extern _XL_OBJECTTYPE gClassDD;
 
 #ifdef __cplusplus
 }

@@ -255,7 +255,7 @@ static SystemDevice gaSystemDevice[] = {
     },
     {
         SOT_DISK,
-        &gClassDisk,
+        &gClassDD,
         2,
         {{0, 0x05000000, 0x05FFFFFF}, {1, 0x06000000, 0x06FFFFFF}},
     },
@@ -1639,7 +1639,7 @@ static inline bool systemTestClassObject(System* pSystem) {
 }
 
 bool systemExecute(System* pSystem, s32 nCount) {
-    if (!cpuExecute(SYSTEM_CPU(gpSystem), pSystem->nAddressBreak)) {
+    if (!cpuExecute(SYSTEM_CPU(gpSystem), nCount, pSystem->nAddressBreak)) {
         if (!systemTestClassObject(pSystem)) {
             return false;
         }
