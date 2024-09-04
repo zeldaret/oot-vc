@@ -1,13 +1,11 @@
-#include "types.h"
-
 typedef struct {
-    u8* src;
-    u8* dst;
+    unsigned char* src;
+    unsigned char* dst;
     unsigned int len;
 } __data_inf;
 
 typedef struct {
-    u8* src;
+    unsigned char* src;
     unsigned int len;
 } __bss_init;
 
@@ -19,7 +17,7 @@ void __flush_cache(void* src, unsigned int len);
 void* memset(void* dst, int fill, unsigned int len);
 void OSResetSystem(int, int, int);
 
-extern u8 Debug_BBA;
+extern unsigned char Debug_BBA;
 
 void __check_pad3(void) {
     unsigned short* t = (unsigned short*)0x800030E4;
@@ -32,7 +30,7 @@ void __check_pad3(void) {
 
 void __set_debug_bba(void) { Debug_BBA = 1; }
 
-u8 __get_debug_bba(void) { return Debug_BBA; }
+unsigned char __get_debug_bba(void) { return Debug_BBA; }
 
 #ifdef NON_MATCHING
 void __init_data(void) {

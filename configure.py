@@ -16,14 +16,7 @@ import argparse
 import sys
 from pathlib import Path
 from typing import Any, Dict, List
-
-from tools.project import (
-    Object,
-    ProjectConfig,
-    calculate_progress,
-    generate_build,
-    is_windows,
-)
+from tools.project import *
 
 ### Script's arguments
 
@@ -84,6 +77,12 @@ parser.add_argument(
     help="path to decomp-toolkit binary or source (optional)",
 )
 parser.add_argument(
+    "--objdiff",
+    metavar="BINARY | DIR",
+    type=Path,
+    help="path to objdiff-cli binary or source (optional)",
+)
+parser.add_argument(
     "--sjiswrap",
     metavar="EXE",
     type=Path,
@@ -119,6 +118,7 @@ config.progress_all = False
 
 config.build_dir = args.build_dir
 config.dtk_path = args.dtk
+config.objdiff_path = args.objdiff
 config.binutils_path = args.binutils
 config.compilers_path = args.compilers
 config.generate_map = args.map
@@ -136,6 +136,7 @@ if args.no_asm:
 config.binutils_tag = "2.42-1"
 config.compilers_tag = "20231018"
 config.dtk_tag = "v0.9.2"
+config.objdiff_tag = "v2.0.0-beta.5"
 config.sjiswrap_tag = "v1.1.1"
 config.wibo_tag = "0.6.11"
 config.linker_version = "GC/3.0a5"
@@ -216,7 +217,7 @@ def MetroTRKLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
 ### Link order
 
 # Not matching for any version
-NotLinked = {}
+NotLinked: List[str] = []
 
 # Matching for all versions
 Linked = config.versions
