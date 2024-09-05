@@ -775,13 +775,13 @@ libc/e_acos.c:
 libc/e_asin.c:
 	.text       start:0x80160ED4 end:0x8016116C
 
-libc/code_8016116C.c:
+libc/e_atan2.c:
 	.text       start:0x8016116C end:0x801613DC
 
-libc/code_801613DC.c:
+libc/e_exp.c:
 	.text       start:0x801613DC end:0x80161610
 
-libc/code_80161610.c:
+libc/e_fmod.c:
 	.text       start:0x80161610 end:0x80161940
 
 libc/e_log.c:
