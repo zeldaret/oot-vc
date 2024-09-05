@@ -540,7 +540,7 @@ config.libs = [
             Object(NotLinked, "libc/s_atan.c"),
             Object(NotLinked, "libc/s_ceil.c"),
             Object(NotLinked, "libc/s_copysign.c"),
-            Object(NotLinked, "libc/s_cosf.c"),
+            Object(NotLinked, "libc/s_cos.c"),
             Object(NotLinked, "libc/s_floor.c"),
             Object(NotLinked, "libc/s_frexp.c"),
             Object(NotLinked, "libc/s_ldexp.c"),
