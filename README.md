@@ -1,4 +1,14 @@
-# oot-vc
+oot-vc  
+[![Build Status]][actions] ![oot-j] [![Discord Badge]][discord]
+=============
+
+[Build Status]: https://github.com/zeldaret/oot-vc/actions/workflows/build.yml/badge.svg
+[actions]: https://github.com/zeldaret/oot-vc/actions/workflows/build.yml
+
+[oot-j]: https://img.shields.io/endpoint?label=oot-j&url=https%3A%2F%2Fprogress.decomp.club%2Fdata%2Foot-vc%2Foot-j%2Fdol%2F%3Fmode%3Dshield%26measure%3Dcode
+
+[Discord Badge]: https://img.shields.io/discord/688807550715560050?color=%237289DA&logo=discord&logoColor=%23FFFFFF
+[discord]: https://discord.zelda.deco.mp/
 
 A work-in-progress decompilation of the N64 emulator used in the Wii Virtual Console releases of N64 games like The Legend of Zelda: Ocarina of Time.
 
