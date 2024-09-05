@@ -392,7 +392,7 @@ bool frameResetUCode(Frame* pFrame, FrameResetType eType);
 bool frameSetBuffer(Frame* pFrame, FrameBufferType eType);
 bool frameFixMatrixHint(Frame* pFrame, s32 nAddressFloat, s32 nAddressFixed);
 bool frameSetMatrixHint(Frame* pFrame, FrameMatrixProjection eProjection, s32 nAddressFloat, s32 nAddressFixed,
-                        f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale);
+                        f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale, void* mf);
 bool frameInvalidateCache(Frame* pFrame, s32 nOffset0, s32 nOffset1);
 
 //! TODO: document this

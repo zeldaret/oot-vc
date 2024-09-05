@@ -150,7 +150,7 @@ bool fn_800452B0(Flash* pFLASH, s32 arg1, void* arg2) {
     return true;
 }
 
-bool fn_80045300(Flash* pFLASH, s32* arg1) {
+bool fn_80045300(Flash* pFLASH, u32* arg1) {
     *arg1 = pFLASH->unk_00;
 
     return true;
