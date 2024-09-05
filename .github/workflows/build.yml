@@ -7,7 +7,12 @@ on:
 jobs:
   build:
     container: ghcr.io/zeldaret/oot-gc-vc-build:main
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+          - os: ubuntu-latest
     defaults:
       run:
         shell: bash
