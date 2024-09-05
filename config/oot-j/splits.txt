@@ -581,7 +581,7 @@ revolution/ipc/ipcProfile.c:
 
 revolution/fs/fs.c:
 	.text       start:0x800B9EF8 end:0x800BB2B8
-	.data       start:0x8018AAF8 end:0x8018AB1C
+	.data       start:0x8018AAF8 end:0x8018AB20
 	.sdata      start:0x8025CBC8 end:0x8025CBD8
 	.sbss       start:0x8025DA70 end:0x8025DA88
 
