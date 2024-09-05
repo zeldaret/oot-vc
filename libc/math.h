@@ -26,8 +26,17 @@ f64 ceil(f64 x);
 f64 floor(f64 x);
 f64 copysign(f64 x, f64 y);
 
-f32 sinf(f32 x);
-f32 cosf(f32 x);
+f64 sin(f64 x);
+f64 cos(f64 x);
+
+static inline f32 sinf(f32 x) {
+    return (f32)sin((f64)x);
+}
+
+static inline f32 cosf(f32 x) {
+    return (f32)cos((f64)x);
+}
+
 f32 tanf(f32 x);
 f32 log10f(f32);
 
@@ -55,41 +64,10 @@ int __fpclassifyd__Fd(f64 x);
 #define isinf(x) (fpclassify(x) == FP_INFINITE)
 #define isfinite(x) (fpclassify(x) > FP_INFINITE)
 
-// e_pow.c uses a non-inlined version of sqrt() defined in math_inlines.c instead
-#ifdef DONT_INLINE_SQRT
 f64 sqrt(f64 x);
-#else
-static inline f64 sqrt(f64 x) {
-    if (x > 0.0) {
-        f64 guess = __frsqrte(x); /* returns an approximation to  */
-        guess = .5 * guess * (3.0 - guess * guess * x); /* now have 8 sig bits          */
-        guess = .5 * guess * (3.0 - guess * guess * x); /* now have 16 sig bits         */
-        guess = .5 * guess * (3.0 - guess * guess * x); /* now have 32 sig bits         */
-        guess = .5 * guess * (3.0 - guess * guess * x); /* now have > 53 sig bits       */
-        return x * guess;
-    } else if (x == 0.0) {
-        return 0;
-    } else if (x) {
-        return NAN;
-    }
-    return INFINITY;
-}
-#endif
 
 static inline f32 sqrtf(f32 x) {
-    const f64 _half = .5;
-    const f64 _three = 3.0;
-    volatile f32 y;
-
-    if (x > 0.0f) {
-        f64 guess = __frsqrte((f64)x); /* returns an approximation to  */
-        guess = _half * guess * (_three - guess * guess * x); /* now have 12 sig bits         */
-        guess = _half * guess * (_three - guess * guess * x); /* now have 24 sig bits         */
-        guess = _half * guess * (_three - guess * guess * x); /* now have 32 sig bits         */
-        y = (f32)(x * guess);
-        return y;
-    }
-    return x;
+    return (f32)sqrt((f64)x);
 }
 
 static inline f32 _inv_sqrtf(f32 x) {

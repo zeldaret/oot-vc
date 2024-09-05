@@ -817,7 +817,7 @@ libc/s_ceil.c:
 libc/s_copysign.c:
 	.text       start:0x8016479C end:0x801647C8
 
-libc/s_cosf.c:
+libc/s_cos.c:
 	.text       start:0x801647C8 end:0x8016489C
 
 libc/s_floor.c:

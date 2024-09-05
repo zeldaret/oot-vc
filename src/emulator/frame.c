@@ -4692,7 +4692,7 @@ bool frameSetBuffer(Frame* pFrame, FrameBufferType eType) {
 #pragma GLOBAL_ASM("asm/non_matchings/frame/frameSetMatrixHint.s")
 #else
 bool frameSetMatrixHint(Frame* pFrame, FrameMatrixProjection eProjection, s32 nAddressFloat, s32 nAddressFixed,
-                        f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale) {
+                        f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale, void* mf) {
     s32 iHint;
 
     if (nAddressFloat != 0) {
