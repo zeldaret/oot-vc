@@ -156,7 +156,6 @@ config.ldflags = [
 ]
 
 cflags_base = [
-    "-Cpp_exceptions off",
     "-proc gekko",
     "-fp hardware",
     "-fp_contract on",
@@ -182,7 +181,7 @@ def EmulatorLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/3.0a5",
-        "cflags": [*cflags_base, "-O4,p", "-enc SJIS"],
+        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-enc SJIS"],
         "host": False,
         "objects": objects,
     }
@@ -191,7 +190,7 @@ def RevolutionLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/3.0a5",
-        "cflags": [*cflags_base, "-O4,p", "-ipa file", "-enc SJIS"],
+        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-ipa file", "-enc SJIS"],
         "host": False,
         "objects": objects,
     }
@@ -209,7 +208,7 @@ def RuntimeLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/3.0a3",
-        "cflags": [*cflags_base, "-O4,p", "-rostr", "-use_lmw_stmw on", "-lang c", "-enc SJIS"],
+        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-rostr", "-use_lmw_stmw on", "-lang c", "-enc SJIS"],
         "host": False,
         "objects": objects,
     }
@@ -218,7 +217,7 @@ def MetroTRKLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/2.7",
-        "cflags": [*cflags_base, "-O4,p", "-rostr", "-use_lmw_stmw on", "-lang c"],
+        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-rostr", "-use_lmw_stmw on", "-lang c"],
         "host": False,
         "objects": objects,
     }
