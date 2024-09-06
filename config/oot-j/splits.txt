@@ -611,7 +611,7 @@ runtime/__va_arg.c:
 	.text       start:0x80152514 end:0x801525DC
 
 runtime/global_destructor_chain.c:
-	.text       start:0x801525F4 end:0x8015263C
+	.text       start:0x801525DC end:0x8015263C
 	.sbss       start:0x8025DCD8 end:0x8025DCE0
 
 runtime/__mem.c:
@@ -620,10 +620,15 @@ runtime/__mem.c:
 metrotrk/mem_TRK.c:
 	.init       start:0x8000446C end:0x800044C0
 
-runtime/code_8015263C.c:
+runtime/New.cpp:
 	extab       start:0x80006688 end:0x800066BC
 	extabindex  start:0x80006C1C end:0x80006C34
-	.text       start:0x8015263C end:0x8015299C
+	.text       start:0x8015263C end:0x80152740
+
+runtime/NMWException.cpp:
+	extab       start:0x800066BC end:0x800066FC
+	extabindex  start:0x80006C34 end:0x80006C64
+	.text       start:0x80152740 end:0x80152CCC
 
 runtime/ptmf.c:
 	.text       start:0x80152CCC end:0x80152D30
@@ -641,8 +646,18 @@ runtime/__init_cpp_exceptions.cpp:
 runtime/Gecko_setjmp.c:
 	.text       start:0x80153688 end:0x8015389C
 
-runtime/Gecko_ExceptionPPC.c:
-	.text       start:0x8015389C end:0x80153988
+runtime/Gecko_ExceptionPPC.cpp:
+	extab       start:0x800066FC end:0x80006770
+	extabindex  start:0x80006C64 end:0x80006CB8
+	.text       start:0x8015389C end:0x80154FE4
+
+runtime/GCN_mem_alloc.c:
+	.text       start:0x80154FE4 end:0x80155154
+
+libc/alloc.c:
+	extab       start:0x80006770 end:0x800067A8
+	extabindex  start:0x80006CB8 end:0x80006D0C
+	.text       start:0x80155154 end:0x80155F54
 
 libc/ansi_files.c:
 	extab       start:0x800067A8 end:0x800067B8

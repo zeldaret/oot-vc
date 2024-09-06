@@ -486,17 +486,20 @@ config.libs = [
             Object(LinkedFor("oot-j"), "runtime/__mem.c"),
             Object(NotLinked, "runtime/__va_arg.c"),
             Object(LinkedFor("oot-j"), "runtime/global_destructor_chain.c"),
-            Object(NotLinked, "runtime/code_8015263C.c"),
+            Object(NotLinked, "runtime/New.cpp"),
+            Object(NotLinked, "runtime/NMWException.cpp"),
             Object(NotLinked, "runtime/ptmf.c"),
             Object(NotLinked, "runtime/runtime.c"),
             Object(LinkedFor("oot-j"), "runtime/__init_cpp_exceptions.cpp"),
             Object(NotLinked, "runtime/Gecko_setjmp.c"),
-            Object(NotLinked, "runtime/Gecko_ExceptionPPC.c"),
+            Object(NotLinked, "runtime/Gecko_ExceptionPPC.cpp"),
+            Object(NotLinked, "runtime/GCN_mem_alloc.c"),
         ]
     ),
     LibC(
         "libc",
         [
+            Object(NotLinked, "libc/alloc.c"),
             Object(NotLinked, "libc/ansi_files.c"),
             Object(NotLinked, "libc/ansi_fp.c"),
             Object(NotLinked, "libc/arith.c"),
