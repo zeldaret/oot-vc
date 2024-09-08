@@ -208,7 +208,7 @@ def RuntimeLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/3.0a3",
-        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-rostr", "-use_lmw_stmw on", "-lang c", "-enc SJIS"],
+        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-rostr", "-use_lmw_stmw on", "-enc SJIS"],
         "host": False,
         "objects": objects,
     }
@@ -483,16 +483,16 @@ config.libs = [
         "runtime",
         [
             Object(LinkedFor("oot-j"), "runtime/__mem.c"),
-            Object(NotLinked, "runtime/__va_arg.c"),
+            Object(LinkedFor("oot-j"), "runtime/__va_arg.c"),
             Object(LinkedFor("oot-j"), "runtime/global_destructor_chain.c"),
-            Object(NotLinked, "runtime/New.cpp"),
-            Object(NotLinked, "runtime/NMWException.cpp"),
-            Object(NotLinked, "runtime/ptmf.c"),
-            Object(NotLinked, "runtime/runtime.c"),
+            Object(NotLinked, "runtime/New.cpp", extra_cflags=["-Cpp_exceptions on"]),
+            Object(NotLinked, "runtime/NMWException.cpp", extra_cflags=["-Cpp_exceptions on"]),
+            Object(LinkedFor("oot-j"), "runtime/ptmf.c"),
+            Object(LinkedFor("oot-j"), "runtime/runtime.c"),
             Object(LinkedFor("oot-j"), "runtime/__init_cpp_exceptions.cpp"),
             Object(NotLinked, "runtime/Gecko_setjmp.c"),
-            Object(NotLinked, "runtime/Gecko_ExceptionPPC.cpp"),
-            Object(NotLinked, "runtime/GCN_mem_alloc.c"),
+            Object(NotLinked, "runtime/Gecko_ExceptionPPC.cpp", extra_cflags=["-Cpp_exceptions on"]),
+            Object(LinkedFor("oot-j"), "runtime/GCN_mem_alloc.c"),
         ]
     ),
     LibC(

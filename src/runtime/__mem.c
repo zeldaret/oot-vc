@@ -46,6 +46,7 @@ INIT void __fill_mem(void* dst, int val, size_t n) {
         dst = (void*)((u32*)((u8*)dst + 1) - 1);
         i = n >> 5;
 
+#ifdef __MWERKS__
         if (i) {
             do {
                 *++(((u32*)dst)) = v;
@@ -58,6 +59,7 @@ INIT void __fill_mem(void* dst, int val, size_t n) {
                 *++(((u32*)dst)) = v;
             } while (--i);
         }
+#endif
 
         i = (n & 31) >> 2;
 
