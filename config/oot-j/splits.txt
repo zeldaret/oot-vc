@@ -632,6 +632,7 @@ runtime/ptmf.c:
 
 runtime/runtime.c:
 	.text       start:0x80152D30 end:0x80153618
+	.rodata     start:0x8016E3C0 end:0x8016E3D8
 
 runtime/__init_cpp_exceptions.cpp:
 	.text       start:0x80153618 end:0x80153688
@@ -650,6 +651,7 @@ runtime/Gecko_ExceptionPPC.cpp:
 
 runtime/GCN_mem_alloc.c:
 	.text       start:0x80154FE4 end:0x80155154
+	.rodata     start:0x8016E440 end:0x8016E4B0
 
 libc/alloc.c:
 	extab       start:0x80006770 end:0x800067A8
