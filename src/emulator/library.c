@@ -817,13 +817,12 @@ void _bzero(Cpu* pCPU) {
 }
 
 void _bcopy(Cpu* pCPU) {
-    s32 nSize  = pCPU->aGPR[6].s32;
+    s32 nSize = pCPU->aGPR[6].s32;
     void* pSource;
     void* pTarget;
 
     if (cpuGetAddressBuffer(pCPU, &pSource, pCPU->aGPR[4].u32) &&
-        cpuGetAddressBuffer(pCPU, &pTarget, pCPU->aGPR[5].u32) &&
-        nSize > 0) {
+        cpuGetAddressBuffer(pCPU, &pTarget, pCPU->aGPR[5].u32) && nSize > 0) {
         xlHeapCopy(pTarget, pSource, nSize);
     }
     pCPU->aGPR[2].u32 = pCPU->aGPR[5].u32;
@@ -835,8 +834,7 @@ void _memcpy(Cpu* pCPU) {
     void* pTarget;
 
     if (cpuGetAddressBuffer(pCPU, &pTarget, pCPU->aGPR[4].u32) &&
-        cpuGetAddressBuffer(pCPU, &pSource, pCPU->aGPR[5].u32) &&
-        nSize > 0) {
+        cpuGetAddressBuffer(pCPU, &pSource, pCPU->aGPR[5].u32) && nSize > 0) {
         xlHeapCopy(pTarget, pSource, nSize);
     }
     pCPU->aGPR[2].u32 = pCPU->aGPR[4].u32;
@@ -929,7 +927,8 @@ void guOrthoF(Cpu* pCPU) {
     data.f32 = 1.0f;
     mf[3 * 4 + 3] = data.u32;
 
-    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, pCPU->aGPR[4].u32, 0, n, f, 0.0f, 0.0f, scale, (void*)mf);
+    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, pCPU->aGPR[4].u32, 0, n, f, 0.0f, 0.0f, scale,
+                       (void*)mf);
 }
 
 void guOrtho(Cpu* pCPU) {
@@ -1001,7 +1000,8 @@ void guOrtho(Cpu* pCPU) {
     mf[3][2] = -(f + n) / (f - n);
     mf[3][3] = 1.0f;
 
-    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, 0, pCPU->aGPR[4].u32, n, f, 0.0f, 0.0f, scale, (void*)mf);
+    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, 0, pCPU->aGPR[4].u32, n, f, 0.0f, 0.0f, scale,
+                       (void*)mf);
 
     ai = &m[0];
     af = &m[8];
@@ -1084,7 +1084,8 @@ void guPerspectiveF(Cpu* pCPU) {
     data.f32 = 0.0f;
     mf[3 * 4 + 3] = data.u32;
 
-    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, scale, (void*)mf);
+    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, scale,
+                       (void*)mf);
 }
 
 void guPerspective(Cpu* pCPU) {
@@ -1151,7 +1152,8 @@ void guPerspective(Cpu* pCPU) {
     mf[3][2] = 2 * rNear * rFar / (rNear - rFar);
     mf[3][3] = 0.0f;
 
-    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, 0, pCPU->aGPR[4].u32, rNear, rFar, fovy, aspect, scale, (void*)mf);
+    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, 0, pCPU->aGPR[4].u32, rNear, rFar, fovy, aspect, scale,
+                       (void*)mf);
 
     ai = &m[0];
     af = &m[8];
@@ -1190,7 +1192,8 @@ void GenPerspective_1080(Cpu* pCPU) {
     data.u32 = sp[4];
     rFar = data.f32;
 
-    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, 1.0f, NULL);
+    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, 1.0f,
+                       NULL);
     pFrame->iHintHack = pFrame->iHintLast;
 }
 

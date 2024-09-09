@@ -29,13 +29,9 @@ f64 copysign(f64 x, f64 y);
 f64 sin(f64 x);
 f64 cos(f64 x);
 
-static inline f32 sinf(f32 x) {
-    return (f32)sin((f64)x);
-}
+static inline f32 sinf(f32 x) { return (f32)sin((f64)x); }
 
-static inline f32 cosf(f32 x) {
-    return (f32)cos((f64)x);
-}
+static inline f32 cosf(f32 x) { return (f32)cos((f64)x); }
 
 f32 tanf(f32 x);
 f32 log10f(f32);
@@ -66,9 +62,7 @@ int __fpclassifyd__Fd(f64 x);
 
 f64 sqrt(f64 x);
 
-static inline f32 sqrtf(f32 x) {
-    return (f32)sqrt((f64)x);
-}
+static inline f32 sqrtf(f32 x) { return (f32)sqrt((f64)x); }
 
 static inline f32 _inv_sqrtf(f32 x) {
     const f32 _half = .5f;
