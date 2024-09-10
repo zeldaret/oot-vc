@@ -25,17 +25,4 @@ jobs:
 
     # Run formatter
     - name: Run clang-format
-      run: ./format
-
-    # Cancel if there's a diff
-    - name: Check status
-      run: |
-            git diff --name-only > diff.txt
-            if [ -s diff.txt ]; then
-              echo "Changes detected. Stopping workflow. Files list:"
-              cat diff.txt
-              exit 1
-            else
-              echo "Success!"
-              exit 0
-            fi
+      run: ./format && git diff --name-only --exit-code
