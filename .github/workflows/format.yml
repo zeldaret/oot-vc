@@ -25,4 +25,8 @@ jobs:
 
     # Run formatter
     - name: Run clang-format
-      run: ./format && git diff --name-only --exit-code
+      run: ./format
+
+    # Cancel if there's a diff
+    - name: Check status
+      run: git diff --name-only --exit-code
