@@ -3,13 +3,13 @@
 
 #define qr0 0
 
-#define SAVE_FPR(env, fpr) \
+#define SAVE_FPR(env, fpr)                            \
     stfd f##fpr, __jmp_buf.fprs[(fpr - 14) * 2](env); \
     addi r4, env, __jmp_buf.fprs[(fpr - 14) * 2 + 1]; \
     psq_stx f##fpr, 0, r4, 0, qr0;
 
-#define LOAD_FPR(env, fpr) \
-    lfd f##fpr, __jmp_buf.fprs[(fpr - 14) * 2](env); \
+#define LOAD_FPR(env, fpr)                            \
+    lfd f##fpr, __jmp_buf.fprs[(fpr - 14) * 2](env);  \
     addi r7, env, __jmp_buf.fprs[(fpr - 14) * 2 + 1]; \
     psq_lx f##fpr, 0, r7, 0, qr0;
 
@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-ASM int __setjmp(register struct __jmp_buf* env) {
+ASM int __setjmp(register struct __jmp_buf* env){
 #ifdef __MWERKS__ // clang-format off
     nofralloc
 
