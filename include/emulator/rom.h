@@ -1,6 +1,7 @@
 #ifndef _ROM_H
 #define _ROM_H
 
+#include "emulator/errordisplay.h"
 #include "emulator/xlFileRVL.h"
 #include "emulator/xlObject.h"
 #include "revolution/types.h"
@@ -83,7 +84,7 @@ typedef struct Rom {
     /* 0x19AFC */ s32 offsetToRom;
 } Rom; // size = 0x19B00
 
-s32 fn_80042E30(void);
+s32 fn_80042E30(EDString* pSTString);
 bool romGetPC(Rom* pROM, u64* pnPC);
 bool romGetCode(Rom* pROM, s32* acCode);
 

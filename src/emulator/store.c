@@ -1,4 +1,5 @@
 #include "emulator/store.h"
+#include "emulator/banner.h"
 #include "emulator/flash.h"
 #include "emulator/pak.h"
 #include "emulator/sram.h"
@@ -24,12 +25,12 @@ _XL_OBJECTTYPE gClassStore = {
     (EventFunc)storeEvent,
 };
 
-static inline bool unknownInline(Store* pStore, s32 unknown) {
+static inline bool unknownInline(Store* pStore, u8 access) {
     if (pStore->unk_A4 == 0) {
         return true;
     }
 
-    if (!fn_800641CC(&pStore->nandFileInfo, pStore->szFileName, pStore->unk_00, 0xAA, unknown)) {
+    if (!fn_800641CC(&pStore->nandFileInfo, pStore->szFileName, pStore->unk_00, 0xAA, access)) {
         pStore->unk_A4 = 0;
     }
 
@@ -120,7 +121,7 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
             DCInvalidateRange(arg1, arg3);
 
             if (NANDRead(&pStore->nandFileInfo, arg1, arg3) < 0) {
-                fn_80064600(&pStore->nandFileInfo, 1);
+                bannerNANDClose(&pStore->nandFileInfo, 1);
                 continue;
             }
 
@@ -129,7 +130,7 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
 
         var_r29 = arg2 / 32;
         if (NANDSeek(&pStore->nandFileInfo, var_r29 * 32, NAND_SEEK_BEG) < 0) {
-            fn_80064600(&pStore->nandFileInfo, 1);
+            bannerNANDClose(&pStore->nandFileInfo, 1);
             continue;
         }
 
@@ -140,7 +141,7 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
             DCInvalidateRange(pStore->unk_9C, 0x20);
 
             if (NANDRead(&pStore->nandFileInfo, pStore->unk_9C, 0x20) < 0) {
-                fn_80064600(&pStore->nandFileInfo, 1);
+                bannerNANDClose(&pStore->nandFileInfo, 1);
                 break;
             }
 
@@ -165,7 +166,7 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
         }
     }
 
-    fn_80064600(&pStore->nandFileInfo, 1);
+    bannerNANDClose(&pStore->nandFileInfo, 1);
     return true;
 }
 
@@ -225,7 +226,7 @@ static bool fn_80061CAC(Store* pStore) {
             break;
         }
 
-        fn_80064600(&pStore->nandFileInfo, 3);
+        bannerNANDClose(&pStore->nandFileInfo, 3);
     }
 
     pStore->unk_BA = 0;

@@ -1,4 +1,5 @@
 #include "emulator/xlCoreRVL.h"
+#include "emulator/errordisplay.h"
 #include "emulator/vc64_RVL.h"
 #include "emulator/xlHeap.h"
 #include "emulator/xlList.h"
@@ -213,7 +214,7 @@ int main(int nCount, char** aszArgument) {
     DefaultFifoObj = GXInit(DefaultFifo, 0x40000);
 
     __xlCoreInitGX();
-    fn_80063C7C();
+    errordisplayInit();
     xlMain();
 
     if (!xlObjectReset()) {

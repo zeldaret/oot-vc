@@ -160,12 +160,28 @@ emulator/controller.c:
 	.sbss       start:0x8025D120 end:0x8025D128
 	.sdata2     start:0x8025DF50 end:0x8025DF78
 
-emulator/rsp.c:
-	.text       start:0x800633F8 end:0x8007D8A0
-	.data       start:0x80174580 end:0x80174FC0
+emulator/errordisplay.c:
+	.text       start:0x800633F8 end:0x80063F30
+	.data       start:0x80174580 end:0x80174A70
+	.sdata      start:0x8025C880 end:0x8025C888
+	.sbss       start:0x8025D128 end:0x8025D140
+	.sdata2     start:0x8025DF78 end:0x8025DF90
+
+emulator/banner.c:
+	.text       start:0x80063F30 end:0x80064980
+	.data       start:0x80174A70 end:0x80174B10
 	.bss        start:0x801C8640 end:0x801C9640
-	.sdata      start:0x8025C880 end:0x8025C8C8
-	.sdata2     start:0x8025DF78 end:0x8025DFD8
+	.sdata      start:0x8025C888 end:0x8025C898
+	.sbss       start:0x8025D140 end:0x8025D148
+
+emulator/stringtable.c:
+	.text       start:0x80064980 end:0x80064A64
+
+emulator/rsp.c:
+	.text       start:0x80064A64 end:0x8007D8A0
+	.data       start:0x80174B10 end:0x80174FC0
+	.sdata      start:0x8025C898 end:0x8025C8C8
+	.sdata2     start:0x8025DF90 end:0x8025DFD8
 
 emulator/rdp.c:
 	.text       start:0x8007D8A0 end:0x8007F85C
