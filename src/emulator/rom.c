@@ -1,9 +1,9 @@
 #include "emulator/rom.h"
 #include "emulator/cpu.h"
+#include "emulator/errordisplay.h"
 #include "emulator/frame.h"
 #include "emulator/helpRVL.h"
 #include "emulator/ram.h"
-#include "emulator/rsp.h"
 #include "emulator/system.h"
 #include "emulator/vc64_RVL.h"
 #include "emulator/xlCoreRVL.h"
@@ -488,7 +488,7 @@ static void* __ROMEntry(void* arg) {
     return NULL;
 }
 
-s32 fn_80042E30(void) {
+s32 fn_80042E30(EDString* pSTString) {
     s32 ret;
     bool bThread;
 
@@ -513,7 +513,7 @@ static bool romLoadFullOrPart(Rom* pROM) {
         if (OSCreateThread(&DefaultThread, (OSThreadFunc)__ROMEntry, pROM, (void*)((u8*)pBuffer + ROM_THREAD_SIZE),
                            ROM_THREAD_SIZE, OS_PRIORITY_MAX, 1)) {
             OSResumeThread(&DefaultThread);
-            fn_80063D78(pROM->unk_C ? 7 : 11);
+            errorDisplayShow(pROM->unk_C ? ERROR_NO_CONTROLLER : ERROR_BLANK);
             pROM->unk_C = 0;
         }
 
