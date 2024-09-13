@@ -2,15 +2,17 @@
 #define _HELP_RVL
 
 #include "emulator/xlObject.h"
-#include "revolution/types.h"
 #include "revolution/tpl.h"
+#include "revolution/types.h"
 
-typedef bool (*HelpMenuCallback)(void);
+typedef bool (*HelpMenuCallback)(void*);
 
 typedef struct struct_801C7D28 {
     /* 0x00 */ TPLPalette* pTPLPalette;
     /* 0x04 */ s32 unk04;
-    /* 0x08 */ s32 unk08[0x22];
+    /* 0x08 */ s32 unk08;
+    /* 0x08 */ u8 unk0C;
+    /* 0x08 */ u8 unk0D;
 } struct_801C7D28; // size = 0x90
 
 typedef struct HelpMenu {

@@ -136,7 +136,7 @@ emulator/helpRVL.c:
 	.data       start:0x801743B0 end:0x801744D8
 	.bss        start:0x801C7CE0 end:0x801C7DB8
 	.sdata      start:0x8025C850 end:0x8025C868
-	.sbss       start:0x8025D110 end:0x8025D120
+	.sbss       start:0x8025D0B8 end:0x8025D120
 	.sdata2     start:0x8025DEA8 end:0x8025DF18
 
 emulator/soundRVL.c:

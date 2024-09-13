@@ -1,5 +1,6 @@
 #include "emulator/frame.h"
 #include "emulator/cpu.h"
+#include "emulator/helpRVL.h"
 #include "emulator/ram.h"
 #include "emulator/rdp.h"
 #include "emulator/rsp.h"
@@ -9,7 +10,6 @@
 #include "emulator/xlHeap.h"
 #include "emulator/xlObject.h"
 #include "emulator/xlPostRVL.h"
-#include "emulator/helpRVL.h"
 #include "macros.h"
 #include "math.h"
 #include "mem_funcs.h"
@@ -3393,9 +3393,10 @@ bool frameGetDepth(Frame* pFrame, u16* pnData, s32 nAddress) {
 #pragma GLOBAL_ASM("asm/non_matchings/frame/frameEvent.s")
 #else
 static inline bool frameEvent_UnknownInline(Frame* pFrame) {
-    if (!fn_8005F5F4(SYSTEM_HELP(gpSystem), &pFrame->aPixelData, 0x30300000, &frameSetupCache)) {
+    if (!fn_8005F5F4(SYSTEM_HELP(gpSystem), &pFrame->aPixelData, 0x30300000, (HelpMenuCallback)&frameSetupCache)) {
         return false;
-    } else if (!fn_8005F5F4(SYSTEM_HELP(gpSystem), &pFrame->aColorData, 0x30050000, &frameSetupCache)) {
+    } else if (!fn_8005F5F4(SYSTEM_HELP(gpSystem), &pFrame->aColorData, 0x30050000,
+                            (HelpMenuCallback)&frameSetupCache)) {
         return false;
     }
 

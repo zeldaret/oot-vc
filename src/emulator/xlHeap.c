@@ -335,7 +335,7 @@ bool xlHeapTake(void** ppHeap, s32 nByteCount) {
             break;
     }
 
-    if ((nSize = ((nByteCount & 0x8FFFFFFF) + nSizeExtra) >> 2) < 1) {
+    if ((nSize = ((nByteCount & ~0x70000000) + nSizeExtra) >> 2) < 1) {
         return false;
     }
     if (nSize > 0x01000000) {

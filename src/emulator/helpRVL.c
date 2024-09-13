@@ -1,16 +1,21 @@
 #include "emulator/helpRVL.h"
 #include "emulator/cpu.h"
+#include "emulator/frame.h"
 #include "emulator/system.h"
 #include "emulator/vc64_RVL.h"
+#include "emulator/xlCoreRVL.h"
 #include "emulator/xlFile.h"
 #include "emulator/xlFileRVL.h"
 #include "emulator/xlHeap.h"
+#include "macros.h"
+#include "revolution/cnt.h"
+#include "revolution/gx.h"
 #include "revolution/mem.h"
 #include "revolution/os.h"
-#include "revolution/gx.h"
-#include "revolution/cnt.h"
+#include "revolution/vi.h"
 #include "string.h"
-#include "macros.h"
+
+#include "math.h"
 
 void fn_8005F1A0(void);
 void fn_8005F154(void);
@@ -21,17 +26,21 @@ struct_801C7D28 lbl_801C7D28;
 s32 lbl_801C7D00[0xA];
 s32 lbl_801C7CE0[0x8];
 
-extern s64 lbl_8025D0D0;
-extern s32 lbl_8025D0EC;
-extern s32 lbl_8025D0E8;
-extern s32 lbl_8025D0F0;
+extern GXColorU32 lbl_8016A7C0;
+extern GXColorU32 lbl_8016A7D0;
 
 s32 lbl_8025D118;
 s32 lbl_8025D114;
 u8 lbl_8025D110;
+s64 lbl_8025D100;
+s32 lbl_8025D0FC;
+s32 lbl_8025D0F0;
+s32 lbl_8025D0EC;
+s32 lbl_8025D0E8;
+s64 lbl_8025D0D0;
 
 s32 fn_8005E2D0(HelpMenu* pHelpMenu, char* szPath, void** ppBuffer, void* arg3, void* arg4) {
-    CNTFileInfo pFileInfo;
+    CNTFileInfo fileInfo;
     void* pNANDBuffer;
     s32 var_r31;
     s32 temp_r30;
@@ -39,11 +48,11 @@ s32 fn_8005E2D0(HelpMenu* pHelpMenu, char* szPath, void** ppBuffer, void* arg3, 
 
     var_r29 = 0;
 
-    if (ARCGetFile(&pFileInfo)) {
+    if (ARCGetFile(pHelpMenu, szPath, &fileInfo)) {
         return 0;
     }
 
-    var_r31 = contentGetLengthNAND(&pFileInfo);
+    var_r31 = contentGetLengthNAND(&fileInfo);
     temp_r30 = ALIGN(var_r31, 0x1F);
 
     if (strstr(szPath, "/LZ77")) {
@@ -57,13 +66,13 @@ s32 fn_8005E2D0(HelpMenu* pHelpMenu, char* szPath, void** ppBuffer, void* arg3, 
         fn_8008882C(&pNANDBuffer, temp_r30, arg3, arg4);
 
         if (pNANDBuffer != NULL) {
-            contentReadNAND(&pFileInfo, pNANDBuffer, temp_r30, 0);
+            contentReadNAND(&fileInfo, pNANDBuffer, temp_r30, 0);
             var_r31 = fn_800B17A8(pNANDBuffer);
-            fn_8008882C(ppBuffer, (var_r31 + 0x1F) & ~0x1F, arg3, arg4);
+            fn_8008882C(ppBuffer, ALIGN(var_r31, 0x1F), arg3, arg4);
 
             if (*ppBuffer != NULL) {
                 if (var_r29 == 0x10) {
-                    fn_800B17C8(pNANDBuffer);
+                    fn_800B17C8(pNANDBuffer, *ppBuffer);
                 } else {
                     fn_800B18DC(pNANDBuffer);
                 }
@@ -79,13 +88,13 @@ s32 fn_8005E2D0(HelpMenu* pHelpMenu, char* szPath, void** ppBuffer, void* arg3, 
         fn_8008882C(ppBuffer, temp_r30, arg3, arg4);
 
         if (*ppBuffer != 0) {
-            contentReadNAND(&pFileInfo, *ppBuffer, temp_r30, 0);
+            contentReadNAND(&fileInfo, *ppBuffer, temp_r30, 0);
         } else {
             var_r31 = 0;
         }
     }
 
-    contentCloseNAND(&pFileInfo);
+    contentCloseNAND(&fileInfo);
     return var_r31;
 }
 
@@ -151,7 +160,7 @@ void fn_8005E638(GXColor color) {
 void fn_8005F154(void) {
     lbl_8025D0F0 = 0;
     lbl_8025D0E8 = 1;
-    if ((s32) lbl_8025D118 == 7) {
+    if ((s32)lbl_8025D118 == 7) {
         fn_800887D4(0x1E);
         lbl_8025D110 = 0;
     }
@@ -160,113 +169,103 @@ void fn_8005F154(void) {
 void fn_8005F1A0(void) {
     lbl_8025D0F0 = 0;
     lbl_8025D0EC = 1;
-    if ((s32) lbl_8025D118 == 7) {
+    if ((s32)lbl_8025D118 == 7) {
         fn_800887D4(0x1E);
         lbl_8025D110 = 0;
     }
 }
 
-s32 fn_8005F1EC(void) {
-    return 0;
-}
+s32 fn_8005F1EC(void) { return 0; }
 
-bool fn_8005F5F4(HelpMenu* pHelpMenu, void* pObject, s32 arg2, HelpMenuCallback callback) {
+bool fn_8005F5F4(HelpMenu* pHelpMenu, void* pObject, s32 nByteCount, HelpMenuCallback callback) {
+    u32 nSize;
     s32 var_r7;
-    u32 temp_r5_2;
-    u32 temp_r5;
-    s32 temp_r9;
-    s32 var_r8;
+    s32 nSizeExtra;
+    s32 nHeapSize;
 
-    temp_r9 = arg2 & 0x8FFFFFFF;
+    nHeapSize = nByteCount & ~0x70000000;
 
-    switch (arg2 & 0x30000000) {
+    switch (nByteCount & 0x30000000) {
         case 0x0:
-            var_r8 = 3;
+            nSizeExtra = 3;
             break;
         case 0x10000000:
-            var_r8 = 7;
+            nSizeExtra = 7;
             break;
         case 0x20000000:
-            var_r8 = 0xF;
+            nSizeExtra = 15;
             break;
         case 0x30000000:
-            var_r8 = 0x1F;
+            nSizeExtra = 31;
             break;
         default:
-            var_r8 = 0;
+            nSizeExtra = 0;
             break;
     }
 
-    if (arg2 & 0x40000000) {
-        temp_r5 = temp_r9 + var_r8;
+    if (nByteCount & 0x40000000) {
+        nSize = nHeapSize + nSizeExtra;
 
-        if (pHelpMenu->unk04 < temp_r5) {
-            return 0;
+        if (pHelpMenu->unk04 < nSize) {
+            return false;
         }
 
         var_r7 = pHelpMenu->unk20;
-        pHelpMenu->unk04 = (u32)(pHelpMenu->unk04 - temp_r5);
-        pHelpMenu->unk20 = (s32)(var_r7 + temp_r5);
+        pHelpMenu->unk04 = pHelpMenu->unk04 - nSize;
+        pHelpMenu->unk20 = var_r7 + nSize;
     } else {
-        temp_r5_2 = temp_r9 + var_r8;
+        nSize = nHeapSize + nSizeExtra;
 
-        if (pHelpMenu->unk00 < temp_r5_2) {
-            return 0;
+        if (pHelpMenu->unk00 < nSize) {
+            return false;
         }
 
         var_r7 = pHelpMenu->unk18;
-        pHelpMenu->unk00 = (u32)(pHelpMenu->unk00 - temp_r5_2);
-        pHelpMenu->unk18 = (s32)(var_r7 + temp_r5_2);
+        pHelpMenu->unk00 = pHelpMenu->unk00 - nSize;
+        pHelpMenu->unk18 = var_r7 + nSize;
     }
 
-    while (var_r7 & var_r8) {
+    while (var_r7 & nSizeExtra) {
         var_r7++;
     }
 
-    pObject = &var_r7;
+    *(s32*)pObject = var_r7;
     pHelpMenu->unk24[pHelpMenu->unk10++] = callback;
 
     return true;
 }
 
-static void inline inlined(s32 arg0) {
-    while (arg0 & 0x1F) {
-        arg0++;
-    }
-}
+bool fn_8005F6F4(HelpMenu* pHelpMenu, char* szFileName, s32** arg2, MEMAllocator* arg3) {
+    s32 nSize;
+    tXL_FILE* pFile;
 
-s32 fn_8005F6F4(HelpMenu* pHelpMenu, char* arg1, s32** arg2, MEMAllocator** arg3) {
-    s32 size;
-    tXL_FILE* spC;
-    tXL_FILE* sp8;
-
-    if (xlFileGetSize(&size, arg1)) {
-        *arg2 = (s32*)MEMAllocFromAllocator(*arg3, spC->unk_1F);
+    if (xlFileGetSize(&nSize, szFileName)) {
+        *arg2 = (s32*)MEMAllocFromAllocator(arg3, nSize + 0x1F);
 
         if (*arg2 == NULL) {
-            return 0;
+            return false;
         }
 
-        while ((s32)*arg2++ & 0x1F) {
-            *arg2++;
+        while ((s32)*arg2 & 0x1F) {
+            *arg2 = (s32*)((s32)*arg2 + 1);
         }
 
-        if (!xlFileOpen(&sp8, 1, arg1)) {
-            return 0;
+        if (!xlFileOpen(&pFile, XLFT_BINARY, szFileName)) {
+            return false;
         }
 
-        if (!xlFileGet(sp8, *arg2, size)) {
-            return 0;
+        if (!xlFileGet(pFile, *arg2, nSize)) {
+            return false;
         }
 
-        if (xlFileClose(&sp8)) {
-            return size;
+        if (xlFileClose(&pFile)) {
+            return nSize;
         }
 
-        return 0;
+        return false;
     }
 
-    return 0;
+    return false;
 }
 
 s32 fn_800607B0(HelpMenu* pHelpMenu, s32 arg1) {

@@ -21,6 +21,7 @@ extern "C" {
 // GC is rendered at double the resolution
 #define GC_FRAME_WIDTH (N64_FRAME_WIDTH * 2)
 #define GC_FRAME_HEIGHT (N64_FRAME_HEIGHT * 2)
+#define GC_FRAME_HEIGHT_PAL (GC_FRAME_HEIGHT + 48)
 
 // Dimensions of the player preview on the equipment menu of the Zelda pause screen
 #define ZELDA_PAUSE_EQUIP_PLAYER_WIDTH 64

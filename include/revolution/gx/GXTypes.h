@@ -65,6 +65,10 @@ typedef struct _GXColorS10 {
     s16 r, g, b, a;
 } GXColorS10;
 
+typedef struct _GXColorU32 {
+    u32 r, g, b, a;
+} GXColorU32;
+
 /**
  * Common enums
  */
