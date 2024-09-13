@@ -23,7 +23,7 @@
 #include "revolution/vi.h"
 
 static s32 fn_80063680(EDString* pEDString);
-static s32 errordisplayReturnToMenu(EDString* pEDString);
+static s32 errorDisplayReturnToMenu(EDString* pEDString);
 
 static EDStringInfo sStringBase[] = {
     {SID_ERROR_INS_SPACE, 0, NULL, 0x00000000, 0x00000000},
@@ -43,14 +43,14 @@ static EDStringInfo sStringBase[] = {
 
 ErrorDisplay sStringDraw[] = {
     {
-        {&sStringBase[ERROR_INDEX_INS_SPACE], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_INS_SPACE], FLAG_COLOR_WHITE, 0, 0},
         {
             {
-                &sStringBase[ERROR_INDEX_CHOICE_PRESS_A_TO_RETURN_TO_MENU],
+                &sStringBase[ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU],
                 FLAG_COLOR_WHITE,
                 0,
                 0,
-                errordisplayReturnToMenu,
+                errorDisplayReturnToMenu,
             },
         },
         1,
@@ -61,14 +61,14 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[ERROR_INDEX_INS_INNODE], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_INS_INNODE], FLAG_COLOR_WHITE, 0, 0},
         {
             {
-                &sStringBase[ERROR_INDEX_CHOICE_PRESS_A_TO_RETURN_TO_MENU],
+                &sStringBase[ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU],
                 FLAG_COLOR_WHITE,
                 0,
                 0,
-                errordisplayReturnToMenu,
+                errorDisplayReturnToMenu,
             },
         },
         1,
@@ -79,7 +79,7 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[ERROR_INDEX_SYS_CORRUPT], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_SYS_CORRUPT], FLAG_COLOR_WHITE, 0, 0},
         {0},
         0,
         NULL,
@@ -89,14 +89,14 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[ERROR_INDEX_DATA_CORRUPT], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_DATA_CORRUPT], FLAG_COLOR_WHITE, 0, 0},
         {
             {
-                &sStringBase[ERROR_INDEX_CHOICE_PRESS_A_TO_RETURN_TO_MENU],
+                &sStringBase[ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU],
                 FLAG_COLOR_WHITE,
                 0x0000,
                 0x00000000,
-                errordisplayReturnToMenu,
+                errorDisplayReturnToMenu,
             },
         },
         1,
@@ -107,7 +107,7 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[ERROR_INDEX_MAX_BLOCKS], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_MAX_BLOCKS], FLAG_COLOR_WHITE, 0, 0},
         {0},
         0,
         NULL,
@@ -117,7 +117,7 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[ERROR_INDEX_MAX_FILES], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_MAX_FILES], FLAG_COLOR_WHITE, 0, 0},
         {0},
         0,
         NULL,
@@ -127,7 +127,7 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[ERROR_INDEX_SYS_CORRUPT], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_SYS_CORRUPT], FLAG_COLOR_WHITE, 0, 0},
         {0},
         0,
         NULL,
@@ -137,10 +137,10 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[ERROR_INDEX_NO_CONTROLLER], FLAG_RESET_FADE_TIMER, 0, 0},
+        {&sStringBase[ERROR_NO_CONTROLLER], FLAG_RESET_FADE_TIMER, 0, 0},
         {
             {
-                &sStringBase[ERROR_INDEX_NULL],
+                &sStringBase[ERROR_NULL],
                 FLAG_COLOR_WHITE,
                 0,
                 0,
@@ -155,10 +155,10 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[ERROR_INDEX_NO_CONTROLLER], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_NO_CONTROLLER], FLAG_COLOR_WHITE, 0, 0},
         {
             {
-                &sStringBase[ERROR_INDEX_NEED_CLASSIC],
+                &sStringBase[ERROR_NEED_CLASSIC],
                 FLAG_RESET_FADE_TIMER | FLAG_COLOR_YELLOW,
                 0,
                 0,
@@ -173,10 +173,10 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[ERROR_INDEX_REMOTE_BATTERY], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_REMOTE_BATTERY], FLAG_COLOR_WHITE, 0, 0},
         {
             {
-                &sStringBase[ERROR_INDEX_NULL],
+                &sStringBase[ERROR_NULL],
                 FLAG_COLOR_WHITE,
                 0,
                 0,
@@ -191,10 +191,10 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[ERROR_INDEX_REMOTE_COMMUNICATION], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_REMOTE_COMMUNICATION], FLAG_COLOR_WHITE, 0, 0},
         {
             {
-                &sStringBase[ERROR_INDEX_NULL],
+                &sStringBase[ERROR_NULL],
                 FLAG_COLOR_WHITE,
                 0,
                 0,
@@ -209,10 +209,10 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[ERROR_INDEX_BLANK], FLAG_RESET_FADE_TIMER, 0, 0},
+        {&sStringBase[ERROR_BLANK], FLAG_RESET_FADE_TIMER, 0, 0},
         {
             {
-                &sStringBase[ERROR_INDEX_NULL],
+                &sStringBase[ERROR_NULL],
                 FLAG_COLOR_WHITE,
                 0,
                 0,
@@ -229,23 +229,23 @@ ErrorDisplay sStringDraw[] = {
 };
 
 struct_80174988 lbl_80174988[] = {
-    {NAND_RESULT_ACCESS, ERROR_INDEX_NULL},
-    {NAND_RESULT_ALLOC_FAILED, ERROR_INDEX_INS_SPACE},
-    {NAND_RESULT_BUSY, ERROR_INDEX_NULL},
-    {NAND_RESULT_CORRUPT, ERROR_INDEX_INS_INNODE},
-    {NAND_RESULT_ECC_CRIT, ERROR_INDEX_SYS_CORRUPT},
-    {NAND_RESULT_EXISTS, ERROR_INDEX_NULL},
-    {NAND_RESULT_INVALID, ERROR_INDEX_MAX_FILES},
-    {NAND_RESULT_MAXBLOCKS, ERROR_INDEX_DATA_CORRUPT},
-    {NAND_RESULT_MAXFD, ERROR_INDEX_MAX_BLOCKS},
-    {NAND_RESULT_MAXFILES, ERROR_INDEX_MAX_BLOCKS},
-    {NAND_RESULT_NOEXISTS, ERROR_INDEX_NULL},
-    {NAND_RESULT_NOTEMPTY, ERROR_INDEX_NULL},
-    {NAND_RESULT_OPENFD, ERROR_INDEX_NULL},
-    {NAND_RESULT_AUTHENTICATION, ERROR_INDEX_SYS_CORRUPT},
-    {NAND_RESULT_UNKNOWN, ERROR_INDEX_MAX_FILES},
-    {NAND_RESULT_FATAL_ERROR, ERROR_INDEX_MAX_FILES},
-    {NAND_RESULT_OK, ERROR_INDEX_NULL},
+    {NAND_RESULT_ACCESS, ERROR_NULL},
+    {NAND_RESULT_ALLOC_FAILED, ERROR_INS_SPACE},
+    {NAND_RESULT_BUSY, ERROR_NULL},
+    {NAND_RESULT_CORRUPT, ERROR_INS_INNODE},
+    {NAND_RESULT_ECC_CRIT, ERROR_SYS_CORRUPT},
+    {NAND_RESULT_EXISTS, ERROR_NULL},
+    {NAND_RESULT_INVALID, ERROR_MAX_FILES},
+    {NAND_RESULT_MAXBLOCKS, ERROR_DATA_CORRUPT},
+    {NAND_RESULT_MAXFD, ERROR_MAX_BLOCKS},
+    {NAND_RESULT_MAXFILES, ERROR_MAX_BLOCKS},
+    {NAND_RESULT_NOEXISTS, ERROR_NULL},
+    {NAND_RESULT_NOTEMPTY, ERROR_NULL},
+    {NAND_RESULT_OPENFD, ERROR_NULL},
+    {NAND_RESULT_AUTHENTICATION, ERROR_SYS_CORRUPT},
+    {NAND_RESULT_UNKNOWN, ERROR_MAX_FILES},
+    {NAND_RESULT_FATAL_ERROR, ERROR_MAX_FILES},
+    {NAND_RESULT_OK, ERROR_NULL},
 };
 
 static DisplayFiles sSTFiles[] = {
@@ -268,7 +268,7 @@ GXRenderModeObj* DEMOGetRenderModeObj(void) { return rmode; }
 /**
  * @brief Prepares the graphics interface for a draw action.
  */
-static void errordisplayDrawSetup(void) {
+static void errorDisplayDrawSetup(void) {
     GXColor WHITE = {255, 255, 255, 255};
     GXColor BLACK = {0, 0, 0, 255};
 
@@ -336,7 +336,7 @@ static s32 fn_80063688(EDString* pEDString, s32 arg1) {
     return 0;
 }
 
-static s32 errordisplayReturnToMenu(EDString* pEDString) {
+static s32 errorDisplayReturnToMenu(EDString* pEDString) {
     VISetBlack(true);
     VIFlush();
     VIWaitForRetrace();
@@ -450,7 +450,7 @@ static void fn_80063910(ErrorDisplay* pErrorDisplay) {
  * @param nPrintfArg Printf format string argument.
  * @param color The color of the message.
  */
-static void errordisplayPrintMessage(EDMessage* pMessage, s32 nHeight, s32 nPrintfArg, GXColor color) {
+static void errorDisplayPrintMessage(EDMessage* pMessage, s32 nHeight, s32 nPrintfArg, GXColor color) {
     char* szString;
     s32 i;
     EDStringInfo* pStringInfo;
@@ -489,7 +489,7 @@ static void errordisplayPrintMessage(EDMessage* pMessage, s32 nHeight, s32 nPrin
  * @brief Prints the error message and the corresponding action message (if applicable)
  * @param pEDString Pointer to `EDString`.
  */
-static void errordisplayPrint(EDString* pEDString) {
+static void errorDisplayPrint(EDString* pEDString) {
     GXColor YELLOW = {255, 255, 0, 255};
     GXColor WHITE = {255, 255, 255, 255};
     GXColor color;
@@ -504,7 +504,7 @@ static void errordisplayPrint(EDString* pEDString) {
         nHeight = (GC_FRAME_HEIGHT - pErrorDisplay->unk3C) / 2;
     }
 
-    errordisplayPrintMessage(&pErrorDisplay->message, nHeight, pErrorDisplay->unk38, WHITE);
+    errorDisplayPrintMessage(&pErrorDisplay->message, nHeight, pErrorDisplay->unk38, WHITE);
     nHeight += pErrorDisplay->message.nShiftY;
 
     i = 0;
@@ -515,7 +515,7 @@ static void errordisplayPrint(EDString* pEDString) {
             color = WHITE;
         }
 
-        errordisplayPrintMessage(&pErrorDisplay->action[i].message, nHeight, 0, color);
+        errorDisplayPrintMessage(&pErrorDisplay->action[i].message, nHeight, 0, color);
         i++;
         nHeight += pErrorDisplay->action[i].message.nShiftY;
     }
@@ -559,7 +559,7 @@ void OSFreeToHeap(s32 handle, void* p) {
  *
  * - prepare the NAND banner (the title and subtitle of the banner comes from the "save comments" string table)
  */
-void errordisplayInit(void) {
+void errorDisplayInit(void) {
     ErrorDisplay* pErrorDisplay;
     EDStringInfo* pStringInfo;
     s32 iError;
@@ -585,7 +585,7 @@ void errordisplayInit(void) {
     xlFileLoad(pDisplayFiles->szSaveCommentsFilename, (void**)&sBufferSaveCommentStrings);
     sFontHeader = DEMOInitROMFont();
 
-    pStringInfo = &sStringBase[ERROR_INDEX_INS_SPACE];
+    pStringInfo = &sStringBase[ERROR_INS_SPACE];
     for (iInfo = 0; iInfo < ARRAY_COUNT(sStringBase); iInfo++) {
         fn_80063764(pStringInfo);
         pStringInfo++;
@@ -601,7 +601,7 @@ void errordisplayInit(void) {
                  tableGetString(sBufferSaveCommentStrings, SID_COMMENT_EMPTY));
 }
 
-static inline void errordisplaySetFadeInTimer(ErrorDisplay* pErrorDisplay) {
+static inline void errorDisplaySetFadeInTimer(ErrorDisplay* pErrorDisplay) {
     s32 i;
 
     if (pErrorDisplay->message.nFlags & FLAG_RESET_FADE_TIMER) {
@@ -624,7 +624,7 @@ static inline void errordisplaySetFadeInTimer(ErrorDisplay* pErrorDisplay) {
  * @param iString Index of the message to show.
  * @return `bool` – `true` on success, `false` on failure.
  */
-bool errordisplayShow(ErrorIndex iString) {
+bool errorDisplayShow(ErrorIndex iString) {
     EDString string;
     s32 var_r31;
     s32 var_r30;
@@ -633,7 +633,7 @@ bool errordisplayShow(ErrorIndex iString) {
     s32 sp8;
     s32 nResult;
 
-    string.iString = ERROR_INDEX_NONE;
+    string.iString = ERROR_NONE;
 
     if (!fn_800607B0(SYSTEM_HELP(gpSystem), 0)) {
         return false;
@@ -643,7 +643,7 @@ bool errordisplayShow(ErrorIndex iString) {
     string.apStringDraw[string.iString] = &sStringDraw[iString];
     string.iAction = 0;
 
-    errordisplaySetFadeInTimer(&sStringDraw[iString]);
+    errorDisplaySetFadeInTimer(&sStringDraw[iString]);
     VISetBlack(false);
 
     do {
@@ -657,8 +657,8 @@ bool errordisplayShow(ErrorIndex iString) {
         }
 
         xlCoreBeforeRender();
-        errordisplayDrawSetup();
-        errordisplayPrint(&string);
+        errorDisplayDrawSetup();
+        errorDisplayPrint(&string);
         fn_8005F7E4(SYSTEM_HELP(gpSystem));
         fn_80007020();
         nResult = fn_80063688(&string, var_r31 & (var_r31 ^ var_r30));

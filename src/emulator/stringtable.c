@@ -1,8 +1,20 @@
 /**
  * @file stringtable.c
  *
- * This file implements tools to read a string table (following the ST10 format)
+ * This file implements tools to read a string table (following the "ST10" format, see below for more details)
  * and get a pointer to a string (from the string's unique identifier) from this table.
+ *
+ * "ST10" is the name of a custom string table file format.
+ *
+ * The header of the file starts with the version of the format (in this case it's "ST10"), then
+ * it's followed by the table's identifier, then there's the number of entries, the name of the encoding,
+ * the region's name and the size of one entry. The header ends with 0xC0, the purpose of this value is unknown.
+ *
+ * Each entry contains an identifier (so the emulator knows which string to choose),
+ * the offset to the string, and its size.
+ *
+ * Finally, the file ends with the list of the strings.
+ * Each string is zero-terminated and aligned to 0x4 (using 0xBB as a padding value).
  */
 #include "emulator/stringtable.h"
 

@@ -50,9 +50,9 @@ typedef enum StringID {
 typedef struct STEntry {
     /* 0x00 */ u32 nStringID;
     /* 0x04 */ s32 nTextOffset1;
-    /* 0x08 */ s32 nTextOffset2;
+    /* 0x08 */ s32 nTextOffset2; // same as `nTextOffset1`
     /* 0x0C */ s16 nTextSize1;
-    /* 0x0E */ s16 nTextSize2;
+    /* 0x0E */ s16 nTextSize2; // same as `nTextSize1`
 } STEntry; // size = 0x10
 
 typedef struct STHeader {

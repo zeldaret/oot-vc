@@ -214,7 +214,7 @@ int main(int nCount, char** aszArgument) {
     DefaultFifoObj = GXInit(DefaultFifo, 0x40000);
 
     __xlCoreInitGX();
-    errordisplayInit();
+    errorDisplayInit();
     xlMain();
 
     if (!xlObjectReset()) {
