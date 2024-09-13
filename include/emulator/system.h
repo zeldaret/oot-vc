@@ -302,10 +302,7 @@ typedef struct SystemRomConfig {
 #define SYSTEM_SRAM(pSystem) ((Sram*)(((System*)(pSystem))->apObject[SOT_SRAM]))
 #define SYSTEM_FLASH(pSystem) ((Flash*)(((System*)(pSystem))->apObject[SOT_FLASH]))
 #define SYSTEM_CODE(pSystem) ((Code*)(((System*)(pSystem))->apObject[SOT_CODE]))
-
-//! TODO: replace void* by the struct name
-#define SYSTEM_HELP(pSystem) ((void*)(((System*)(pSystem))->apObject[SOT_HELP]))
-
+#define SYSTEM_HELP(pSystem) ((HelpMenu*)(((System*)(pSystem))->apObject[SOT_HELP]))
 #define SYSTEM_LIBRARY(pSystem) ((Library*)(((System*)(pSystem))->apObject[SOT_LIBRARY]))
 #define SYSTEM_FRAME(pSystem) ((Frame*)(((System*)(pSystem))->apObject[SOT_FRAME]))
 #define SYSTEM_SOUND(pSystem) ((Sound*)(((System*)(pSystem))->apObject[SOT_AUDIO])) // not `Audio*`?

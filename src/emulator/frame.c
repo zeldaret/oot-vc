@@ -9,6 +9,7 @@
 #include "emulator/xlHeap.h"
 #include "emulator/xlObject.h"
 #include "emulator/xlPostRVL.h"
+#include "emulator/helpRVL.h"
 #include "macros.h"
 #include "math.h"
 #include "mem_funcs.h"
