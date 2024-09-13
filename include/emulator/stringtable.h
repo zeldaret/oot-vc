@@ -47,27 +47,6 @@ typedef enum StringID {
     SID_COMMENT_EMPTY = 0x30690AFD
 } StringID;
 
-// clang-format off
-
-typedef enum StringIndex {
-    SI_NONE = -1,
-    SI_ERROR_INS_SPACE = 0, // "There is not enough available space in the Wii system memory. Create %ld block(s) of free space by either moving files to an SD Card or deleting files in the Data Management Screen."
-    SI_ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU = 1, // "Press the A Button to return to the Wii Menu."
-    SI_ERROR_INS_INNODE = 2, // "There is not enough available space in the Wii system memory. Either move files to an SD Card or delete files on the Data Management Screen."
-    SI_ERROR_SYS_CORRUPT = 3, // "The Wii system memory has been damaged. Refer to the Wii operations manual for further instructions."
-    SI_ERROR_DATA_CORRUPT = 4, // "This file cannot be used because the data is corrupted."
-    SI_ERROR_MAX_BLOCKS = 5, // "There is no more available space in Wii system memory. Refer to the Wii operations manual for further information."
-    SI_ERROR_MAX_FILES = 6, // "There is no more available space in Wii system memory."
-    SI_ERROR_NO_CONTROLLER = 7, // "You will need the Classic Controller."
-    SI_ERROR_NEED_CLASSIC = 8, // "Connect Classic Controller to the P1 Wii Remote or press the A Button to return to the Wii Menu."
-    SI_ERROR_REMOTE_BATTERY = 9, // "The battery charge is running low."
-    SI_ERROR_REMOTE_COMMUNICATION = 10, // "Communications with the Wii Remote have been interrupted."
-    SI_ERROR_BLANK = 11, // ""
-    SI_NULL = 12,
-} StringIndex;
-
-// clang-format on
-
 typedef struct STEntry {
     /* 0x00 */ u32 nStringID;
     /* 0x04 */ s32 nTextOffset1;
@@ -83,7 +62,6 @@ typedef struct STHeader {
     /* 0x0A */ char szEncoding[ENCODING_NAME_LENGTH];
     /* 0x1C */ char unk1C[2];
     /* 0x1E */ u8 nSizeEntry;
-    /* 0x1F */ u8 unk1F;
     /* 0x20 */ u8* entries;
 } STHeader; // size = 0x24
 

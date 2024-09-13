@@ -49,7 +49,7 @@ u32 OSLoadFont(OSFontHeader* font, void* dst);
 const char* OSGetFontTexel(const char* str, void* dst, s32 xOfs, s32 arg3, u32* widthOut);
 bool OSInitFont(OSFontHeader* font);
 const char* OSGetFontTexture(const char* str, void** texOut, u32* xOut, u32* yOut, u32* widthOut);
-char* OSGetFontWidth(const char* str, u32* widthOut);
+const char* OSGetFontWidth(const char* str, u32* widthOut);
 
 #ifdef __cplusplus
 }

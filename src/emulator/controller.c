@@ -301,7 +301,7 @@ bool controllerEvent(Controller* pController, s32 nEvent, void* pArgument) {
             if (!unk4C_UnknownInline(pController)) {
                 pController->unk_24C = pController->unk_248 = OSGetTime();
                 pController->unk_21C = 8;
-                errordisplayShow(SI_ERROR_NEED_CLASSIC);
+                errordisplayShow(ERROR_INDEX_NEED_CLASSIC);
                 pController->unk_21C = -1;
 
                 if (!controllerEvent_Inline()) {

@@ -8,7 +8,6 @@
  * This file is also responsible for reading the banner title and subtitle from the string table.
  */
 #include "emulator/errordisplay.h"
-#include "emulator/banner.h"
 #include "emulator/controller.h"
 #include "emulator/frame.h"
 #include "emulator/rom.h"
@@ -44,30 +43,14 @@ static EDStringInfo sStringBase[] = {
 
 ErrorDisplay sStringDraw[] = {
     {
-        {&sStringBase[SI_ERROR_INS_SPACE], FLAG_COLOR_WHITE, 0, 0},
-        {{
-            &sStringBase[SI_ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU],
-            FLAG_COLOR_WHITE,
-            0,
-            0,
-            (ErrorCallback)errordisplayReturnToMenu,
-        }},
-        1,
-        NULL,
-        0,
-        0,
-        0,
-        0,
-    },
-    {
-        {&sStringBase[SI_ERROR_INS_INNODE], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_INDEX_INS_SPACE], FLAG_COLOR_WHITE, 0, 0},
         {
             {
-                &sStringBase[SI_ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU],
+                &sStringBase[ERROR_INDEX_CHOICE_PRESS_A_TO_RETURN_TO_MENU],
                 FLAG_COLOR_WHITE,
                 0,
                 0,
-                (ErrorCallback)errordisplayReturnToMenu,
+                errordisplayReturnToMenu,
             },
         },
         1,
@@ -78,7 +61,25 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[SI_ERROR_SYS_CORRUPT], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_INDEX_INS_INNODE], FLAG_COLOR_WHITE, 0, 0},
+        {
+            {
+                &sStringBase[ERROR_INDEX_CHOICE_PRESS_A_TO_RETURN_TO_MENU],
+                FLAG_COLOR_WHITE,
+                0,
+                0,
+                errordisplayReturnToMenu,
+            },
+        },
+        1,
+        NULL,
+        0,
+        0,
+        0,
+        0,
+    },
+    {
+        {&sStringBase[ERROR_INDEX_SYS_CORRUPT], FLAG_COLOR_WHITE, 0, 0},
         {0},
         0,
         NULL,
@@ -88,14 +89,14 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[SI_ERROR_DATA_CORRUPT], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_INDEX_DATA_CORRUPT], FLAG_COLOR_WHITE, 0, 0},
         {
             {
-                &sStringBase[SI_ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU],
+                &sStringBase[ERROR_INDEX_CHOICE_PRESS_A_TO_RETURN_TO_MENU],
                 FLAG_COLOR_WHITE,
                 0x0000,
                 0x00000000,
-                (ErrorCallback)errordisplayReturnToMenu,
+                errordisplayReturnToMenu,
             },
         },
         1,
@@ -106,7 +107,7 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[SI_ERROR_MAX_BLOCKS], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_INDEX_MAX_BLOCKS], FLAG_COLOR_WHITE, 0, 0},
         {0},
         0,
         NULL,
@@ -116,7 +117,7 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[SI_ERROR_MAX_FILES], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_INDEX_MAX_FILES], FLAG_COLOR_WHITE, 0, 0},
         {0},
         0,
         NULL,
@@ -126,7 +127,7 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[SI_ERROR_SYS_CORRUPT], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_INDEX_SYS_CORRUPT], FLAG_COLOR_WHITE, 0, 0},
         {0},
         0,
         NULL,
@@ -136,90 +137,90 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-        {&sStringBase[SI_ERROR_NO_CONTROLLER], FLAG_RESET_FADE_TIMER, 0, 0},
+        {&sStringBase[ERROR_INDEX_NO_CONTROLLER], FLAG_RESET_FADE_TIMER, 0, 0},
         {
             {
-                &sStringBase[SI_NULL],
+                &sStringBase[ERROR_INDEX_NULL],
                 FLAG_COLOR_WHITE,
                 0,
                 0,
-                (ErrorCallback)fn_80063680,
+                fn_80063680,
             },
         },
         0,
-        (ErrorCallback)fn_80042E30,
+        fn_80042E30,
         120,
         0,
         0,
         0,
     },
     {
-        {&sStringBase[SI_ERROR_NO_CONTROLLER], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_INDEX_NO_CONTROLLER], FLAG_COLOR_WHITE, 0, 0},
         {
             {
-                &sStringBase[SI_ERROR_NEED_CLASSIC],
+                &sStringBase[ERROR_INDEX_NEED_CLASSIC],
                 FLAG_RESET_FADE_TIMER | FLAG_COLOR_YELLOW,
                 0,
                 0,
-                (ErrorCallback)fn_80063680,
+                fn_80063680,
             },
         },
         1,
-        (ErrorCallback)fn_80062028,
+        fn_80062028,
         120,
         0,
         0,
         0,
     },
     {
-        {&sStringBase[SI_ERROR_REMOTE_BATTERY], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_INDEX_REMOTE_BATTERY], FLAG_COLOR_WHITE, 0, 0},
         {
             {
-                &sStringBase[SI_NULL],
+                &sStringBase[ERROR_INDEX_NULL],
                 FLAG_COLOR_WHITE,
                 0,
                 0,
-                (ErrorCallback)fn_80063680,
+                fn_80063680,
             },
         },
         1,
-        (ErrorCallback)fn_80062028,
+        fn_80062028,
         0,
         0,
         0,
         0,
     },
     {
-        {&sStringBase[SI_ERROR_REMOTE_COMMUNICATION], FLAG_COLOR_WHITE, 0, 0},
+        {&sStringBase[ERROR_INDEX_REMOTE_COMMUNICATION], FLAG_COLOR_WHITE, 0, 0},
         {
             {
-                &sStringBase[SI_NULL],
+                &sStringBase[ERROR_INDEX_NULL],
                 FLAG_COLOR_WHITE,
                 0,
                 0,
-                (ErrorCallback)fn_80063680,
+                fn_80063680,
             },
         },
         1,
-        (ErrorCallback)fn_80062028,
+        fn_80062028,
         0,
         0,
         0,
         0,
     },
     {
-        {&sStringBase[SI_ERROR_BLANK], FLAG_RESET_FADE_TIMER, 0, 0},
+        {&sStringBase[ERROR_INDEX_BLANK], FLAG_RESET_FADE_TIMER, 0, 0},
         {
             {
-                &sStringBase[SI_NULL],
+                &sStringBase[ERROR_INDEX_NULL],
                 FLAG_COLOR_WHITE,
                 0,
                 0,
-                (ErrorCallback)fn_80063680,
+                fn_80063680,
             },
         },
         0,
-        (ErrorCallback)fn_80042E30,
+        fn_80042E30,
         120,
         0,
         0,
@@ -228,23 +229,23 @@ ErrorDisplay sStringDraw[] = {
 };
 
 struct_80174988 lbl_80174988[] = {
-    {NAND_RESULT_ACCESS, SI_NULL},
-    {NAND_RESULT_ALLOC_FAILED, SI_ERROR_INS_SPACE},
-    {NAND_RESULT_BUSY, SI_NULL},
-    {NAND_RESULT_CORRUPT, SI_ERROR_INS_INNODE},
-    {NAND_RESULT_ECC_CRIT, SI_ERROR_SYS_CORRUPT},
-    {NAND_RESULT_EXISTS, SI_NULL},
-    {NAND_RESULT_INVALID, SI_ERROR_MAX_FILES},
-    {NAND_RESULT_MAXBLOCKS, SI_ERROR_DATA_CORRUPT},
-    {NAND_RESULT_MAXFD, SI_ERROR_MAX_BLOCKS},
-    {NAND_RESULT_MAXFILES, SI_ERROR_MAX_BLOCKS},
-    {NAND_RESULT_NOEXISTS, SI_NULL},
-    {NAND_RESULT_NOTEMPTY, SI_NULL},
-    {NAND_RESULT_OPENFD, SI_NULL},
-    {NAND_RESULT_AUTHENTICATION, SI_ERROR_SYS_CORRUPT},
-    {NAND_RESULT_UNKNOWN, SI_ERROR_MAX_FILES},
-    {NAND_RESULT_FATAL_ERROR, SI_ERROR_MAX_FILES},
-    {NAND_RESULT_OK, SI_NULL},
+    {NAND_RESULT_ACCESS, ERROR_INDEX_NULL},
+    {NAND_RESULT_ALLOC_FAILED, ERROR_INDEX_INS_SPACE},
+    {NAND_RESULT_BUSY, ERROR_INDEX_NULL},
+    {NAND_RESULT_CORRUPT, ERROR_INDEX_INS_INNODE},
+    {NAND_RESULT_ECC_CRIT, ERROR_INDEX_SYS_CORRUPT},
+    {NAND_RESULT_EXISTS, ERROR_INDEX_NULL},
+    {NAND_RESULT_INVALID, ERROR_INDEX_MAX_FILES},
+    {NAND_RESULT_MAXBLOCKS, ERROR_INDEX_DATA_CORRUPT},
+    {NAND_RESULT_MAXFD, ERROR_INDEX_MAX_BLOCKS},
+    {NAND_RESULT_MAXFILES, ERROR_INDEX_MAX_BLOCKS},
+    {NAND_RESULT_NOEXISTS, ERROR_INDEX_NULL},
+    {NAND_RESULT_NOTEMPTY, ERROR_INDEX_NULL},
+    {NAND_RESULT_OPENFD, ERROR_INDEX_NULL},
+    {NAND_RESULT_AUTHENTICATION, ERROR_INDEX_SYS_CORRUPT},
+    {NAND_RESULT_UNKNOWN, ERROR_INDEX_MAX_FILES},
+    {NAND_RESULT_FATAL_ERROR, ERROR_INDEX_MAX_FILES},
+    {NAND_RESULT_OK, ERROR_INDEX_NULL},
 };
 
 static DisplayFiles sSTFiles[] = {
@@ -322,12 +323,14 @@ static s32 fn_80063688(EDString* pEDString, s32 arg1) {
         if (pEDString->iAction < pErrorDisplay->nAction - 1) {
             pEDString->iAction++;
         }
-    } else if ((arg1 & 0x20000000 & ~1) | (arg1 & 1)) {
+    } else if ((arg1 & 0x20000001) | (arg1 & 1)) {
         if (pErrorDisplay->nAction > 0 && pErrorDisplay->action[pEDString->iAction].callback != NULL) {
             return pErrorDisplay->action[pEDString->iAction].callback(pEDString);
         }
-    } else if (pErrorDisplay->callback != NULL) {
-        return pErrorDisplay->callback(pEDString);
+    } else {
+        if (pErrorDisplay->callback != NULL) {
+            return pErrorDisplay->callback(pEDString);
+        }
     }
 
     return 0;
@@ -370,7 +373,7 @@ static void fn_80063764(EDStringInfo* pStringInfo) {
             pStringInfo->nLines = 1;
 
             while (*var_r27 != '\0') {
-                temp_r3_2 = OSGetFontWidth(var_r27, &widthOut);
+                temp_r3_2 = (char*)OSGetFontWidth(var_r27, &widthOut);
 
                 if (*var_r27 == '\n') {
                     pStringInfo->nLines++;
@@ -392,7 +395,7 @@ static void fn_80063764(EDStringInfo* pStringInfo) {
                         var_r31 = var_r3;
                     }
 
-                    var_r3 = OSGetFontWidth(var_r3, &widthOut);
+                    var_r3 = (char*)OSGetFontWidth(var_r3, &widthOut);
                     var_r30 = ((s32)(nSize * widthOut) / nCellWidth) + var_r30 + nSpace;
 
                     if (((var_r30 + 15) / 16 > 0x230) && var_r31 != NULL) {
@@ -444,10 +447,10 @@ static void fn_80063910(ErrorDisplay* pErrorDisplay) {
  * @brief Prints a message.
  * @param pEDString Pointer to `EDString`.
  * @param nHeight The Y-position of the message to print.
- * @param arg2 Unknown.
+ * @param nPrintfArg Printf format string argument.
  * @param color The color of the message.
  */
-static void errordisplayPrintMessage(EDMessage* pMessage, s32 nHeight, s32 arg2, GXColor color) {
+static void errordisplayPrintMessage(EDMessage* pMessage, s32 nHeight, s32 nPrintfArg, GXColor color) {
     char* szString;
     s32 i;
     EDStringInfo* pStringInfo;
@@ -470,7 +473,7 @@ static void errordisplayPrintMessage(EDMessage* pMessage, s32 nHeight, s32 arg2,
         szString = pStringInfo->szString;
 
         for (i = 0; i < pStringInfo->nLines; i++) {
-            DEMOPrintf((GC_FRAME_WIDTH - DEMOGetRFTextWidth(szString)) / 2, nY, 1, szString, arg2);
+            DEMOPrintf((GC_FRAME_WIDTH - DEMOGetRFTextWidth(szString)) / 2, nY, 1, szString, nPrintfArg);
 
             while (*szString != '\0') {
                 szString++;
@@ -561,28 +564,28 @@ void errordisplayInit(void) {
     EDStringInfo* pStringInfo;
     s32 iError;
     s32 iInfo;
-    DisplayFiles* var_r29;
+    DisplayFiles* pDisplayFiles;
     u32 nLanguage;
 
     nLanguage = SCGetLanguage();
-    var_r29 = &sSTFiles[0];
+    pDisplayFiles = &sSTFiles[0];
 
-    while (var_r29->szErrors != NULL) {
-        if (var_r29->eLanguage == nLanguage) {
+    while (pDisplayFiles->szErrorsFilename != NULL) {
+        if (pDisplayFiles->eLanguage == nLanguage) {
             break;
         }
-        var_r29++;
+        pDisplayFiles++;
     }
 
-    if (var_r29->szErrors == NULL) {
-        var_r29 = &sSTFiles[0];
+    if (pDisplayFiles->szErrorsFilename == NULL) {
+        pDisplayFiles = &sSTFiles[0];
     }
 
-    xlFileLoad(var_r29->szErrors, (void**)&sBufferErrorStrings);
-    xlFileLoad(var_r29->szSaveComments, (void**)&sBufferSaveCommentStrings);
+    xlFileLoad(pDisplayFiles->szErrorsFilename, (void**)&sBufferErrorStrings);
+    xlFileLoad(pDisplayFiles->szSaveCommentsFilename, (void**)&sBufferSaveCommentStrings);
     sFontHeader = DEMOInitROMFont();
 
-    pStringInfo = &sStringBase[SI_ERROR_INS_SPACE];
+    pStringInfo = &sStringBase[ERROR_INDEX_INS_SPACE];
     for (iInfo = 0; iInfo < ARRAY_COUNT(sStringBase); iInfo++) {
         fn_80063764(pStringInfo);
         pStringInfo++;
@@ -621,7 +624,7 @@ static inline void errordisplaySetFadeInTimer(ErrorDisplay* pErrorDisplay) {
  * @param iString Index of the message to show.
  * @return `bool` – `true` on success, `false` on failure.
  */
-bool errordisplayShow(StringIndex iString) {
+bool errordisplayShow(ErrorIndex iString) {
     EDString string;
     s32 var_r31;
     s32 var_r30;
@@ -630,7 +633,7 @@ bool errordisplayShow(StringIndex iString) {
     s32 sp8;
     s32 nResult;
 
-    string.iString = SI_NONE;
+    string.iString = ERROR_INDEX_NONE;
 
     if (!fn_800607B0(SYSTEM_HELP(gpSystem), 0)) {
         return false;

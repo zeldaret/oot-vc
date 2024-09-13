@@ -513,7 +513,7 @@ static bool romLoadFullOrPart(Rom* pROM) {
         if (OSCreateThread(&DefaultThread, (OSThreadFunc)__ROMEntry, pROM, (void*)((u8*)pBuffer + ROM_THREAD_SIZE),
                            ROM_THREAD_SIZE, OS_PRIORITY_MAX, 1)) {
             OSResumeThread(&DefaultThread);
-            errordisplayShow(pROM->unk_C ? SI_ERROR_NO_CONTROLLER : SI_ERROR_BLANK);
+            errordisplayShow(pROM->unk_C ? ERROR_INDEX_NO_CONTROLLER : ERROR_INDEX_BLANK);
             pROM->unk_C = 0;
         }
 
