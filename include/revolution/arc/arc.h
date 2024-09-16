@@ -54,14 +54,14 @@ typedef struct ARCHeader {
 } ARCHeader;
 
 typedef struct ARCHandle {
-    /* 0x0 */ ARCHeader* header;
-    /* 0x4 */ ARCNode* nodes;
-    /* 0x8 */ u8* file;
-    /* 0xC */ u32 count;
+    /* 0x00 */ ARCHeader* header;
+    /* 0x04 */ ARCNode* nodes;
+    /* 0x08 */ u8* file;
+    /* 0x0C */ u32 count;
     /* 0x10 */ const char* strings;
     /* 0x14 */ u32 fstSize;
     /* 0x18 */ s32 entrynum;
-} ARCHandle;
+} ARCHandle; // size = 0x1C
 
 typedef struct ARCFileInfo {
     /* 0x0 */ ARCHandle* handle;

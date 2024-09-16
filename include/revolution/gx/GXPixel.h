@@ -14,7 +14,7 @@ typedef struct _GXFogAdjTable {
 } GXFogAdjTable;
 
 void GXSetFog(GXFogType type, GXColor color, f32 start, f32 end, f32 near, f32 far);
-void GXInitFogAdjTable(GXFogAdjTable* table, u16 width, const Mtx44 proj);
+void GXInitFogAdjTable(GXFogAdjTable* table, u16 width, const Mtx44 projMtx);
 void GXSetFogRangeAdj(GXBool enable, u16 center, const GXFogAdjTable* table);
 void GXSetBlendMode(GXBlendMode mode, GXBlendFactor src, GXBlendFactor dst, GXLogicOp op);
 void GXSetColorUpdate(GXBool enable);

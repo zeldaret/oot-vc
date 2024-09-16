@@ -2,6 +2,7 @@
 #define _RVL_SDK_AI_H
 
 #include "revolution/os/OSContext.h"
+#include "revolution/os/OSInterrupt.h"
 #include "revolution/types.h"
 
 #ifdef __cplusplus
@@ -17,12 +18,15 @@ typedef enum {
 
 AIDMACallback AIRegisterDMACallback(AIDMACallback callback);
 void AIInitDMA(void* buffer, u32 length);
+u32 AIGetDMAEnableFlag(void);
 void AIStartDMA(void);
+void AIStopDMA(void);
 u32 AIGetDMABytesLeft(void);
 void AISetDSPSampleRate(u32 rate);
 u32 AIGetDSPSampleRate(void);
 void AIInit(void* stack);
-void __AIDHandler(s16 intr, struct OSContext* ctx);
+void AIReset(void);
+void __AIDHandler(__OSInterrupt intr, struct OSContext* ctx);
 
 #ifdef __cplusplus
 }

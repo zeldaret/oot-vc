@@ -434,7 +434,7 @@ typedef enum {
 #define GX_BP_SET_INDTEVSTAGE_ADDPREV(reg, x) ((reg) = GX_BITSET(reg, 11, 1, x))
 
 /**
- * BP register 0x20 - scissorTL
+ * BP register 0x20 - suScis0
  */
 // TOP [21:31] (11) - Top component
 #define GX_BP_SCISSORTL_TOP_ST 21
@@ -452,7 +452,7 @@ typedef enum {
 #define GX_BP_SET_SCISSORTL_LEFT(reg, x) ((reg) = GX_BITSET(reg, 9, 11, x))
 
 /**
- * BP register 0x21 - scissorBR
+ * BP register 0x21 - suScis1
  */
 // BOT [21:31] (11) - Bottom component
 #define GX_BP_SCISSORBR_BOT_ST 21
@@ -470,7 +470,7 @@ typedef enum {
 #define GX_BP_SET_SCISSORBR_RIGHT(reg, x) ((reg) = GX_BITSET(reg, 9, 11, x))
 
 /**
- * BP register 0x22 - linePtWidth
+ * BP register 0x22 - lpSize
  */
 // LINESZ [24:31] (8) - Line size/width
 #define GX_BP_LINEPTWIDTH_LINESZ_ST 24
@@ -509,7 +509,7 @@ typedef enum {
 #define GX_BP_SET_LINEPTWIDTH_ADJUST_AR(reg, x) ((reg) = GX_BITSET(reg, 9, 1, x))
 
 /**
- * BP register 0x25 - ras1_ss0
+ * BP register 0x25 - IndTexScale0
  */
 // S0 [28:31] (4) - S-component scale (stage 0)
 #define GX_BP_RAS1_SS0_S0_ST 28
@@ -541,7 +541,7 @@ typedef enum {
 #define GX_BP_SET_RAS1_SS0_T1(reg, x) ((reg) = GX_BITSET(reg, 16, 4, x))
 
 /**
- * BP register 0x26 - ras1_ss1
+ * BP register 0x26 - IndTexScale1
  */
 // S2 [28:31] (4) - S-component scale (stage 2)
 #define GX_BP_RAS1_SS1_S2_ST 28
@@ -573,7 +573,7 @@ typedef enum {
 #define GX_BP_SET_RAS1_SS1_T3(reg, x) ((reg) = GX_BITSET(reg, 16, 4, x))
 
 /**
- * BP register 0x27 - ras1_iref
+ * BP register 0x27 - iref
  */
 // MAP0 [29:31] (3) - Texmap id (stage 0)
 #define GX_BP_RAS1_IREF_MAP0_ST 29

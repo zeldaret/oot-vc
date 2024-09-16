@@ -2,6 +2,7 @@
 #define _RVL_SDK_DSP_TASK_H
 
 #include "revolution/os/OSContext.h"
+#include "revolution/os/OSInterrupt.h"
 #include "revolution/types.h"
 #include "stdint.h"
 
@@ -62,7 +63,7 @@ extern DSPTask* __DSP_last_task;
 extern DSPTask* __DSP_first_task;
 extern DSPTask* __DSP_curr_task;
 
-void __DSPHandler(s16 intr, struct OSContext* ctx);
+void __DSPHandler(__OSInterrupt intr, struct OSContext* ctx);
 void __DSP_exec_task(DSPTask* task1, DSPTask* task2);
 void __DSP_boot_task(DSPTask* task);
 void __DSP_insert_task(DSPTask* task);

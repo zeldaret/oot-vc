@@ -9,15 +9,15 @@
 extern "C" {
 #endif
 
-void GXSetProjection(const Mtx44 proj, GXProjectionType type);
-void GXSetProjectionv(const f32 proj[7]);
-void GXGetProjectionv(f32 proj[7]);
+void GXSetProjection(const Mtx44 projMtx, GXProjectionType type);
+void GXSetProjectionv(const f32 projMtx[7]);
+void GXGetProjectionv(f32 projMtx[7]);
 void GXLoadPosMtxImm(const Mtx mtx, u32 id);
 void GXLoadPosMtxIndx(u16 index, u32 id);
 void GXLoadNrmMtxImm(const Mtx mtx, u32 id);
 void GXLoadNrmMtxIndx3x3(u16 index, u32 id);
 void GXSetCurrentMtx(u32 id);
-void GXLoadTexMtxImm(const Mtx mtx, u32 id, GXMtxType type);
+void GXLoadTexMtxImm(const Mtx mtx, u32 id, GXTexMtxType type);
 void GXSetViewportJitter(f32 ox, f32 oy, f32 sx, f32 sy, f32 near, f32 far, u32 nextField);
 void GXSetViewport(f32 ox, f32 oy, f32 sx, f32 sy, f32 near, f32 far);
 void GXGetViewportv(f32 view[6]);

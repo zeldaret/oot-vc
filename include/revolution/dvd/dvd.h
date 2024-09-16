@@ -91,11 +91,23 @@ typedef struct DVDDriveInfo {
 } DVDDriveInfo;
 
 typedef struct DVDFileInfo {
-    /* 0x0 */ DVDCommandBlock block;
+    /* 0x00 */ DVDCommandBlock block;
     /* 0x30 */ u32 offset;
     /* 0x34 */ u32 size;
     /* 0x38 */ DVDAsyncCallback callback;
 } DVDFileInfo;
+
+typedef struct DVDDir {
+    /* 0x00 */ u32 entryNum;
+    /* 0x04 */ u32 location;
+    /* 0x08 */ u32 next;
+} DVDDir;
+
+typedef struct DVDDirEntry {
+    /* 0x00 */ u32 entryNum;
+    /* 0x04 */ bool isDir;
+    /* 0x08 */ char* name;
+} DVDDirEntry;
 
 extern volatile u32 __DVDLayoutFormat;
 
