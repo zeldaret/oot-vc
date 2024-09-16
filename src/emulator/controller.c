@@ -4,6 +4,7 @@
 #include "emulator/xlCoreRVL.h"
 #include "emulator/xlHeap.h"
 #include "math.h"
+#include "revolution/mem.h"
 #include "revolution/vi.h"
 #include "revolution/wpad.h"
 
@@ -30,24 +31,24 @@ _XL_OBJECTTYPE gClassController = {
     (EventFunc)controllerEvent,
 };
 
-lbl_801C7DB8_Struct lbl_801C7DB8;
+MEMAllocator gControllerAllocator;
 ControllerThread gControllerThread;
 
 static void* sControllerHeap;
 static VIRetraceCallback sControllerVICallback;
 
-bool fn_80061FB0(Controller* pController) {
-    bool bSuccess = fn_800B163C(&lbl_801C7DB8, pController->unk_00);
+void* fn_80061FB0(u32 nSize) {
+    void* pBuffer = MEMAllocFromAllocator(&gControllerAllocator, nSize);
 
-    if (!bSuccess) {
+    if (pBuffer == NULL) {
         xlExit();
     }
 
-    return bSuccess;
+    return pBuffer;
 }
 
 bool fn_80061FF8(Controller* pController) {
-    fn_800B164C(&lbl_801C7DB8, pController->unk_00);
+    MEMFreeToAllocator(&gControllerAllocator, pController->unk_00);
     return true;
 }
 
@@ -114,7 +115,7 @@ bool fn_800620A8(Controller* pController) {
         return false;
     }
 
-    fn_800B165C(&lbl_801C7DB8, fn_800B0DF0(sp8, 0x20000, 0), 4);
+    MEMInitAllocatorForExpHeap(&gControllerAllocator, MEMCreateExpHeapEx(sp8, 0x20000, 0), 4);
     fn_800BE994(fn_80061FB0, fn_80061FF8);
     WPADInit();
 

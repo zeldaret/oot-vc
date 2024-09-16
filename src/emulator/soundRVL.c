@@ -367,7 +367,7 @@ bool soundEvent(Sound* pSound, s32 nEvent, void* pArgument) {
             break;
         case 1:
             AIStopDMA();
-            fn_800ABA60();
+            AIReset();
             break;
         case 2:
             pSound->eMode = SPM_NONE;

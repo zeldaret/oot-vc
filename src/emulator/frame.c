@@ -6,6 +6,7 @@
 #include "emulator/system.h"
 #include "emulator/vc64_RVL.h"
 #include "emulator/xlCoreRVL.h"
+#include "emulator/xlFileRVL.h"
 #include "emulator/xlHeap.h"
 #include "emulator/xlObject.h"
 #include "emulator/xlPostRVL.h"
@@ -3416,7 +3417,7 @@ static inline bool frameEvent_UnknownInline2(Frame* pFrame) {
         return false;
     }
 
-    if (!contentOpenDirNAND(&gUnkContent.fileInfo, ".", &arcDir)) {
+    if (!contentOpenDirNAND(&gCNTHandle.handleNAND, ".", &arcDir)) {
         if (ARCReadDir(&arcDir, &arcEntry)) {
             temp_r3_2 = (char**)&arcEntry.name;
 
