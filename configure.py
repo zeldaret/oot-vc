@@ -186,11 +186,11 @@ def EmulatorLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
         "objects": objects,
     }
 
-def RevolutionLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
+def RevolutionLib(lib_name: str, objects: List[Object], cpp_exceptions: str = "off") -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/3.0a5",
-        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-ipa file", "-enc SJIS"],
+        "cflags": [*cflags_base, f"-Cpp_exceptions {cpp_exceptions}", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off"],
         "host": False,
         "objects": objects,
     }
@@ -280,6 +280,20 @@ config.libs = [
         ]
     ),
     RevolutionLib(
+        "NdevExi2AD",
+        [
+            Object(NotLinked, "revolution/NdevExi2AD/DebuggerDriver.c"),
+            Object(NotLinked, "revolution/NdevExi2AD/exi2.c"),
+        ]
+    ),
+    RevolutionLib(
+        "vcmv",
+        [
+            Object(NotLinked, "revolution/vcmv/code_80083070.cpp"),
+        ],
+        cpp_exceptions="on"
+    ),
+    RevolutionLib(
         "base",
         [
             Object(NotLinked, "revolution/base/PPCArch.c"),
@@ -296,7 +310,7 @@ config.libs = [
             Object(NotLinked, "revolution/os/OSCache.c"),
             Object(NotLinked, "revolution/os/OSContext.c"),
             Object(NotLinked, "revolution/os/OSError.c"),
-            Object(NotLinked, "revolution/os/OSExec.c", cflags=[*cflags_base, "-O4,p", "-ipa off"]),
+            Object(NotLinked, "revolution/os/OSExec.c", cflags=[*cflags_base, "-Cpp_exceptions off", "-O4,p", "-ipa off"]),
             Object(NotLinked, "revolution/os/OSFatal.c"),
             Object(NotLinked, "revolution/os/OSFont.c"),
             Object(NotLinked, "revolution/os/OSInterrupt.c"),
@@ -323,7 +337,7 @@ config.libs = [
     RevolutionLib(
         "exi",
         [
-            Object(NotLinked, "revolution/exi/EXIBios.c", cflags=[*cflags_base, "-O3,p", "-ipa file"]),
+            Object(NotLinked, "revolution/exi/EXIBios.c", cflags=[*cflags_base, "-Cpp_exceptions off", "-O3,p", "-ipa file"]),
             Object(NotLinked, "revolution/exi/EXIUart.c"),
             Object(NotLinked, "revolution/exi/EXICommon.c"),
         ]
@@ -377,7 +391,7 @@ config.libs = [
     ),
     RevolutionLib(
         "dvd",
-        [    
+        [
             Object(NotLinked, "revolution/dvd/dvdfs.c"),
             Object(NotLinked, "revolution/dvd/dvd.c"),
             Object(NotLinked, "revolution/dvd/dvdqueue.c"),
@@ -390,7 +404,8 @@ config.libs = [
     RevolutionLib(
         "demo",
         [
-            Object(NotLinked, "revolution/demo/DEMOPuts.c"),
+            Object(NotLinked, "revolution/demo/DEMOInit.c"),
+            Object(NotLinked, "revolution/demo/DEMOPuts.c", cflags=[*cflags_base, "-Cpp_exceptions off", "-O4,p"]),
         ]
     ),
     RevolutionLib(
@@ -417,7 +432,25 @@ config.libs = [
     RevolutionLib(
         "axfx",
         [
-            Object(NotLinked, "revolution/axfx/code_800AF5D8.c"),
+            Object(NotLinked, "revolution/axfx/AXFXReverbHi.c"),
+            Object(NotLinked, "revolution/axfx/AXFXReverbHiExp.c"),
+            Object(NotLinked, "revolution/axfx/AXFXHooks.c"),
+        ]
+    ),
+    RevolutionLib(
+        "mem",
+        [
+            Object(NotLinked, "revolution/mem/mem_heapCommon.c"),
+            Object(NotLinked, "revolution/mem/mem_expHeap.c"),
+            Object(NotLinked, "revolution/mem/mem_frameHeap.c"),
+            Object(NotLinked, "revolution/mem/mem_allocator.c"),
+            Object(NotLinked, "revolution/mem/mem_list.c"),
+        ]
+    ),
+    RevolutionLib(
+        "code_800B17A8",
+        [
+            Object(NotLinked, "revolution/code_800B17A8.c")
         ]
     ),
     RevolutionLib(
@@ -480,6 +513,70 @@ config.libs = [
             Object(NotLinked, "revolution/wpad/WPADHIDParser.c"),
             Object(NotLinked, "revolution/wpad/WPADEncrypt.c"),
             Object(NotLinked, "revolution/wpad/debug_msg.c"),
+        ]
+    ),
+    RevolutionLib(
+        "kpad",
+        [
+            Object(NotLinked, "revolution/kpad/KPAD.c"),
+        ]
+    ),
+    RevolutionLib(
+        "usb",
+        [
+            Object(NotLinked, "revolution/usb/usb.c"),
+        ]
+    ),
+    RevolutionLib(
+        "wud",
+        [
+            Object(NotLinked, "revolution/wud/WUD.c"),
+            Object(NotLinked, "revolution/wud/WUDHidHost.c"),
+            Object(NotLinked, "revolution/wud/debug_msg.c"),
+        ]
+    ),
+    RevolutionLib(
+        "code_800D1134",
+        [
+            Object(NotLinked, "revolution/code_800D1134.c"),
+        ]
+    ),
+    RevolutionLib(
+        "bte",
+        [
+            Object(NotLinked, "revolution/bte/code_800D1614.c"),
+        ]
+    ),
+    RevolutionLib(
+        "cnt",
+        [
+            Object(NotLinked, "revolution/cnt/cnt.c"),
+        ]
+    ),
+    RevolutionLib(
+        "esp",
+        [
+            Object(NotLinked, "revolution/esp/esp.c"),
+        ]
+    ),
+    RevolutionLib(
+        "rso",
+        [
+            Object(NotLinked, "revolution/rso/RSOLink.c"),
+        ]
+    ),
+    RevolutionLib(
+        "tpl",
+        [
+            Object(NotLinked, "revolution/tpl/TPL.c"),
+        ]
+    ),
+    RevolutionLib(
+        "hbm",
+        [
+            Object(NotLinked, "revolution/hbm/code_80109CB8.cpp"),
+            Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_ResFont.cpp"),
+            Object(NotLinked, "revolution/hbm/code_80144E2C.cpp"),
         ]
     ),
     RuntimeLib(

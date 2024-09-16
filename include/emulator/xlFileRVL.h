@@ -20,8 +20,8 @@ typedef enum XlFileType {
 } XlFileType;
 
 typedef struct tXL_FILE {
-    /* 0x04 */ void* pData;
-    /* 0x00 */ void* iBuffer;
+    /* 0x00 */ void* pData;
+    /* 0x04 */ void* iBuffer;
     /* 0x08 */ void* pBuffer;
     /* 0x0C */ s32 nAttributes;
     /* 0x10 */ s32 nSize;
@@ -29,7 +29,7 @@ typedef struct tXL_FILE {
     /* 0x18 */ XlFileType eType;
     /* 0x1C */ char unk_1C[0x8];
     /* 0x24 */ s32 unk_24;
-    /* 0x28 */ CNTFileInfo info;
+    /* 0x28 */ CNTFileInfoNAND info;
 } tXL_FILE; // size = 0x38
 
 bool xlFileSetOpen(DVDOpenCallback pfOpen);
@@ -40,6 +40,8 @@ bool xlFileSetPosition(tXL_FILE* pFile, s32 nOffset);
 bool xlFileEvent(tXL_FILE* pFile, s32 nEvent, void* pArgument);
 
 extern _XL_OBJECTTYPE gTypeFile;
+extern CNTHandle gCNTHandle;
+extern MEMAllocator gCNTAllocator;
 
 #ifdef __cplusplus
 }

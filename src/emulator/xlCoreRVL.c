@@ -6,7 +6,6 @@
 #include "emulator/xlPostRVL.h"
 #include "macros.h"
 #include "revolution/demo.h"
-#include "revolution/gx.h"
 #include "revolution/sc.h"
 #include "revolution/vi.h"
 
@@ -16,10 +15,6 @@ static char** gaszArgument;
 static void* DefaultFifo;
 static GXFifoObj* DefaultFifoObj;
 GXRenderModeObj* rmode;
-
-//! TODO: confirm these
-CNTFileInfo gCNTFileInfo;
-UnknownContentStruct gUnkContent;
 
 static inline u32 getFBTotalSize(f32 aspectRatio) {
     u16 lineCount = GXGetNumXfbLines(rmode->efbHeight, aspectRatio);

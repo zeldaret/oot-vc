@@ -17,6 +17,10 @@ extract:
 - symbol: __AXCompressorTable
   header: __AXCompressorTable.inc
 
+force_active:
+- lbl_801E3380
+- DemoAllocator2
+
 block_relocations:
 - source: 0x8002C248
 - source: 0x8002B758
