@@ -18,13 +18,6 @@ typedef enum ControllerStickAxis {
     AXIS_MAX = 2
 } ControllerStickAxis;
 
-typedef struct lbl_801C7DB8_Struct {
-    /* 0x00 */ void* unk_00;
-    /* 0x04 */ u32 unk_04;
-    /* 0x08 */ u32 unk_08;
-    /* 0x0C */ u32 unk_0C;
-} lbl_801C7DB8_Struct; // size = 0x10
-
 typedef struct ControllerThread {
     /* 0x000 */ OSThread thread;
     /* 0x318 */ u8 unk_318[0xA];
