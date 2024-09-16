@@ -4,6 +4,7 @@
 #include "emulator/xlCoreRVL.h"
 #include "emulator/xlHeap.h"
 #include "math.h"
+#include "revolution/mem.h"
 #include "revolution/vi.h"
 #include "revolution/wpad.h"
 
@@ -114,7 +115,7 @@ bool fn_800620A8(Controller* pController) {
         return false;
     }
 
-    fn_800B165C(&lbl_801C7DB8, fn_800B0DF0(sp8, 0x20000, 0), 4);
+    MEMInitAllocatorForExpHeap(&lbl_801C7DB8, MEMCreateExpHeapEx(sp8, 0x20000, 0), 4);
     fn_800BE994(fn_80061FB0, fn_80061FF8);
     WPADInit();
 
