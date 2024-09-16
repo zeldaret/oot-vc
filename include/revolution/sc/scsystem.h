@@ -19,14 +19,9 @@ typedef enum {
     SC_ITEM_IPL_CB, // Counter bias
     SC_ITEM_IPL_AR, // Aspect ratio
     SC_ITEM_IPL_ARN, // Autorun mode
-    SC_ITEM_IPL_CD, // Config done flag
-    SC_ITEM_IPL_CD2, // Config done flag 2
     SC_ITEM_IPL_DH, // Display horizontal offset
     SC_ITEM_IPL_E60, // EuRgb60 mode
-    SC_ITEM_IPL_EULA, // EULA
-    SC_ITEM_IPL_FRC, // Free channel app count
     SC_ITEM_IPL_IDL, // Idle mode
-    SC_ITEM_IPL_INC, // Installed channel app count
     SC_ITEM_IPL_LNG, // Language
     SC_ITEM_IPL_NIK, // Owner nickname
     SC_ITEM_IPL_PC, // Parental controls
@@ -34,14 +29,12 @@ typedef enum {
     SC_ITEM_IPL_SSV, // Screen saver mode
     SC_ITEM_IPL_SADR, // Simple address
     SC_ITEM_IPL_SND, // Sound mode
-    SC_ITEM_IPL_UPT, // Update type
 
     // Network settings
     SC_ITEM_NET_CNF, // Network config
     SC_ITEM_NET_CTPC, // Network content restrictions
     SC_ITEM_NET_PROF, // Network profile
     SC_ITEM_NET_WCPC, // WC24 parental controls
-    SC_ITEM_NET_WCFG, // WC24 flags
 
     // Development settings
     SC_ITEM_DEV_BTM, // Boot mode

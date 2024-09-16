@@ -15,7 +15,7 @@ extern "C" {
 // Forward declarations
 typedef struct NANDCommandBlock;
 
-typedef enum {
+typedef enum NANDResult {
     NAND_RESULT_FATAL_ERROR = -128,
     NAND_RESULT_UNKNOWN = -64,
 

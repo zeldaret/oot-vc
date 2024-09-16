@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#define OS_RESET_PRIO_GX 127
+
 typedef bool (*OSShutdownFunction)(bool final, u32 event);
 
 typedef enum {

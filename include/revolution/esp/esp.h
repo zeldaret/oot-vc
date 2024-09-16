@@ -30,6 +30,8 @@ typedef struct ESPTmd {
 s32 ESP_ReadContentFile(s32 fd, void* dst, u32 len);
 s32 ESP_SeekContentFile(s32 fd, s32 offset, s32 origin);
 
+extern s32 __esFd;
+
 #ifdef __cplusplus
 }
 #endif

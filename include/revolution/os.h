@@ -9,6 +9,9 @@
 extern "C" {
 #endif
 
+#include "macros.h"
+#include "revolution/types.h"
+
 #ifndef ASSERT
 #define ASSERT(exp) ((void)0)
 #endif
@@ -41,6 +44,15 @@ extern "C" {
 
 #define OS_BASE_CACHED (OS_CACHED_REGION_PREFIX << 16)
 #define OS_BASE_UNCACHED (OS_UNCACHED_REGION_PREFIX << 16)
+
+u8 GameChoice AT_ADDRESS(OS_BASE_CACHED | 0x30E3);
+u16 __OSWirelessPadFixMode AT_ADDRESS(OS_BASE_CACHED | 0x30E0);
+u32 __OSBusClock AT_ADDRESS(OS_BASE_CACHED | 0x00F8);
+u32 __OSCoreClock AT_ADDRESS(OS_BASE_CACHED | 0x00FC);
+
+#define OS_BUS_CLOCK (u32) __OSBusClock
+#define OS_CORE_CLOCK __OSCoreClock
+#define OS_TIMER_CLOCK (OS_BUS_CLOCK / 4)
 
 #include "revolution/os/OS.h"
 #include "revolution/os/OSAddress.h"

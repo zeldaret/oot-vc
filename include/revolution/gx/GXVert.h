@@ -8,6 +8,8 @@
 extern "C" {
 #endif
 
+#define GXFIFO_ADDR 0xCC008000
+
 static inline void GXCmd1u8(u8 uc) { WGPIPE.c = uc; }
 
 static inline void GXCmd1u16(u16 us) { WGPIPE.us = us; }

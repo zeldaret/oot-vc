@@ -57,9 +57,12 @@ typedef struct DEMODMPad {
     /* 0x1C */ s16 substickDeltaY;
 } DEMODMPad; // size = 0x1E
 
+extern u32 DemoUseMEMHeap;
 extern void* DemoCurrentBuffer;
 extern void* DemoFrameBuffer2;
 extern void* DemoFrameBuffer1;
+extern struct MEMAllocator DemoAllocator1;
+extern struct MEMAllocator DemoAllocator2;
 
 extern DEMODMPad DemoPad[4];
 extern u8 DemoStatEnable;
