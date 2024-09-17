@@ -1,5 +1,5 @@
-#include "revolution/os.h"
 #include "macros.h"
+#include "revolution/os.h"
 
 static bool OnShutdown(bool final, u32 event);
 static OSShutdownFunctionInfo ShutdownFunctionInfo = {OnShutdown, 127, NULL, NULL};

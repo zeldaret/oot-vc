@@ -1,7 +1,7 @@
+#include "macros.h"
 #include "revolution/base.h"
 #include "revolution/os.h"
 #include "string.h"
-#include "macros.h"
 
 #define OS_PHYS_SYSCALL_INTR 0xC00
 #define OS_INTR_SLOT_SIZE 0x100
