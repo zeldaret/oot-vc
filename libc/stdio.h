@@ -118,6 +118,7 @@ enum __ReadProcActions {
 int puts(const char* s);
 int printf(const char*, ...);
 size_t sprintf(char* s, const char* format, ...);
+size_t snprintf(char*, size_t, const char*, ...);
 size_t vprintf(const char* format, va_list arg);
 size_t vsprintf(char* s, const char* format, va_list arg);
 size_t fread(const void*, size_t memb_size, size_t num_memb, FILE*);
