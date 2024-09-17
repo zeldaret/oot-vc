@@ -93,6 +93,8 @@ static u16 taps[] = {
 
 static OSShutdownFunctionInfo ShutdownFunctionInfo = {OnShutdown, 127};
 
+FORCE_ACTIVE(vi, THD_TIME_TO_DIMMING);
+
 static bool OnShutdown(bool final, u32 event) {
     bool retval = final;
 
