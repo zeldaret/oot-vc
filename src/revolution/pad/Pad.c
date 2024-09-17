@@ -1,4 +1,5 @@
 #include "revolution/pad.h"
+#include "macros.h"
 #include "revolution/os.h"
 #include "revolution/si.h"
 
@@ -39,8 +40,6 @@ static u32 PendingBits;
 static u32 BarrelBits;
 
 static void (*SamplingCallback)(void);
-
-extern u16 __OSWirelessPadFixMode AT_ADDRESS(OS_BASE_CACHED | 0x30E0);
 
 // global symbols
 u32 __PADSpec;
