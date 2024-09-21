@@ -37,14 +37,14 @@ jobs:
       if: matrix.matching
       run: |
         python configure.py --map --binutils /binutils --compilers /compilers
-        ninja all_source build/{oot-j}/progress.json build/report.json
+        ninja all_source build/oot-j/progress.json build/report.json
 
     # Build the project (non-matching)
     - name: Build (non-matching)
       if: ${{ !matrix.matching }}
       run: |
         python configure.py --map --binutils /binutils --compilers /compilers --non-matching --no-asm-processor
-        ninja all_source build/{oot-j}/progress.json build/report.json
+        ninja all_source build/oot-j/progress.json build/report.json
 
     # Upload progress if we're on the main branch
     - name: Upload progress
