@@ -95,6 +95,23 @@ typedef enum FrameColorType {
     FCT_COUNT
 } FrameColorType;
 
+typedef struct Texture64 {
+    /* 0x00 */ s32 magic; // 'VC64'
+    /* 0x04 */ u32 nTypeROM; // `SystemRomType`
+    /* 0x08 */ u32 unk_34;
+    /* 0x0C */ s32 nSizeX;
+    /* 0x10 */ s32 nSizeY;
+    /* 0x14 */ GXTexWrapMode eWrapS;
+    /* 0x18 */ GXTexWrapMode eWrapT;
+    /* 0x1C */ s32 nMode;
+    /* 0x20 */ GXTexFmt eFormat;
+    /* 0x24 */ u32 nAddress;
+    /* 0x28 */ u32 nCodePixel;
+    /* 0x2C */ u32 nCodeColor;
+    /* 0x30 */ u32 nData0;
+    /* 0x34 */ u32 nData1;
+} Texture64; // size = 0x38
+
 typedef struct Primitive {
     /* 0x0 */ s32 nCount;
     /* 0x4 */ u8 anData[768];
@@ -306,7 +323,7 @@ typedef struct Frame {
     /* 0x0226C */ FrameTexture aTexture[2048];
     /* 0x3A26C */ u32 anTextureUsed[64];
     /* 0x3A36C */ FrameTexture* apTextureCached[4096];
-    /* 0x3E36C */ s32 unk_3E36C;
+    /* 0x3E36C */ FrameTexture* unk_3E36C;
     /* 0x3E370 */ s32 iTileLoad;
     /* 0x3E374 */ u32 n2dLoadTexType;
     /* 0x3E378 */ s32 nLastX0;
