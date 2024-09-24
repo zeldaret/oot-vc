@@ -7301,7 +7301,6 @@ lbl_8025CFB8 = .sdata:0x8025CFB8; // type:object size:0x4 data:float
 lbl_8025CFBC = .sdata:0x8025CFBC; // type:object size:0x4 data:float
 lbl_8025CFC0 = .sdata:0x8025CFC0; // type:object size:0x8 data:double
 gpSystem = .sbss:0x8025CFE0; // type:object size:0x4 data:4byte
-gaszArgument = .sbss:0x8025CFE4; // type:object size:0x4 scope:local data:4byte
 __cpuRetraceCallback = .sbss:0x8025CFE8; // type:object size:0x4 data:4byte
 cpuCompile_LWR_function = .sbss:0x8025CFEC; // type:object size:0x4 data:4byte
 cpuCompile_LWL_function = .sbss:0x8025CFF0; // type:object size:0x4 data:4byte

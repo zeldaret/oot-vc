@@ -249,7 +249,13 @@ struct_80174988 lbl_80174988[] = {
 };
 
 static DisplayFiles sSTFiles[] = {
+#if VERSION == OOT_J
     {SC_LANG_JP, "Errors_VC64ErrorStrings_jp.bin", "saveComments_saveComments_jp.bin"},
+#elif VERSION == OOT_U
+    {SC_LANG_EN, "Errors_VC64ErrorStrings_en.bin", "saveComments_saveComments_en.bin"},
+    {SC_LANG_FR, "Errors_VC64ErrorStrings_fr.bin", "saveComments_saveComments_fr.bin"},
+    {SC_LANG_SP, "Errors_VC64ErrorStrings_es.bin", "saveComments_saveComments_es.bin"},
+#endif
     {SC_LANG_NONE, NULL, NULL},
 };
 
