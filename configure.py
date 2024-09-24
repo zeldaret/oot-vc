@@ -590,7 +590,7 @@ config.libs = [
             Object(NotLinked, "runtime/NMWException.cpp", extra_cflags=["-Cpp_exceptions on"]),
             Object(LinkedFor("oot-j"), "runtime/ptmf.c"),
             Object(LinkedFor("oot-j"), "runtime/runtime.c"),
-            Object(LinkedFor("oot-j"), "runtime/__init_cpp_exceptions.cpp"),
+            Object(LinkedFor("oot-j", "oot-u"), "runtime/__init_cpp_exceptions.cpp"),
             Object(LinkedFor("oot-j"), "runtime/Gecko_setjmp.c"),
             Object(NotLinked, "runtime/Gecko_ExceptionPPC.cpp", extra_cflags=["-Cpp_exceptions on"]),
             Object(LinkedFor("oot-j"), "runtime/GCN_mem_alloc.c"),
