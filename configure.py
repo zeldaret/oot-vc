@@ -103,6 +103,7 @@ config = ProjectConfig()
 # Only configure versions for which content1.app exists
 ALL_VERSIONS = [
     "oot-j",
+    "oot-u",
 ]
 config.versions = [
     version

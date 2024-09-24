@@ -1,0 +1,151 @@
+# See config.example.yml for documentation.
+name: oot-vc
+object: orig/oot-u/content1.app
+hash: 763d4d3d0713e4d10e44540ccfa3255e19f28af7
+symbols: config/oot-u/symbols.txt
+splits: config/oot-u/splits.txt
+
+# Change this to match the linker verison.
+# See config.example.yml for a list.
+mw_comment_version: 14
+
+# extract:
+# # DSPCode.c
+# - symbol: axDspSlave
+#   header: axDspSlave.inc
+# # AXComp.c
+# - symbol: __AXCompressorTable
+#   header: __AXCompressorTable.inc
+
+# force_active:
+# - lbl_801E3380
+# - DemoAllocator2
+
+# block_relocations:
+# - source: 0x8002C248
+# - source: 0x8002B758
+# - source: 0x8003E3BC
+# - source: 0x8003E3C0
+# - source: 0x8003E39C
+# - source: 0x8003E3A0
+# - source: 0x80008478
+# - source: 0x8000849C
+# - source: 0x800083A0
+# - source: 0x800083B0
+# - source: 0x800083CC
+# - source: 0x80008400
+# - source: 0x800083DC
+# - source: 0x80008424
+# - source: 0x80008448
+# - source: 0x800084F0
+# - source: 0x80008500
+# - source: 0x8000851C
+# - source: 0x8000852C
+# - source: 0x80008550
+# - source: 0x80008574
+# - source: 0x80008598
+# - source: 0x800085C8
+# - source: 0x800085B8
+# - source: 0x80008640
+# - source: 0x80008650
+# - source: 0x8000866C
+# - source: 0x8000867C
+# - source: 0x800086A0
+# - source: 0x800086C4
+# - source: 0x800086E8
+# - source: 0x80008708
+# - source: 0x80008718
+# - source: 0x8000873C
+# - source: 0x800088C0
+# - source: 0x800088EC
+# - source: 0x800088D0
+# - source: 0x800088F4
+# - source: 0x80008918
+# - source: 0x8000893C
+# - source: 0x80008964
+# - source: 0x80008974
+# - source: 0x80008990
+# - source: 0x80008998
+# - source: 0x800089BC
+# - source: 0x800089E0
+# - source: 0x80008A0C
+# - source: 0x80008A1C
+# - source: 0x80008A38
+# - source: 0x80008A40
+# - source: 0x80008A68
+# - source: 0x80008A8C
+# - source: 0x800090AC
+# - source: 0x800090BC
+# - source: 0x800090DC
+# - source: 0x800090EC
+# - source: 0x8000910C
+# - source: 0x80009038
+# - source: 0x80009048
+# - source: 0x80009298
+# - source: 0x800092A0
+# - source: 0x800092C4
+# - source: 0x800092E8
+# - source: 0x8000930C
+# - source: 0x80009314
+# - source: 0x80009338
+# - source: 0x8000935C
+# - source: 0x800093EC
+# - source: 0x800093FC
+# - source: 0x8000941C
+# - source: 0x80009448
+# - source: 0x8000946C
+# - source: 0x800094B0
+# - source: 0x800094D0
+# - source: 0x800094E0
+# - source: 0x8000951C
+# - source: 0x8000952C
+# - source: 0x80009550
+# - source: 0x800085EC
+# - source: 0x80009484
+# - source: 0x8000970C
+# - source: 0x8000971C
+# - source: 0x80009740
+# - source: 0x80009768
+# - source: 0x80009778
+# - source: 0x8000979C
+# - source: 0x80009808
+# - source: 0x80009830
+# - source: 0x80009854
+# - source: 0x80009880
+# - source: 0x800098E4
+# - source: 0x800098F4
+# - source: 0x80009A1C
+# - source: 0x80009A2C
+# - source: 0x80009A48
+# - source: 0x80009A98
+# - source: 0x80009C18
+# - source: 0x80009C28
+# - source: 0x80009C48
+# - source: 0x80009C60
+# - source: 0x80009C98
+# - source: 0x80009CA0
+# - source: 0x80009CC0
+# - source: 0x80009CD0
+# - source: 0x80009CF4
+# - source: 0x80009E98
+# - source: 0x80009EB0
+# - source: 0x80008DCC
+# - source: 0x80008DD4
+# - source: 0x80008DFC
+# - source: 0x80008E04
+# - source: 0x80008E24
+# - source: 0x80008E2C
+# - source: 0x80008D94
+# - source: 0x80008D9C
+# - source: 0x80008F18
+# - source: 0x80008F20
+# - source: 0x80008F48
+# - source: 0x80008F50
+# - source: 0x80009008
+# - source: 0x80009018
+# - source: 0x80009A68
+# - source: 0x800097D4
+# - source: 0x800097E4
+# - source: 0x8008A060
+# - source: 0x8008A0D8
+# - source: 0x80009A78
