@@ -937,17 +937,26 @@ static bool cpuMakeDevice(Cpu* pCPU, s32* piDevice, void* pObject, u32 nOffset, 
                 pDevice->nAddressPhysical1 = 0xFFFFFFFF;
                 pDevice->nAddressVirtual1 = 0xFFFFFFFF;
 
+#if VERSION == OOT_U
+                for (j = 0; j < 0x100000; j++) {
+                    pCPU->aiDevice[j] = iDevice;
+                }
+#else
                 for (j = 0; j < 0x10000; j++) {
                     pCPU->aiDevice[j] = iDevice;
                 }
+#endif
             } else {
                 pDevice->nAddressVirtual0 = nOffset;
                 pDevice->nAddressVirtual1 = nOffset + nSize - 1;
                 pDevice->nAddressPhysical0 = nAddress;
                 pDevice->nAddressPhysical1 = nAddress + nSize - 1;
-
                 for (j = nSize; j > 0; nOffset += 0x10000, j -= 0x10000) {
+#if VERSION == OOT_U
+                    pCPU->aiDevice[nOffset >> 12] = iDevice;
+#else
                     pCPU->aiDevice[nOffset >> 16] = iDevice;
+#endif
                 }
             }
 
@@ -1110,7 +1119,7 @@ static bool cpuSetTLB(Cpu* pCPU, s32 iEntry) {
  * @param peMode A pointer to the mode determined.
  * @return bool true on success, false otherwise.
  */
-static bool cpuGetMode(u64 nStatus, CpuMode* peMode) {
+static bool cpuGetMode(u64 nStatus, CpuMode* peMode) NO_INLINE {
     if (nStatus & 2) {
         *peMode = CM_KERNEL;
         return true;
@@ -4850,7 +4859,12 @@ static s32 cpuExecuteLoadStore(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAddr
     }
 
     address = pCPU->aGPR[MIPS_RS(*opcode)].s32 + MIPS_IMM_S16(*opcode);
+
+#if VERSION == OOT_U
+    device = pCPU->aiDevice[(u32)(address) >> 12];
+#else
     device = pCPU->aiDevice[(u32)(address) >> 16];
+#endif
 
     if (pCPU->nCompileFlag & 0x100) {
         anCode = (s32*)nAddressGCN - 3;
@@ -5133,7 +5147,12 @@ static s32 cpuExecuteLoadStoreF(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAdd
     }
 
     address = pCPU->aGPR[MIPS_RS(*opcode)].s32 + MIPS_IMM_S16(*opcode);
+
+#if VERSION == OOT_U
+    device = pCPU->aiDevice[(u32)(address) >> 12];
+#else
     device = pCPU->aiDevice[(u32)(address) >> 16];
+#endif
 
     if (pCPU->nCompileFlag & 0x100) {
         anCode = (s32*)nAddressGCN - 3;

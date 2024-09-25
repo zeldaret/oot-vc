@@ -240,7 +240,7 @@ config.libs = [
         "emulator",
         [
             Object(LinkedFor("oot-j", "oot-u"), "emulator/vc64_RVL.c"),
-            Object(LinkedFor("oot-j"), "emulator/system.c"),
+            Object(LinkedFor("oot-j", "oot-u"), "emulator/system.c"),
             Object(LinkedFor("oot-j", "oot-u"), "emulator/ai.c"),
             Object(LinkedFor("oot-j", "oot-u"), "emulator/vi.c"),
             Object(LinkedFor("oot-j", "oot-u"), "emulator/si.c"),
@@ -583,17 +583,17 @@ config.libs = [
     RuntimeLib(
         "runtime",
         [
-            Object(LinkedFor("oot-j"), "runtime/__mem.c"),
-            Object(LinkedFor("oot-j"), "runtime/__va_arg.c"),
-            Object(LinkedFor("oot-j"), "runtime/global_destructor_chain.c"),
+            Object(LinkedFor("oot-j", "oot-u"), "runtime/__mem.c"),
+            Object(LinkedFor("oot-j", "oot-u"), "runtime/__va_arg.c"),
+            Object(LinkedFor("oot-j", "oot-u"), "runtime/global_destructor_chain.c"),
             Object(NotLinked, "runtime/New.cpp", extra_cflags=["-Cpp_exceptions on"]),
             Object(NotLinked, "runtime/NMWException.cpp", extra_cflags=["-Cpp_exceptions on"]),
-            Object(LinkedFor("oot-j"), "runtime/ptmf.c"),
-            Object(LinkedFor("oot-j"), "runtime/runtime.c"),
+            Object(LinkedFor("oot-j", "oot-u"), "runtime/ptmf.c"),
+            Object(LinkedFor("oot-j", "oot-u"), "runtime/runtime.c"),
             Object(LinkedFor("oot-j", "oot-u"), "runtime/__init_cpp_exceptions.cpp"),
-            Object(LinkedFor("oot-j"), "runtime/Gecko_setjmp.c"),
+            Object(LinkedFor("oot-j", "oot-u"), "runtime/Gecko_setjmp.c"),
             Object(NotLinked, "runtime/Gecko_ExceptionPPC.cpp", extra_cflags=["-Cpp_exceptions on"]),
-            Object(LinkedFor("oot-j"), "runtime/GCN_mem_alloc.c"),
+            Object(LinkedFor("oot-j", "oot-u"), "runtime/GCN_mem_alloc.c"),
         ]
     ),
     LibC(

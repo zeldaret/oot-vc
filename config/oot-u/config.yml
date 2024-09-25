@@ -72,6 +72,16 @@ block_relocations:
 - source: 0x80008A8C
 - source: 0x80008D94
 - source: 0x80008D9C
+- source: 0x80008DCC
+- source: 0x80008DD4
+- source: 0x80008DFC
+- source: 0x80008E04
+- source: 0x80008E24
+- source: 0x80008E2C
+- source: 0x80008F18
+- source: 0x80008F20
+- source: 0x80008F48
+- source: 0x80008F50
 - source: 0x80009008
 - source: 0x80009018
 - source: 0x80009038
