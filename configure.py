@@ -584,17 +584,17 @@ config.libs = [
     RuntimeLib(
         "runtime",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "runtime/__mem.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "runtime/__va_arg.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "runtime/global_destructor_chain.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/__mem.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/__va_arg.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/global_destructor_chain.c"),
             Object(NotLinked, "runtime/New.cpp", extra_cflags=["-Cpp_exceptions on"]),
             Object(NotLinked, "runtime/NMWException.cpp", extra_cflags=["-Cpp_exceptions on"]),
-            Object(LinkedFor("oot-j", "oot-u"), "runtime/ptmf.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "runtime/runtime.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "runtime/__init_cpp_exceptions.cpp"),
-            Object(LinkedFor("oot-j", "oot-u"), "runtime/Gecko_setjmp.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/ptmf.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/runtime.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/__init_cpp_exceptions.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/Gecko_setjmp.c"),
             Object(NotLinked, "runtime/Gecko_ExceptionPPC.cpp", extra_cflags=["-Cpp_exceptions on"]),
-            Object(LinkedFor("oot-j", "oot-u"), "runtime/GCN_mem_alloc.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/GCN_mem_alloc.c"),
         ]
     ),
     LibC(
