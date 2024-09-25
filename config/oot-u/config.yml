@@ -9,16 +9,16 @@ splits: config/oot-u/splits.txt
 # See config.example.yml for a list.
 mw_comment_version: 14
 
-# extract:
-# # DSPCode.c
-# - symbol: axDspSlave
-#   header: axDspSlave.inc
-# # AXComp.c
-# - symbol: __AXCompressorTable
-#   header: __AXCompressorTable.inc
+extract:
+# DSPCode.c
+- symbol: axDspSlave
+  header: axDspSlave.inc
+# AXComp.c
+- symbol: __AXCompressorTable
+  header: __AXCompressorTable.inc
 
 force_active:
-- lbl_801E3480
+- lbl_801E3380
 - DemoAllocator2
 
 block_relocations:
