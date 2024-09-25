@@ -104,6 +104,7 @@ config = ProjectConfig()
 ALL_VERSIONS = [
     "oot-j",
     "oot-u",
+    "oot-e",
 ]
 config.versions = [
     version

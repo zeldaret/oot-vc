@@ -8,6 +8,7 @@ extern "C" {
 // The VERSION macro will be set to one of these version numbers.
 #define OOT_J 1
 #define OOT_U 2
+#define OOT_E 3
 
 #define ALIGN_PREV(X, N) ((X) & ~((N) - 1))
 #define ALIGN_NEXT(X, N) ALIGN_PREV(((X) + (N) - 1), N)
