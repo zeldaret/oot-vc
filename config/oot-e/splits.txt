@@ -102,12 +102,12 @@ emulator/flash.c:
 
 emulator/_frameGCNcc.c:
 	.text       start:0x800454EC end:0x80045DCC
-	.data       start:0x80172370 end:0x80172560
+	.data       start:0x80172370 end:0x80172564
 	.sdata      start:0x8025CA20 end:0x8025CA90
 
 emulator/_buildtev.c:
 	.text       start:0x80045DCC end:0x80049370
-	.data       start:0x80172560 end:0x801726E0
+	.data       start:0x80172564 end:0x801726E0
 	.bss        start:0x801A13D8 end:0x801A1720
 	.sdata      start:0x8025CA90 end:0x8025CA98
 	.sdata2     start:0x8025E000 end:0x8025E010
@@ -286,14 +286,14 @@ revolution/os/OSError.c:
 
 revolution/os/OSExec.c:
 	.text       start:0x8008C9F8 end:0x8008DD24
-	.bss        start:0x801CC47C end:0x801D817C
+	.bss        start:0x801CC480 end:0x801D8180
 	.sdata      start:0x8025CBD8 end:0x8025CBE8
 	.sbss       start:0x8025D7F4 end:0x8025D7FC
 	.sdata2     start:0x8025E55C end:0x8025E560
 
 revolution/os/OSFatal.c:
 	.text       start:0x8008DD24 end:0x8008E948
-	.bss        start:0x801DCBDC end:0x801DCEB0
+	.bss        start:0x801DCBE0 end:0x801DCEB4
 	.sdata      start:0x8025CBE8 end:0x8025CBF0
 	.sdata2     start:0x8025E560 end:0x8025E5A0
 
@@ -333,7 +333,7 @@ revolution/os/OSReset.c:
 
 revolution/os/OSRtc.c:
 	.text       start:0x80091698 end:0x80092124
-	.bss        start:0x801DCEB0 end:0x801DCF18
+	.bss        start:0x801DCEC0 end:0x801DCF18
 
 revolution/os/OSSync.c:
 	.text       start:0x80092124 end:0x800921A4
@@ -622,7 +622,7 @@ revolution/axfx/AXFXHooks.c:
 
 revolution/mem/mem_heapCommon.c:
 	.text       start:0x800B04A4 end:0x800B0910
-	.bss        start:0x801FE220 end:0x801FE244
+	.bss        start:0x801FE220 end:0x801FE248
 	.sbss       start:0x8025DC68 end:0x8025DC70
 
 revolution/mem/mem_expHeap.c:
