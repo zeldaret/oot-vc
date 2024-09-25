@@ -61,6 +61,7 @@ MACROS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"\bNAND_BANNER_ICON_MAX_FRAME\b"), "8"),
     (re.compile(r"\bPAD_MAX_CONTROLLERS\b"), "4"),
     (re.compile(r"\bENCODING_NAME_LENGTH\b"), "18"),
+    (re.compile(r"\bGX_DEFINE_GX_READ_COUNTER\b"), ""),
     # TODO: better fix for SystemRomType
     (re.compile(r"'NTEJ'"), "0x4E54454A"),
     (re.compile(r"'NTEA'"), "0x4E544541"),

@@ -10,14 +10,16 @@
 #include "emulator/xlHeap.h"
 #include "emulator/xlObject.h"
 #include "emulator/xlPostRVL.h"
+#include "emulator/xlText.h"
 #include "macros.h"
 #include "math.h"
 #include "mem_funcs.h"
 #include "revolution/demo.h"
 #include "revolution/gx.h"
+#include "revolution/mtx.h"
+#include "revolution/vi.h"
 
-//! TODO: document
-extern bool lbl_8025D098;
+void CopyAndConvertCFB(u16* srcP);
 
 static bool frameDrawTriangle_C0T0(Frame* pFrame, Primitive* pPrimitive);
 static bool frameDrawTriangle_C1T0(Frame* pFrame, Primitive* pPrimitive);
@@ -40,7 +42,7 @@ static bool frameDrawTriangle_Setup(Frame* pFrame, Primitive* pPrimitive);
 static bool frameDrawRectTexture_Setup(Frame* pFrame, Rectangle* pRectangle);
 static inline void CopyCFB(u16* srcP);
 static bool packTakeBlocks(s32* piPack, u32* anPack, s32 nPackCount, s32 nBlockCount);
-static bool packFreeBlocks(s32* piPack, u32* anPack, s32 nPackCount);
+static inline bool packFreeBlocks(s32* piPack, u32* anPack, s32 nPackCount);
 static inline bool frameTransposeMatrix(Mtx44 matrixTarget, Mtx44 matrixSource);
 static bool frameLoadTile(Frame* pFrame, FrameTexture** ppTexture, s32 iTileCode);
 static bool frameUpdateCache(Frame* pFrame);
@@ -55,15 +57,13 @@ _XL_OBJECTTYPE gClassFrame = {
     (EventFunc)frameEvent,
 };
 
+// .sdata
 static char lbl_8025C820[] = ".";
 static u8 cAlpha = 0x0F;
-
-static u8 sRemapI[] = {
-    0, 2, 4, 6, 8, 10, 12, 15,
-};
-
+static u8 sRemapI[] = {0, 2, 4, 6, 8, 10, 12, 15};
 static char lbl_8025C830[] = ".T64";
 
+// .data
 u32 ganNameTexMtx[] = {
     0x1E, 0x21, 0x24, 0x27, 0x2A, 0x2D, 0x30, 0x33,
 };
@@ -99,6 +99,7 @@ s32 GBIcode[] = {
     0x0A000000,
 };
 
+// fn_8004B940
 #ifndef NON_MATCHING
 extern void* lbl_8004BB44;
 extern void* lbl_8004B994;
@@ -227,60 +228,30 @@ s32 anRenderModeDatabaseCycle1[] = {
     0x00000000,
 };
 
-#ifndef NON_MATCHING
-extern void* lbl_800538F0;
-extern void* lbl_80053900;
-extern void* lbl_80053934;
-extern void* lbl_80053944;
-extern void* lbl_80053954;
-extern void* lbl_80053990;
-extern void* lbl_800539A0;
-
-void* jumptable_80172FA0[10] = {
-    &lbl_800538F0, &lbl_80053900, &lbl_80053934, &lbl_80053944, &lbl_80053954,
-    &lbl_80053990, &lbl_800539A0, &lbl_800539A0, &lbl_800539A0, &lbl_800539A0,
-};
-#else
-void* jumptable_80172FA0[10] = {0};
-#endif
-
-#ifndef NON_MATCHING
-extern void* lbl_80055D08;
-extern void* lbl_80055D20;
-extern void* lbl_80055D38;
-extern void* lbl_80055CD8;
-extern void* lbl_80055CF4;
-
-void* jumptable_80172FC8[10] = {
-    &lbl_80055CD8, &lbl_80055CF4, &lbl_80055CF4, &lbl_80055D08, &lbl_80055D08,
-    &lbl_80055D08, &lbl_80055D20, &lbl_80055D38, &lbl_80055CD8, &lbl_80055CF4,
-};
-#else
-void* jumptable_80172FC8[10] = {0};
-#endif
-
+// .sbss
 static bool gbFrameValid;
 static bool gbFrameBegin;
-static bool snScissorChanged;
+static volatile bool sCopyFrameSyncReceived;
 static u32 snScissorXOrig;
 static u32 snScissorYOrig;
 static u32 snScissorWidth;
 static u32 snScissorHeight;
-static volatile bool sCopyFrameSyncReceived;
-static u8 sSpecialZeldaHackON;
+bool lbl_8025D098;
+s32 nCopyFrame;
+s32 gnCountMapHack;
 static u32 sDestinationBuffer;
 static u32 sSrcBuffer;
-static u32 sConstantBufAddr[6] ATTRIBUTE_ALIGN(32);
-static u32 sNumAddr;
-static u32 gHackCreditsColor;
-
-s32 nCopyFrame;
 s32 nLastFrame;
+static u32 sNumAddr;
 bool bSkip;
 s32 nCounter;
-s32 gnCountMapHack;
+static u8 sSpecialZeldaHackON;
+static u32 gHackCreditsColor;
 bool gNoSwapBuffer;
+static bool snScissorChanged;
 
+// .bss
+static u32 sConstantBufAddr[6] ATTRIBUTE_ALIGN(32);
 static u16 sTempZBuf[N64_FRAME_WIDTH * N64_FRAME_HEIGHT / 16][4][4] ATTRIBUTE_ALIGN(32);
 static GXTexObj sFrameObj1;
 static GXTexObj sFrameObj2;
@@ -296,6 +267,7 @@ static GXTexObj frameObj_1663;
 static GXTexObj frameObj_1673;
 static u16 tempLine[ZELDA_PAUSE_EQUIP_PLAYER_WIDTH / 4][4][4];
 
+// .sdata2
 const f32 D_80135E00 = 0.0f;
 const f32 D_80135E04 = 0.25f;
 const f32 D_80135E08 = 2.0f;
@@ -421,224 +393,593 @@ static inline bool frameGetMatrixHint(Frame* pFrame, u32 nAddress, s32* piHint) 
     return false;
 }
 
-// #ifndef NON_MATCHING
-#ifdef NON_MATCHING
-static bool frameDrawSetupFog_Zelda1(Frame* pFrame);
-#pragma GLOBAL_ASM("asm/non_matchings/frame/frameDrawSetupFog_Zelda1.s")
-#else
-static bool frameDrawSetupFog_Zelda1(Frame* pFrame) {
-    GXFogType nFogType;
-    f32 rNear;
-    f32 rFar;
-    u32 nMode;
-    u32 iHint;
-    f32 rFogNear;
-    f32 rFogFar;
-    f32 rFogMin;
-    f32 rFogMax;
-    f32 rMultiplier;
-    f32 rOffset;
-    f32 rMinimum;
-    f32 rMaximum;
-    s32 pad[4];
+static bool frameConvertYUVtoRGB(u32* YUV, u32* RGB) {
+    s32 Yl;
+    s32 R;
+    s32 G;
+    s32 B;
 
-    nMode = pFrame->aMode[0];
-    iHint = pFrame->iHintProjection;
-    rMultiplier = (s16)(nMode >> 16);
-    rOffset = rMinimum = (s16)(nMode & 0xFFFF);
+    Yl = YUV[0] - 16;
+    B = (s32)((YUV[1] - 128) * 20830 + Yl * 12014) >> 16;
+    G = (s32)(Yl * 11079 + ((YUV[2] - 128) * -6480 - B * 12729)) >> 16;
+    R = (s32)(Yl * 31026 - B * 24987 - G * 128660) >> 16;
 
-    if (iHint != -1) {
-        rFar = pFrame->aMatrixHint[pFrame->iHintProjection].rClipFar;
-        rNear = 0.1f * pFrame->aMatrixHint[pFrame->iHintProjection].rClipNear;
-    } else {
-        rFar = 32000.0f;
-        rNear = 1.0f;
+    if (R > 31) {
+        R = 31;
+    } else if (R < 0) {
+        R = 0;
+    }
+    if (G > 31) {
+        G = 31;
+    } else if (G < 0) {
+        G = 0;
+    }
+    if (B > 31) {
+        B = 31;
+    } else if (B < 0) {
+        B = 0;
     }
 
-    if (rMultiplier == 0.0f) {
-        GXSetFog(GX_FOG_NONE, pFrame->aColor[0], 0.0f, 0.0f, 0.0f, 1000.0f);
-    } else {
-        if (rOffset == rMultiplier) {
-            nFogType = GX_FOG_LIN;
-            rFogNear = 500.0f;
-            rFogFar = 1000.0f;
-            rFogMin = rFogNear * (1.0f - (rOffset / rMultiplier));
-            rFogMax = (128000.0f / rMultiplier) + rFogMin;
-        } else if (rOffset == -25344.0f && rMultiplier == 25600.0f && rFar == 2200.0f) {
-            f32 dplane = rFar - rNear;
+    RGB[0] = R;
+    RGB[1] = G;
+    RGB[2] = B;
+    return true;
+}
 
-            nFogType = GX_FOG_EXP;
-            rFogNear = rNear;
-            rFogFar = rFar;
-            rFogMin = 0.575f * dplane + rNear;
-            rFogMax = 0.75f * dplane + rNear;
-        } else if (rOffset == -21077.0f && rMultiplier == 21333.0f && rFar == 12800.0f) {
-            f32 dplane = rFar - rNear;
+static bool packTakeBlocks(s32* piPack, u32* anPack, s32 nPackCount, s32 nBlockCount) {
+    s32 nOffset;
+    s32 nCount;
+    s32 iPack;
+    u32 nPack;
+    u32 nMask;
+    u32 nMask0;
 
-            nFogType = GX_FOG_EXP;
-            rFogNear = rNear;
-            rFogFar = rFar;
-            rFogMin = 0.1f * dplane + rNear;
-            rFogMax = dplane + rNear;
-        } else if (gpSystem->eTypeROM == NZSJ && rOffset == -90.0f && rMultiplier == 258.0f && rFar == 12800.0f) {
-            f32 dplane = rFar - rNear;
+    if (nBlockCount >= 32 || nBlockCount < 0) {
+        return false;
+    }
 
-            nFogType = GX_FOG_EXP;
-            rFogNear = rNear;
-            rFogFar = rFar;
-            rFogMin = 0.45f * dplane + rNear;
-            rFogMax = dplane + rNear;
-        } else if (gpSystem->eTypeROM == NZSJ && rOffset == -667.0f && rMultiplier == 688.0f && rFar == 12800.0f) {
-            f32 dplane = rFar - rNear;
-
-            nFogType = GX_FOG_EXP;
-            rFogNear = rNear;
-            rFogFar = rFar;
-            rFogMin = 0.45f * dplane + rNear;
-            rFogMax = dplane + rNear;
-        } else {
-            f32 dplane = rFar - rNear;
-            f32 rFarScale;
-            f32 rNearScale;
-
-            rMultiplier = 128000.0f / rMultiplier;
-            rMultiplier = rOffset * rMultiplier;
-            rFogFar = 1.0f / 256.0f;
-            rFogNear = 500.0f - rMultiplier * rFogFar;
-
-            if (rFogNear <= 860.0f) {
-                rMinimum = 0.0f;
-                rMaximum = 0.15f;
-            } else {
-                rMinimum = (rFogNear - 860.0f) / 140.0f;
-                rMaximum = 0.72f * rMinimum * rMinimum * rMinimum * rMinimum + 0.28f;
-                rMinimum = 0.26f * rMinimum * rMinimum * rMinimum * rMinimum;
-            }
-
-            rFarScale = rFar / 12800.0f;
-            rFarScale = 1.0f - rFarScale;
-            rFarScale = rFarScale * rFarScale;
-            rFarScale = rFarScale * rFarScale;
-            rFarScale = rFarScale * rFarScale;
-
-            rNearScale = rNear * rNear;
-            rNearScale *= 0.1f * rFarScale;
-
-            rFarScale *= 8.44f;
-            rNearScale *= 8.44; // bug? should be 8.44f
-
-            rFarScale += 1.0f;
-            rNearScale += 1.0f;
-
-            rMaximum *= rFarScale;
-            if (rMaximum > 1.0f) {
-                rMaximum = 1.0f;
-            }
-
-            rMinimum *= rNearScale;
-            if (rMinimum > 1.0f) {
-                rMinimum = 1.0f;
-            }
-
-            if (rMinimum > rMaximum) {
-                rMinimum = rMaximum;
-            }
-
-            nFogType = GX_FOG_EXP;
-            rFogNear = rNear;
-            rFogFar = rFar;
-            rFogMin = rMinimum * dplane + rNear;
-            rFogMax = rMaximum * dplane + rNear;
+    nCount = 33 - nBlockCount;
+    for (iPack = 0; iPack < nPackCount; iPack++) {
+        nPack = anPack[iPack];
+        if (nPack != -1) {
+            nMask = (1 << nBlockCount) - 1;
+            nOffset = nCount;
+            do {
+                if ((nPack & nMask) == 0) {
+                    anPack[iPack] |= nMask;
+                    *piPack = (nBlockCount << 16) | ((iPack << 5) + (nCount - nOffset));
+                    return true;
+                }
+                nOffset -= 1;
+                nMask <<= 1;
+            } while (nOffset != 0);
         }
+    }
 
-        nMode = pFrame->aMode[4];
-        if (((nMode >> 26) & 3) == 1 || (nMode >> 30) == 3 || ((nMode >> 22) & 3) == 3) {
-            GXSetFog(nFogType, pFrame->aColor[0], rFogMin, rFogMax, rFogNear, rFogFar);
-        } else {
-            GXSetFog(GX_FOG_NONE, pFrame->aColor[0], 0.0f, 0.0f, 0.0f, 1000.0f);
+    *piPack = -1;
+    return false;
+}
+
+static inline bool packFreeBlocks(s32* piPack, u32* anPack, s32 nPackCount) {
+    s32 iPack;
+    u32 nMask;
+
+    s32 temp_r6;
+
+    iPack = *piPack;
+
+    if (iPack == -1) {
+        return true;
+    }
+
+    nMask = ((1 << (iPack >> 16)) - 1) << (iPack & 0x1F);
+    temp_r6 = (iPack & 0xFFFF) >> 5;
+
+    if (nMask == (nMask & anPack[temp_r6])) {
+        anPack[temp_r6] &= ~nMask;
+        *piPack = -1;
+        return true;
+    }
+
+    return false;
+}
+
+static bool frameMakeTexture(Frame* pFrame, FrameTexture** ppTexture) {
+    u32 nMask;
+    s32 iTexture;
+    s32 iTextureUsed;
+
+    iTextureUsed = 0;
+    while (iTextureUsed < ARRAY_COUNTU(pFrame->anTextureUsed) && (nMask = pFrame->anTextureUsed[iTextureUsed]) == -1) {
+        iTextureUsed++;
+    }
+
+    if (iTextureUsed == ARRAY_COUNTU(pFrame->anTextureUsed)) {
+        return false;
+    }
+
+    iTexture = 0;
+    while (nMask & 1) {
+        iTexture++;
+        nMask >>= 1;
+    }
+
+    pFrame->anTextureUsed[iTextureUsed] |= (1 << iTexture);
+    *ppTexture = &pFrame->aTexture[(iTextureUsed << 5) + iTexture];
+    (*ppTexture)->iPackPixel = -1;
+    (*ppTexture)->iPackColor = -1;
+    (*ppTexture)->pTextureNext = NULL;
+
+    if (++pFrame->nBlocksTexture > pFrame->nBlocksMaxTexture) {
+        pFrame->nBlocksMaxTexture = pFrame->nBlocksTexture;
+    }
+
+    return true;
+}
+
+static inline bool frameFreeTLUT(Frame* pFrame, FrameTexture* pTexture) {
+    if (!packFreeBlocks(&pTexture->iPackColor, pFrame->anPackColor, ARRAY_COUNT(pFrame->anPackColor))) {
+        return false;
+    }
+    return true;
+}
+
+static inline bool frameFreePixels(Frame* pFrame, FrameTexture* pTexture) {
+    if (!frameFreeTLUT(pFrame, pTexture)) {
+        return false;
+    }
+    if (!packFreeBlocks(&pTexture->iPackPixel, pFrame->anPackPixel, ARRAY_COUNT(pFrame->anPackPixel))) {
+        return false;
+    }
+    return true;
+}
+
+static inline bool frameFreeTexture(Frame* pFrame, FrameTexture* pTexture) {
+    s32 iTexture = (u8*)pTexture - (u8*)&pFrame->aTexture[0];
+
+    if (!frameFreePixels(pFrame, pTexture)) {
+        return false;
+    }
+
+    iTexture /= sizeof(FrameTexture);
+    pFrame->anTextureUsed[iTexture >> 5] &= ~(1 << (iTexture & 0x1F));
+    pFrame->nBlocksTexture--;
+    return true;
+}
+
+// frameSetupCache
+
+static inline void frameResetCache_UnknownInline(Frame* pFrame) {
+    s32 iTexture;
+
+    for (iTexture = 0; iTexture < ARRAY_COUNT(pFrame->anPackPixel); iTexture++) {
+        pFrame->anPackPixel[iTexture] = 0;
+    }
+
+    for (iTexture = 0; iTexture < ARRAY_COUNT(pFrame->anPackColor); iTexture++) {
+        pFrame->anPackColor[iTexture] = 0;
+    }
+}
+
+static bool frameResetCache(void) {
+    Frame* pFrame = SYSTEM_FRAME(gpSystem);
+    s32 iTexture;
+
+    for (iTexture = 0; iTexture < ARRAY_COUNT(pFrame->apTextureCached); iTexture++) {
+        pFrame->apTextureCached[iTexture] = 0;
+    }
+
+    for (iTexture = 0; iTexture < ARRAY_COUNTU(pFrame->anTextureUsed); iTexture++) {
+        pFrame->anTextureUsed[iTexture] = 0;
+    }
+
+    frameResetCache_UnknownInline(pFrame);
+
+    xlHeapFill32((void**)&pFrame->aTexture, sizeof(pFrame->aTexture), 0);
+
+    (void)0;
+    (void)0;
+    return true;
+}
+
+static bool frameSetupCache(Frame* pFrame) {
+    s32 iTexture;
+
+    if (!xlHeapTake(&pFrame->aPixelData, 0x30000000 | 0x00300000)) {
+        return false;
+    }
+
+    if (!xlHeapTake(&pFrame->aColorData, 0x30000000 | (N64_FRAME_WIDTH * 1024))) {
+        return false;
+    }
+
+    return true;
+}
+
+static bool frameUpdateCache(Frame* pFrame) {
+    // s32 nCount;
+    // s32 nCountFree;
+    u32 nMask;
+    s32 nFrameCount;
+    s32 nFrameDelta;
+    s32 iTexture;
+    s32 iTextureUsed;
+    s32 iTextureCached;
+    FrameTexture* pTexture;
+    FrameTexture* pTextureCached;
+    FrameTexture* pTextureLast;
+
+    nFrameCount = pFrame->nCountFrames;
+    for (iTextureUsed = 0; iTextureUsed < ARRAY_COUNTU(pFrame->anTextureUsed); iTextureUsed++) {
+        if ((nMask = pFrame->anTextureUsed[iTextureUsed]) != 0) {
+            for (iTexture = 0; nMask != 0; iTexture++, nMask >>= 1) {
+                if (nMask & 1) {
+                    pTexture = &pFrame->aTexture[(iTextureUsed << 5) + iTexture];
+                    nFrameDelta = pTexture->nFrameLast - nFrameCount;
+                    if (nFrameDelta < 0) {
+                        nFrameDelta = -nFrameDelta;
+                    }
+                    if (nFrameDelta > 1) {
+                        pTextureLast = NULL;
+                        iTextureCached = pTexture->nAddress >> 11;
+                        pTextureCached = pFrame->apTextureCached[iTextureCached];
+
+                        while (pTextureCached != NULL && pTextureCached != pTexture) {
+                            pTextureLast = pTextureCached;
+                            pTextureCached = pTextureCached->pTextureNext;
+                        }
+
+                        if (pTextureLast == NULL) {
+                            pFrame->apTextureCached[iTextureCached] = pTextureCached->pTextureNext;
+                        } else {
+                            pTextureLast->pTextureNext = pTextureCached->pTextureNext;
+                        }
+                        if (!frameFreeTexture(pFrame, pTexture)) {
+                            return false;
+                        }
+                    }
+                }
+            }
         }
     }
 
     return true;
 }
-#endif
 
-// Matches but data doesn't
-// #ifndef NON_MATCHING
-#ifdef NON_MATCHING
-static bool frameDrawSetupFog_Default(Frame* pFrame);
-#pragma GLOBAL_ASM("asm/non_matchings/frame/frameDrawSetupFog_Default.s")
-#else
-static s32 frameDrawSetupFog_Default(Frame* pFrame) {
-    s32 iHint;
-    f32 rNear;
-    f32 rFar;
-    f32 rFOVY;
-    Mtx44 matrixProjection;
-    GXFogAdjTable fogTable;
-    f32 rMax;
-    f32 rMin;
-    f32 rIntpV;
-    f32 rMinimum;
-    f32 rMultiplier;
-    f32 rOffset;
+static bool frameLoadTile(Frame* pFrame, FrameTexture** ppTexture, s32 iTileCode) {
+    bool bFlag;
+    Tile* pTile;
+    FrameTexture* pTexture;
+    FrameTexture* pTextureLast;
+    u32 nData0;
+    u32 nData1;
+    u32 nData2;
+    u32 nData3;
+    s32 iTexture;
+    s32 nShift;
     s32 pad;
 
-    rMultiplier = (s16)(pFrame->aMode[0] >> 16);
-    rOffset = (s16)(pFrame->aMode[0] & 0xFFFF);
-    iHint = pFrame->iHintProjection;
-
-    if (iHint != -1) {
-        rFar = pFrame->aMatrixHint[pFrame->iHintProjection].rClipFar;
-        rNear = pFrame->aMatrixHint[pFrame->iHintProjection].rClipNear;
-        rFOVY = pFrame->aMatrixHint[pFrame->iHintProjection].rFieldOfViewY;
-    } else {
-        rFar = 32000.0f;
-        rNear = 1.0f;
-        rFOVY = 30.0f;
-    }
-    if (rMultiplier == 0.0f) {
-        GXSetFog(GX_FOG_NONE, pFrame->aColor[0], 0.0f, 0.0f, 0.0f, 1000.0f);
-    } else {
-        rMinimum = 500.0f * (1.0f - rOffset / rMultiplier);
-        C_MTXPerspective(matrixProjection, 30.0f, 4.0f / 3.0f, 0.1f * rNear, rFar);
-        GXInitFogAdjTable(&fogTable, GC_FRAME_WIDTH, matrixProjection);
-        GXSetFogRangeAdj(GX_TRUE, pFrame->viewport.rX + pFrame->viewport.rSizeX / 2.0f, &fogTable);
-        if (rMinimum > 970.0f) {
-            if (rFOVY > 59.0f || rMinimum > 990.0f) {
-                rMin = 0.21f * (rFar - 0.35f * rNear);
-                rMin = MAX(rMin, 0.35f * rNear);
-                if (rFOVY < 59.0f && rFar >= 12800.0f) {
-                    rMax = 0.6f * rFar;
-                } else {
-                    rMax = 0.7f * rFar;
-                }
-            } else if (rFOVY > 44.0f) {
-                rMin = 0.13f * (rFar - 0.35f * rNear);
-                rMin = MAX(rMin, 0.35f * rNear);
-                rIntpV = MAX(rFOVY - 45.0f, 0.0f) / 15.0f;
-                rMax = rFar * (0.6f * (1.0f - rIntpV) + 0.7f * rIntpV);
-            } else {
-                rMin = 0.1f * (rFar - 0.35f * rNear);
-                rMin = MAX(rMin, 0.35f * rNear);
-                rMax = 0.37f * rFar;
-            }
-            GXSetFog(GX_FOG_LIN, pFrame->aColor[0], rMin, rMax, 0.35f * rNear, rFar);
-        } else if (rMinimum > 900.0f) {
-            GXSetFog(GX_FOG_LIN, pFrame->aColor[0], 350.0f, 500.0f, 10.0f, 500.0f);
+    pTile = &pFrame->aTile[iTileCode & 0xF];
+    if (pTile->nX0 == 0 && pTile->nY0 == 0 && pTile->nX1 == 0 && pTile->nY1 == 0) {
+        bFlag = true;
+        pTile->nX0 = pFrame->aTile[pFrame->iTileLoad].nX0;
+        pTile->nY0 = pFrame->aTile[pFrame->iTileLoad].nY0;
+        pTile->nX1 = pFrame->aTile[pFrame->iTileLoad].nX1;
+        pTile->nY1 = pFrame->aTile[pFrame->iTileLoad].nY1;
+        nShift = pFrame->aTile[pFrame->iTileLoad].nSize - pTile->nSize;
+        if (nShift < 0) {
+            nShift = -nShift;
+            pTile->nX0 >>= nShift;
+            pTile->nX1 >>= nShift;
         } else {
-            GXSetFog(GX_FOG_LIN, pFrame->aColor[0], 10.0f, 200.0f, 10.0f, 200.0f);
+            pTile->nX0 <<= nShift;
+            pTile->nX1 <<= nShift;
         }
+        pTile->nModeS = 2;
+        pTile->nModeT = 2;
+    } else {
+        bFlag = false;
+    }
+
+    nData0 = (pTile->nX0 & 0xFFFF) | ((pTile->nX1 & 0xFFFF) << 16);
+    nData1 = (pTile->nY0 & 0xFFFF) | ((pTile->nY1 & 0xFFFF) << 16);
+    nData2 = ((pTile->nMaskS & 0xF) << 0) | ((pTile->nMaskT & 0xF) << 4) | ((pTile->nModeS & 7) << 8) |
+             ((pTile->nModeT & 7) << 11) | ((pTile->nShiftS & 0xF) << 14) | ((pTile->nShiftT & 0xF) << 18) |
+             ((pTile->nSize & 7) << 22) | ((pTile->nFormat & 7) << 25) | ((pTile->iTLUT & 0xF) << 28);
+    nData3 = (pTile->nTMEM & 0xFFFF) | ((pTile->nSizeX & 0xFFFF) << 16);
+    if (pFrame->nAddressLoad == -1) {
+        iTexture = 0;
+    } else {
+        iTexture = pFrame->nAddressLoad >> 11;
+    }
+
+    pTextureLast = pTexture = pFrame->apTextureCached[iTexture];
+    while (pTexture != NULL) {
+        if (pTexture->nData0 == nData0 && pTexture->nData1 == nData1 && pTexture->nData2 == nData2 &&
+            pTexture->nData3 == nData3 && pTexture->nCodePixel == pTile->nCodePixel &&
+            pTexture->nAddress == pFrame->nAddressLoad) {
+            break;
+        }
+        pTextureLast = pTexture;
+        pTexture = pTexture->pTextureNext;
+    }
+
+    if (pTexture == NULL) {
+        if (!frameMakeTexture(pFrame, &pTexture)) {
+            return false;
+        }
+
+        frameMakePixels(pFrame, pTexture, pTile, false);
+        pTexture->nData0 = nData0;
+        pTexture->nData1 = nData1;
+        pTexture->nData2 = nData2;
+        pTexture->nData3 = nData3;
+
+        if (pFrame->nAddressLoad == -1) {
+            pTexture->nAddress = 0;
+        } else {
+            pTexture->nAddress = pFrame->nAddressLoad;
+        }
+        if (pTextureLast == NULL) {
+            pFrame->apTextureCached[iTexture] = pTexture;
+        } else {
+            pTextureLast->pTextureNext = pTexture;
+        }
+    } else if (pTexture->iPackColor != -1 && pTexture->nCodeColor != pFrame->nTlutCode[pTile->iTLUT]) {
+        frameMakePixels(pFrame, pTexture, pTile, true);
+    }
+
+    pTexture->nFrameLast = pFrame->nCountFrames;
+    pTexture->nCodeColor = pFrame->nTlutCode[pTile->iTLUT];
+    pTexture->nCodePixel = pTile->nCodePixel;
+
+    if (!frameLoadTexture(pFrame, pTexture, iTileCode, pTile)) {
+        return false;
+    }
+
+    if (ppTexture != NULL) {
+        *ppTexture = pTexture;
+    }
+
+    if (bFlag) {
+        pTile->nX0 = pTile->nY0 = pTile->nX1 = pTile->nY1 = 0;
+    }
+    return true;
+}
+
+// fn_8004A020
+
+// fn_8004A314
+
+// fn_8004A69C
+
+// fn_8004A89C
+
+// matches but data doesn't
+//! TODO: make sFrameObj a static variable in the function
+// #ifndef NON_MATCHING
+#ifdef NON_MATCHING
+#pragma GLOBAL_ASM("asm/non_matchings/frame/ZeldaDrawFrame.s")
+#else
+void ZeldaDrawFrame(Frame* pFrame, u16* pData) {
+    Mtx matrix;
+    u32 pad[8];
+    GXColor color;
+
+    color.r = 255;
+    color.g = 255;
+    color.b = 255;
+    color.a = pFrame->cBlurAlpha;
+
+    frameDrawSetup2D(pFrame);
+    GXSetNumTevStages(1);
+    GXSetNumChans(0);
+    GXSetNumTexGens(1);
+    GXSetTevColor(GX_TEVREG0, color);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_C0, GX_CC_ZERO);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
+    GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
+    GXSetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
+    GXSetZCompLoc(GX_TRUE);
+    PSMTXIdentity(matrix);
+    GXLoadTexMtxImm(matrix, 30, GX_MTX2x4);
+    GXInitTexObj(&sFrameObj_1568, pData, N64_FRAME_WIDTH, N64_FRAME_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
+    GXInitTexObjLOD(&sFrameObj_1568, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    GXLoadTexObj(&sFrameObj_1568, GX_TEXMAP0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3f32(0.0f, 0.0f, 0.0f);
+    GXTexCoord2f32(0.0f, 0.0f);
+    GXPosition3f32(N64_FRAME_WIDTH, 0.0f, 0.0f);
+    GXTexCoord2f32(1.0f, 0.0f);
+    GXPosition3f32(N64_FRAME_WIDTH, N64_FRAME_HEIGHT, 0.0f);
+    GXTexCoord2f32(1.0f, 1.0f);
+    GXPosition3f32(0.0f, N64_FRAME_HEIGHT, 0.0f);
+    GXTexCoord2f32(0.0f, 1.0f);
+    GXEnd();
+
+    pFrame->nMode = 0;
+    pFrame->nModeVtx = -1;
+    frameDrawReset(pFrame, 0x47F2D);
+}
+#endif
+
+// matches but data doesn't
+//! TODO: make sFrameObj and cAlpha a static variable in the function
+// #ifndef NON_MATCHING
+#ifdef NON_MATCHING
+void ZeldaGreyScaleConvert(Frame* pFrame);
+#pragma GLOBAL_ASM("asm/non_matchings/frame/ZeldaGreyScaleConvert.s")
+#else
+void ZeldaGreyScaleConvert(Frame* pFrame) {
+    Mtx matrix;
+    void* dataP;
+    s32 pad[9];
+    GXColor color;
+
+    dataP = DemoCurrentBuffer;
+    color.r = 192;
+    color.g = 161;
+    color.b = 85;
+    color.a = cAlpha;
+    GXSetTexCopySrc(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
+    GXSetTexCopyDst(GC_FRAME_WIDTH, GC_FRAME_HEIGHT, GX_TF_I8, GX_FALSE);
+    GXCopyTex(dataP, GX_FALSE);
+    GXPixModeSync();
+    frameDrawSetup2D(pFrame);
+
+    if (gHackCreditsColor) {
+        GXSetNumTevStages(1);
+        GXSetNumChans(0);
+        GXSetNumTexGens(1);
+        GXSetTevColor(GX_TEVREG0, color);
+        GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+        GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+        GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_C0, GX_CC_ZERO);
+        GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+        GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
+        if (cAlpha < 255) {
+            cAlpha += 20;
+        }
+    } else {
+        GXSetNumTevStages(1);
+        GXSetNumChans(0);
+        GXSetNumTexGens(1);
+        GXSetTevOp(GX_TEVSTAGE0, GX_REPLACE);
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+        GXSetBlendMode(GX_BM_NONE, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
+    }
+
+    GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
+    GXSetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
+    GXSetZCompLoc(GX_TRUE);
+    PSMTXIdentity(matrix);
+    GXLoadTexMtxImm(matrix, 30, GX_MTX2x4);
+    GXInitTexObj(&sFrameObj_1647, dataP, GC_FRAME_WIDTH, GC_FRAME_HEIGHT, GX_TF_I8, GX_CLAMP, GX_CLAMP, GX_FALSE);
+    GXInitTexObjLOD(&sFrameObj_1647, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    GXLoadTexObj(&sFrameObj_1647, GX_TEXMAP0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3f32(0.0f, 0.0f, 0.0f);
+    GXTexCoord2f32(0.0f, 0.0f);
+    GXPosition3f32(N64_FRAME_WIDTH, 0.0f, 0.0f);
+    GXTexCoord2f32(1.0f, 0.0f);
+    GXPosition3f32(N64_FRAME_WIDTH, N64_FRAME_HEIGHT, 0.0f);
+    GXTexCoord2f32(1.0f, 1.0f);
+    GXPosition3f32(0.0f, N64_FRAME_HEIGHT, 0.0f);
+    GXTexCoord2f32(0.0f, 1.0f);
+    GXEnd();
+
+    pFrame->nMode = 0;
+    pFrame->nModeVtx = -1;
+    frameDrawReset(pFrame, 0x47F2D);
+}
+#endif
+
+// fn_8004B198
+
+//! TODO: make sCommandCodes a static variable in the function
+bool frameHackTIMG_Zelda(Frame* pFrame, u64** pnGBI, u32* pnCommandLo, u32* pnCommandHi) {
+    u32 i;
+
+    if ((*pnCommandLo == 0x0F000000) && (*pnCommandHi == 0xFD500000)) {
+        u32* tmp = (u32*)*pnGBI;
+        for (i = 0; i < ARRAY_COUNT(sCommandCodes_1679); i++) {
+            if (tmp[i] != sCommandCodes_1679[i]) {
+                break;
+            }
+        }
+
+        if (i == ARRAY_COUNT(sCommandCodes_1679)) {
+            ZeldaGreyScaleConvert(pFrame);
+            sSpecialZeldaHackON = 1;
+        }
+    }
+
+    if ((sSpecialZeldaHackON != 0) && ((*pnCommandLo & 0xFF000000) != 0x0F000000)) {
+        sSpecialZeldaHackON = 0;
+    }
+
+    if (sSrcBuffer == SEGMENT_ADDRESS(SYSTEM_RSP(gpSystem), *pnCommandLo)) {
+        *pnCommandLo = sDestinationBuffer;
+        *pnGBI += 8;
     }
 
     return true;
 }
-#endif
 
 static void frameDrawSyncCallback(u16 nToken) {
     if (nToken == FRAME_SYNC_TOKEN) {
         sCopyFrameSyncReceived = true;
     }
+}
+
+bool fn_8004BF58(Frame* arg0) {
+    GXColor color;
+
+    frameDrawSetup2D(arg0);
+    GXSetZMode(GX_DISABLE, GX_ALWAYS, GX_DISABLE);
+    GXSetZCompLoc(GX_TRUE);
+    GXSetColorUpdate(GX_ENABLE);
+    GXSetAlphaUpdate(GX_DISABLE);
+    GXSetNumTevStages(1);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    color.r = 0;
+    color.g = 0;
+    color.b = 0;
+    color.a = 255;
+    GXSetTevColor(GX_TEVREG0, color);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 0U, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 0U, GX_TEVPREV);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_C0);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_KONST);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR_NULL);
+    GXSetBlendMode(GX_BM_NONE, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_TEX_ST, GX_RGBA6, 0U);
+
+    GXBegin(GX_QUADS, GX_VTXFMT0, 0x10);
+    GXPosition3f32(0.0f, 0.0f, 0.0f);
+    GXPosition2f32(N64_FRAME_WIDTH, 0.0f);
+    GXPosition3f32(0.0f, N64_FRAME_WIDTH, 6.0f);
+    GXPosition2f32(0.0f, 0.0f);
+    GXPosition3f32(6.0f, 0.0f, 0.0f);
+    GXPosition2f32(N64_FRAME_HEIGHT - 6.0f, 0.0f);
+    GXPosition3f32(N64_FRAME_WIDTH, N64_FRAME_HEIGHT - 6.0f, 0.0f);
+    GXPosition2f32(N64_FRAME_WIDTH, N64_FRAME_HEIGHT);
+    GXPosition3f32(0.0f, 0.0f, N64_FRAME_HEIGHT);
+    GXPosition2f32(0.0f, 0.0f);
+    GXPosition3f32(0.0f, 0.0f, 6.0f);
+    GXPosition2f32(0.0f, 0.0f);
+    GXPosition3f32(6.0f, N64_FRAME_HEIGHT, 0.0f);
+    GXPosition2f32(0.0f, N64_FRAME_HEIGHT);
+    GXPosition3f32(0.0f, N64_FRAME_WIDTH - 6.0f, 0.0f);
+    GXPosition2f32(0.0f, N64_FRAME_WIDTH);
+    GXPosition3f32(0.0f, 0.0f, N64_FRAME_WIDTH);
+    GXPosition2f32(N64_FRAME_HEIGHT, 0.0f);
+    GXPosition3f32(N64_FRAME_WIDTH - 6.0f, N64_FRAME_HEIGHT, 0.0f);
+    GXEnd();
+
+    GXSetColorUpdate(GX_ENABLE);
+    GXSetAlphaUpdate(GX_ENABLE);
+    return true;
 }
 
 static void frameDrawDone(void) {
@@ -665,10 +1006,10 @@ static bool frameMakeTLUT(Frame* pFrame, FrameTexture* pTexture, s32 nCount, s32
     u16 nData16;
 
     if (bReload) {
-        if (pTexture->iPackColor == -1) {
-            return true;
-        }
-        anColor = (u16*)((u8*)pFrame->aColorData + ((pTexture->iPackColor & 0xFFFF) << 5));
+        // if (pTexture->iPackColor == -1) {
+        //     return true;
+        // }
+        // anColor = (u16*)((u8*)pFrame->aColorData + ((pTexture->iPackColor & 0xFFFF) << 5));
     } else {
         if (!packTakeBlocks(&pTexture->iPackColor, pFrame->anPackColor, ARRAY_COUNT(pFrame->anPackColor),
                             (nCount * sizeof(u16)) >> 5)) {
@@ -692,25 +1033,8 @@ static bool frameMakeTLUT(Frame* pFrame, FrameTexture* pTexture, s32 nCount, s32
     return true;
 }
 
-static inline bool frameFreeTLUT(Frame* pFrame, FrameTexture* pTexture) {
-    if (!packFreeBlocks(&pTexture->iPackColor, pFrame->anPackColor, ARRAY_COUNT(pFrame->anPackColor))) {
-        return false;
-    }
-    return true;
-}
-
 static bool frameMakePixels(Frame* pFrame, FrameTexture* pTexture, Tile* pTile, bool bReload);
 #pragma GLOBAL_ASM("asm/non_matchings/frame/frameMakePixels.s")
-
-static inline bool frameFreePixels(Frame* pFrame, FrameTexture* pTexture) {
-    if (!frameFreeTLUT(pFrame, pTexture)) {
-        return false;
-    }
-    if (!packFreeBlocks(&pTexture->iPackPixel, pFrame->anPackPixel, ARRAY_COUNT(pFrame->anPackPixel))) {
-        return false;
-    }
-    return true;
-}
 
 // Matches but data doesn't
 // #ifndef NON_MATCHING
@@ -1025,110 +1349,110 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
 }
 #endif
 
-// #ifndef NON_MATCHING
-#ifdef NON_MATCHING
-// matches but data doesn't
-#pragma GLOBAL_ASM("asm/non_matchings/frame/frameGetCombineColor.s")
-#else
-static bool frameGetCombineColor(Frame* pFrame, GXTevColorArg* pnColorTEV, s32 nColorN64) {
-    switch (nColorN64) {
-        case 0:
-            *pnColorTEV = GX_CC_TEXC;
-            break;
-        case 1:
-            *pnColorTEV = GX_CC_TEXC;
-            break;
-        case 2:
-            *pnColorTEV = GX_CC_TEXC;
-            break;
-        case 3:
-            *pnColorTEV = GX_CC_C0;
-            break;
-        case 4:
-            *pnColorTEV = GX_CC_RASC;
-            break;
-        case 5:
-            *pnColorTEV = GX_CC_C1;
-            break;
-        case 7:
-            *pnColorTEV = GX_CC_TEXA;
-            break;
-        case 8:
-            *pnColorTEV = GX_CC_TEXA;
-            break;
-        case 9:
-            *pnColorTEV = GX_CC_TEXA;
-            break;
-        case 10:
-            *pnColorTEV = GX_CC_A0;
-            break;
-        case 11:
-            *pnColorTEV = GX_CC_RASA;
-            break;
-        case 12:
-            *pnColorTEV = GX_CC_A1;
-            break;
-        case 13:
-            *pnColorTEV = GX_CC_TEXC;
-            break;
-        case 14:
-            *pnColorTEV = GX_CC_TEXC;
-            break;
-        case 15:
-            *pnColorTEV = GX_CC_C2;
-            break;
-        case 6:
-            *pnColorTEV = GX_CC_ONE;
-            break;
-        case 31:
-            *pnColorTEV = GX_CC_ZERO;
-            break;
-        default:
-            return false;
-    }
+// // #ifndef NON_MATCHING
+// #ifdef NON_MATCHING
+// // matches but data doesn't
+// #pragma GLOBAL_ASM("asm/non_matchings/frame/frameGetCombineColor.s")
+// #else
+// static bool frameGetCombineColor(Frame* pFrame, GXTevColorArg* pnColorTEV, s32 nColorN64) {
+//     switch (nColorN64) {
+//         case 0:
+//             *pnColorTEV = GX_CC_TEXC;
+//             break;
+//         case 1:
+//             *pnColorTEV = GX_CC_TEXC;
+//             break;
+//         case 2:
+//             *pnColorTEV = GX_CC_TEXC;
+//             break;
+//         case 3:
+//             *pnColorTEV = GX_CC_C0;
+//             break;
+//         case 4:
+//             *pnColorTEV = GX_CC_RASC;
+//             break;
+//         case 5:
+//             *pnColorTEV = GX_CC_C1;
+//             break;
+//         case 7:
+//             *pnColorTEV = GX_CC_TEXA;
+//             break;
+//         case 8:
+//             *pnColorTEV = GX_CC_TEXA;
+//             break;
+//         case 9:
+//             *pnColorTEV = GX_CC_TEXA;
+//             break;
+//         case 10:
+//             *pnColorTEV = GX_CC_A0;
+//             break;
+//         case 11:
+//             *pnColorTEV = GX_CC_RASA;
+//             break;
+//         case 12:
+//             *pnColorTEV = GX_CC_A1;
+//             break;
+//         case 13:
+//             *pnColorTEV = GX_CC_TEXC;
+//             break;
+//         case 14:
+//             *pnColorTEV = GX_CC_TEXC;
+//             break;
+//         case 15:
+//             *pnColorTEV = GX_CC_C2;
+//             break;
+//         case 6:
+//             *pnColorTEV = GX_CC_ONE;
+//             break;
+//         case 31:
+//             *pnColorTEV = GX_CC_ZERO;
+//             break;
+//         default:
+//             return false;
+//     }
 
-    return true;
-}
-#endif
+//     return true;
+// }
+// #endif
 
-// #ifndef NON_MATCHING
-#ifdef NON_MATCHING
-// matches but data doesn't
-#pragma GLOBAL_ASM("asm/non_matchings/frame/frameGetCombineAlpha.s")
-#else
-static bool frameGetCombineAlpha(Frame* pFrame, GXTevAlphaArg* pnAlphaTEV, s32 nAlphaN64) {
-    switch (nAlphaN64) {
-        case 0:
-            *pnAlphaTEV = GX_CA_TEXA;
-            break;
-        case 1:
-            *pnAlphaTEV = GX_CA_TEXA;
-            break;
-        case 2:
-            *pnAlphaTEV = GX_CA_TEXA;
-            break;
-        case 3:
-            *pnAlphaTEV = GX_CA_A0;
-            break;
-        case 4:
-            *pnAlphaTEV = GX_CA_RASA;
-            break;
-        case 5:
-            *pnAlphaTEV = GX_CA_A1;
-            break;
-        case 6:
-            *pnAlphaTEV = GX_CA_KONST;
-            break;
-        case 7:
-            *pnAlphaTEV = GX_CA_ZERO;
-            break;
-        default:
-            return false;
-    }
+// // #ifndef NON_MATCHING
+// #ifdef NON_MATCHING
+// // matches but data doesn't
+// #pragma GLOBAL_ASM("asm/non_matchings/frame/frameGetCombineAlpha.s")
+// #else
+// static bool frameGetCombineAlpha(Frame* pFrame, GXTevAlphaArg* pnAlphaTEV, s32 nAlphaN64) {
+//     switch (nAlphaN64) {
+//         case 0:
+//             *pnAlphaTEV = GX_CA_TEXA;
+//             break;
+//         case 1:
+//             *pnAlphaTEV = GX_CA_TEXA;
+//             break;
+//         case 2:
+//             *pnAlphaTEV = GX_CA_TEXA;
+//             break;
+//         case 3:
+//             *pnAlphaTEV = GX_CA_A0;
+//             break;
+//         case 4:
+//             *pnAlphaTEV = GX_CA_RASA;
+//             break;
+//         case 5:
+//             *pnAlphaTEV = GX_CA_A1;
+//             break;
+//         case 6:
+//             *pnAlphaTEV = GX_CA_KONST;
+//             break;
+//         case 7:
+//             *pnAlphaTEV = GX_CA_ZERO;
+//             break;
+//         default:
+//             return false;
+//     }
 
-    return true;
-}
-#endif
+//     return true;
+// }
+// #endif
 
 // Matches but data doesn't
 // #ifndef NON_MATCHING
@@ -2416,6 +2740,16 @@ bool frameBegin(Frame* pFrame, s32 nCountVertex) {
     return true;
 }
 
+static inline void CopyCFB(u16* srcP) {
+    GXSetTexCopySrc(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
+    GXSetTexCopyDst(N64_FRAME_WIDTH, N64_FRAME_HEIGHT, GX_TF_RGB565, GX_TRUE);
+    DCInvalidateRange(srcP, N64_FRAME_WIDTH * N64_FRAME_HEIGHT * sizeof(u16));
+    GXCopyTex(srcP, GX_FALSE);
+    sCopyFrameSyncReceived = false;
+    GXSetDrawSync(FRAME_SYNC_TOKEN);
+    while (!sCopyFrameSyncReceived) {}
+}
+
 bool frameEnd(Frame* pFrame) {
     Cpu* pCPU;
     s32 iHint;
@@ -2424,8 +2758,10 @@ bool frameEnd(Frame* pFrame) {
     pCPU = SYSTEM_CPU(gpSystem);
 
     if (gbFrameBegin) {
-        gbFrameBegin = true;
+        return true;
     }
+
+    gbFrameBegin = true;
 
     for (iHint = 0; iHint < pFrame->iHintMatrix; iHint++) {
         if (pFrame->aMatrixHint[iHint].nCount >= 0) {
@@ -2436,6 +2772,46 @@ bool frameEnd(Frame* pFrame) {
     pFrame->nCountFrames++;
     gbFrameValid = true;
 
+    if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP ||
+        gpSystem->eTypeROM == NFXJ || gpSystem->eTypeROM == NFXE || gpSystem->eTypeROM == NFXP ||
+        gpSystem->eTypeROM == NSMJ) {
+        if (gpSystem->eTypeROM == NFXJ || gpSystem->eTypeROM == NFXE || gpSystem->eTypeROM != NFXP) {
+            CopyAndConvertCFB(pFrame->aBuffer[FBT_COLOR_DRAW].pData);
+        }
+
+        if (gpSystem->eTypeROM == NFXJ || gpSystem->eTypeROM == NFXE || gpSystem->eTypeROM == NFXP) {
+            pData = pFrame->nTempBuffer;
+            CopyCFB(pData);
+        }
+    }
+
+    pFrame->bBlurOn = false;
+    pFrame->bHackPause = false;
+    pFrame->nHackCount = 0;
+
+    if (gpSystem->eTypeROM == NSMJ || gpSystem->eTypeROM == NSME) {
+        if (pFrame->cBlurAlpha > 0x3264) {
+            s32 i;
+
+            GXSetTexCopySrc(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
+            GXSetTexCopyDst(N64_FRAME_WIDTH, N64_FRAME_HEIGHT, GX_TF_Z16, 1);
+
+            for (i = 0; i < 0x49; i++) {
+                GXCopyTex(pFrame->aBuffer[FBT_DEPTH].pData, GX_FALSE);
+                GXPixModeSync();
+            }
+        }
+    } else if (gpSystem->eTypeROM == NSMP) {
+        if (pFrame->bUsingLens != 0) {
+            pFrame->bUsingLens++;
+
+            if (pFrame->bUsingLens > 0x1F4) {
+                pFrame->bUsingLens = 0;
+            }
+        }
+    } else {
+    }
+
     if (pFrame->aBuffer[FBT_DEPTH].nAddress != 0) {
         pData = &sTempZBuf;
 
@@ -2445,244 +2821,57 @@ bool frameEnd(Frame* pFrame) {
         DCInvalidateRange(pData, N64_FRAME_WIDTH * N64_FRAME_HEIGHT * sizeof(u16));
     }
 
-    if ((gpSystem->eTypeROM == NABJ || gpSystem->eTypeROM == NABE || gpSystem->eTypeROM == NABP) &&
-        pFrame->bGrabbedFrame) {
-        pData = pFrame->nTempBuffer;
-        CopyCFB(pData);
-        pFrame->bGrabbedFrame = false;
+    if (fn_8004A020(pFrame) == 0) {
+        return false;
     }
+
+    if (fn_8005F7E4(SYSTEM_HELP(gpSystem)) == 0) {
+        return false;
+    }
+
+    // if ((gpSystem->eTypeROM == NABJ || gpSystem->eTypeROM == NABE || gpSystem->eTypeROM == NABP) &&
+    //     pFrame->bGrabbedFrame) {
+    //     pData = pFrame->nTempBuffer;
+    //     CopyCFB(pData);
+    //     pFrame->bGrabbedFrame = false;
+    // }
 
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
     GXSetColorUpdate(GX_TRUE);
-    GXCopyDisp(DemoCurrentBuffer, GX_TRUE);
+    fn_8004BF58(pFrame);
+    GXCopyDisp(DemoCurrentBuffer, GX_FALSE);
     GXSetDrawDone();
     GXFlush();
+    VISetBlack(false);
 
-    if ((gpSystem->eTypeROM == NZSJ || gpSystem->eTypeROM == NZSE || gpSystem->eTypeROM == NZSP)) {
-        pFrame->nHackCount = 0;
-        pFrame->nFrameCounter++;
-        pFrame->bBlurredThisFrame = false;
-        pFrame->nFrameCIMGCalls = 0;
-        pFrame->bUsingLens = false;
-        pFrame->bModifyZBuffer = false;
-        pFrame->bOverrideDepth = false;
+    // if ((gpSystem->eTypeROM == NZSJ || gpSystem->eTypeROM == NZSE || gpSystem->eTypeROM == NZSP)) {
+    //     pFrame->nHackCount = 0;
+    //     pFrame->nFrameCounter++;
+    //     pFrame->bBlurredThisFrame = false;
+    //     pFrame->nFrameCIMGCalls = 0;
+    //     pFrame->bUsingLens = false;
+    //     pFrame->bModifyZBuffer = false;
+    //     pFrame->bOverrideDepth = false;
 
-        pFrame->nLastFrameZSets = pFrame->nZBufferSets;
-        pFrame->nZBufferSets = 0;
+    //     pFrame->nLastFrameZSets = pFrame->nZBufferSets;
+    //     pFrame->nZBufferSets = 0;
 
-        pFrame->bPauseBGDrawn = false;
-        GXSetZTexture(GX_ZT_DISABLE, GX_TF_Z24X8, 0);
+    //     pFrame->bPauseBGDrawn = false;
+    //     GXSetZTexture(GX_ZT_DISABLE, GX_TF_Z24X8, 0);
 
-        if ((pFrame->bShrinking & 0xF) == 0) {
-            pFrame->bShrinking &= ~0xFFFF;
-        }
-        pFrame->bShrinking &= ~0xFF;
-        pFrame->bSnapShot = false;
-    }
+    //     if ((pFrame->bShrinking & 0xF) == 0) {
+    //         pFrame->bShrinking &= ~0xFFFF;
+    //     }
+    //     pFrame->bShrinking &= ~0xFF;
+    //     pFrame->bSnapShot = false;
+    // }
 
-    if (gpSystem->eTypeROM == NN6J) {
-        pFrame->bBackBufferDrawn = false;
-    }
+    // if (gpSystem->eTypeROM == NN6J) {
+    //     pFrame->bBackBufferDrawn = false;
+    // }
 
     pCPU->gTree->kill_number = 0;
     return true;
-}
-
-bool _frameDrawRectangle(Frame* pFrame, u32 nColor, s32 nX, s32 nY, s32 nSizeX, s32 nSizeY) {
-    s32 iY;
-    s32 iX;
-    u32* pnPixel;
-    s32 nSizeTargetX = pFrame->anSizeX[FS_TARGET];
-
-    nX = (nX + 1) & ~1;
-    nSizeX = (nSizeX + 1) & ~1;
-    if (DemoCurrentBuffer == DemoFrameBuffer1) {
-        pnPixel = (u32*)((s16*)DemoFrameBuffer2 + (nY * nSizeTargetX) + nX);
-    } else {
-        pnPixel = (u32*)((s16*)DemoFrameBuffer1 + (nY * nSizeTargetX) + nX);
-    }
-
-    pnPixel = (u32*)((u8*)pnPixel + 0x40000000);
-
-    for (iY = 0; iY < nSizeY; iY++) {
-        for (iX = 0; iX < (nSizeX >> 1); iX++) {
-            pnPixel[iX] = nColor;
-        }
-        pnPixel += (nSizeTargetX >> 1);
-    }
-
-    return true;
-}
-
-// matches but data doesn't
-//! TODO: make sFrameObj a static variable in the function
-// #ifndef NON_MATCHING
-#ifdef NON_MATCHING
-#pragma GLOBAL_ASM("asm/non_matchings/frame/ZeldaDrawFrameNoBlend.s")
-#else
-void ZeldaDrawFrameNoBlend(Frame* pFrame, u16* pData) {
-    Mtx matrix;
-    u32 pad[8];
-
-    frameDrawSetup2D(pFrame);
-    GXSetNumTevStages(1);
-    GXSetNumChans(0);
-    GXSetNumTexGens(1);
-    GXSetTevOp(0, 3);
-    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
-    GXSetBlendMode(GX_BM_NONE, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
-    GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
-    GXSetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
-    GXSetZCompLoc(GX_TRUE);
-    PSMTXIdentity(matrix);
-    GXLoadTexMtxImm(matrix, 30, GX_MTX2x4);
-    GXInitTexObj(&sFrameObj_1564, pData, N64_FRAME_WIDTH, N64_FRAME_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
-    GXInitTexObjLOD(&sFrameObj_1564, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
-    GXLoadTexObj(&sFrameObj_1564, GX_TEXMAP0);
-    GXClearVtxDesc();
-    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
-    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
-
-    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-    GXPosition3f32(0.0f, 0.0f, 0.0f);
-    GXTexCoord2f32(0.0f, 0.0f);
-    GXPosition3f32(N64_FRAME_WIDTH, 0.0f, 0.0f);
-    GXTexCoord2f32(1.0f, 0.0f);
-    GXPosition3f32(N64_FRAME_WIDTH, N64_FRAME_HEIGHT, 0.0f);
-    GXTexCoord2f32(1.0f, 1.0f);
-    GXPosition3f32(0.0f, N64_FRAME_HEIGHT, 0.0f);
-    GXTexCoord2f32(0.0f, 1.0f);
-    GXEnd();
-}
-#endif
-
-// matches but data doesn't
-//! TODO: make sFrameObj a static variable in the function
-// #ifndef NON_MATCHING
-#ifdef NON_MATCHING
-void ZeldaDrawFrameBlur(Frame* pFrame, u16* pData);
-#pragma GLOBAL_ASM("asm/non_matchings/frame/ZeldaDrawFrameBlur.s")
-#else
-void ZeldaDrawFrameBlur(Frame* pFrame, u16* pData) {
-    Mtx matrix;
-    s32 pad[8];
-    GXColor color;
-
-    color.r = 255;
-    color.g = 255;
-    color.b = 255;
-    color.a = pFrame->cBlurAlpha;
-
-    frameDrawSetup2D(pFrame);
-    GXSetNumTevStages(1);
-    GXSetNumChans(0);
-    GXSetNumTexGens(1);
-    GXSetTevColor(GX_TEVREG0, color);
-    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
-    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
-    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_C0, GX_CC_ZERO);
-    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
-    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
-    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
-    GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
-    GXSetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
-    GXSetZCompLoc(GX_TRUE);
-    PSMTXIdentity(matrix);
-    GXLoadTexMtxImm(matrix, 30, GX_MTX2x4);
-    GXInitTexObj(&sFrameObj_1565, pData, N64_FRAME_WIDTH, N64_FRAME_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
-    GXInitTexObjLOD(&sFrameObj_1565, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
-    GXLoadTexObj(&sFrameObj_1565, GX_TEXMAP0);
-    GXClearVtxDesc();
-    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
-    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
-
-    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-    GXPosition3f32(-1.0f, -1.0f, 0.0f);
-    GXTexCoord2f32(0.0f, 0.0f);
-    GXPosition3f32(N64_FRAME_WIDTH - 1, -1.0f, 0.0f);
-    GXTexCoord2f32(1.0f, 0.0f);
-    GXPosition3f32(N64_FRAME_WIDTH - 1, N64_FRAME_HEIGHT - 1, 0.0f);
-    GXTexCoord2f32(1.0f, 1.0f);
-    GXPosition3f32(-1.0f, N64_FRAME_HEIGHT - 1, 0.0f);
-    GXTexCoord2f32(0.0f, 1.0f);
-    GXEnd();
-
-    pFrame->nMode = 0;
-    pFrame->nModeVtx = -1;
-    frameDrawReset(pFrame, 0x47F2D);
-}
-#endif
-
-// matches but data doesn't
-//! TODO: make sFrameObj a static variable in the function
-// #ifndef NON_MATCHING
-#ifdef NON_MATCHING
-#pragma GLOBAL_ASM("asm/non_matchings/frame/ZeldaDrawFrame.s")
-#else
-void ZeldaDrawFrame(Frame* pFrame, u16* pData) {
-    Mtx matrix;
-    u32 pad[8];
-    GXColor color;
-
-    color.r = 255;
-    color.g = 255;
-    color.b = 255;
-    color.a = pFrame->cBlurAlpha;
-
-    frameDrawSetup2D(pFrame);
-    GXSetNumTevStages(1);
-    GXSetNumChans(0);
-    GXSetNumTexGens(1);
-    GXSetTevColor(GX_TEVREG0, color);
-    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
-    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
-    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_C0, GX_CC_ZERO);
-    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
-    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
-    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
-    GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
-    GXSetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
-    GXSetZCompLoc(GX_TRUE);
-    PSMTXIdentity(matrix);
-    GXLoadTexMtxImm(matrix, 30, GX_MTX2x4);
-    GXInitTexObj(&sFrameObj_1568, pData, N64_FRAME_WIDTH, N64_FRAME_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
-    GXInitTexObjLOD(&sFrameObj_1568, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
-    GXLoadTexObj(&sFrameObj_1568, GX_TEXMAP0);
-    GXClearVtxDesc();
-    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
-    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
-
-    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-    GXPosition3f32(0.0f, 0.0f, 0.0f);
-    GXTexCoord2f32(0.0f, 0.0f);
-    GXPosition3f32(N64_FRAME_WIDTH, 0.0f, 0.0f);
-    GXTexCoord2f32(1.0f, 0.0f);
-    GXPosition3f32(N64_FRAME_WIDTH, N64_FRAME_HEIGHT, 0.0f);
-    GXTexCoord2f32(1.0f, 1.0f);
-    GXPosition3f32(0.0f, N64_FRAME_HEIGHT, 0.0f);
-    GXTexCoord2f32(0.0f, 1.0f);
-    GXEnd();
-
-    pFrame->nMode = 0;
-    pFrame->nModeVtx = -1;
-    frameDrawReset(pFrame, 0x47F2D);
-}
-#endif
-
-static inline void CopyCFB(u16* srcP) {
-    GXSetTexCopySrc(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
-    GXSetTexCopyDst(N64_FRAME_WIDTH, N64_FRAME_HEIGHT, GX_TF_RGB565, GX_TRUE);
-    DCInvalidateRange(srcP, N64_FRAME_WIDTH * N64_FRAME_HEIGHT * sizeof(u16));
-    GXCopyTex(srcP, GX_FALSE);
-    sCopyFrameSyncReceived = false;
-    GXSetDrawSync(FRAME_SYNC_TOKEN);
-    while (!sCopyFrameSyncReceived) {}
 }
 
 void CopyAndConvertCFB(u16* srcP) {
@@ -2714,373 +2903,6 @@ void CopyAndConvertCFB(u16* srcP) {
             }
         }
     }
-}
-
-// matches but data doesn't
-//! TODO: make sFrameObj and cAlpha a static variable in the function
-// #ifndef NON_MATCHING
-#ifdef NON_MATCHING
-void ZeldaGreyScaleConvert(Frame* pFrame);
-#pragma GLOBAL_ASM("asm/non_matchings/frame/ZeldaGreyScaleConvert.s")
-#else
-void ZeldaGreyScaleConvert(Frame* pFrame) {
-    Mtx matrix;
-    void* dataP;
-    s32 pad[9];
-    GXColor color;
-
-    dataP = DemoCurrentBuffer;
-    color.r = 192;
-    color.g = 161;
-    color.b = 85;
-    color.a = cAlpha;
-    GXSetTexCopySrc(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
-    GXSetTexCopyDst(GC_FRAME_WIDTH, GC_FRAME_HEIGHT, GX_TF_I8, GX_FALSE);
-    GXCopyTex(dataP, GX_FALSE);
-    GXPixModeSync();
-    frameDrawSetup2D(pFrame);
-
-    if (gHackCreditsColor) {
-        GXSetNumTevStages(1);
-        GXSetNumChans(0);
-        GXSetNumTexGens(1);
-        GXSetTevColor(GX_TEVREG0, color);
-        GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
-        GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
-        GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_C0, GX_CC_ZERO);
-        GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
-        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
-        GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
-        if (cAlpha < 255) {
-            cAlpha += 20;
-        }
-    } else {
-        GXSetNumTevStages(1);
-        GXSetNumChans(0);
-        GXSetNumTexGens(1);
-        GXSetTevOp(GX_TEVSTAGE0, GX_REPLACE);
-        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
-        GXSetBlendMode(GX_BM_NONE, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
-    }
-
-    GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
-    GXSetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
-    GXSetZCompLoc(GX_TRUE);
-    PSMTXIdentity(matrix);
-    GXLoadTexMtxImm(matrix, 30, GX_MTX2x4);
-    GXInitTexObj(&sFrameObj_1647, dataP, GC_FRAME_WIDTH, GC_FRAME_HEIGHT, GX_TF_I8, GX_CLAMP, GX_CLAMP, GX_FALSE);
-    GXInitTexObjLOD(&sFrameObj_1647, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
-    GXLoadTexObj(&sFrameObj_1647, GX_TEXMAP0);
-    GXClearVtxDesc();
-    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
-    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
-
-    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-    GXPosition3f32(0.0f, 0.0f, 0.0f);
-    GXTexCoord2f32(0.0f, 0.0f);
-    GXPosition3f32(N64_FRAME_WIDTH, 0.0f, 0.0f);
-    GXTexCoord2f32(1.0f, 0.0f);
-    GXPosition3f32(N64_FRAME_WIDTH, N64_FRAME_HEIGHT, 0.0f);
-    GXTexCoord2f32(1.0f, 1.0f);
-    GXPosition3f32(0.0f, N64_FRAME_HEIGHT, 0.0f);
-    GXTexCoord2f32(0.0f, 1.0f);
-    GXEnd();
-
-    pFrame->nMode = 0;
-    pFrame->nModeVtx = -1;
-    frameDrawReset(pFrame, 0x47F2D);
-}
-#endif
-
-// matches but data doesn't
-//! TODO: make sFrameObj a static variable in the function
-// #ifndef NON_MATCHING
-#ifdef NON_MATCHING
-void ZeldaDrawFrameShrink(Frame* pFrame, s32 posX, s32 posY, s32 size);
-#pragma GLOBAL_ASM("asm/non_matchings/frame/ZeldaDrawFrameShrink.s")
-#else
-void ZeldaDrawFrameShrink(Frame* pFrame, s32 posX, s32 posY, s32 size) {
-    Mtx matrix;
-    s32 pad;
-    f32 nX0;
-    f32 nX1;
-    f32 nY0;
-    f32 nY1;
-    f32 scale;
-    void* frameBuffer;
-    GXColor color;
-
-    frameBuffer = DemoCurrentBuffer;
-    nX0 = posX;
-    nY0 = posY;
-    nX1 = N64_FRAME_WIDTH;
-    nY1 = N64_FRAME_HEIGHT;
-
-    nX0 *= 2.0f;
-    nY0 *= 2.0f;
-    switch (size) {
-        case 0x435:
-            scale = 0.95f;
-            break;
-        case 0x471:
-            scale = 0.90f;
-            break;
-        case 0x4B4:
-            scale = 0.85f;
-            break;
-        case 0x500:
-            scale = 0.80f;
-            break;
-    }
-    nX1 *= scale;
-    nY1 *= scale;
-    GXSetTexCopySrc(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
-    GXSetTexCopyDst(GC_FRAME_WIDTH, GC_FRAME_HEIGHT, GX_TF_RGB565, GX_FALSE);
-    GXCopyTex(frameBuffer, GX_FALSE);
-    GXPixModeSync();
-    frameDrawSetup2D(pFrame);
-    GXSetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
-    GXSetZCompLoc(GX_TRUE);
-    GXSetNumTevStages(1);
-    GXSetNumChans(1);
-    GXSetNumTexGens(0);
-    color.r = 0;
-    color.g = 0;
-    color.b = 0;
-    color.a = 255;
-    GXSetTevColor(GX_TEVREG0, color);
-    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
-    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
-    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_C0);
-    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_KONST);
-    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR_NULL);
-    GXSetBlendMode(GX_BM_NONE, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
-    GXClearVtxDesc();
-    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
-
-    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-    GXPosition3f32(0.0f, 0.0f, 0.0f);
-    GXPosition3f32(N64_FRAME_WIDTH, 0.0f, 0.0f);
-    GXPosition3f32(N64_FRAME_WIDTH, N64_FRAME_HEIGHT, 0.0f);
-    GXPosition3f32(0.0f, N64_FRAME_HEIGHT, 0.0f);
-    GXEnd();
-
-    color.r = 255;
-    color.g = 255;
-    color.b = 255;
-    color.a = 255;
-    GXSetNumTevStages(1);
-    GXSetNumChans(0);
-    GXSetNumTexGens(1);
-    GXSetTevColor(GX_TEVREG0, color);
-    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
-    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
-    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_C0, GX_CC_ZERO);
-    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
-    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
-    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
-    GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
-    GXSetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
-    GXSetZCompLoc(GX_TRUE);
-    PSMTXIdentity(matrix);
-    GXLoadTexMtxImm(matrix, 30, GX_MTX2x4);
-    GXInitTexObj(&frameObj_1663, frameBuffer, GC_FRAME_WIDTH, GC_FRAME_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP,
-                 GX_FALSE);
-    GXInitTexObjLOD(&frameObj_1663, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
-    GXLoadTexObj(&frameObj_1663, GX_TEXMAP0);
-    GXClearVtxDesc();
-    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
-    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
-
-    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-    GXPosition3f32(nX0, nY0, 0.0f);
-    GXTexCoord2f32(0.0f, 0.0f);
-    GXPosition3f32(nX1, nY0, 0.0f);
-    GXTexCoord2f32(1.0f, 0.0f);
-    GXPosition3f32(nX1, nY1, 0.0f);
-    GXTexCoord2f32(1.0f, 1.0f);
-    GXPosition3f32(nX0, nY1, 0.0f);
-    GXTexCoord2f32(0.0f, 1.0f);
-    GXEnd();
-
-    pFrame->nMode = 0;
-    pFrame->nModeVtx = -1;
-    frameDrawReset(pFrame, 0x47F2D);
-}
-#endif
-
-// matches but data doesn't
-//! TODO: make sFrameObj a static variable in the function
-// #ifndef NON_MATCHING
-#ifdef NON_MATCHING
-void ZeldaDrawFrameCamera(Frame* pFrame, void* buffer);
-#pragma GLOBAL_ASM("asm/non_matchings/frame/ZeldaDrawFrameCamera.s")
-#else
-void ZeldaDrawFrameCamera(Frame* pFrame, void* buffer) {
-    Mtx matrix;
-    GXColor color;
-    s32 pad[6];
-
-    frameDrawSetup2D(pFrame);
-    color.r = 255;
-    color.g = 167;
-    color.b = 176;
-    color.a = 255;
-    GXSetNumTevStages(1);
-    GXSetNumChans(0);
-    GXSetNumTexGens(1);
-    GXSetTevColor(GX_TEVREG0, color);
-    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
-    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
-    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_C0, GX_CC_ZERO);
-    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
-    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
-    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
-    GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
-    GXSetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
-    GXSetZCompLoc(GX_TRUE);
-    PSMTXIdentity(matrix);
-    GXLoadTexMtxImm(matrix, 30, GX_MTX2x4);
-    GXInitTexObj(&frameObj_1673, buffer, ZELDA2_CAMERA_WIDTH, ZELDA2_CAMERA_HEIGHT, GX_TF_I8, GX_CLAMP, GX_CLAMP,
-                 GX_FALSE);
-    GXInitTexObjLOD(&frameObj_1673, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
-    GXLoadTexObj(&frameObj_1673, GX_TEXMAP0);
-    GXClearVtxDesc();
-    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
-    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
-
-    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-    GXPosition3f32(80.0f, 31.0f, 0.0f);
-    GXTexCoord2f32(0.0f, 0.015625f);
-    GXPosition3f32(240.0f, 31.0f, 0.0f);
-    GXTexCoord2f32(1.0f, 0.015625f);
-    GXPosition3f32(240.0f, 143.0f, 0.0f);
-    GXTexCoord2f32(1.0f, 0.859375f);
-    GXPosition3f32(80.0f, 143.0f, 0.0f);
-    GXTexCoord2f32(0.0f, 0.859375f);
-    GXEnd();
-
-    pFrame->nMode = 0;
-    pFrame->nModeVtx = -1;
-    frameDrawReset(pFrame, 0x47F2D);
-}
-#endif
-
-//! TODO: make sCommandCodes a static variable in the function
-bool frameHackTIMG_Zelda(Frame* pFrame, u64** pnGBI, u32* pnCommandLo, u32* pnCommandHi) {
-    u32 i;
-
-    if ((*pnCommandLo == 0x0F000000) && (*pnCommandHi == 0xFD500000)) {
-        u32* tmp = (u32*)*pnGBI;
-        for (i = 0; i < ARRAY_COUNT(sCommandCodes_1679); i++) {
-            if (tmp[i] != sCommandCodes_1679[i]) {
-                break;
-            }
-        }
-
-        if (i == ARRAY_COUNT(sCommandCodes_1679)) {
-            ZeldaGreyScaleConvert(pFrame);
-            sSpecialZeldaHackON = 1;
-        }
-    }
-
-    if ((sSpecialZeldaHackON != 0) && ((*pnCommandLo & 0xFF000000) != 0x0F000000)) {
-        sSpecialZeldaHackON = 0;
-    }
-
-    if (sSrcBuffer == SEGMENT_ADDRESS(SYSTEM_RSP(gpSystem), *pnCommandLo)) {
-        *pnCommandLo = sDestinationBuffer;
-        *pnGBI += 8;
-    }
-
-    return true;
-}
-
-bool frameHackCIMG_Zelda2(Frame* pFrame, FrameBuffer* pBuffer, u64* pnGBI, u32 nCommandLo, u32 nCommandHi) {
-    u32 i;
-    u32* pGBI;
-    s32 pad[2];
-
-    if (pBuffer->nAddress == pFrame->aBuffer[FBT_DEPTH].nAddress) {
-        pFrame->nHackCount += 1;
-    }
-
-    pFrame->nFrameCIMGCalls += 1;
-
-    if ((s32)pFrame->nHackCount > 1) {
-        pGBI = (u32*)&pnGBI[-5];
-        for (i = 0; i < ARRAY_COUNT(sCommandCodes_1702); i++) {
-            if (pGBI[i] != sCommandCodes_1702[i] && !(i == 9 && (pGBI[9] == 0x80383C80 || pGBI[9] == 0x80383AC0))) {
-                break;
-            }
-        }
-
-        if (i == ARRAY_COUNT(sCommandCodes_1702)) {
-            if (!pFrame->bHackPause) {
-                nCopyFrame = 1;
-            }
-        } else {
-            pFrame->bPauseThisFrame = false;
-        }
-    }
-
-    if ((s32)nCopyFrame != 0) {
-        pGBI = (u32*)&pnGBI[-5];
-        for (i = 0; i < ARRAY_COUNT(sCommandCodes2); i++) {
-            if (pGBI[i] != sCommandCodes2[i]) {
-                break;
-            }
-        }
-
-        if (i == ARRAY_COUNT(sCommandCodes2)) {
-            if (!pFrame->bHackPause) {
-                for (i = 0; i < N64_FRAME_WIDTH * N64_FRAME_HEIGHT; i++) {
-                    pFrame->nCopyBuffer[i] = pFrame->nTempBuffer[i];
-                }
-            }
-            pFrame->bHackPause = true;
-            pFrame->nHackCount = 0;
-            pFrame->bPauseThisFrame = 1;
-            nCopyFrame = 0;
-        } else {
-            pFrame->bPauseThisFrame = false;
-        }
-    }
-
-    if (pFrame->bHackPause) {
-        if ((pFrame->nFrameCounter - nLastFrame) >= 2) {
-            nLastFrame = pFrame->nFrameCounter;
-            gNoSwapBuffer = true;
-        }
-        pFrame->bHackPause = false;
-    } else {
-        if (pFrame->bShrinking & 0xFFFF) {
-            if (pFrame->bBlurOn) {
-                pFrame->bShrinking |= 0x10;
-            }
-            if (!pFrame->bBlurOn && (pFrame->bShrinking & 0xF0) == 0) {
-                CopyCFB(pFrame->nTempBuffer);
-            }
-        } else if (!pFrame->bBlurOn) {
-            CopyCFB(pFrame->nTempBuffer);
-        }
-    }
-
-    if (((pBuffer->nAddress == 0x42EEC0) || (pBuffer->nAddress == 0x3A9480) || (pBuffer->nAddress == 0x3A92C0)) &&
-        pFrame->bBlurOn && !pFrame->bBlurredThisFrame) {
-        ZeldaDrawFrameBlur(pFrame, pFrame->nTempBuffer);
-        CopyCFB(pFrame->nTempBuffer);
-        pFrame->bBlurredThisFrame = true;
-    }
-
-    return true;
 }
 
 bool frameHackCIMG_Zelda(Frame* pFrame, FrameBuffer* pBuffer, u64* pnGBI, u32 nCommandLo, u32 nCommandHi) {
@@ -3162,178 +2984,6 @@ bool frameHackCIMG_Zelda(Frame* pFrame, FrameBuffer* pBuffer, u64* pnGBI, u32 nC
     return true;
 }
 
-bool frameHackCIMG_Zelda2_Shrink(Rdp* pRDP, Frame* pFrame, u64** ppnGBI) {
-    u64* pnGBI;
-    s32 count;
-    s32 nAddress;
-    u32 nCommandLo;
-    u32 nCommandHi;
-    Rsp* pRSP;
-    s32 done;
-    union __anon_0x5F2FB bg;
-
-    pnGBI = *ppnGBI;
-    for (count = 0; count < ARRAY_COUNT(GBIcode); count++) {
-        nCommandHi = GBI_COMMAND_HI(pnGBI + count);
-        if (GBIcode[count] != nCommandHi) {
-            break;
-        }
-    }
-
-    if (count == ARRAY_COUNT(GBIcode)) {
-        pnGBI = pnGBI + count;
-        pRSP = SYSTEM_RSP(gpSystem);
-        done = 0;
-
-        while (true) {
-            nCommandHi = GBI_COMMAND_HI(pnGBI);
-            if (nCommandHi == 0x09000000) {
-                nCommandLo = GBI_COMMAND_LO(pnGBI);
-                nAddress = SEGMENT_ADDRESS(pRSP, nCommandLo);
-
-                rspFillObjBgScale(pRSP, nAddress, &bg);
-                pFrame->bShrinking |= 1;
-                pFrame->bShrinking |= 0x100;
-
-                if ((pFrame->bShrinking & 0xFFFF0000) == 0) {
-                    pFrame->bShrinking |= bg.b.tmemW << 16;
-                }
-                ZeldaDrawFrameShrink(pFrame, bg.b.frameX >> 2, bg.b.frameY >> 2, bg.b.tmemW);
-                done = 1;
-            }
-
-            if (done && nCommandHi == 0xDF000000) {
-                break;
-            }
-            pnGBI++;
-        };
-    } else {
-        return false;
-    }
-
-    *ppnGBI = ++pnGBI;
-    return true;
-}
-
-static inline void ZeldaCopyCamera(u16* buffer) {
-    GXSetTexCopySrc(ZELDA2_CAMERA_WIDTH, ZELDA2_CAMERA_HEIGHT - 10, ZELDA2_CAMERA_WIDTH * 2, ZELDA2_CAMERA_HEIGHT * 2);
-    GXSetTexCopyDst(ZELDA2_CAMERA_WIDTH, ZELDA2_CAMERA_HEIGHT, GX_TF_I8, GX_TRUE);
-    DCInvalidateRange(buffer, ZELDA2_CAMERA_WIDTH * ZELDA2_CAMERA_HEIGHT * sizeof(u16));
-    GXCopyTex(buffer, GX_FALSE);
-    GXPixModeSync();
-}
-
-bool frameHackCIMG_Zelda2_Camera(Frame* pFrame, FrameBuffer* pBuffer, u32 nCommandHi, u32 nCommandLo) {
-    if (pBuffer != NULL) {
-        if (pBuffer->nAddress == 0x00784600) {
-            pFrame->bSnapShot |= 0x10;
-            return true;
-        }
-
-        if ((pFrame->bSnapShot & 0xF00) != 0) {
-            // ZeldaDrawFrameCamera(pFrame, pFrame->nCameraBuffer);
-            pFrame->bSnapShot &= ~0xF00;
-            return true;
-        }
-
-        return false;
-    }
-
-    if ((nCommandHi == 0xF63EC25C) && (nCommandLo == 0x00118058)) {
-        pFrame->bSnapShot |= 1;
-
-        // possible bug? probably meant to be ``pFrame->bSnapShot & 0xF00``
-        if ((pFrame->bSnapShot & 0xF0) != 0) {
-            // ZeldaCopyCamera(pFrame->nCameraBuffer);
-            pFrame->bSnapShot &= ~0xF00;
-        }
-
-        return true;
-    }
-
-    return false;
-}
-
-void PanelDrawBG8(u16* BG, u16* LUT, u8* bitmap, s32 sizeX, s32 sizeY, s32 posX, s32 posY, bool flip) {
-    s32 i;
-    s32 j;
-    u16 color;
-    s32 pad[3];
-
-    for (i = 0; i < sizeY; i++) {
-        for (j = 0; j < sizeX; j++) {
-            color = LUT[bitmap[i * sizeX + j]];
-            if (color & 1) {
-                if (!flip) {
-                    BG[(posY + i) * N64_FRAME_WIDTH + posX + j] = color;
-                } else {
-                    BG[(posY + i) * N64_FRAME_WIDTH + posX + (sizeX - j)] = color;
-                }
-            }
-        }
-    }
-}
-
-void PanelDrawBG16(u16* BG, u16* bitmap, s32 sizeX, s32 sizeY, s32 posX, s32 posY, bool flip) {
-    s32 i;
-    s32 j;
-    u16 color;
-    s32 pad[2];
-
-    for (i = 0; i < sizeY; i++) {
-        for (j = 0; j < sizeX; j++) {
-            color = bitmap[i * sizeX + j];
-            if (color & 1) {
-                if (!flip) {
-                    BG[(posY + i) * N64_FRAME_WIDTH + posX + j] = color;
-                } else {
-                    BG[(posY + i) * N64_FRAME_WIDTH + posX + (sizeX - j)] = color;
-                }
-            }
-        }
-    }
-}
-
-void PanelDrawFR3D(u16* FR, u16* LUT, u8* bitmap, s32 sizeX, s32 sizeY, s32 posX, s32 posY, bool first) {
-    s32 i;
-    s32 j;
-    u16 color;
-    s32 pad[3];
-
-    for (i = 0; i < sizeY; i++) {
-        for (j = 0; j < sizeX; j++) {
-            color = LUT[bitmap[i * sizeX + j]];
-            if (first) {
-                if (color == 0x6D3F) {
-                    color = 0x6D3E;
-                }
-                FR[(posY + i) * N64_FRAME_WIDTH + posX + j] = color;
-            } else if (color & 1) {
-                FR[(posY + i) * N64_FRAME_WIDTH + posX + j] = color;
-            }
-        }
-    }
-}
-
-bool frameHackTIMG_Panel(Frame* pFrame, FrameBuffer* pBuffer) {
-    if (!pFrame->bFrameOn) {
-        return false;
-    }
-
-    if (pBuffer->nAddress >= 0x358800 && pBuffer->nAddress <= 0x37B800) {
-        if (pBuffer->nFormat == 0 && pBuffer->nWidth == 1 && pBuffer->nSize == 2) {
-            pBuffer->pData = pFrame->nTempBuffer + ((((s32)(pBuffer->nAddress + 0xFFCA7800) / 2) + 0x8C0));
-            return true;
-        }
-        pFrame->bFrameOn = false;
-        return false;
-    }
-
-    return false;
-}
-
-#pragma GLOBAL_ASM("asm/non_matchings/frame/frameHackCIMG_Panel.s")
-
 // Matches but data doesn't
 // #ifndef NON_MATCHING
 #ifdef NON_MATCHING
@@ -3387,6 +3037,104 @@ bool frameGetDepth(Frame* pFrame, u16* pnData, s32 nAddress) {
 }
 #endif
 
+// Matches but data doesn't
+bool frameLoadTexturePack(Frame* pFrame, char* szFileName) {
+    char sp50[64];
+    Texture64 t64;
+    tXL_FILE* pFile;
+    s32 nLength;
+    FrameTexture* pTexture;
+    FrameTexture* var_r4;
+    char* temp;
+
+    xlTextCopy(sp50, szFileName);
+
+    nLength = xlTextGetLength(sp50);
+    temp = &sp50[nLength - 4];
+
+    if (*temp != '.') {
+        xlTextAppend(sp50, lbl_8025C830);
+    }
+
+    if (xlFileOpen(&pFile, XLFT_BINARY, sp50)) {
+        if (!xlFileGet(pFile, (void*)&t64, sizeof(Texture64))) {
+            return false;
+        }
+
+        if (gpSystem->eTypeROM == t64.nTypeROM) {
+            if (!frameMakeTexture(pFrame, &pTexture)) {
+                return false;
+            }
+
+            pTexture->unk_34 = t64.unk_34;
+            pTexture->nSizeX = t64.nSizeX;
+            pTexture->nSizeY = t64.nSizeY;
+            pTexture->eWrapS = GX_MAX_TEXWRAPMODE;
+            pTexture->eWrapT = GX_MAX_TEXWRAPMODE;
+            pTexture->nMode = t64.nMode | 4;
+            pTexture->eFormat = t64.eFormat;
+            pTexture->nAddress = t64.nAddress;
+            pTexture->nCodePixel = t64.nCodePixel;
+            pTexture->nCodeColor = t64.nCodeColor;
+            pTexture->nData0 = t64.nData0;
+            pTexture->nData1 = t64.nData1;
+
+            if (!xlFileGet(pFile, (void*)&nLength, 4)) {
+                return false;
+            }
+
+            nLength *= 2;
+
+            if (nLength != 0) {
+                if (!packTakeBlocks(&pTexture->iPackColor, pFrame->anPackColor, 0x140,
+                                    (s32)((u32)(nLength + 0x1F) >> 5U))) {
+                    return false;
+                }
+
+                if (!xlFileGet(pFile, (u8*)pFrame->aColorData + ((pTexture->iPackColor & 0xFFFF) << 5), nLength)) {
+                    return false;
+                }
+            }
+
+            if (!xlFileGet(pFile, &nLength, 4)) {
+                return false;
+            }
+
+            if (pTexture->eFormat == GX_TF_IA8 || pTexture->eFormat == GX_TF_RGB5A3) {
+                nLength *= 2;
+            } else if (pTexture->eFormat == GX_TF_RGBA8) {
+                nLength *= 4;
+            }
+
+            if (!packTakeBlocks(&pTexture->iPackPixel, pFrame->anPackPixel, 0x30, (s32)(nLength + 2047) / 2048)) {
+                return false;
+            }
+
+            if (!xlFileGet(pFile, (u8*)pFrame->aPixelData + ((pTexture->iPackPixel & 0xFFFF) << 11), nLength)) {
+                return false;
+            }
+
+            var_r4 = pFrame->unk_3E36C;
+
+            if (var_r4 == 0) {
+                pFrame->unk_3E36C = pTexture;
+            } else {
+                while (var_r4->pTextureNext != 0) {
+                    var_r4 = var_r4->pTextureNext;
+                }
+
+                var_r4->pTextureNext = pTexture;
+            }
+        }
+
+        if (!xlFileClose(&pFile)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 // #ifndef NON_MATCHING
 #ifdef NON_MATCHING
 // matches but data doesn't
@@ -3417,7 +3165,7 @@ static inline bool frameEvent_UnknownInline2(Frame* pFrame) {
         return false;
     }
 
-    if (!contentOpenDirNAND(&gCNTHandle.handleNAND, ".", &arcDir)) {
+    if (!contentOpenDirNAND(&gCNTHandle.handleNAND, lbl_8025C820, &arcDir)) {
         if (ARCReadDir(&arcDir, &arcEntry)) {
             temp_r3_2 = (char**)&arcEntry.name;
 
@@ -3458,7 +3206,7 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
             if (!frameEvent_UnknownInline(pFrame)) {
                 return false;
             }
-            pFrame->unk_3E36C = 0;
+            pFrame->unk_3E36C = NULL;
             pFrame->nOffsetDepth0 = -1;
             pFrame->nOffsetDepth1 = -1;
             pFrame->viewport.rX = 0.0f;
@@ -3567,355 +3315,6 @@ static inline bool frameTransposeMatrix(Mtx44 matrixTarget, Mtx44 matrixSource) 
     return true;
 }
 
-bool frameScaleMatrix(Mtx44 matrixResult, Mtx44 matrix, f32 rScale) {
-    matrixResult[0][0] = matrix[0][0] * rScale;
-    matrixResult[0][1] = matrix[0][1] * rScale;
-    matrixResult[0][2] = matrix[0][2] * rScale;
-    matrixResult[0][3] = matrix[0][3] * rScale;
-    matrixResult[1][0] = matrix[1][0] * rScale;
-    matrixResult[1][1] = matrix[1][1] * rScale;
-    matrixResult[1][2] = matrix[1][2] * rScale;
-    matrixResult[1][3] = matrix[1][3] * rScale;
-    matrixResult[2][0] = matrix[2][0] * rScale;
-    matrixResult[2][1] = matrix[2][1] * rScale;
-    matrixResult[2][2] = matrix[2][2] * rScale;
-    matrixResult[2][3] = matrix[2][3] * rScale;
-    matrixResult[3][0] = matrix[3][0] * rScale;
-    matrixResult[3][1] = matrix[3][1] * rScale;
-    matrixResult[3][2] = matrix[3][2] * rScale;
-    matrixResult[3][3] = matrix[3][3] * rScale;
-    return true;
-}
-
-static bool frameConvertYUVtoRGB(u32* YUV, u32* RGB) {
-    s32 Yl;
-    s32 R;
-    s32 G;
-    s32 B;
-
-    Yl = YUV[0] - 16;
-    B = (s32)((YUV[1] - 128) * 20830 + Yl * 12014) >> 16;
-    G = (s32)(Yl * 11079 + ((YUV[2] - 128) * -6480 - B * 12729)) >> 16;
-    R = (s32)(Yl * 31026 - B * 24987 - G * 128660) >> 16;
-
-    if (R > 31) {
-        R = 31;
-    } else if (R < 0) {
-        R = 0;
-    }
-    if (G > 31) {
-        G = 31;
-    } else if (G < 0) {
-        G = 0;
-    }
-    if (B > 31) {
-        B = 31;
-    } else if (B < 0) {
-        B = 0;
-    }
-
-    RGB[0] = R;
-    RGB[1] = G;
-    RGB[2] = B;
-    return true;
-}
-
-static bool packTakeBlocks(s32* piPack, u32* anPack, s32 nPackCount, s32 nBlockCount) {
-    s32 nOffset;
-    s32 nCount;
-    s32 iPack;
-    u32 nPack;
-    u32 nMask;
-    u32 nMask0;
-
-    if (nBlockCount >= 32 || nBlockCount < 0) {
-        return false;
-    }
-
-    nCount = 33 - nBlockCount;
-    for (iPack = 0; iPack < nPackCount; iPack++) {
-        nPack = anPack[iPack];
-        if (nPack != -1) {
-            nMask = (1 << nBlockCount) - 1;
-            nOffset = nCount;
-            do {
-                if ((nPack & nMask) == 0) {
-                    anPack[iPack] |= nMask;
-                    *piPack = (nBlockCount << 16) | ((iPack << 5) + (nCount - nOffset));
-                    return true;
-                }
-                nOffset -= 1;
-                nMask <<= 1;
-            } while (nOffset != 0);
-        }
-    }
-
-    *piPack = -1;
-    return false;
-}
-
-static bool packFreeBlocks(s32* piPack, u32* anPack, s32 nPackCount) {
-    s32 iPack;
-    u32 nMask;
-
-    s32 temp_r6;
-
-    iPack = *piPack;
-
-    if (iPack == -1) {
-        return true;
-    }
-
-    nMask = ((1 << (iPack >> 16)) - 1) << (iPack & 0x1F);
-    temp_r6 = (iPack & 0xFFFF) >> 5;
-
-    if (nMask == (nMask & anPack[temp_r6])) {
-        anPack[temp_r6] &= ~nMask;
-        *piPack = -1;
-        return true;
-    }
-
-    return false;
-}
-
-static bool frameMakeTexture(Frame* pFrame, FrameTexture** ppTexture) {
-    u32 nMask;
-    s32 iTexture;
-    s32 iTextureUsed;
-
-    iTextureUsed = 0;
-    while (iTextureUsed < ARRAY_COUNTU(pFrame->anTextureUsed) && (nMask = pFrame->anTextureUsed[iTextureUsed]) == -1) {
-        iTextureUsed++;
-    }
-
-    if (iTextureUsed == ARRAY_COUNTU(pFrame->anTextureUsed)) {
-        return false;
-    }
-
-    iTexture = 0;
-    while (nMask & 1) {
-        iTexture++;
-        nMask >>= 1;
-    }
-
-    pFrame->anTextureUsed[iTextureUsed] |= (1 << iTexture);
-    *ppTexture = &pFrame->aTexture[(iTextureUsed << 5) + iTexture];
-    (*ppTexture)->iPackPixel = -1;
-    (*ppTexture)->iPackColor = -1;
-    (*ppTexture)->pTextureNext = NULL;
-
-    if (++pFrame->nBlocksTexture > pFrame->nBlocksMaxTexture) {
-        pFrame->nBlocksMaxTexture = pFrame->nBlocksTexture;
-    }
-
-    return true;
-}
-
-static inline bool frameFreeTexture(Frame* pFrame, FrameTexture* pTexture) {
-    s32 iTexture = (u8*)pTexture - (u8*)&pFrame->aTexture[0];
-
-    if (!frameFreePixels(pFrame, pTexture)) {
-        return false;
-    }
-
-    iTexture /= sizeof(FrameTexture);
-    pFrame->anTextureUsed[iTexture >> 5] &= ~(1 << (iTexture & 0x1F));
-    pFrame->nBlocksTexture--;
-    return true;
-}
-
-static bool frameSetupCache(Frame* pFrame) {
-    s32 iTexture;
-
-    if (!xlHeapTake(&pFrame->aPixelData, 0x30000000 | 0x00300000)) {
-        return false;
-    }
-
-    if (!xlHeapTake(&pFrame->aColorData, 0x30000000 | (N64_FRAME_WIDTH * 1024))) {
-        return false;
-    }
-
-    return true;
-}
-
-static bool frameResetCache(void) {
-    Frame* pFrame;
-    s32 iTexture;
-
-    pFrame = SYSTEM_FRAME(gpSystem);
-
-    for (iTexture = 0; iTexture < ARRAY_COUNT(pFrame->apTextureCached); iTexture++) {
-        pFrame->apTextureCached[iTexture] = 0;
-    }
-
-    for (iTexture = 0; iTexture < ARRAY_COUNTU(pFrame->anTextureUsed); iTexture++) {
-        pFrame->anTextureUsed[iTexture] = 0;
-    }
-
-    for (iTexture = 0; iTexture < ARRAY_COUNT(pFrame->anPackPixel); iTexture++) {
-        pFrame->anPackPixel[iTexture] = 0;
-    }
-
-    for (iTexture = 0; iTexture < ARRAY_COUNT(pFrame->anPackColor); iTexture++) {
-        pFrame->anPackColor[iTexture] = 0;
-    }
-
-    xlHeapFill32((void**)&pFrame->aTexture, sizeof(pFrame->aTexture), 0);
-
-    return true;
-}
-
-static bool frameUpdateCache(Frame* pFrame) {
-    // s32 nCount;
-    // s32 nCountFree;
-    u32 nMask;
-    s32 nFrameCount;
-    s32 nFrameDelta;
-    s32 iTexture;
-    s32 iTextureUsed;
-    s32 iTextureCached;
-    FrameTexture* pTexture;
-    FrameTexture* pTextureCached;
-    FrameTexture* pTextureLast;
-
-    nFrameCount = pFrame->nCountFrames;
-    for (iTextureUsed = 0; iTextureUsed < ARRAY_COUNTU(pFrame->anTextureUsed); iTextureUsed++) {
-        if ((nMask = pFrame->anTextureUsed[iTextureUsed]) != 0) {
-            for (iTexture = 0; nMask != 0; iTexture++, nMask >>= 1) {
-                if (nMask & 1) {
-                    pTexture = &pFrame->aTexture[(iTextureUsed << 5) + iTexture];
-                    nFrameDelta = pTexture->nFrameLast - nFrameCount;
-                    if (nFrameDelta < 0) {
-                        nFrameDelta = -nFrameDelta;
-                    }
-                    if (nFrameDelta > 1) {
-                        pTextureLast = NULL;
-                        iTextureCached = pTexture->nAddress >> 11;
-                        pTextureCached = pFrame->apTextureCached[iTextureCached];
-
-                        while (pTextureCached != NULL && pTextureCached != pTexture) {
-                            pTextureLast = pTextureCached;
-                            pTextureCached = pTextureCached->pTextureNext;
-                        }
-
-                        if (pTextureLast == NULL) {
-                            pFrame->apTextureCached[iTextureCached] = pTextureCached->pTextureNext;
-                        } else {
-                            pTextureLast->pTextureNext = pTextureCached->pTextureNext;
-                        }
-                        if (!frameFreeTexture(pFrame, pTexture)) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return true;
-}
-
-static bool frameLoadTile(Frame* pFrame, FrameTexture** ppTexture, s32 iTileCode) {
-    bool bFlag;
-    Tile* pTile;
-    FrameTexture* pTexture;
-    FrameTexture* pTextureLast;
-    u32 nData0;
-    u32 nData1;
-    u32 nData2;
-    u32 nData3;
-    s32 iTexture;
-    s32 nShift;
-    s32 pad;
-
-    pTile = &pFrame->aTile[iTileCode & 0xF];
-    if (pTile->nX0 == 0 && pTile->nY0 == 0 && pTile->nX1 == 0 && pTile->nY1 == 0) {
-        bFlag = true;
-        pTile->nX0 = pFrame->aTile[pFrame->iTileLoad].nX0;
-        pTile->nY0 = pFrame->aTile[pFrame->iTileLoad].nY0;
-        pTile->nX1 = pFrame->aTile[pFrame->iTileLoad].nX1;
-        pTile->nY1 = pFrame->aTile[pFrame->iTileLoad].nY1;
-        nShift = pFrame->aTile[pFrame->iTileLoad].nSize - pTile->nSize;
-        if (nShift < 0) {
-            nShift = -nShift;
-            pTile->nX0 >>= nShift;
-            pTile->nX1 >>= nShift;
-        } else {
-            pTile->nX0 <<= nShift;
-            pTile->nX1 <<= nShift;
-        }
-        pTile->nModeS = 2;
-        pTile->nModeT = 2;
-    } else {
-        bFlag = false;
-    }
-
-    nData0 = (pTile->nX0 & 0xFFFF) | ((pTile->nX1 & 0xFFFF) << 16);
-    nData1 = (pTile->nY0 & 0xFFFF) | ((pTile->nY1 & 0xFFFF) << 16);
-    nData2 = ((pTile->nMaskS & 0xF) << 0) | ((pTile->nMaskT & 0xF) << 4) | ((pTile->nModeS & 7) << 8) |
-             ((pTile->nModeT & 7) << 11) | ((pTile->nShiftS & 0xF) << 14) | ((pTile->nShiftT & 0xF) << 18) |
-             ((pTile->nSize & 7) << 22) | ((pTile->nFormat & 7) << 25) | ((pTile->iTLUT & 0xF) << 28);
-    nData3 = (pTile->nTMEM & 0xFFFF) | ((pTile->nSizeX & 0xFFFF) << 16);
-    if (pFrame->nAddressLoad == -1) {
-        iTexture = 0;
-    } else {
-        iTexture = pFrame->nAddressLoad >> 11;
-    }
-
-    pTextureLast = pTexture = pFrame->apTextureCached[iTexture];
-    while (pTexture != NULL) {
-        if (pTexture->nData0 == nData0 && pTexture->nData1 == nData1 && pTexture->nData2 == nData2 &&
-            pTexture->nData3 == nData3 && pTexture->nCodePixel == pTile->nCodePixel &&
-            pTexture->nAddress == pFrame->nAddressLoad) {
-            break;
-        }
-        pTextureLast = pTexture;
-        pTexture = pTexture->pTextureNext;
-    }
-
-    if (pTexture == NULL) {
-        if (!frameMakeTexture(pFrame, &pTexture)) {
-            return false;
-        }
-
-        frameMakePixels(pFrame, pTexture, pTile, false);
-        pTexture->nData0 = nData0;
-        pTexture->nData1 = nData1;
-        pTexture->nData2 = nData2;
-        pTexture->nData3 = nData3;
-
-        if (pFrame->nAddressLoad == -1) {
-            pTexture->nAddress = 0;
-        } else {
-            pTexture->nAddress = pFrame->nAddressLoad;
-        }
-        if (pTextureLast == NULL) {
-            pFrame->apTextureCached[iTexture] = pTexture;
-        } else {
-            pTextureLast->pTextureNext = pTexture;
-        }
-    } else if (pTexture->iPackColor != -1 && pTexture->nCodeColor != pFrame->nTlutCode[pTile->iTLUT]) {
-        frameMakePixels(pFrame, pTexture, pTile, true);
-    }
-
-    pTexture->nFrameLast = pFrame->nCountFrames;
-    pTexture->nCodeColor = pFrame->nTlutCode[pTile->iTLUT];
-    pTexture->nCodePixel = pTile->nCodePixel;
-
-    if (!frameLoadTexture(pFrame, pTexture, iTileCode, pTile)) {
-        return false;
-    }
-
-    if (ppTexture != NULL) {
-        *ppTexture = pTexture;
-    }
-
-    if (bFlag) {
-        pTile->nX0 = pTile->nY0 = pTile->nX1 = pTile->nY1 = 0;
-    }
-    return true;
-}
-
 bool frameDrawReset(Frame* pFrame, s32 nFlag) {
     pFrame->nFlag |= nFlag;
     pFrame->aDraw[0] = (FrameDrawFunc)frameDrawLine_Setup;
@@ -3956,11 +3355,6 @@ bool frameSetSize(Frame* pFrame, FrameSize eSize, s32 nSizeX, s32 nSizeY) {
 }
 #endif
 
-// #ifndef NON_MATCHING
-#ifdef NON_MATCHING
-// matches but data doesn't
-#pragma GLOBAL_ASM("asm/non_matchings/frame/frameSetMode.s")
-#else
 bool frameSetMode(Frame* pFrame, FrameModeType eType, u32 nMode) {
     u32 nFlag;
     u32 nModeChanged;
@@ -4042,7 +3436,6 @@ bool frameSetMode(Frame* pFrame, FrameModeType eType, u32 nMode) {
     pFrame->aMode[eType] = nMode;
     return true;
 }
-#endif
 
 bool frameGetMode(Frame* pFrame, FrameModeType eType, u32* pnMode) {
     *pnMode = pFrame->aMode[eType];
@@ -4665,29 +4058,6 @@ bool frameSetBuffer(Frame* pFrame, FrameBufferType eType) {
     return true;
 }
 
-// bool frameFixMatrixHint(Frame* pFrame, s32 nAddressFloat, s32 nAddressFixed) {
-//     s32 iHint;
-//     s32 iHintTest;
-
-//     for (iHint = 0; iHint < pFrame->iHintMatrix; iHint++) {
-//         if (pFrame->aMatrixHint[iHint].nAddressFloat == nAddressFloat && pFrame->aMatrixHint[iHint].nCount >= 0) {
-//             pFrame->aMatrixHint[iHint].nAddressFloat = 0;
-//             pFrame->aMatrixHint[iHint].nAddressFixed = nAddressFixed;
-
-//             for (iHintTest = 0; iHintTest < pFrame->iHintMatrix; iHintTest++) {
-//                 if (iHintTest != iHint && pFrame->aMatrixHint[iHintTest].nAddressFixed == nAddressFixed) {
-//                     pFrame->aMatrixHint[iHintTest].nAddressFloat = 0;
-//                     pFrame->aMatrixHint[iHintTest].nAddressFixed = 0;
-//                 }
-//             }
-
-//             return true;
-//         }
-//     }
-
-//     return false;
-// }
-
 // #ifndef NON_MATCHING
 #ifdef NON_MATCHING
 #pragma GLOBAL_ASM("asm/non_matchings/frame/frameSetMatrixHint.s")
@@ -4765,11 +4135,6 @@ bool frameInvalidateCache(Frame* pFrame, s32 nOffset0, s32 nOffset1) {
     return true;
 }
 
-// #ifndef NON_MATCHING
-#ifdef NON_MATCHING
-// matches but data doesn't
-#pragma GLOBAL_ASM("asm/non_matchings/frame/frameGetTextureInfo.s")
-#else
 bool frameGetTextureInfo(Frame* pFrame, TextureInfo* pInfo) {
     FrameTexture* pTexture;
     s32 iTexture;
@@ -4814,4 +4179,3 @@ bool frameGetTextureInfo(Frame* pFrame, TextureInfo* pInfo) {
     pInfo->nCountTextures = nCount;
     return true;
 }
-#endif
