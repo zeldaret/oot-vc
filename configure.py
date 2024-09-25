@@ -284,8 +284,8 @@ config.libs = [
     RevolutionLib(
         "NdevExi2AD",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/NdevExi2AD/DebuggerDriver.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/NdevExi2AD/exi2.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/NdevExi2AD/DebuggerDriver.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/NdevExi2AD/exi2.c"),
         ]
     ),
     RevolutionLib(
@@ -298,155 +298,155 @@ config.libs = [
     RevolutionLib(
         "base",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/base/PPCArch.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/base/PPCArch.c"),
         ]
     ),
     RevolutionLib(
         "os",
         [
             Object(NotLinked, "revolution/os/OS.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSAlarm.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSAlloc.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSArena.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSAudioSystem.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSCache.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSContext.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSError.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSAlarm.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSAlloc.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSArena.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSAudioSystem.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSCache.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSContext.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSError.c"),
             Object(NotLinked, "revolution/os/OSExec.c", cflags=[*cflags_base, "-Cpp_exceptions off", "-O4,p", "-ipa off"]),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSFatal.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSFont.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSInterrupt.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSLink.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSMessage.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSMemory.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSMutex.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSReboot.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSReset.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSRtc.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSSync.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSThread.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSTime.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSUtf.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSIpc.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSStateTM.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/time.dolphin.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSPlayRecord.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/OSStateFlags.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/__start.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/os/__ppc_eabi_init.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSFatal.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSFont.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSInterrupt.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSLink.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSMessage.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSMemory.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSMutex.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSReboot.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSReset.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSRtc.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSSync.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSThread.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSTime.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSUtf.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSIpc.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSStateTM.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/time.dolphin.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSPlayRecord.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSStateFlags.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/__start.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/__ppc_eabi_init.c"),
         ]
     ),
     RevolutionLib(
         "exi",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/exi/EXIBios.c", cflags=[*cflags_base, "-Cpp_exceptions off", "-O3,p", "-ipa file"]),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/exi/EXIUart.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/exi/EXICommon.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/exi/EXIBios.c", cflags=[*cflags_base, "-Cpp_exceptions off", "-O3,p", "-ipa file"]),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/exi/EXIUart.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/exi/EXICommon.c"),
         ]
     ),
     RevolutionLib(
         "si",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/si/SIBios.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/si/SISamplingRate.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/si/SIBios.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/si/SISamplingRate.c"),
         ]
     ),
     RevolutionLib(
         "db",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/db/db.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/db/db.c"),
         ]
     ),
     RevolutionLib(
         "vi",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/vi/vi.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/vi/i2c.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/vi/vi3in1.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/vi/vi.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/vi/i2c.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/vi/vi3in1.c"),
         ]
     ),
     RevolutionLib(
         "mtx",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/mtx/mtx.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/mtx/mtxvec.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/mtx/mtx44.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mtx/mtx.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mtx/mtxvec.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mtx/mtx44.c"),
         ]
     ),
     RevolutionLib(
         "gx",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/gx/GXInit.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXInit.c"),
             Object(NotLinked, "revolution/gx/GXFifo.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/gx/GXAttr.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/gx/GXMisc.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/gx/GXGeometry.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/gx/GXFrameBuf.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/gx/GXLight.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXAttr.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXMisc.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXGeometry.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXFrameBuf.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXLight.c"),
             Object(NotLinked, "revolution/gx/GXTexture.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/gx/GXBump.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/gx/GXTev.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/gx/GXPixel.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/gx/GXTransform.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/gx/GXPerf.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXBump.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXTev.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXPixel.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXTransform.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXPerf.c"),
         ]
     ),
     RevolutionLib(
         "dvd",
         [
             Object(NotLinked, "revolution/dvd/dvdfs.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/dvd/dvd.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/dvd/dvdqueue.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/dvd/dvderror.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/dvd/dvdidutils.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/dvd/dvdFatal.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/dvd/dvd_broadway.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dvd/dvd.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dvd/dvdqueue.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dvd/dvderror.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dvd/dvdidutils.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dvd/dvdFatal.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dvd/dvd_broadway.c"),
         ]
     ),
     RevolutionLib(
         "demo",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/demo/DEMOInit.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/demo/DEMOPuts.c", cflags=[*cflags_base, "-Cpp_exceptions off", "-O4,p"]),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/demo/DEMOInit.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/demo/DEMOPuts.c", cflags=[*cflags_base, "-Cpp_exceptions off", "-O4,p"]),
         ]
     ),
     RevolutionLib(
         "ai",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/ai/ai.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ai/ai.c"),
         ]
     ),
     RevolutionLib(
         "ax",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/ax/AX.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/ax/AXAlloc.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AX.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXAlloc.c"),
             Object(NotLinked, "revolution/ax/AXAux.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/ax/AXCL.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXCL.c"),
             Object(NotLinked, "revolution/ax/AXOut.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/ax/AXSPB.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXSPB.c"),
             Object(NotLinked, "revolution/ax/AXVPB.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/ax/AXComp.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/ax/DSPCode.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/ax/AXProf.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXComp.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/DSPCode.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXProf.c"),
         ]
     ),
     RevolutionLib(
         "axfx",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/axfx/AXFXReverbHi.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/axfx/AXFXReverbHi.c"),
             Object(NotLinked, "revolution/axfx/AXFXReverbHiExp.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/axfx/AXFXHooks.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/axfx/AXFXHooks.c"),
         ]
     ),
     RevolutionLib(
         "mem",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/mem/mem_heapCommon.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mem/mem_heapCommon.c"),
             Object(NotLinked, "revolution/mem/mem_expHeap.c"),
             Object(NotLinked, "revolution/mem/mem_frameHeap.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/mem/mem_allocator.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/mem/mem_list.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mem/mem_allocator.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mem/mem_list.c"),
         ]
     ),
     RevolutionLib(
@@ -458,26 +458,26 @@ config.libs = [
     RevolutionLib(
         "dsp",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/dsp/dsp.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/dsp/dsp_debug.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/dsp/dsp_task.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dsp/dsp.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dsp/dsp_debug.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dsp/dsp_task.c"),
         ]
     ),
     RevolutionLib(
         "nand",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/nand/nand.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/nand/NANDOpenClose.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/nand/NANDCore.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/nand/NANDCheck.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/nand/nand.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/nand/NANDOpenClose.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/nand/NANDCore.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/nand/NANDCheck.c"),
         ]
     ),
     RevolutionLib(
         "sc",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/sc/scsystem.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/sc/scapi.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/sc/scapi_prdinfo.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/sc/scsystem.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/sc/scapi.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/sc/scapi_prdinfo.c"),
         ]
     ),
     RevolutionLib(
@@ -489,16 +489,16 @@ config.libs = [
     RevolutionLib(
         "ipc",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/ipc/ipcMain.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/ipc/ipcclt.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/ipc/memory.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/ipc/ipcProfile.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ipc/ipcMain.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ipc/ipcclt.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ipc/memory.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ipc/ipcProfile.c"),
         ]
     ),
     RevolutionLib(
         "fs",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/fs/fs.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/fs/fs.c"),
         ]
     ),
     RevolutionLib(
@@ -526,7 +526,7 @@ config.libs = [
     RevolutionLib(
         "usb",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/usb/usb.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/usb/usb.c"),
         ]
     ),
     RevolutionLib(
@@ -558,7 +558,7 @@ config.libs = [
     RevolutionLib(
         "esp",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/esp/esp.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/esp/esp.c"),
         ]
     ),
     RevolutionLib(
@@ -570,7 +570,7 @@ config.libs = [
     RevolutionLib(
         "tpl",
         [
-            Object(LinkedFor("oot-j", "oot-u"), "revolution/tpl/TPL.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/tpl/TPL.c"),
         ]
     ),
     RevolutionLib(
