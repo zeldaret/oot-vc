@@ -15,6 +15,8 @@ A work-in-progress decompilation of the N64 emulator used in the Wii Virtual Con
 Supported versions:
 
 - `oot-j`: The Legend of Zelda: Ocarina of Time (Wii Virtual Console) - Japan
+- `oot-u`: The Legend of Zelda: Ocarina of Time (Wii Virtual Console) - North America
+- `oot-e`: The Legend of Zelda: Ocarina of Time (Wii Virtual Console) - Europe/Australia
 
 Currently the decompilation mainly targets the `oot-j` version.
 
