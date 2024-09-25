@@ -1215,7 +1215,7 @@ static bool systemSetupGameALL(System* pSystem) {
         return false;
     }
 
-    if (!fn_8005329C(SYSTEM_FRAME(gpSystem), var_r28, var_r27, var_r26)) { // var_r26
+    if (!fn_8005329C(SYSTEM_FRAME(gpSystem), var_r28, var_r27, var_r26)) {
         return false;
     }
 
