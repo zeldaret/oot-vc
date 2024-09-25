@@ -122,22 +122,6 @@ static inline s16 __OSf32tos16(register f32 arg) {
 
 static inline void OSf32tos16(const f32* in, s16* out) { *out = __OSf32tos16(*in); }
 
-static inline f32 __OSu8tof32(register u8* arg) {
-    register f32 ret;
-
-#ifdef __MWERKS__
-    // clang-format off
-    asm {
-        psq_l ret, 0(arg), 1, OS_FASTCAST_U8
-    }
-    // clang-format on
-#else
-    ret = (f32)*arg;
-#endif
-
-    return ret;
-}
-
 static inline u8 __OSf32tou8(register f32 arg) {
     f32 a;
     register f32* ptr = &a;
@@ -158,6 +142,23 @@ static inline u8 __OSf32tou8(register f32 arg) {
 }
 
 static inline void OSf32tou8(f32* in, u8* out) { *out = __OSf32tou8(*in); }
+
+static inline f32 __OSu8tof32(register u8* arg) {
+    register f32 ret;
+
+#ifdef __MWERKS__
+    // clang-format off
+    asm {
+        psq_l ret, 0(arg), 1, OS_FASTCAST_U8
+    }
+    // clang-format on
+#else
+    ret = (f32)*arg;
+#endif
+
+    return ret;
+}
+
 static inline void OSu8tof32(u8* in, f32* out) { *out = __OSu8tof32(in); }
 
 #ifdef __cplusplus
