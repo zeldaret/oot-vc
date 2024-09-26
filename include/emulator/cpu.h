@@ -11,6 +11,14 @@
 extern "C" {
 #endif
 
+#if VERSION == OOT_U
+#define DEVICE_ADDRESS_INDEX_BITS 20
+#else
+#define DEVICE_ADDRESS_INDEX_BITS 16
+#endif
+
+#define DEVICE_ADDRESS_OFFSET_BITS (32 - DEVICE_ADDRESS_INDEX_BITS)
+
 typedef struct CpuBlock CpuBlock;
 typedef bool (*UnknownBlockCallback)(CpuBlock* pBlock, bool bUnknown);
 
@@ -288,7 +296,7 @@ struct Cpu {
     /* 0x00B54 */ CpuExecuteFunc pfRam;
     /* 0x00B58 */ CpuExecuteFunc pfRamF;
     /* 0x00B64 */ CpuDevice* apDevice[256];
-    /* 0x00F64 */ u8 aiDevice[65536];
+    /* 0x00F64 */ u8 aiDevice[1 << DEVICE_ADDRESS_INDEX_BITS];
     /* 0x10F64 */ void* gHeap1;
     /* 0x10F68 */ void* gHeap2;
     /* 0x10F6C */ u32 aHeap1Flag[192];
@@ -318,7 +326,7 @@ struct Cpu {
     u8 pad[0x30];
 }; // size = 0x122D0
 
-#define CPU_DEVICE(apDevice, aiDevice, nAddress) (apDevice[aiDevice[(u32)(nAddress) >> 16]])
+#define CPU_DEVICE(apDevice, aiDevice, nAddress) (apDevice[aiDevice[(u32)(nAddress) >> DEVICE_ADDRESS_OFFSET_BITS]])
 
 #define CPU_DEVICE_GET8(apDevice, aiDevice, nAddress, pValue)       \
     CPU_DEVICE(apDevice, aiDevice, nAddress)                        \

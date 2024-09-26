@@ -937,7 +937,7 @@ static bool cpuMakeDevice(Cpu* pCPU, s32* piDevice, void* pObject, u32 nOffset, 
                 pDevice->nAddressPhysical1 = 0xFFFFFFFF;
                 pDevice->nAddressVirtual1 = 0xFFFFFFFF;
 
-                for (j = 0; j < 0x10000; j++) {
+                for (j = 0; j < ARRAY_COUNT(pCPU->aiDevice); j++) {
                     pCPU->aiDevice[j] = iDevice;
                 }
             } else {
@@ -945,9 +945,8 @@ static bool cpuMakeDevice(Cpu* pCPU, s32* piDevice, void* pObject, u32 nOffset, 
                 pDevice->nAddressVirtual1 = nOffset + nSize - 1;
                 pDevice->nAddressPhysical0 = nAddress;
                 pDevice->nAddressPhysical1 = nAddress + nSize - 1;
-
                 for (j = nSize; j > 0; nOffset += 0x10000, j -= 0x10000) {
-                    pCPU->aiDevice[nOffset >> 16] = iDevice;
+                    pCPU->aiDevice[nOffset >> DEVICE_ADDRESS_OFFSET_BITS] = iDevice;
                 }
             }
 
@@ -1110,7 +1109,7 @@ static bool cpuSetTLB(Cpu* pCPU, s32 iEntry) {
  * @param peMode A pointer to the mode determined.
  * @return bool true on success, false otherwise.
  */
-static bool cpuGetMode(u64 nStatus, CpuMode* peMode) {
+static bool cpuGetMode(u64 nStatus, CpuMode* peMode) NO_INLINE {
     if (nStatus & 2) {
         *peMode = CM_KERNEL;
         return true;
@@ -4850,7 +4849,7 @@ static s32 cpuExecuteLoadStore(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAddr
     }
 
     address = pCPU->aGPR[MIPS_RS(*opcode)].s32 + MIPS_IMM_S16(*opcode);
-    device = pCPU->aiDevice[(u32)(address) >> 16];
+    device = pCPU->aiDevice[(u32)(address) >> DEVICE_ADDRESS_OFFSET_BITS];
 
     if (pCPU->nCompileFlag & 0x100) {
         anCode = (s32*)nAddressGCN - 3;
@@ -5133,7 +5132,7 @@ static s32 cpuExecuteLoadStoreF(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAdd
     }
 
     address = pCPU->aGPR[MIPS_RS(*opcode)].s32 + MIPS_IMM_S16(*opcode);
-    device = pCPU->aiDevice[(u32)(address) >> 16];
+    device = pCPU->aiDevice[(u32)(address) >> DEVICE_ADDRESS_OFFSET_BITS];
 
     if (pCPU->nCompileFlag & 0x100) {
         anCode = (s32*)nAddressGCN - 3;
@@ -5961,7 +5960,7 @@ bool cpuGetAddressOffset(Cpu* pCPU, s32* pnOffset, u32 nAddress) {
     if (0x80000000 <= nAddress && nAddress < 0xC0000000) {
         *pnOffset = nAddress & 0x7FFFFF;
     } else {
-        iDevice = pCPU->aiDevice[nAddress >> 0x10];
+        iDevice = pCPU->aiDevice[nAddress >> DEVICE_ADDRESS_OFFSET_BITS];
 
         if (pCPU->apDevice[iDevice]->nType & 0x100) {
             *pnOffset = (nAddress + pCPU->apDevice[iDevice]->nOffsetAddress) & 0x7FFFFF;
@@ -5974,7 +5973,7 @@ bool cpuGetAddressOffset(Cpu* pCPU, s32* pnOffset, u32 nAddress) {
 }
 
 bool cpuGetAddressBuffer(Cpu* pCPU, void** ppBuffer, u32 nAddress) {
-    CpuDevice* pDevice = pCPU->apDevice[pCPU->aiDevice[nAddress >> 0x10]];
+    CpuDevice* pDevice = pCPU->apDevice[pCPU->aiDevice[nAddress >> DEVICE_ADDRESS_OFFSET_BITS]];
 
     if ((Ram*)pDevice->pObject == SYSTEM_RAM(gpSystem)) {
         if (!ramGetBuffer(pDevice->pObject, ppBuffer, nAddress + pDevice->nOffsetAddress, NULL)) {

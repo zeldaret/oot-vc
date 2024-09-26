@@ -15,6 +15,8 @@ A work-in-progress decompilation of the N64 emulator used in the Wii Virtual Con
 Supported versions:
 
 - `oot-j`: The Legend of Zelda: Ocarina of Time (Wii Virtual Console) - Japan
+- `oot-u`: The Legend of Zelda: Ocarina of Time (Wii Virtual Console) - North America
+- `oot-e`: The Legend of Zelda: Ocarina of Time (Wii Virtual Console) - Europe/Australia
 
 Currently the decompilation mainly targets the `oot-j` version.
 
@@ -64,7 +66,7 @@ To get objdiff to work properly you also need to add the path to the folder cont
 
 2. Extract the following binary containing the N64 emulator from the wad of the version you want to build:
 
-  * `oot-j`: `content1.app`
+  * `content1.app`
 
   Then, copy the app file and place it in the repo as `orig/<version>/content1.app`.
 
