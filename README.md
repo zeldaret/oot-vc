@@ -1,11 +1,15 @@
 oot-vc  
-[![Build Status]][actions] ![oot-j] [![Discord Badge]][discord]
+[![Build Status]][actions] ![oot-j] ![oot-u] ![oot-e] [![Discord Badge]][discord]
 =============
 
 [Build Status]: https://github.com/zeldaret/oot-vc/actions/workflows/build.yml/badge.svg
 [actions]: https://github.com/zeldaret/oot-vc/actions/workflows/build.yml
 
 [oot-j]: https://img.shields.io/endpoint?label=oot-j&url=https%3A%2F%2Fprogress.decomp.club%2Fdata%2Foot-vc%2Foot-j%2Fdol%2F%3Fmode%3Dshield%26measure%3Dcode
+
+[oot-u]: https://img.shields.io/endpoint?label=oot-u&url=https%3A%2F%2Fprogress.decomp.club%2Fdata%2Foot-vc%2Foot-u%2Fdol%2F%3Fmode%3Dshield%26measure%3Dcode
+
+[oot-e]: https://img.shields.io/endpoint?label=oot-e&url=https%3A%2F%2Fprogress.decomp.club%2Fdata%2Foot-vc%2Foot-e%2Fdol%2F%3Fmode%3Dshield%26measure%3Dcode
 
 [Discord Badge]: https://img.shields.io/discord/688807550715560050?color=%237289DA&logo=discord&logoColor=%23FFFFFF
 [discord]: https://discord.zelda.deco.mp/
