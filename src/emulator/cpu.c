@@ -16,14 +16,6 @@
 #include "math.h"
 #include "revolution/vi.h"
 
-#if VERSION == OOT_U
-#define DEVICE_ADDRESS_INDEX_BITS 16
-#else
-#define DEVICE_ADDRESS_INDEX_BITS 20
-#endif
-
-#define DEVICE_ADDRESS_OFFSET_BITS (32 - DEVICE_ADDRESS_INDEX_BITS)
-
 static inline bool cpuMakeCachedAddress(Cpu* pCPU, s32 nAddressN64, s32 nAddressHost, CpuFunction* pFunction);
 static bool cpuFindCachedAddress(Cpu* pCPU, s32 nAddressN64, s32* pnAddressHost);
 static bool cpuSetTLB(Cpu* pCPU, s32 iEntry);
