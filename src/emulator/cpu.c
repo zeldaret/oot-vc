@@ -16,6 +16,14 @@
 #include "math.h"
 #include "revolution/vi.h"
 
+#if VERSION == OOT_U
+#define DEVICE_ADDRESS_INDEX_BITS 16
+#else
+#define DEVICE_ADDRESS_INDEX_BITS 20
+#endif
+
+#define DEVICE_ADDRESS_OFFSET_BITS (32 - DEVICE_ADDRESS_INDEX_BITS)
+
 static inline bool cpuMakeCachedAddress(Cpu* pCPU, s32 nAddressN64, s32 nAddressHost, CpuFunction* pFunction);
 static bool cpuFindCachedAddress(Cpu* pCPU, s32 nAddressN64, s32* pnAddressHost);
 static bool cpuSetTLB(Cpu* pCPU, s32 iEntry);
@@ -937,26 +945,16 @@ static bool cpuMakeDevice(Cpu* pCPU, s32* piDevice, void* pObject, u32 nOffset, 
                 pDevice->nAddressPhysical1 = 0xFFFFFFFF;
                 pDevice->nAddressVirtual1 = 0xFFFFFFFF;
 
-#if VERSION == OOT_U
-                for (j = 0; j < 0x100000; j++) {
+                for (j = 0; j < ARRAY_COUNT(pCPU->aiDevice); j++) {
                     pCPU->aiDevice[j] = iDevice;
                 }
-#else
-                for (j = 0; j < 0x10000; j++) {
-                    pCPU->aiDevice[j] = iDevice;
-                }
-#endif
             } else {
                 pDevice->nAddressVirtual0 = nOffset;
                 pDevice->nAddressVirtual1 = nOffset + nSize - 1;
                 pDevice->nAddressPhysical0 = nAddress;
                 pDevice->nAddressPhysical1 = nAddress + nSize - 1;
                 for (j = nSize; j > 0; nOffset += 0x10000, j -= 0x10000) {
-#if VERSION == OOT_U
-                    pCPU->aiDevice[nOffset >> 12] = iDevice;
-#else
-                    pCPU->aiDevice[nOffset >> 16] = iDevice;
-#endif
+                    pCPU->aiDevice[nOffset >> DEVICE_ADDRESS_OFFSET_BITS] = iDevice;
                 }
             }
 
@@ -4859,12 +4857,7 @@ static s32 cpuExecuteLoadStore(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAddr
     }
 
     address = pCPU->aGPR[MIPS_RS(*opcode)].s32 + MIPS_IMM_S16(*opcode);
-
-#if VERSION == OOT_U
-    device = pCPU->aiDevice[(u32)(address) >> 12];
-#else
-    device = pCPU->aiDevice[(u32)(address) >> 16];
-#endif
+    device = pCPU->aiDevice[(u32)(address) >> DEVICE_ADDRESS_OFFSET_BITS];
 
     if (pCPU->nCompileFlag & 0x100) {
         anCode = (s32*)nAddressGCN - 3;
@@ -5147,12 +5140,7 @@ static s32 cpuExecuteLoadStoreF(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAdd
     }
 
     address = pCPU->aGPR[MIPS_RS(*opcode)].s32 + MIPS_IMM_S16(*opcode);
-
-#if VERSION == OOT_U
-    device = pCPU->aiDevice[(u32)(address) >> 12];
-#else
-    device = pCPU->aiDevice[(u32)(address) >> 16];
-#endif
+    device = pCPU->aiDevice[(u32)(address) >> DEVICE_ADDRESS_OFFSET_BITS];
 
     if (pCPU->nCompileFlag & 0x100) {
         anCode = (s32*)nAddressGCN - 3;
@@ -5980,7 +5968,7 @@ bool cpuGetAddressOffset(Cpu* pCPU, s32* pnOffset, u32 nAddress) {
     if (0x80000000 <= nAddress && nAddress < 0xC0000000) {
         *pnOffset = nAddress & 0x7FFFFF;
     } else {
-        iDevice = pCPU->aiDevice[nAddress >> 0x10];
+        iDevice = pCPU->aiDevice[nAddress >> DEVICE_ADDRESS_OFFSET_BITS];
 
         if (pCPU->apDevice[iDevice]->nType & 0x100) {
             *pnOffset = (nAddress + pCPU->apDevice[iDevice]->nOffsetAddress) & 0x7FFFFF;
@@ -5993,7 +5981,7 @@ bool cpuGetAddressOffset(Cpu* pCPU, s32* pnOffset, u32 nAddress) {
 }
 
 bool cpuGetAddressBuffer(Cpu* pCPU, void** ppBuffer, u32 nAddress) {
-    CpuDevice* pDevice = pCPU->apDevice[pCPU->aiDevice[nAddress >> 0x10]];
+    CpuDevice* pDevice = pCPU->apDevice[pCPU->aiDevice[nAddress >> DEVICE_ADDRESS_OFFSET_BITS]];
 
     if ((Ram*)pDevice->pObject == SYSTEM_RAM(gpSystem)) {
         if (!ramGetBuffer(pDevice->pObject, ppBuffer, nAddress + pDevice->nOffsetAddress, NULL)) {

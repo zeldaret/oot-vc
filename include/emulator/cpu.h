@@ -288,9 +288,10 @@ struct Cpu {
     /* 0x00B54 */ CpuExecuteFunc pfRam;
     /* 0x00B58 */ CpuExecuteFunc pfRamF;
     /* 0x00B64 */ CpuDevice* apDevice[256];
-    /* 0x00F64 */ u8 aiDevice[65536];
 #if VERSION == OOT_U
-    u8 pad2[0xF0000];
+    /* 0x00F64 */ u8 aiDevice[0x100000];
+#else
+    /* 0x00F64 */ u8 aiDevice[0x10000];
 #endif
     /* 0x10F64 */ void* gHeap1;
     /* 0x10F68 */ void* gHeap2;
