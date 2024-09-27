@@ -9,6 +9,9 @@ extern "C" {
 #define OOT_J 1
 #define OOT_U 2
 #define OOT_E 3
+#define MK64_J 4
+#define MK64_U 5
+#define MK64_E 6
 
 #define ALIGN_PREV(X, N) ((X) & ~((N) - 1))
 #define ALIGN_NEXT(X, N) ALIGN_PREV(((X) + (N) - 1), N)
