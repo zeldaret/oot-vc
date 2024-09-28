@@ -439,13 +439,20 @@ static bool fn_80042C98(Rom* pROM) {
     u8* pCacheRAM;
     u32* pBuffer;
     u32 nBuffer;
-
+    
+#if VERSION != MK64_U
     pCacheRAM = pROM->pCacheRAM;
     pROM->pBuffer = pCacheRAM;
+#endif
 
     if (!xlFileOpen(&pFile, XLFT_BINARY, pROM->acNameFile)) {
         return false;
     }
+
+#if VERSION == MK64_U
+    pCacheRAM = pROM->pCacheRAM;
+    pROM->pBuffer = pCacheRAM;
+#endif
 
     nSize = pROM->nSize;
 
@@ -513,8 +520,12 @@ static bool romLoadFullOrPart(Rom* pROM) {
         if (OSCreateThread(&DefaultThread, (OSThreadFunc)__ROMEntry, pROM, (void*)((u8*)pBuffer + ROM_THREAD_SIZE),
                            ROM_THREAD_SIZE, OS_PRIORITY_MAX, 1)) {
             OSResumeThread(&DefaultThread);
+#if VERSION == MK64_U
+            errorDisplayShow(ERROR_NO_CONTROLLER);
+#else
             errorDisplayShow(pROM->unk_C ? ERROR_NO_CONTROLLER : ERROR_BLANK);
             pROM->unk_C = 0;
+#endif
         }
 
         if (!xlHeapFree(&pBuffer)) {
@@ -942,7 +953,9 @@ bool romEvent(Rom* pROM, s32 nEvent, void* pArgument) {
             pROM->bFlip = false;
             pROM->acNameFile[0] = '\0';
             pROM->eModeLoad = RLM_NONE;
+#if VERSION != MK64_U
             pROM->unk_C = 1;
+#endif
             pROM->pBuffer = NULL;
             pROM->offsetToRom = 0;
             pROM->anOffsetBlock = NULL;

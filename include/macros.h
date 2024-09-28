@@ -32,7 +32,11 @@ extern "C" {
 #define ROUND_DOWN_PTR(x, align) ((void*)(((u32)(x)) & (~((align) - 1))))
 #define MEMCLR(x) __memclr((x), sizeof(*(x)))
 
+#ifdef __MWERKS__
 #define NO_INLINE __attribute__((never_inline))
+#else
+#define NO_INLINE
+#endif
 
 #define __CONCAT(x, y) x##y
 #define CONCAT(x, y) __CONCAT(x, y)

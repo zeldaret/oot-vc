@@ -7,6 +7,7 @@ extern "C" {
 
 #include "macros.h"
 #include "revolution/base/PPCWGPipe.h"
+#include "revolution/types.h"
 
 extern volatile PPCWGPipe gxfifo AT_ADDRESS(0xCC008000);
 extern volatile void* __piReg;
