@@ -210,6 +210,7 @@ ErrorDisplay sStringDraw[] = {
         0,
         0,
     },
+#if VERSION != MK64_U
     {
         {&sStringBase[ERROR_BLANK], FLAG_RESET_FADE_TIMER, 0, 0},
         {
@@ -228,6 +229,7 @@ ErrorDisplay sStringDraw[] = {
         0,
         0,
     },
+#endif
 };
 
 struct_80174988 lbl_80174988[] = {

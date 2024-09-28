@@ -269,7 +269,7 @@ config.libs = [
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/video.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/store.c", extra_cflags=["-ipa file"]),
             Object(NotLinked, "emulator/controller.c"),
-            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/errordisplay.c"),
+            Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/errordisplay.c"),
             Object(NotLinked, "emulator/banner.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/stringtable.c"),
             Object(NotLinked, "emulator/rsp.c"),

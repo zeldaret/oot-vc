@@ -22,33 +22,35 @@ typedef enum ErrorIndex {
     ERROR_NONE = -1,
     // "There is not enough available space in the Wii system memory. Create %ld block(s) of free space by either moving
     // files to an SD Card or deleting files in the Data Management Screen."
-    ERROR_INS_SPACE = 0,
+    ERROR_INS_SPACE,
     // "Press the A Button to return to the Wii Menu."
-    ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU = 1,
+    ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU,
     // "There is not enough available space in the Wii system memory. Either move files to an SD Card or delete files on
     // the Data Management Screen."
-    ERROR_INS_INNODE = 2,
+    ERROR_INS_INNODE,
     // "The Wii system memory has been damaged. Refer to the Wii operations manual for further instructions."
-    ERROR_SYS_CORRUPT = 3,
+    ERROR_SYS_CORRUPT,
     // "This file cannot be used because the data is corrupted."
-    ERROR_DATA_CORRUPT = 4,
+    ERROR_DATA_CORRUPT,
     // "There is no more available space in Wii system memory. Refer to the Wii operations manual for further
     // information."
-    ERROR_MAX_BLOCKS = 5,
+    ERROR_MAX_BLOCKS,
     // "There is no more available space in Wii system memory."
-    ERROR_MAX_FILES = 6,
+    ERROR_MAX_FILES,
     // "You will need the Classic Controller."
-    ERROR_NO_CONTROLLER = 7,
+    ERROR_NO_CONTROLLER,
     // "Connect Classic Controller to the P1 Wii Remote or press the A Button to return to the Wii Menu."
-    ERROR_NEED_CLASSIC = 8,
+    ERROR_NEED_CLASSIC,
     // "The battery charge is running low."
-    ERROR_REMOTE_BATTERY = 9,
+    ERROR_REMOTE_BATTERY,
     // "Communications with the Wii Remote have been interrupted."
-    ERROR_REMOTE_COMMUNICATION = 10,
+    ERROR_REMOTE_COMMUNICATION,
+#if VERSION != MK64_U
     // ""
-    ERROR_BLANK = 11,
+    ERROR_BLANK,
+#endif
     // (nothing)
-    ERROR_NULL = 12,
+    ERROR_NULL,
 } ErrorIndex;
 
 typedef struct DisplayFiles {
@@ -107,7 +109,7 @@ void OSFreeToHeap(s32 handle, void* p);
 void errorDisplayInit(void);
 bool errorDisplayShow(ErrorIndex iString);
 
-extern ErrorDisplay sStringDraw[12];
+extern ErrorDisplay sStringDraw[VERSION == MK64_U ? 11 : 12];
 extern struct_80174988 lbl_80174988[17];
 extern bool lbl_8025D130;
 extern s32 lbl_8025D12C;
