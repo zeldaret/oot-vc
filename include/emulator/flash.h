@@ -2,8 +2,8 @@
 #define _FLASH_H
 
 #include "emulator/xlObject.h"
-#include "revolution/types.h"
 #include "macros.h"
+#include "revolution/types.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -439,7 +439,7 @@ static bool fn_80042C98(Rom* pROM) {
     u8* pCacheRAM;
     u32* pBuffer;
     u32 nBuffer;
-    
+
 #if VERSION != MK64_U
     pCacheRAM = pROM->pCacheRAM;
     pROM->pBuffer = pCacheRAM;
