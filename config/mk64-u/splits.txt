@@ -7,8 +7,232 @@ Sections:
 	.dtors      type:rodata align:32
 	.rodata     type:rodata align:32
 	.data       type:data align:32
-	.bss        type:bss align:32
+	.bss        type:bss align:64
 	.sdata      type:data align:32
 	.sbss       type:bss align:32
 	.sdata2     type:rodata align:32
 	.sbss2      type:bss align:32
+
+emulator/xlCoreRVL.c:
+	.text       start:0x80007020 end:0x80007758
+	.data       start:0x8016DB20 end:0x8016DB58
+	.bss        start:0x8019EFC0 end:0x8019F000
+	.sdata      start:0x8025A480 end:0x8025A488
+	.sbss       start:0x8025ADA0 end:0x8025ADB8
+	.sdata2     start:0x8025BB00 end:0x8025BB10
+
+emulator/xlPostRVL.c:
+	.text       start:0x80007758 end:0x80007768
+
+emulator/xlFileRVL.c:
+	.text       start:0x80007768 end:0x80007BD8
+	.data       start:0x8016DB58 end:0x8016DB68
+	.bss        start:0x8019F000 end:0x8019F038
+	.sdata      start:0x8025A488 end:0x8025A490
+	.sbss       start:0x8025ADB8 end:0x8025ADC0
+
+emulator/xlText.c:
+	.text       start:0x80007BD8 end:0x80007C94
+
+emulator/xlList.c:
+	.text       start:0x80007C94 end:0x80008054
+	.bss        start:0x8019F038 end:0x8019F048
+
+emulator/xlHeap.c:
+	.text       start:0x80008054 end:0x80009718
+	.bss        start:0x8019F048 end:0x8019FB48
+	.sbss       start:0x8025ADC0 end:0x8025AE00
+
+emulator/xlFile.c:
+	.text       start:0x80009718 end:0x80009898
+
+emulator/xlObject.c:
+	.text       start:0x80009898 end:0x80009C54
+	.sbss       start:0x8025AE00 end:0x8025AE08
+
+emulator/vc64_RVL.c:
+	.text       start:0x80009C54 end:0x8000A100
+	.data       start:0x8016DB68 end:0x8016DCE8
+	.bss        start:0x8019FB48 end:0x8019FB78
+	.sdata      start:0x8025A490 end:0x8025A498
+	.sbss       start:0x8025AE08 end:0x8025AE10
+
+emulator/system.c:
+	.text       start:0x8000A100 end:0x8000D8B4
+	.data       start:0x8016DCE8 end:0x8016E5E0
+	.bss        start:0x8019FB78 end:0x8019FCC8
+	.sdata      start:0x8025A498 end:0x8025A4EC
+	.sdata2     start:0x8025BB10 end:0x8025BB20
+
+emulator/ai.c:
+	.text       start:0x8000D8B4 end:0x8000DC80
+	.data       start:0x8016E5E0 end:0x8016E698
+	.sdata      start:0x8025A4F0 end:0x8025A4F8
+
+emulator/vi.c:
+	.text       start:0x8000DC80 end:0x8000E240
+	.data       start:0x8016E698 end:0x8016E850
+	.sdata      start:0x8025A4F8 end:0x8025A500
+
+emulator/si.c:
+	.text       start:0x8000E240 end:0x8000E538
+	.data       start:0x8016E850 end:0x8016E928
+	.sdata      start:0x8025A500 end:0x8025A508
+
+emulator/pi.c:
+	.text       start:0x8000E538 end:0x8000EA98
+	.data       start:0x8016E928 end:0x8016EAC0
+	.sdata      start:0x8025A508 end:0x8025A510
+
+emulator/mi.c:
+	.text       start:0x8000EA98 end:0x8000EFCC
+	.data       start:0x8016EAC0 end:0x8016EB38
+	.sdata      start:0x8025A510 end:0x8025A518
+
+emulator/disk.c:
+	.text       start:0x8000EFCC end:0x8000F2C0
+	.data       start:0x8016EB38 end:0x8016EB48
+	.sdata      start:0x8025A518 end:0x8025A520
+
+emulator/cpu.c:
+	.text       start:0x8000F2C0 end:0x80042310
+	.data       start:0x8016EB48 end:0x80170428
+	.sdata      start:0x8025A520 end:0x8025A528
+	.sbss       start:0x8025AE10 end:0x8025AE90
+	.sdata2     start:0x8025BB20 end:0x8025BB48
+
+emulator/pif.c:
+	.text       start:0x80042310 end:0x80043030
+	.data       start:0x80170428 end:0x80170438
+	.sdata      start:0x8025A528 end:0x8025A530
+
+emulator/ram.c:
+	.text       start:0x80043030 end:0x80043850
+	.data       start:0x80170438 end:0x80170658
+	.sdata      start:0x8025A530 end:0x8025A538
+
+emulator/rom.c:
+	.text       start:0x80043850 end:0x80045878
+	.data       start:0x80170658 end:0x80170668
+	.sdata      start:0x8025A538 end:0x8025A540
+	.sdata2     start:0x8025BB48 end:0x8025BB50
+
+emulator/rdb.c:
+	.text       start:0x80045878 end:0x80045E4C
+	.data       start:0x80170668 end:0x801706D8
+	.sdata      start:0x8025A540 end:0x8025A548
+
+emulator/pak.c:
+	.text       start:0x80045E4C end:0x80046188
+	.data       start:0x801706D8 end:0x801706F8
+	.sdata      start:0x8025A548 end:0x8025A550
+
+emulator/sram.c:
+	.text       start:0x80046188 end:0x800465D0
+	.data       start:0x801706F8 end:0x80170708
+	.sdata      start:0x8025A550 end:0x8025A560
+
+emulator/flash.c:
+	.text       start:0x800465D0 end:0x80046C00
+	.data       start:0x80170708 end:0x80170718
+	.sdata      start:0x8025A560 end:0x8025A570
+
+emulator/_frameGCNcc.c:
+	.text       start:0x80046C00 end:0x800474E0
+	.data       start:0x80170718 end:0x8017090C
+	.sdata      start:0x8025A570 end:0x8025A5E0
+
+emulator/_buildtev.c:
+	.text       start:0x800474E0 end:0x8004AA84
+	.data       start:0x8017090C end:0x80170A80
+	.sdata      start:0x8025A5E0 end:0x8025A5E8
+
+emulator/frame.c:
+	.text       start:0x8004AA84 end:0x8005723C
+	.rodata     start:0x80168AE0 end:0x80168B40
+	.data       start:0x80170A80 end:0x801713B0
+	.bss        start:0x8019FCC8 end:0x801C6BA0
+	.sdata      start:0x8025A5E8 end:0x8025A608
+	.sbss       start:0x8025AE90 end:0x8025AEE0
+	.sdata2     start:0x8025BB50 end:0x8025BC40
+
+emulator/library.c:
+	.text       start:0x8005723C end:0x8005F578
+	.data       start:0x801713B0 end:0x80172630
+	.sdata      start:0x8025A608 end:0x8025A618
+	.sdata2     start:0x8025BC40 end:0x8025BC80
+
+emulator/codeRVL.c:
+	.text       start:0x8005F578 end:0x8005F5AC
+	.data       start:0x80172630 end:0x80172640
+	.sdata      start:0x8025A618 end:0x8025A620
+
+emulator/helpRVL.c:
+	.text       start:0x8005F5AC end:0x80061DA4
+	.rodata     start:0x80168B40 end:0x80168B80
+	.data       start:0x80172640 end:0x801727C8
+	.bss        start:0x801C6BA0 end:0x801C6C78
+	.sdata      start:0x8025A620 end:0x8025A638
+	.sbss       start:0x8025AEE0 end:0x8025AF48
+	.sdata2     start:0x8025BC80 end:0x8025BD08
+
+emulator/soundRVL.c:
+	.text       start:0x80061DA4 end:0x80062A18
+	.data       start:0x801727C8 end:0x801727D8
+	.sdata      start:0x8025A638 end:0x8025A640
+	.sdata2     start:0x8025BD08 end:0x8025BD40
+
+emulator/video.c:
+	.text       start:0x80062A18 end:0x80062A4C
+	.data       start:0x801727D8 end:0x801727E8
+	.sdata      start:0x8025A640 end:0x8025A648
+
+emulator/store.c:
+	.text       start:0x80062A4C end:0x800632B8
+	.data       start:0x801727E8 end:0x801727F8
+	.sdata      start:0x8025A648 end:0x8025A650
+
+emulator/controller.c:
+	.text       start:0x800632B8 end:0x80064610
+	.data       start:0x801727F8 end:0x80172870
+	.bss        start:0x801C6C78 end:0x801C6FA0
+	.sbss       start:0x8025AF48 end:0x8025AF50
+	.sdata2     start:0x8025BD40 end:0x8025BD58
+
+emulator/errordisplay.c:
+	.text       start:0x80064610 end:0x80065148
+	.data       start:0x80172870 end:0x80172DA8
+	.sdata      start:0x8025A650 end:0x8025A658
+	.sbss       start:0x8025AF50 end:0x8025AF68
+	.sdata2     start:0x8025BD58 end:0x8025BD70
+
+emulator/banner.c:
+	.text       start:0x80065148 end:0x80065B78
+	.data       start:0x80172DA8 end:0x80172E48
+	.bss        start:0x801C6FA0 end:0x801C6FC0
+	.sdata      start:0x8025A658 end:0x8025A668
+	.sbss       start:0x8025AF68 end:0x8025AF70
+
+emulator/stringtable.c:
+	.text       start:0x80065B78 end:0x80065C5C
+
+emulator/rsp.c:
+	.text       start:0x80065C5C end:0x8007EA68
+	.data       start:0x80172E48 end:0x801732F8
+	.sdata      start:0x8025A668 end:0x8025A698
+	.sbss       start:0x8025AF70 end:0x8025AF90
+	.sdata2     start:0x8025BD70 end:0x8025BDB8
+
+emulator/rdp.c:
+	.text       start:0x8007EA68 end:0x80080968
+	.data       start:0x801732F8 end:0x80173580
+	.sdata      start:0x8025A698 end:0x8025A6A0
+	.sbss       start:0x8025AF90 end:0x8025AF94
+	.sdata2     start:0x8025BDB8 end:0x8025BE08
+
+runtime/__init_cpp_exceptions.cpp:
+	.text       start:0x80151998 end:0x80151A08
+	.ctors      start:0x80168A60 end:0x80168A64 rename:.ctors$10
+	.dtors      start:0x80168AC0 end:0x80168AC4 rename:.dtors$10
+	.dtors      start:0x80168AC4 end:0x80168AC8 rename:.dtors$15
+	.sdata      start:0x8025AD58 end:0x8025AD60

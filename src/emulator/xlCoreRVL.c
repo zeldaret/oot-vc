@@ -22,6 +22,12 @@ static inline u32 getFBTotalSize(f32 aspectRatio) {
     return fbWith * lineCount;
 }
 
+#if VERSION == MK64_U
+#define LINE_OFFSET -7
+#else
+#define LINE_OFFSET 0
+#endif
+
 static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
     u32 nTickLast;
 
@@ -45,17 +51,22 @@ static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
         case VI_MPAL:
         case VI_EURGB60:
             rmode = &GXPal528IntDf;
+#if VERSION != MK64_U
             rmode->viXOrigin -= 32;
             rmode->viWidth += 64;
             rmode->xfbHeight = rmode->viHeight = 574;
             rmode->viYOrigin = (s32)(574 - rmode->viHeight) / 2;
+#endif
             break;
         default:
-            OSPanic("xlCoreRVL.c", 138, "DEMOInit: invalid TV format\n");
+            OSPanic("xlCoreRVL.c", 138 + LINE_OFFSET, "DEMOInit: invalid TV format\n");
             break;
     }
 
+#if VERSION != MK64_U
     rmode->efbHeight = 480;
+#endif
+
     GXAdjustForOverscan(rmode, &rmodeobj, 0, 0);
     rmode = &rmodeobj;
 }
@@ -134,7 +145,14 @@ bool fn_8007FC84(void) {
     return false;
 }
 
-void xlExit(void) { OSPanic("xlCoreRVL.c", 524, "xlExit"); }
+#undef LINE_OFFSET
+#if VERSION == MK64_U
+#define LINE_OFFSET -40
+#else
+#define LINE_OFFSET 0
+#endif
+
+void xlExit(void) { OSPanic("xlCoreRVL.c", 524 + LINE_OFFSET, "xlExit"); }
 
 int main(int nCount, char** aszArgument) {
     s32 nSizeHeap;
@@ -190,9 +208,14 @@ int main(int nCount, char** aszArgument) {
         return false;
     }
 
+#if VERSION == MK64_U
+    nSizeHeap = 0x87600;
+    nSize = ((rmode->fbWidth + 0xF) & 0xFFF0) * rmode->xfbHeight * 2;
+#else
     aspectRatio = (f32)rmode->xfbHeight / (f32)rmode->efbHeight;
     nSizeHeap = fn_8007FC84() ? 0xBB800 : 0x87600;
     nSize = getFBTotalSize(aspectRatio) * 2;
+#endif
 
     if (nSize < nSizeHeap) {
         nSize = nSizeHeap;
@@ -200,10 +223,13 @@ int main(int nCount, char** aszArgument) {
 
     xlHeapTake(&DemoFrameBuffer1, nSize | 0x70000000);
     xlHeapTake(&DemoFrameBuffer2, nSize | 0x70000000);
+
+#if VERSION != MK64_U
     xlHeapFill32(DemoFrameBuffer1, nSize, 0);
     xlHeapFill32(DemoFrameBuffer2, nSize, 0);
     DCStoreRange(DemoFrameBuffer1, nSize);
     DCStoreRange(DemoFrameBuffer2, nSize);
+#endif
 
     xlHeapTake(&DefaultFifo, 0x40000 | 0x30000000);
     DefaultFifoObj = GXInit(DefaultFifo, 0x40000);
@@ -228,6 +254,6 @@ int main(int nCount, char** aszArgument) {
         return false;
     }
 
-    OSPanic("xlCoreRVL.c", 603, "CORE DONE!");
+    OSPanic("xlCoreRVL.c", 603 + LINE_OFFSET, "CORE DONE!");
     return false;
 }

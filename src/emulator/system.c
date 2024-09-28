@@ -279,6 +279,32 @@ static SystemDevice gaSystemDevice[] = {
     },
 };
 
+#if VERSION == MK64_U
+u32 lbl_8016E268[] = {
+    0x3C1A8007, 0x275ACEC0, 0x03400008, 0x00000000, 0x3C010010, 0x012A4824, 0x01214823, 0x3C01A460, 0xAC290000,
+    0x3C08A460, 0x8D080010, 0x31080002, 0x5500FFFD, 0x3C08A460, 0x24081000, 0x010B4020, 0x010A4024, 0x3C01A460,
+    0xAC280004, 0x3C0A0010, 0x254A0003, 0x3C01A460, 0xAC2A000C, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x3C1A8007, 0x275ACEC0, 0x03400008, 0x00000000,
+    0x8D6B0010, 0x316B0001, 0x1560FFF0, 0x00000000, 0x3C0BB000, 0x8D640008, 0x3C010010, 0x02C02825, 0x00812023,
+    0x3C016C07, 0x34218965, 0x00A10019, 0x27BDFFE0, 0xAFBF001C, 0xAFB00014, 0x3C1F0010, 0x00001825, 0x00004025,
+    0x00804825, 0x240D0020, 0x00001012, 0x24420001, 0x00403825, 0x00405025, 0x00405825, 0x00408025, 0x00403025,
+    0x00406025, 0x3C1A8007, 0x275ACEC0, 0x03400008, 0x00000000, 0x00602825, 0x254A0001, 0x3043001F, 0x01A37823,
+    0x01E2C006, 0x00627004, 0x01D82025, 0x00C2082B, 0x00A03825, 0x01625826, 0x10200004, 0x02048021, 0x00E2C826,
+    0x10000002, 0x03263026, 0x00C43026, 0x25080004, 0x00507826, 0x25290004, 0x151FFFE8, 0x01EC6021, 0x00EA7026,
+    0x01CB3821, 0x0206C026, 0x030C8021, 0x3C0BB000, 0x8D680010, 0x14E80006, 0x08018B0A, 0x00000000, 0xAFBAFFF0,
+    0x3C1A8006, 0x04110003, 0x00000000, 0x0411FFFF, 0x00000000, 0x3C09A408, 0x8D290000, 0x8FB00014, 0x8FBF001C,
+    0x11200006, 0x27BD0020, 0x240A0041, 0x3C01A404, 0xAC2A0010, 0x3C01A408, 0xAC200000, 0x3C0B00AA, 0x356BAAAE,
+    0x3C01A404, 0xAC2B0010, 0x3C01A430, 0x24080555, 0xAC28000C, 0x3C01A480, 0xAC200018, 0x3C01A450, 0xAC20000C,
+    0x3C01A430, 0x24090800, 0xAC290000, 0x24090002, 0x3C01A460, 0xAC290010, 0x3C08A000, 0x35080300, 0x240917D7,
+    0xAD090010, 0xAD140000, 0xAD130004, 0xAD15000C, 0x12600004, 0xAD170014, 0x3C09A600, 0x10000003, 0x25290000,
+    0x3C09B000, 0x25290000, 0xAD090008, 0x3C08A400, 0x25080000, 0x21091000, 0x240AFFFF, 0x25080004, 0x1509FFFE,
+    0xAD0AFFFC, 0x3C08A400, 0x25081000, 0x21091000, 0x25080004, 0x1509FFFE, 0xAD0AFFFC, 0x3C0AA400, 0x240B17D7,
+    0xAD4B1000, 0x3C0BB000, 0x254A1000, 0x8D690008, 0x3C010010, 0x01214823, 0x01200008, 0x00000000, 0xFFFFFFFF,
+    0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+    0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+    0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+};
+#else
 // used by Diddy Kong Racing and Paper Mario in systemSetupGameALL
 u32 lbl_8016FEA0[] = {
     0x3C1A8007, 0x275ACEC0, 0x03400008, 0x00000000, 0x3C010010, 0x012A4824, 0x01214823, 0x3C01A460, 0xAC290000,
@@ -304,6 +330,7 @@ u32 lbl_8016FEA0[] = {
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
 };
+#endif
 
 static SystemRomConfig gSystemRomConfigurationList;
 
@@ -410,6 +437,51 @@ bool systemCreateStorageDevice(System* pSystem, void* pArgument) {
 
         iDevice++;
     }
+
+    return true;
+}
+
+static bool systemSetRamMode(System* pSystem) {
+    s32 nSize;
+    u32* anMode;
+#if VERSION == MK64_U
+    s32* anUnknown;
+#endif
+
+    if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&anMode, 0x300, NULL)) {
+        return false;
+    }
+
+    anMode[0] = 1;
+    anMode[1] = 0;
+    anMode[2] = 0xB0000000;
+    anMode[3] = 0;
+
+#if VERSION == MK64_U
+    anMode[4] = 0x17D7;
+#else
+    anMode[4] = 0x17D5;
+#endif
+
+    anMode[5] = 1;
+
+    if (!ramGetSize(SYSTEM_RAM(gpSystem), &nSize)) {
+        return false;
+    }
+
+    anMode[6] = nSize;
+
+#if VERSION == MK64_U
+    if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&anUnknown, 0, NULL)) {
+        return false;
+    }
+
+    if (!xlHeapCopy(anUnknown, &lbl_8016E268, sizeof(lbl_8016E268))) {
+        return false;
+    }
+#endif
+
+    SYSTEM_CPU(gpSystem)->nTimeRetrace = OSSecondsToTicks(1.0f / 60.0f);
 
     return true;
 }
@@ -833,9 +905,11 @@ static bool systemSetupGameALL(System* pSystem) {
             if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pBuffer, 0, NULL)) {
                 return false;
             }
+#if VERSION != MK64_U
             if (!xlHeapCopy(pBuffer, lbl_8016FEA0, 0x300)) {
                 return false;
             }
+#endif
             if (!fn_8007D6A0(SYSTEM_RSP(gpSystem), (void**)&pBuffer, 0, 4)) {
                 return false;
             }
@@ -983,9 +1057,11 @@ static bool systemSetupGameALL(System* pSystem) {
             if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pBuffer, 0, NULL)) {
                 return false;
             }
+#if VERSION != MK64_U
             if (!xlHeapCopy(pBuffer, lbl_8016FEA0, 0x300)) {
                 return false;
             }
+#endif
             if (!fn_8007D6A0(SYSTEM_RSP(gpSystem), &pBuffer, 0, 4)) {
                 return false;
             }
@@ -1398,6 +1474,7 @@ static bool systemPut64(System* pSystem, u32 nAddress, s64* pData) {
 static bool systemGetBlock(System* pSystem, CpuBlock* pBlock) {
     void* pBuffer;
 
+#if VERSION != MK64_U
     if (pBlock->nAddress1 < 0x04000000) {
         if (!ramGetBuffer(SYSTEM_RAM(gpSystem), &pBuffer, pBlock->nAddress1, &pBlock->nSize)) {
             return false;
@@ -1405,6 +1482,7 @@ static bool systemGetBlock(System* pSystem, CpuBlock* pBlock) {
 
         xlHeapFill8(pBuffer, pBlock->nSize, 0xFF);
     }
+#endif
 
     if (pBlock->pfUnknown != NULL && !pBlock->pfUnknown(pBlock, 1)) {
         return false;
@@ -1548,32 +1626,6 @@ bool fn_8000A8A8(System* pSystem) {
     VIWaitForRetrace();
     LCDisable();
     OSRestart(0x1234);
-    return true;
-}
-
-static inline bool systemSetRamMode(System* pSystem) {
-    s32 nSize;
-    u32* anMode;
-
-    if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&anMode, 0x300, NULL)) {
-        return false;
-    }
-
-    anMode[0] = 1;
-    anMode[1] = 0;
-    anMode[2] = 0xB0000000;
-    anMode[3] = 0;
-    anMode[4] = 0x17D5;
-    anMode[5] = 1;
-
-    if (!ramGetSize(SYSTEM_RAM(gpSystem), &nSize)) {
-        return false;
-    }
-
-    anMode[6] = nSize;
-
-    SYSTEM_CPU(gpSystem)->nTimeRetrace = OSSecondsToTicks(1.0f / 60.0f);
-
     return true;
 }
 

@@ -1,5 +1,5 @@
 # See config.example.yml for documentation.
-name: mk64-vc
+name: wii-vc
 object: orig/mk64-j/content1.app
 hash: bfa2416d69894fce8614b580e6897b3658c1762c
 symbols: config/mk64-j/symbols.txt

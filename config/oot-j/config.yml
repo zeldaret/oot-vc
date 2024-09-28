@@ -1,5 +1,5 @@
 # See config.example.yml for documentation.
-name: oot-vc
+name: wii-vc
 object: orig/oot-j/content1.app
 hash: 47546e48467ae14d712b8c207e911821586d1043
 symbols: config/oot-j/symbols.txt
