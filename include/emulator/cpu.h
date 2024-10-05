@@ -284,23 +284,23 @@ struct Cpu {
     /* 0x00038 */ u32 nTickLast;
     /* 0x0003C */ u32 nRetrace;
     /* 0x00040 */ u32 nRetraceUsed;
-    /* 0x00044 */ CpuGpr aGPR[32];
-    /* 0x00144 */ CpuFpr aFPR[32];
-    /* 0x00244 */ u64 aTLB[48][5];
-    /* 0x009C4 */ s32 anFCR[32];
-    /* 0x00A44 */ s64 anCP0[32];
-    /* 0x00B44 */ CpuExecuteFunc pfStep;
-    /* 0x00B48 */ CpuExecuteFunc pfJump;
-    /* 0x00B4C */ CpuExecuteFunc pfCall;
-    /* 0x00B50 */ CpuExecuteFunc pfIdle;
-    /* 0x00B54 */ CpuExecuteFunc pfRam;
-    /* 0x00B58 */ CpuExecuteFunc pfRamF;
-    /* 0x00B64 */ CpuDevice* apDevice[256];
-    /* 0x00F64 */ u8 aiDevice[1 << DEVICE_ADDRESS_INDEX_BITS];
-    /* 0x10F64 */ void* gHeap1;
-    /* 0x10F68 */ void* gHeap2;
-    /* 0x10F6C */ u32 aHeap1Flag[192];
-    /* 0x1126C */ u32 aHeap2Flag[13];
+    /* 0x00048 */ CpuGpr aGPR[32];
+    /* 0x00148 */ CpuFpr aFPR[32];
+    /* 0x00248 */ u64 aTLB[48][5];
+    /* 0x009C8 */ s32 anFCR[32];
+    /* 0x00A48 */ s64 anCP0[32];
+    /* 0x00B48 */ CpuExecuteFunc pfStep;
+    /* 0x00B4C */ CpuExecuteFunc pfJump;
+    /* 0x00B50 */ CpuExecuteFunc pfCall;
+    /* 0x00B54 */ CpuExecuteFunc pfIdle;
+    /* 0x00B58 */ CpuExecuteFunc pfRam;
+    /* 0x00B5C */ CpuExecuteFunc pfRamF;
+    /* 0x00B60 */ CpuDevice* apDevice[256];
+    /* 0x00F60 */ u8 aiDevice[1 << DEVICE_ADDRESS_INDEX_BITS];
+    /* 0x10F60 */ void* gHeap1;
+    /* 0x10F64 */ void* gHeap2;
+    /* 0x10F68 */ u32 aHeap1Flag[192];
+    /* 0x11268 */ u32 aHeap2Flag[13];
     /* 0x1129C */ void* gHeapTree;
     /* 0x112A0 */ u32 aHeapTreeFlag[125];
     /* 0x11494 */ CpuTreeRoot* gTree;
@@ -310,20 +310,10 @@ struct Cpu {
     /* 0x1221C */ u32 nFlagRAM;
     /* 0x12220 */ u32 nFlagCODE;
     /* 0x12224 */ u32 nCompileFlag;
-    /* 0x12228 */ s32 unk_12228;
-
-    //! TODO: fix match issue with OSAlarm
-    // /* 0x12230 */ OSAlarm alarmRetrace;
-    /* 0x12230 */ s32 alarmRetrace[12];
-
-    /* 0x1225C */ s32 unk_1225C;
-    /* 0x12260 */ s32 unk_12260;
-    /* 0x12264 */ s32 unk_12264;
-    /* 0x12268 */ s32 unk_12268;
-    /* 0x1226C */ s32 unk_1226C;
+    /* 0x12228 */ s32 unk_12228[18];
     /* 0x12270 */ CpuOptimize nOptimize;
     /* 0x12298 */ s64 nTimeRetrace;
-    u8 pad[0x30];
+    /* 0x122A0 */ u8 pad[0x30];
 }; // size = 0x122D0
 
 #define CPU_DEVICE(apDevice, aiDevice, nAddress) (apDevice[aiDevice[(u32)(nAddress) >> DEVICE_ADDRESS_OFFSET_BITS]])
