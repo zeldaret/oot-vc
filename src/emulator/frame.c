@@ -843,7 +843,7 @@ void fn_8004A314(Frame* pFrame) {
 
 bool fn_8004A89C(Frame* pFrame) {
     GXColor color;
-    s32 nFogType;
+    GXFogType nFogType;
     f32 rNear;
     f32 rFar;
     f32 rMultiplier;
