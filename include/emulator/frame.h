@@ -355,12 +355,9 @@ typedef struct Frame {
     /* 0x3F21B */ u8 iTileDrawn;
     /* 0x3F21C */ GXColor aColor[FCT_COUNT];
     /* 0x3F230 */ u32 nModeVtx;
-
-    //! TODO: find which of these members got removed
     /* 0x3F234 */ u16* nTempBuffer;
     /* 0x3F238 */ u16* nCopyBuffer;
-    /* 0x3F23C */ u32* nLensBuffer;
-    // u16* nCameraBuffer;
+    /* 0x3F23C */ u8* nCameraBuffer;
 } Frame; // size = 0x3F240
 
 extern _XL_OBJECTTYPE gClassFrame;

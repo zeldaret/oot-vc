@@ -3369,8 +3369,7 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
         case 0x1003:
             pFrame->nTempBuffer = NULL;
             pFrame->nCopyBuffer = NULL;
-            pFrame->nLensBuffer = NULL;
-            // pFrame->nCameraBuffer = NULL;
+            pFrame->nCameraBuffer = NULL;
 
             if (!frameEvent_UnknownInline2(pFrame)) {
                 return false;
