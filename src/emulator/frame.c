@@ -841,7 +841,66 @@ void fn_8004A314(Frame* pFrame) {
 
 // fn_8004A69C
 
-// fn_8004A89C
+bool fn_8004A89C(Frame* pFrame) {
+    GXColor color;
+    s32 nFogType;
+    f32 rNear;
+    f32 rFar;
+    f32 rMultiplier;
+    f32 rOffset;
+    f32 rStart;
+    f32 rEnd;
+    f32 var_f6;
+
+    rMultiplier = (s16)(pFrame->aMode[0] >> 16);
+    rOffset = (s16)(pFrame->aMode[0] & 0xFFFF);
+
+    rFar = pFrame->unk_3F210;
+    rNear = pFrame->unk_3F214;
+    color = pFrame->aColor[FCT_FOG];
+    nFogType = GX_FOG_EXP;
+
+    if ((rOffset == rMultiplier) && (0.0f == rOffset)) {
+        GXSetFog(GX_FOG_NONE, color, 0.0f, 0.0f, 0.0f, 1000.0f);
+        return true;
+    }
+    var_f6 = -rOffset;
+    rStart = pFrame->unknown[3][2] / ((var_f6 / rMultiplier) - (pFrame->unknown[2][2] / pFrame->unknown[2][3]));
+    var_f6 = (249.0f + var_f6) / rMultiplier;
+    if (rStart < rNear) {
+        rStart = rNear;
+    }
+    if (rStart > rFar) {
+        rStart = rFar;
+    }
+    if (var_f6 > 1.2f) {
+        nFogType = GX_FOG_EXP;
+        rStart = -rOffset / rMultiplier;
+        rEnd = (rMultiplier + rOffset) / 256.0f;
+        rEnd = 1.0f - rEnd;
+        rEnd = rEnd * (rFar - rNear) + rNear;
+    } else {
+        if (var_f6 > 1.0f) {
+            var_f6 = 1.0f;
+        }
+        rEnd = pFrame->unknown[3][2] / (var_f6 - (pFrame->unknown[2][2] / pFrame->unknown[2][3]));
+        if (rEnd < rNear) {
+            rEnd = rNear;
+        }
+        if (rEnd > rFar) {
+            rEnd = rFar;
+        }
+    }
+
+    rNear *= 0.1f;
+    if (((pFrame->aMode[FMT_OTHER0] >> 26) & 3) == 1 || (pFrame->aMode[FMT_OTHER0] >> 30) == 3 ||
+        ((pFrame->aMode[FMT_OTHER0] >> 22) & 3) == 3) {
+        GXSetFog(nFogType, color, rStart, rEnd, rNear, rFar);
+    } else {
+        GXSetFog(GX_FOG_NONE, color, 0.0f, 0.0f, 0.0f, 1000.0f);
+    }
+    return true;
+}
 
 // matches but data doesn't
 //! TODO: make sFrameObj a static variable in the function
@@ -1367,8 +1426,16 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
     if ((pFrame->nFlag & 0x40000) && (pFrame->nMode & 0x04000000)) {
         pFrame->nFlag &= ~0x40000;
         memcpy(matrix44, pFrame->matrixProjection, sizeof(Mtx44));
-        eTypeProjection = pFrame->eTypeProjection == FMP_PERSPECTIVE ? GX_PERSPECTIVE : GX_ORTHOGRAPHIC;
-        lbl_8025D098 = (pFrame->aMode[FMT_OTHER0] & 0xC00) == 0xC00 && eTypeProjection == GX_PERSPECTIVE;
+        if (pFrame->eTypeProjection == FMP_PERSPECTIVE) {
+            eTypeProjection = GX_PERSPECTIVE;
+            if ((pFrame->aMode[FMT_OTHER0] & 0xC00) == 0xC00) {
+                matrix44[2][3] = -((0.1f * (0.015f * pFrame->unk_3F214)) - matrix44[2][3]);
+            }
+        } else {
+            eTypeProjection = GX_ORTHOGRAPHIC;
+        }
+        lbl_8025D098 = eTypeProjection;
+        GXSetProjection(matrix44, eTypeProjection);
         pFrame->nMode &= ~0x40000000;
     }
 
@@ -1591,14 +1658,21 @@ static bool frameDrawSetupDP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 ver
         pFrame->nFlag &= ~0x20;
         if ((pFrame->aMode[FMT_GEOMETRY] & 0x10)) {
             switch (gpSystem->eTypeROM) {
+                case NFXJ:
+                case NFXE:
+                case NFXP:
+                    if (!fn_8004A69C(pFrame)) {
+                        return false;
+                    }
                 case CZLJ:
-                case NZSJ:
-                    if (!frameDrawSetupFog_Zelda1(pFrame)) {
+                case CZLE:
+                case NZLP:
+                    if (!fn_8004A89C(pFrame)) {
                         return false;
                     }
                     break;
                 default:
-                    if (!frameDrawSetupFog_Default(pFrame)) {
+                    if (!fn_8004A89C(pFrame)) {
                         return false;
                     }
                     break;
