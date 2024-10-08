@@ -293,26 +293,26 @@ typedef struct Frame {
     /* 0x000B0 */ u32 nMode;
     /* 0x000B4 */ u32 aMode[FMT_COUNT];
     /* 0x000DC */ Viewport viewport;
-    /* 0x000FC */ FrameBuffer aBuffer[FBT_COUNT];
+    /* 0x000EC */ FrameBuffer aBuffer[FBT_COUNT];
     /* 0x0013C */ u32 nOffsetDepth0;
     /* 0x00140 */ u32 nOffsetDepth1;
     /* 0x00144 */ s32 nWidthLine;
     /* 0x00148 */ f32 rDepth;
     /* 0x0014C */ f32 rDelta;
-    /* 0x00154 */ FrameDrawFunc aDraw[4];
+    /* 0x00150 */ FrameDrawFunc aDraw[4];
     /* 0x00160 */ s32 nCountLight;
     /* 0x00164 */ Light aLight[8];
-    /* 0x00360 */ LookAt lookAt;
+    /* 0x00344 */ LookAt lookAt;
     /* 0x00378 */ s32 nCountVertex;
-    /* 0x00390 */ Vertex aVertex[80];
-    /* 0x00C44 */ TextureMemory TMEM;
+    /* 0x0037C */ Vertex aVertex[80];
+    /* 0x00C40 */ TextureMemory TMEM;
     /* 0x01C40 */ void* aPixelData;
     /* 0x01C44 */ void* aColorData;
     /* 0x01C48 */ s32 nBlocksPixel;
-    /* 0x01C54 */ s32 nBlocksMaxPixel;
-    /* 0x01C4C */ s32 nBlocksColor;
-    /* 0x01C58 */ s32 nBlocksMaxColor;
-    /* 0x01C50 */ s32 nBlocksTexture;
+    /* 0x01C4C */ s32 nBlocksMaxPixel;
+    /* 0x01C50 */ s32 nBlocksColor;
+    /* 0x01C54 */ s32 nBlocksMaxColor;
+    /* 0x01C58 */ s32 nBlocksTexture;
     /* 0x01C5C */ s32 nBlocksMaxTexture;
     /* 0x01C60 */ u32 anPackPixel[48];
     /* 0x01D20 */ u32 anPackColor[320];
@@ -327,10 +327,10 @@ typedef struct Frame {
     /* 0x3E370 */ s32 iTileLoad;
     /* 0x3E374 */ u32 n2dLoadTexType;
     /* 0x3E378 */ s32 nLastX0;
-    /* 0x3E380 */ s32 nLastY0;
-    /* 0x3E384 */ s32 nLastX1;
-    /* 0x3E388 */ s32 nLastY1;
-    /* 0x3E3A8 */ Tile aTile[8];
+    /* 0x3E37C */ s32 nLastY0;
+    /* 0x3E380 */ s32 nLastX1;
+    /* 0x3E384 */ s32 nLastY1;
+    /* 0x3E388 */ Tile aTile[8];
     /* 0x3E4E8 */ s32 anSizeX[FS_COUNT];
     /* 0x3E4F0 */ s32 anSizeY[FS_COUNT];
     /* 0x3E4F8 */ s32 iHintMatrix;
@@ -341,24 +341,24 @@ typedef struct Frame {
     /* 0x3E548 */ s32 iHintHack;
     /* 0x3E54C */ FrameMatrixProjection eTypeProjection;
     /* 0x3E550 */ Mtx44 aMatrixModel[10];
-    /* 0x3E590 */ Mtx44 matrixProjection;
-    /* 0x3E5D0 */ Mtx44 matrixProjectionExtra;
-    /* 0x3E610 */ MatrixHint aMatrixHint[64];
-    /* 0x3EF10 */ Mtx44 unknown;
-    /* 0x3EF10 */ Mtx44 unknown2;
-    s32 pad2[0x12]; // 1 Mtx44 + 2 floats?
-    /* 0x3F212 */ u8 primLODmin;
-    /* 0x3F214 */ u8 primLODfrac;
-    /* 0x3F218 */ u8 lastTile;
-    /* 0x3F21C */ u8 iTileDrawn;
-    /* 0x3F220 */ GXColor aColor[FCT_COUNT];
+    /* 0x3E7D0 */ Mtx44 matrixProjection;
+    /* 0x3E810 */ Mtx44 matrixProjectionExtra;
+    /* 0x3E850 */ MatrixHint aMatrixHint[64];
+    /* 0x3F150 */ Mtx44 unknown;
+    /* 0x3F190 */ Mtx44 unknown2;
+    /* 0x3F1D0 */ s32 pad2[0x12]; // 1 Mtx44 + 2 floats?
+    /* 0x3F218 */ u8 primLODmin;
+    /* 0x3F219 */ u8 primLODfrac;
+    /* 0x3F21A */ u8 lastTile;
+    /* 0x3F21B */ u8 iTileDrawn;
+    /* 0x3F21C */ GXColor aColor[FCT_COUNT];
     /* 0x3F230 */ u32 nModeVtx;
 
     //! TODO: find which of these members got removed
     /* 0x3F234 */ u16* nTempBuffer;
     /* 0x3F238 */ u16* nCopyBuffer;
     /* 0x3F23C */ u32* nLensBuffer;
-    // /* 0x3F008 */ u16* nCameraBuffer;
+    // u16* nCameraBuffer;
 } Frame; // size = 0x3F240
 
 extern _XL_OBJECTTYPE gClassFrame;
