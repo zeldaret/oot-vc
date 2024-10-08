@@ -839,9 +839,9 @@ void fn_8004A314(Frame* pFrame) {
     }
 }
 
-// fn_8004A69C
+// frameDrawSetupFog_StarFox
 
-bool fn_8004A89C(Frame* pFrame) {
+bool frameDrawSetupFog_Default(Frame* pFrame) {
     GXColor color;
     GXFogType nFogType;
     f32 rNear;
@@ -1661,18 +1661,18 @@ static bool frameDrawSetupDP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 ver
                 case NFXJ:
                 case NFXE:
                 case NFXP:
-                    if (!fn_8004A69C(pFrame)) {
+                    if (!frameDrawSetupFog_StarFox(pFrame)) {
                         return false;
                     }
                 case CZLJ:
                 case CZLE:
                 case NZLP:
-                    if (!fn_8004A89C(pFrame)) {
+                    if (!frameDrawSetupFog_Default(pFrame)) {
                         return false;
                     }
                     break;
                 default:
-                    if (!fn_8004A89C(pFrame)) {
+                    if (!frameDrawSetupFog_Default(pFrame)) {
                         return false;
                     }
                     break;
