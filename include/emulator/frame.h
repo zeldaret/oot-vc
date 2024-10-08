@@ -346,7 +346,9 @@ typedef struct Frame {
     /* 0x3E850 */ MatrixHint aMatrixHint[64];
     /* 0x3F150 */ Mtx44 unknown;
     /* 0x3F190 */ Mtx44 unknown2;
-    /* 0x3F1D0 */ s32 pad2[0x12]; // 1 Mtx44 + 2 floats?
+    /* 0x3F1D0 */ Mtx44 unknown3;
+    /* 0x3F210 */ f32 unk_3F210;
+    /* 0x3F214 */ f32 unk_3F214;
     /* 0x3F218 */ u8 primLODmin;
     /* 0x3F219 */ u8 primLODfrac;
     /* 0x3F21A */ u8 lastTile;
