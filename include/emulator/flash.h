@@ -21,7 +21,7 @@ typedef struct Flash {
 
 bool fn_80045260(Flash* pFLASH, s32 arg1, void* arg2);
 bool fn_800452B0(Flash* pFLASH, s32 arg1, void* arg2);
-bool fn_80045300(Flash* pFLASH, u32* arg1);
+bool flashGetSize(Flash* pFLASH, u32* pnFlashSize);
 bool flashEvent(Flash* pFLASH, s32 nEvent, void* pArgument);
 
 extern _XL_OBJECTTYPE gClassFlash;

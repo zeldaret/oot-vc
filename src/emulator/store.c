@@ -185,7 +185,7 @@ bool fn_80061BC0(Store* pStore, void* pHeapTarget, s32 nOffset, s32 nByteCount) 
 static void fn_80061C08(s32 nResult, NANDCommandBlock* block) {
     Store* pStore = (Store*)NANDGetUserData(block);
 
-    if (nResult != 0) {
+    if (nResult != NAND_RESULT_OK) {
         pStore->eResult = nResult;
     }
 
@@ -199,7 +199,7 @@ static void fn_80061C4C(s32 nResult, NANDCommandBlock* block) {
     pStore->eResult = nResult;
     nCloseResult = NANDCloseAsync(&pStore->nandFileInfo, fn_80061C08, &pStore->nandCmdBlock);
 
-    if (nCloseResult) {
+    if (nCloseResult != NAND_RESULT_OK) {
         pStore->eResult = nCloseResult;
         pStore->unk_B9 = 1;
     }
