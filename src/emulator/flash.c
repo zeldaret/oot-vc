@@ -35,7 +35,7 @@ static bool flashPut32(Flash* pFLASH, u32 nAddress, s32* pData) {
                 }
 
                 if (pFLASH->unk_14 == 0xFFFFFFFF) {
-                    for (i = 0; i < pFLASH->pStore->unk_00; i += 0x80) {
+                    for (i = 0; i < pFLASH->pStore->nFileSize; i += 0x80) {
                         if (!fn_80061BC0(pFLASH->pStore, buffer, i, 0x80)) {
                             return false;
                         }
@@ -151,7 +151,7 @@ bool fn_800452B0(Flash* pFLASH, s32 arg1, void* arg2) {
 }
 
 bool fn_80045300(Flash* pFLASH, u32* arg1) {
-    *arg1 = pFLASH->unk_00;
+    *arg1 = pFLASH->nFlashSize;
 
     return true;
 }
@@ -167,7 +167,7 @@ static inline bool flashEvent_UnknownInline(Flash* pFLASH, void* pArgument) {
         pArgument = (void*)0x4000;
     }
 
-    pFLASH->unk_00 = (u32)pArgument;
+    pFLASH->nFlashSize = (u32)pArgument;
 
     if (!fn_80061770((void**)&pFLASH->pStore, "EEP", gpSystem->eTypeROM, pArgument)) {
         return false;

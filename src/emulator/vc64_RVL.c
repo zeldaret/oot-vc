@@ -56,6 +56,7 @@ static bool simulatorParseArguments(void) {
     }
 
     iArgument = 1;
+
     while (iArgument < xlCoreGetArgumentCount()) {
         xlCoreGetArgument(iArgument, &szText);
         iArgument += 1;
@@ -143,7 +144,7 @@ bool xlMain(void) {
 
     simulatorParseArguments();
 
-    if (!xlHeapGetFree(&nSize0)) {
+    if (!xlHeapGetHeap1Free(&nSize0)) {
         return false;
     }
 
@@ -172,7 +173,7 @@ bool xlMain(void) {
 
     GXSetCopyClear(color, 0xFFFFFF);
 
-    if (!xlHeapGetFree(&nSize0)) {
+    if (!xlHeapGetHeap1Free(&nSize0)) {
         return false;
     }
 
@@ -202,7 +203,7 @@ bool xlMain(void) {
         return false;
     }
 
-    if (!xlHeapGetFree(&nSize1)) {
+    if (!xlHeapGetHeap1Free(&nSize1)) {
         return false;
     }
 

@@ -7,6 +7,7 @@
 #include "emulator/system.h"
 #include "emulator/vc64_RVL.h"
 #include "emulator/xlCoreRVL.h"
+#include "emulator/xlFile.h"
 #include "emulator/xlHeap.h"
 #include "macros.h"
 #include "revolution/os.h"
@@ -282,8 +283,8 @@ static bool romLoadUpdate(Rom* pROM) {
         return true;
     }
 
-    iBlock0 = pROM->load.nOffset0 >> 0xD;
-    iBlock1 = pROM->load.nOffset1 >> 0xD;
+    iBlock0 = pROM->load.nOffset0 >> 13;
+    iBlock1 = pROM->load.nOffset1 >> 13;
 
     while (iBlock0 <= iBlock1) {
         if (pCPU->nRetrace != pCPU->nRetraceUsed) {
@@ -308,8 +309,8 @@ static bool romLoadUpdate(Rom* pROM) {
         pROM->load.nOffset0 = ++iBlock0 * 0x2000;
     }
 
-    pROM->load.nOffset1 = 0U;
-    pROM->load.nOffset0 = 0U;
+    pROM->load.nOffset1 = 0;
+    pROM->load.nOffset0 = 0;
     return true;
 }
 
@@ -329,6 +330,8 @@ static inline bool romCheckOffsets(Rom* pROM) {
 
     return true;
 }
+
+static inline void romSetEndianness(Rom* pROM) { pROM->bFlip = pROM->acHeader[0] == 0x37 && pROM->acHeader[1] == 0x80; }
 
 static bool romCopyUpdate(Rom* pROM) {
     RomBlock* pBlock;
@@ -406,30 +409,6 @@ static bool romCopyUpdate(Rom* pROM) {
     return true;
 }
 
-static inline bool romLoadFullOrPartLoop(Rom* pROM) {
-    s32 i;
-    s32 iCache;
-    u32 temp_r27;
-    u32 temp_r30;
-
-    temp_r27 = (u32)(pROM->nSize - 1) / 0x2000;
-    temp_r30 = pROM->nTick = temp_r27 + 1;
-
-    for (i = 0; i < temp_r30; i++) {
-        pROM->aBlock[i].nTickUsed = temp_r27 - i;
-
-        if (!romMakeFreeCache(pROM, &iCache, RCT_RAM)) {
-            return false;
-        }
-
-        if (!romLoadBlock(pROM, i, iCache, NULL)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 static bool fn_80042C98(Rom* pROM) {
     tXL_FILE* pFile;
 
@@ -500,6 +479,30 @@ s32 fn_80042E30(EDString* pSTString) {
     }
 
     return ret;
+}
+
+static inline bool romLoadFullOrPartLoop(Rom* pROM) {
+    s32 i;
+    s32 iCache;
+    u32 temp_r27;
+    u32 temp_r30;
+
+    temp_r27 = (u32)(pROM->nSize - 1) / 0x2000;
+    temp_r30 = pROM->nTick = temp_r27 + 1;
+
+    for (i = 0; i < temp_r30; i++) {
+        pROM->aBlock[i].nTickUsed = temp_r27 - i;
+
+        if (!romMakeFreeCache(pROM, &iCache, RCT_RAM)) {
+            return false;
+        }
+
+        if (!romLoadBlock(pROM, i, iCache, NULL)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 static bool romLoadFullOrPart(Rom* pROM) {
@@ -829,8 +832,8 @@ bool romSetImage(Rom* pROM, char* szNameFile) {
     s32 iName;
     s32 nSize;
     s32 nHeapSize;
-    s32 i;
-    u32 pData[0x400 / sizeof(u32)];
+    s32 iCode;
+    u32 anData[256];
 
     for (iName = 0; (szNameFile[iName] != '\0') && (iName < 0x200); iName++) {
         pROM->acNameFile[iName] = szNameFile[iName];
@@ -860,7 +863,7 @@ bool romSetImage(Rom* pROM, char* szNameFile) {
         return false;
     }
 
-    if (!xlFileOpen(&pFile, 1, szNameFile)) {
+    if (!xlFileOpen(&pFile, XLFT_BINARY, szNameFile)) {
         return false;
     }
 
@@ -876,7 +879,7 @@ bool romSetImage(Rom* pROM, char* szNameFile) {
         return false;
     }
 
-    if (!xlFileGet(pFile, &pData, sizeof(pData))) {
+    if (!xlFileGet(pFile, &anData, sizeof(anData))) {
         return false;
     }
 
@@ -884,13 +887,11 @@ bool romSetImage(Rom* pROM, char* szNameFile) {
         return false;
     }
 
-    pROM->unk_19ABC = 0;
-
-    for (i = 0; i < ARRAY_COUNT(pData); i++) {
-        pROM->unk_19ABC += pData[i];
+    for (pROM->nChecksum = 0, iCode = 0; iCode < ARRAY_COUNT(anData); iCode++) {
+        pROM->nChecksum += anData[iCode];
     }
 
-    pROM->bFlip = (pROM->acHeader[0] == 0x37 && pROM->acHeader[1] == 0x80);
+    romSetEndianness(pROM);
     return true;
 }
 

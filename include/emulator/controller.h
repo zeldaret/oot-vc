@@ -33,13 +33,12 @@ typedef struct Controller {
     /* 0x0BC */ s32 unk_BC[PAD_MAX_CONTROLLERS];
     /* 0x0CC */ s32 unk_CC[PAD_MAX_CONTROLLERS];
     /* 0x0DC */ u32 controllerConfiguration[PAD_MAX_CONTROLLERS][GCN_BTN_COUNT];
-    /* 0x21C */ s32 unk_21C;
+    /* 0x21C */ ErrorIndex iString;
     /* 0x220 */ s32 unk_220;
     /* 0x224 */ s32 unk_224;
     /* 0x228 */ u32 unk_228[PAD_MAX_CONTROLLERS];
     /* 0x238 */ u32 unk_238[PAD_MAX_CONTROLLERS];
-    /* 0x248 */ s32 unk_248;
-    /* 0x24C */ s32 unk_24C;
+    /* 0x248 */ s64 unk_248;
     /* 0x250 */ u8 unk_250[0x20];
     /* 0x270 */ u32 unk_270[PAD_MAX_CONTROLLERS];
     /* 0x280 */ u32 unk_280[PAD_MAX_CONTROLLERS];

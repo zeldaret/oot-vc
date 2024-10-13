@@ -2,6 +2,7 @@
 #define _FLASH_H
 
 #include "emulator/xlObject.h"
+#include "macros.h"
 #include "revolution/types.h"
 
 #ifdef __cplusplus
@@ -9,7 +10,7 @@ extern "C" {
 #endif
 
 typedef struct Flash {
-    /* 0x00 */ u32 unk_00;
+    /* 0x00 */ u32 nFlashSize;
     /* 0x04 */ struct Store* pStore;
     /* 0x08 */ s32 flashStatus;
     /* 0x0C */ s32 flashCommand;
