@@ -5,8 +5,7 @@
 # This generator is intentionally project-agnostic
 # and shared between multiple projects. Any configuration
 # specific to a project should be added to `configure.py`.
-# But, we've modified it anyway to support asm_processor and
-# make multiple versions more user-friendly.
+# But, we've modified it anyway to make multiple versions more user-friendly.
 ###
 
 import io
@@ -41,7 +40,6 @@ class Object:
             "add_to_all": True,
             "asflags": None,
             "asm_dir": None,
-            "asm_processor": False,
             "cflags": None,
             "extra_asflags": None,
             "extra_cflags": None,
@@ -520,38 +518,12 @@ def generate_build_ninja(
     )
     gnu_as_implicit = [binutils_implicit or gnu_as, dtk]
 
-    # MWCC with asm_processor
-    objcopy = binutils / f"powerpc-eabi-objcopy{EXE}"
-    mwcc_asm_processor_cmd = f'tools/asm_processor/compile.sh "{wrapper_cmd} {mwcc} $cflags -MMD" "{gnu_as} $asflags" {objcopy} $in $out'
-    mwcc_asm_processor_implicit: List[Optional[Path]] = [
-        *mwcc_implicit,
-        binutils_implicit or gnu_as,
-        Path("tools/asm_processor/compile.sh"),
-        Path("tools/asm_processor/asm_processor.py"),
-    ]
-
-    # MWCC with asm_processor and UTF-8 to Shift JIS wrapper
-    mwcc_asm_processor_sjis_cmd = f'tools/asm_processor/compile.sh "{wrapper_cmd}{sjiswrap} {mwcc} $cflags -MMD" "{gnu_as} $asflags" {objcopy} $in $out'
-    mwcc_asm_processor_sjis_implicit: List[Optional[Path]] = [
-        *mwcc_asm_processor_implicit,
-        sjiswrap,
-    ]
-
     if os.name != "nt":
         transform_dep = config.tools_dir / "transform_dep.py"
         mwcc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
         mwcc_sjis_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
-        mwcc_asm_processor_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
-        mwcc_asm_processor_sjis_cmd += (
-            f" && $python {transform_dep} $basefile.d $basefile.d"
-        )
         mwcc_implicit.append(transform_dep)
         mwcc_sjis_implicit.append(transform_dep)
-        mwcc_asm_processor_implicit.append(transform_dep)
-        mwcc_asm_processor_sjis_implicit.append(transform_dep)
-    else:
-        mwcc_asm_processor_cmd = "sh " + mwcc_asm_processor_cmd
-        mwcc_asm_processor_sjis_cmd = "sh " + mwcc_asm_processor_sjis_cmd
 
     n.comment("Link ELF file")
     n.rule(
@@ -585,26 +557,6 @@ def generate_build_ninja(
     n.rule(
         name="mwcc_sjis",
         command=mwcc_sjis_cmd,
-        description="MWCC $out",
-        depfile="$basefile.d",
-        deps="gcc",
-    )
-    n.newline()
-
-    n.comment("MWCC build (with asm_processor)")
-    n.rule(
-        name="mwcc_asm_processor",
-        command=mwcc_asm_processor_cmd,
-        description="MWCC $out",
-        depfile="$basefile.d",
-        deps="gcc",
-    )
-    n.newline()
-
-    n.comment("MWCC build (with asm_processor and UTF-8 to Shift JIS wrapper)")
-    n.rule(
-        name="mwcc_asm_processor_sjis",
-        command=mwcc_asm_processor_sjis_cmd,
         description="MWCC $out",
         depfile="$basefile.d",
         deps="gcc",
@@ -776,45 +728,22 @@ def generate_build_ninja(
             # Add MWCC build rule
             lib_name = obj.options["lib"]
             n.comment(f"{obj.name}: {lib_name} (linked {obj.completed(version)})")
-            if obj.options["asm_processor"]:
-                n.build(
-                    outputs=obj.src_obj_path,
-                    rule=(
-                        "mwcc_asm_processor_sjis"
-                        if obj.options["shift_jis"]
-                        else "mwcc_asm_processor"
-                    ),
-                    inputs=src_path,
-                    variables={
-                        "mw_version": Path(obj.options["mw_version"]),
-                        "asflags": asflags_str,
-                        "cflags": cflags_str,
-                        "basedir": os.path.dirname(obj.src_obj_path),
-                        "basefile": obj.src_obj_path.with_suffix(""),
-                    },
-                    implicit=(
-                        mwcc_asm_processor_sjis_implicit
-                        if obj.options["shift_jis"]
-                        else mwcc_asm_processor_implicit
-                    ),
-                )
-            else:
-                n.build(
-                    outputs=obj.src_obj_path,
-                    rule="mwcc_sjis" if obj.options["shift_jis"] else "mwcc",
-                    inputs=src_path,
-                    variables={
-                        "mw_version": Path(obj.options["mw_version"]),
-                        "cflags": cflags_str,
-                        "basedir": os.path.dirname(obj.src_obj_path),
-                        "basefile": obj.src_obj_path.with_suffix(""),
-                    },
-                    implicit=(
-                        mwcc_sjis_implicit
-                        if obj.options["shift_jis"]
-                        else mwcc_implicit
-                    ),
-                )
+            n.build(
+                outputs=obj.src_obj_path,
+                rule="mwcc_sjis" if obj.options["shift_jis"] else "mwcc",
+                inputs=src_path,
+                variables={
+                    "mw_version": Path(obj.options["mw_version"]),
+                    "cflags": cflags_str,
+                    "basedir": os.path.dirname(obj.src_obj_path),
+                    "basefile": obj.src_obj_path.with_suffix(""),
+                },
+                implicit=(
+                    mwcc_sjis_implicit
+                    if obj.options["shift_jis"]
+                    else mwcc_implicit
+                ),
+            )
 
             # Add ctx build rule
             if obj.ctx_path is not None:
@@ -1321,7 +1250,7 @@ def calculate_progress(config: ProjectConfig, version: str) -> None:
                 return
 
             obj = objects.get(build_obj["name"])
-            if obj is None or not obj.completed(version) or obj.options["asm_processor"]:
+            if obj is None or not obj.completed(version):
                 return
 
             self.code_progress += build_obj["code_size"]

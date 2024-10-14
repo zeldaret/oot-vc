@@ -1502,7 +1502,6 @@ static void cpuCompileNOP(s32* anCode, s32* iCode, s32 number) {
 
 #ifndef NON_MATCHING
 static bool fn_8000E734(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3);
-// #pragma GLOBAL_ASM("asm/non_matchings/cpu/fn_8000E734.s")
 #else
 static bool fn_8000E734(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3) {
     if (gpSystem->eTypeROM == CLBJ || gpSystem->eTypeROM == CLBE || gpSystem->eTypeROM == CLBP) {
@@ -1602,7 +1601,6 @@ s32 fn_8000E81C(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3, s32 arg5, s32* arg6, s3
  * @return bool true on success, false otherwise.
  */
 static bool cpuGetPPC(Cpu* pCPU, s32* pnAddress, CpuFunction* pFunction, s32* anCode, s32* piCode, bool bSlot);
-// #pragma GLOBAL_ASM("asm/non_matchings/cpu/cpuGetPPC.s")
 
 //! TODO: remove NO_INLINE once this is matched
 static bool fn_80031D4C(Cpu* pCPU, CpuFunction* pFunction, s32 unknown) NO_INLINE { return false; }
