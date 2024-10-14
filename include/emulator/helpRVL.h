@@ -5,6 +5,10 @@
 #include "revolution/tpl.h"
 #include "revolution/types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef bool (*HelpMenuCallback)(void*);
 
 typedef struct struct_801C7D28 {
@@ -32,5 +36,9 @@ bool fn_8005F5F4(HelpMenu* pHelpMenu, void* pObject, s32 arg2, HelpMenuCallback 
 bool helpMenuEvent(HelpMenu* pHelpMenu, s32 nEvent, void* pArgument);
 
 extern _XL_OBJECTTYPE gClassHelpMenu;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

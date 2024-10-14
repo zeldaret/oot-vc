@@ -8,14 +8,13 @@
 #include "emulator/xlFileRVL.h"
 #include "emulator/xlHeap.h"
 #include "macros.h"
+#include "math.h"
 #include "revolution/cnt.h"
 #include "revolution/gx.h"
 #include "revolution/mem.h"
 #include "revolution/os.h"
 #include "revolution/vi.h"
 #include "string.h"
-
-#include "math.h"
 
 void fn_8005F1A0(void);
 void fn_8005F154(void);
@@ -39,8 +38,8 @@ s32 lbl_8025D0EC;
 s32 lbl_8025D0E8;
 s64 lbl_8025D0D0;
 
-s32 fn_8005E2D0(HelpMenu* pHelpMenu, char* szPath, void** ppBuffer, void* arg3, void* arg4) {
-    CNTFileInfo fileInfo;
+s32 fn_8005E2D0(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, void* arg3, void* arg4) {
+    CNTFileInfoNAND fileInfo;
     void* pNANDBuffer;
     s32 var_r31;
     s32 temp_r30;
@@ -48,7 +47,7 @@ s32 fn_8005E2D0(HelpMenu* pHelpMenu, char* szPath, void** ppBuffer, void* arg3, 
 
     var_r29 = 0;
 
-    if (ARCGetFile(pHelpMenu, szPath, &fileInfo)) {
+    if (contentOpenNAND(pHandle, szPath, &fileInfo)) {
         return 0;
     }
 
@@ -98,7 +97,7 @@ s32 fn_8005E2D0(HelpMenu* pHelpMenu, char* szPath, void** ppBuffer, void* arg3, 
     return var_r31;
 }
 
-void fn_8005E45C(void* arg0, GXColor color) {
+void fn_8005E45C(GXTexObj* pTexObj, GXColor color) {
     GXInvalidateVtxCache();
     GXInvalidateTexAll();
     GXClearVtxDesc();
@@ -108,23 +107,23 @@ void fn_8005E45C(void* arg0, GXColor color) {
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_RGB565, 0);
     GXSetNumChans(0);
     GXSetNumTexGens(1);
-    fn_800A2400(0);
+    GXSetNumIndStages(0);
     GXSetNumTevStages(1);
-    fn_800A2420(0);
+    GXSetTevDirect(GX_TEVSTAGE0);
     GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_C0, GX_CC_TEXC, GX_CC_ZERO);
     GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_A0, GX_CA_TEXA, GX_CA_ZERO);
-    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
-    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
     GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
-    fn_8009F624(0, 1, 4, 0x3C, 0, 0x7D);
-    GXSetColorUpdate(1);
-    fn_800A2F0C(1);
-    fn_800A2E90(1, 4, 5, 0xF);
-    GXSetZMode(0U, GX_ALWAYS, 0);
-    fn_800A28FC(7, 0, 1, 7, 0);
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, 0x3C, GX_FALSE, 0x7D);
+    GXSetColorUpdate(GX_ENABLE);
+    GXSetAlphaUpdate(GX_ENABLE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_SET);
+    GXSetZMode(GX_DISABLE, GX_ALWAYS, GX_DISABLE);
+    GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
     GXSetCullMode(GX_CULL_NONE);
-    fn_800A35B8(0);
-    fn_800A18D4(arg0, 0);
+    GXSetClipMode(GX_CLIP_ENABLE);
+    GXLoadTexObj(pTexObj, GX_TEXMAP0);
     GXSetTevColor(GX_TEVREG0, color);
 }
 
@@ -138,22 +137,22 @@ void fn_8005E638(GXColor color) {
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_TEX_ST, GX_RGBA8, 0);
     GXSetNumChans(1);
     GXSetNumTexGens(0);
-    fn_800A2400(0);
+    GXSetNumIndStages(0);
     GXSetNumTevStages(1);
-    fn_800A2420(0);
+    GXSetTevDirect(GX_TEVSTAGE0);
     GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_C0, GX_CC_RASC, GX_CC_ZERO);
     GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_A0, GX_CA_RASA, GX_CA_ZERO);
-    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
-    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, 1, GX_TEVPREV);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
     GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
-    fn_800A120C(4, 0, 1, 1, 0, 2, 2);
-    GXSetColorUpdate(1);
-    fn_800A2F0C(1);
-    fn_800A2E90(1, 4, 5, 0xF);
-    GXSetZMode(0U, GX_ALWAYS, 0);
-    fn_800A28FC(7, 0, 1, 7, 0);
+    GXSetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_CLAMP, GX_AF_NONE);
+    GXSetColorUpdate(GX_ENABLE);
+    GXSetAlphaUpdate(GX_ENABLE);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_SET);
+    GXSetZMode(GX_DISABLE, GX_ALWAYS, GX_DISABLE);
+    GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
     GXSetCullMode(GX_CULL_NONE);
-    fn_800A35B8(0);
+    GXSetClipMode(GX_CLIP_ENABLE);
     GXSetTevColor(GX_TEVREG0, color);
 }
 
