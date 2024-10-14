@@ -4,6 +4,7 @@
 #include "emulator/xlObject.h"
 #include "revolution/tpl.h"
 #include "revolution/types.h"
+#include "revolution/cnt.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,9 +15,11 @@ typedef bool (*HelpMenuCallback)(void*);
 typedef struct struct_801C7D28 {
     /* 0x00 */ TPLPalette* pTPLPalette;
     /* 0x04 */ s32 unk04;
-    /* 0x08 */ s32 unk08;
-    /* 0x08 */ u8 unk0C;
-    /* 0x08 */ u8 unk0D;
+    /* 0x08 */ u32 unk08;
+    /* 0x0C */ s8 unk0C;
+    /* 0x0D */ u8 unk0D;
+    /* 0x10 */ u8 unk10[0x3C];
+    /* 0x4C */ CNTHandle handle;
 } struct_801C7D28; // size = 0x90
 
 typedef struct HelpMenu {
