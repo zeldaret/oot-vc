@@ -10,6 +10,7 @@ extern "C" {
 #define SC_PRDINFO_SIZE 0x100
 
 typedef enum {
+    SC_AREA_NONE = -1,
     SC_AREA_JPN,
     SC_AREA_USA,
     SC_AREA_EUR,

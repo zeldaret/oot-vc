@@ -260,8 +260,8 @@ typedef struct SystemException {
     /* 0x00 */ char* szType;
     /* 0x04 */ u32 nMask;
     /* 0x08 */ CpuExceptionCode eCode;
-    /* 0x10 */ MIInterruptType eTypeMips;
-    /* 0x0C */ SystemInterruptType eType;
+    /* 0x0C */ MIInterruptType eTypeMips;
+    /* 0x10 */ SystemInterruptType eType;
 } SystemException; // size = 0x14
 
 typedef struct System {
@@ -270,10 +270,9 @@ typedef struct System {
     /* 0x08 */ SystemObjectType storageDevice;
     /* 0x0C */ SystemRomType eTypeROM;
     /* 0x10 */ void* apObject[SOT_COUNT];
-    /* 0x6C */ s32 unk_6C;
+    /* 0x6C */ struct Store* unk_6C;
     /* 0x70 */ u64 nAddressBreak;
-    /* 0x78 */ s32 unk_78[19];
-    /* 0xC4 */ void* pSound;
+    /* 0x78 */ CpuBlock aBlock[4];
     /* 0xC8 */ u8 anException[16];
 } System; // size = 0xD8
 

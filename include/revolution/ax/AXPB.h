@@ -104,14 +104,14 @@ typedef enum {
 };
 
 typedef struct _AXPBMIX {
-    /* 0x0 */ u16 vL;
-    /* 0x2 */ u16 vDeltaL;
-    /* 0x4 */ u16 vR;
-    /* 0x6 */ u16 vDeltaR;
-    /* 0x8 */ u16 vAuxAL;
-    /* 0xA */ u16 vDeltaAuxAL;
-    /* 0xC */ u16 vAuxAR;
-    /* 0xE */ u16 vDeltaAuxAR;
+    /* 0x00 */ u16 vL;
+    /* 0x02 */ u16 vDeltaL;
+    /* 0x04 */ u16 vR;
+    /* 0x06 */ u16 vDeltaR;
+    /* 0x08 */ u16 vAuxAL;
+    /* 0x0A */ u16 vDeltaAuxAL;
+    /* 0x0C */ u16 vAuxAR;
+    /* 0x0E */ u16 vDeltaAuxAR;
     /* 0x10 */ u16 vAuxBL;
     /* 0x12 */ u16 vDeltaAuxBL;
     /* 0x14 */ u16 vAuxBR;
@@ -128,32 +128,32 @@ typedef struct _AXPBMIX {
     /* 0x2A */ u16 vDeltaAuxBS;
     /* 0x2C */ u16 vAuxCS;
     /* 0x2E */ u16 vDeltaAuxCS;
-} AXPBMIX;
+} AXPBMIX; // size = 0x30
 
 typedef struct _AXPBITD {
-    /* 0x0 */ u16 flag;
-    /* 0x2 */ u16 bufferHi;
-    /* 0x4 */ u16 bufferLo;
-    /* 0x6 */ u16 shiftL;
-    /* 0x8 */ u16 shiftR;
-    /* 0xA */ u16 targetShiftL;
-    /* 0xC */ u16 targetShiftR;
-} AXPBITD;
+    /* 0x00 */ u16 flag;
+    /* 0x02 */ u16 bufferHi;
+    /* 0x04 */ u16 bufferLo;
+    /* 0x06 */ u16 shiftL;
+    /* 0x08 */ u16 shiftR;
+    /* 0x0A */ u16 targetShiftL;
+    /* 0x0C */ u16 targetShiftR;
+} AXPBITD; // size = 0xE
 
 typedef struct _AXPBDPOP {
-    /* 0x0 */ s16 aL;
-    /* 0x2 */ s16 aAuxAL;
-    /* 0x4 */ s16 aAuxBL;
-    /* 0x6 */ s16 aAuxCL;
-    /* 0x8 */ s16 aR;
-    /* 0xA */ s16 aAuxAR;
-    /* 0xC */ s16 aAuxBR;
-    /* 0xE */ s16 aAuxCR;
+    /* 0x00 */ s16 aL;
+    /* 0x02 */ s16 aAuxAL;
+    /* 0x04 */ s16 aAuxBL;
+    /* 0x06 */ s16 aAuxCL;
+    /* 0x08 */ s16 aR;
+    /* 0x0A */ s16 aAuxAR;
+    /* 0x0C */ s16 aAuxBR;
+    /* 0x0E */ s16 aAuxCR;
     /* 0x10 */ s16 aS;
     /* 0x12 */ s16 aAuxAS;
     /* 0x14 */ s16 aAuxBS;
     /* 0x16 */ s16 aAuxCS;
-} AXPBDPOP;
+} AXPBDPOP; // size = 0x18
 
 typedef struct _AXPBVE {
     /* 0x0 */ u16 currentVolume;
@@ -253,33 +253,31 @@ typedef union __AXPBRMTIIR {
 } AXPBRMTIIR;
 
 typedef struct _AXPB {
-    /* 0x0 */ u16 nextHi;
-    /* 0x2 */ u16 nextLo;
-    /* 0x4 */ u16 currHi;
-    /* 0x6 */ u16 currLo;
-    /* 0x8 */ u16 srcSelect;
-    /* 0xA */ u16 coefSelect;
-    /* 0xC */ u32 mixerCtrl;
-    /* 0x10 */ u16 state;
-    /* 0x12 */ u16 type;
-    /* 0x14 */ AXPBMIX mix;
-    /* 0x44 */ AXPBITD itd;
-    u8 pad1[0x9]; //! TODO: figure out this struct
-    /* 0x52 */ AXPBDPOP dpop;
-    /* 0x6A */ AXPBVE ve;
-    /* 0x6E */ AXPBADDR addr;
-    /* 0x7E */ AXPBADPCM adpcm;
-    /* 0xA6 */ AXPBSRC src;
-    /* 0xB4 */ AXPBADPCMLOOP adpcmLoop;
-    /* 0xBA */ AXPBLPF lpf;
-    /* 0xC2 */ AXPBBIQUAD biquad;
-    /* 0xD6 */ u16 remote;
-    /* 0xD8 */ u16 rmtMixerCtrl;
-    /* 0xDA */ AXPBRMTMIX rmtMix;
-    /* 0xFA */ AXPBRMTDPOP rmtDpop;
+    /* 0x000 */ u16 nextHi;
+    /* 0x002 */ u16 nextLo;
+    /* 0x004 */ u16 currHi;
+    /* 0x006 */ u16 currLo;
+    /* 0x008 */ u16 srcSelect;
+    /* 0x00A */ u16 coefSelect;
+    /* 0x00C */ u32 mixerCtrl;
+    /* 0x010 */ u16 state;
+    /* 0x012 */ u16 type;
+    /* 0x014 */ AXPBMIX mix;
+    /* 0x044 */ AXPBITD itd;
+    /* 0x052 */ u32 remote;
+    /* 0x054 */ u32 rmtMixerCtrl;
+    /* 0x056 */ AXPBDPOP dpop;
+    /* 0x06A */ AXPBVE ve;
+    /* 0x06E */ AXPBADDR addr;
+    /* 0x07E */ AXPBADPCM adpcm;
+    /* 0x0A6 */ AXPBSRC src;
+    /* 0x0B4 */ AXPBADPCMLOOP adpcmLoop;
+    /* 0x0C2 */ AXPBBIQUAD biquad;
+    /* 0x0DA */ AXPBRMTMIX rmtMix;
+    /* 0x0FA */ AXPBRMTDPOP rmtDpop;
     /* 0x10A */ AXPBRMTSRC rmtSrc;
     /* 0x114 */ AXPBRMTIIR rmtIIR;
-    u8 padding[0x140 - /* 0x128 */ 0x128];
+    /* 0x128 */ u8 padding[0x140 - 0x128];
 } AXPB;
 
 #ifdef __cplusplus

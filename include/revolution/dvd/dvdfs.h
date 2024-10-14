@@ -15,6 +15,7 @@ extern bool __DVDLongFileNameFlag;
 void __DVDFSInit(void);
 s32 DVDConvertPathToEntrynum(const char* path);
 bool DVDFastOpen(s32 entrynum, DVDFileInfo* info);
+bool DVDEntrynumIsDir(s32 entrynum);
 bool DVDOpen(const char* path, DVDFileInfo* info);
 bool DVDClose(DVDFileInfo* info);
 bool DVDGetCurrentDir(char* buffer, u32 maxlen);

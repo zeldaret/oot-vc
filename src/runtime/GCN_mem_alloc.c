@@ -1,8 +1,6 @@
+#include "emulator/errordisplay.h"
 #include "macros.h"
 #include "revolution/os.h"
-
-//! TODO: document
-void* fn_80063C28(s32 handle, void* p);
 
 static inline void InitInline(void) {
     void* arenaLo;
@@ -24,9 +22,9 @@ static inline void InitInline(void) {
     }
 }
 
-void Init(void* ptr) {
+void Init(s32 size) {
     InitInline();
-    fn_80063C28(__OSCurrHeap, ptr);
+    OSAllocFromHeap(__OSCurrHeap, size);
 }
 
 WEAK void __sys_free(void* ptr) {

@@ -30,7 +30,7 @@ typedef struct tXL_FILE {
     /* 0x1C */ char unk_1C[0x3];
     /* 0x1F */ u32 unk_1F;
     /* 0x24 */ s32 unk_24;
-    /* 0x28 */ CNTFileInfo info;
+    /* 0x28 */ CNTFileInfoNAND info;
 } tXL_FILE; // size = 0x38
 
 bool xlFileSetOpen(DVDOpenCallback pfOpen);
@@ -41,6 +41,8 @@ bool xlFileSetPosition(tXL_FILE* pFile, s32 nOffset);
 bool xlFileEvent(tXL_FILE* pFile, s32 nEvent, void* pArgument);
 
 extern _XL_OBJECTTYPE gTypeFile;
+extern CNTHandle gCNTHandle;
+extern MEMAllocator gCNTAllocator;
 
 #ifdef __cplusplus
 }

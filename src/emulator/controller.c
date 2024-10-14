@@ -4,7 +4,9 @@
 #include "emulator/vc64_RVL.h"
 #include "emulator/xlCoreRVL.h"
 #include "emulator/xlHeap.h"
+#include "macros.h"
 #include "math.h"
+#include "revolution/mem.h"
 #include "revolution/vi.h"
 #include "revolution/wpad.h"
 
@@ -31,24 +33,24 @@ _XL_OBJECTTYPE gClassController = {
     (EventFunc)controllerEvent,
 };
 
-lbl_801C7DB8_Struct lbl_801C7DB8;
+MEMAllocator gControllerAllocator;
 ControllerThread gControllerThread;
 
 static void* sControllerHeap;
 static VIRetraceCallback sControllerVICallback;
 
-bool fn_80061FB0(Controller* pController) {
-    bool bSuccess = fn_800B163C(&lbl_801C7DB8, pController->unk_00);
+void* fn_80061FB0(u32 nSize) {
+    void* pBuffer = MEMAllocFromAllocator(&gControllerAllocator, nSize);
 
-    if (!bSuccess) {
+    if (pBuffer == NULL) {
         xlExit();
     }
 
-    return bSuccess;
+    return pBuffer;
 }
 
 bool fn_80061FF8(Controller* pController) {
-    fn_800B164C(&lbl_801C7DB8, pController->unk_00);
+    MEMFreeToAllocator(&gControllerAllocator, pController);
     return true;
 }
 
@@ -62,16 +64,16 @@ static inline bool unk4C_UnknownInline(Controller* pController) {
     return bRet;
 }
 
-s32 fn_80062028(void) {
+s32 fn_80062028(EDString* pSTString) {
     Controller* pController;
 
     OSGetTime();
     pController = SYSTEM_CONTROLLER(gpSystem);
 
-    switch (pController->unk_21C) {
-        case 7:
+    switch (pController->iString) {
+        case ERROR_NO_CONTROLLER:
             return 2;
-        case 8:
+        case ERROR_NEED_CLASSIC:
             if (unk4C_UnknownInline(pController)) {
                 return 2;
             }
@@ -83,22 +85,35 @@ s32 fn_80062028(void) {
     return 0;
 }
 
+bool fn_80080C04(Controller* pController, ErrorIndex iString) {
+    pController->unk_248 = OSGetTime();
+    pController->iString = iString;
+    errorDisplayShow(iString);
+    pController->iString = ERROR_NONE;
+
+    if (!fn_800607C4(SYSTEM_HELP(gpSystem), 0)) {
+        return false;
+    }
+
+    return true;
+}
+
 bool fn_800620A8(Controller* pController) {
     void* sp8;
     s32 i;
 
     pController->unk_220 = 1;
-    pController->unk_21C = -1;
+    pController->iString = ERROR_NONE;
 
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
         pController->unk_228[i] = 0;
         pController->unk_238[i] = 0;
         pController->unk_270[i] = 0;
         pController->unk_280[i] = 0;
         pController->unk_4C[i] = 0;
         pController->unk_BC[i] = pController->unk_CC[i] = 0;
-        pController->stickLeft[i][0] = pController->stickLeft[i][1] = 0;
-        pController->stickRight[i][0] = pController->stickRight[i][1] = 0;
+        pController->stickLeft[i][AXIS_X] = pController->stickLeft[i][AXIS_Y] = 0;
+        pController->stickRight[i][AXIS_X] = pController->stickRight[i][AXIS_Y] = 0;
     }
 
     for (i = 0; i < 19; i++) {
@@ -115,7 +130,7 @@ bool fn_800620A8(Controller* pController) {
         return false;
     }
 
-    fn_800B165C(&lbl_801C7DB8, fn_800B0DF0(sp8, 0x20000, 0), 4);
+    MEMInitAllocatorForExpHeap(&gControllerAllocator, MEMCreateExpHeapEx(sp8, 0x20000, 0), 4);
     fn_800BE994(fn_80061FB0, fn_80061FF8);
     WPADInit();
 
@@ -125,7 +140,7 @@ bool fn_800620A8(Controller* pController) {
 static inline bool controllerValidateIndex(s32 index) {
     bool ret;
 
-    if (index >= 0 && index < 4) {
+    if (index >= 0 && index < PAD_MAX_CONTROLLERS) {
         ret = true;
     } else {
         ret = false;
@@ -145,12 +160,12 @@ bool fn_800622B8(Controller* pController) {
 
     pController->unk_220 = 1;
 
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
         pController->unk_BC[i] = pController->unk_CC[i] = 0;
-        pController->stickLeft[i][0] = pController->stickLeft[i][1] = 0;
-        pController->stickRight[i][1] = 0;
-        pController->unk_21C = -1; // why here
-        pController->stickRight[i][0] = 0;
+        pController->stickLeft[i][AXIS_X] = pController->stickLeft[i][AXIS_Y] = 0;
+        pController->stickRight[i][AXIS_Y] = 0;
+        pController->iString = ERROR_NONE; // why here
+        pController->stickRight[i][AXIS_X] = 0;
 
         if (!controllerValidateIndex(i)) {
             return false;
@@ -162,45 +177,44 @@ bool fn_800622B8(Controller* pController) {
 
 bool fn_800623F4(Controller* pController) { return true; }
 
-bool simulatorDetectController(Controller* pController, s32 arg1) { return arg1 >= 0 && arg1 < 4; }
+bool simulatorDetectController(Controller* pController, s32 arg1) { return arg1 >= 0 && arg1 < PAD_MAX_CONTROLLERS; }
 
-bool fn_80062C18(Controller* pController, s32 arg1, s32* arg2, s32* arg3, s32* arg4, s32* arg5, s32* arg6, s32* arg7) {
-    s32 temp_r3;
-
-    if (arg1 >= 0 && arg1 < 4) {
+bool fn_80062C18(Controller* pController, s32 iController, s32* arg2, s32* arg3, s32* arg4, s32* arg5, s32* arg6,
+                 s32* arg7) {
+    if (iController >= 0 && iController < PAD_MAX_CONTROLLERS) {
         if (arg2 != NULL) {
-            *arg2 = pController->unk_BC[arg1];
+            *arg2 = pController->unk_BC[iController];
         }
 
         if (arg3 != NULL) {
-            *arg3 = pController->unk_CC[arg1];
+            *arg3 = pController->unk_CC[iController];
         }
 
         if (arg4 != NULL) {
-            *arg4 = pController->stickLeft[arg1][0];
+            *arg4 = pController->stickLeft[iController][AXIS_X];
         }
 
         if (arg5 != NULL) {
-            *arg5 = pController->stickLeft[arg1][1];
+            *arg5 = pController->stickLeft[iController][AXIS_Y];
         }
 
         if (arg6 != NULL) {
-            *arg6 = pController->stickRight[arg1][0];
+            *arg6 = pController->stickRight[iController][AXIS_X];
         }
 
         if (arg7 != NULL) {
-            *arg7 = pController->stickRight[arg1][1];
+            *arg7 = pController->stickRight[iController][AXIS_Y];
         }
 
         pController->unk_220 = 1;
-        return !!pController->unk_4C[arg1];
+        return !!pController->unk_4C[iController];
     }
 
     return false;
 }
 
-bool fn_80062CE4(Controller* pController, s32 arg1, bool bUnknown) {
-    if (arg1 >= 0 && arg1 < 4) {
+bool fn_80062CE4(Controller* pController, s32 iController, bool bUnknown) {
+    if (iController >= 0 && iController < 4) {
         return true;
     }
 
@@ -227,7 +241,7 @@ bool simulatorCopyControllerMap(Controller* pController, u32* mapDataOutput, u32
     return true;
 }
 
-bool fn_80062E5C(Controller* pController, s32, s32*) { return true; }
+bool fn_80062E5C(Controller* pController, s32 arg1, s32* arg2) { return true; }
 
 static void* controllerThread(void* pArg) {
     Controller* pController = SYSTEM_CONTROLLER(gpSystem);
@@ -262,16 +276,8 @@ bool fn_800631B8(Controller* pController, s32 arg1) {
     return true;
 }
 
-static inline bool controllerEvent_Inline() {
-    if (!fn_800607C4(SYSTEM_HELP(gpSystem), 0)) {
-        return false;
-    }
-
-    return true;
-}
-
 bool controllerEvent(Controller* pController, s32 nEvent, void* pArgument) {
-    s32 var_r31;
+    s32 i;
 
     switch (nEvent) {
         case 0:
@@ -293,18 +299,13 @@ bool controllerEvent(Controller* pController, s32 nEvent, void* pArgument) {
             break;
         case 0x1003:
             if (!unk4C_UnknownInline(pController)) {
-                for (var_r31 = 0; var_r31 < 0x78; var_r31++) {
+                for (i = 0; i < 0x78; i++) {
                     VIWaitForRetrace();
                 }
             }
 
             if (!unk4C_UnknownInline(pController)) {
-                pController->unk_24C = pController->unk_248 = OSGetTime();
-                pController->unk_21C = 8;
-                fn_80063D78(8);
-                pController->unk_21C = -1;
-
-                if (!controllerEvent_Inline()) {
+                if (!fn_80080C04(pController, ERROR_NEED_CLASSIC)) {
                     return false;
                 }
 

@@ -2624,7 +2624,7 @@ bool __osEepStatus(Cpu* pCPU) {
         return false;
     }
 
-    if (pFLASH != NULL && fn_80045300(pFLASH, &nStatus)) {
+    if (pFLASH != NULL && flashGetSize(pFLASH, &nStatus)) {
         status[0] = 0x80 | (nStatus == 0x4000 ? 0x40 : 0);
         status[1] = 0;
         status[2] = 0;

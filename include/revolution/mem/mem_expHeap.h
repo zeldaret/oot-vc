@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#define MEM_EXP_HEAP_MIN_SIZE (sizeof(MEMiHeapHead) + sizeof(MEMiExpHeapHead) + sizeof(MEMiExpHeapMBlock) + 4)
+
 // Forward declarations
 typedef struct MEMiHeapHead;
 
@@ -55,7 +57,6 @@ struct MEMiHeapHead* MEMDestroyExpHeap(struct MEMiHeapHead* heap);
 void* MEMAllocFromExpHeapEx(struct MEMiHeapHead* heap, u32 size, s32 align);
 u32 MEMResizeForMBlockExpHeap(struct MEMiHeapHead* heap, void* memBlock, u32 size);
 void MEMFreeToExpHeap(struct MEMiHeapHead* heap, void* memBlock);
-u32 MEMGetAllocatableSizeForExpHeapEx(struct MEMiHeapHead* heap, s32 align);
 u32 MEMAdjustExpHeap(struct MEMiHeapHead* heap);
 
 static inline struct MEMiHeapHead* MEMCreateExpHeap(void* start, u32 size) {
@@ -64,10 +65,6 @@ static inline struct MEMiHeapHead* MEMCreateExpHeap(void* start, u32 size) {
 
 static inline void* MEMAllocFromExpHeap(struct MEMiHeapHead* heap, u32 size) {
     return MEMAllocFromExpHeapEx(heap, size, 4);
-}
-
-static inline u32 MEMGetAllocatableSizeForExpHeap(struct MEMiHeapHead* heap) {
-    return MEMGetAllocatableSizeForExpHeapEx(heap, 4);
 }
 
 #ifdef __cplusplus

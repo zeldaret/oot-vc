@@ -631,7 +631,7 @@ static bool __xlHeapGetFree(s32 iHeap, s32* pnFreeBytes) {
     return true;
 }
 
-bool xlHeapGetFree(s32* pnFreeBytes) { return __xlHeapGetFree(0, pnFreeBytes); }
+bool xlHeapGetHeap1Free(s32* pnFreeBytes) { return __xlHeapGetFree(0, pnFreeBytes); }
 
 bool xlHeapSetup(void) {
     s32 gpHeap_align[2];

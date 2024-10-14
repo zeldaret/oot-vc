@@ -1101,7 +1101,7 @@ static bool systemSetupGameALL(System* pSystem) {
             break;
         case NTEJ:
         case NTEP:
-        case 'NTEA':
+        case NTEA:
             pArgument = 0x8000;
             gSystemRomConfigurationList.storageDevice = SOT_PIF;
             storageDevice = SOT_SRAM;
@@ -1215,7 +1215,7 @@ static bool systemSetupGameALL(System* pSystem) {
         return false;
     }
 
-    if (!fn_8005329C(SYSTEM_FRAME(gpSystem), var_r28, var_r27, var_r26)) { // var_r26
+    if (!fn_8005329C(SYSTEM_FRAME(gpSystem), var_r28, var_r27, var_r26)) {
         return false;
     }
 
@@ -1416,8 +1416,8 @@ static bool systemGetBlock(System* pSystem, CpuBlock* pBlock) {
 static inline bool fn_8000A504_UnknownInline(System* pSystem, CpuBlock** pBlock) {
     s32 i;
 
-    for (i = 0; i < 4; i++) {
-        if (*pBlock == (CpuBlock*)(pSystem->unk_78 + (i * 5))) {
+    for (i = 0; i < ARRAY_COUNT(pSystem->aBlock); i++) {
+        if (*pBlock == &pSystem->aBlock[i]) {
             pSystem->storageDevice &= ~(1 << i);
             return true;
         }
@@ -1474,10 +1474,10 @@ static bool fn_8000A504(CpuBlock* pBlock, bool bUnknown) {
 static inline bool systemGetNewBlock(System* pSystem, CpuBlock** ppBlock) {
     s32 i;
 
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < ARRAY_COUNT(pSystem->aBlock); i++) {
         if (!(pSystem->storageDevice & (1 << i))) {
             pSystem->storageDevice |= (1 << i);
-            *ppBlock = (CpuBlock*)(pSystem->unk_78 + (i * 5));
+            *ppBlock = &pSystem->aBlock[i];
             return true;
         }
     }
@@ -1619,7 +1619,7 @@ bool systemReset(System* pSystem) {
 
         for (eObject = 0; eObject < SOT_COUNT; eObject++) {
             if (pSystem->apObject[eObject] != NULL) {
-                xlObjectEvent(pSystem->apObject[eObject], 0x1003, NULL);
+                if (!xlObjectEvent(pSystem->apObject[eObject], 0x1003, NULL)) {}
             }
         }
     }

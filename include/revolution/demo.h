@@ -57,9 +57,12 @@ typedef struct DEMODMPad {
     /* 0x1C */ s16 substickDeltaY;
 } DEMODMPad; // size = 0x1E
 
+extern u32 DemoUseMEMHeap;
 extern void* DemoCurrentBuffer;
 extern void* DemoFrameBuffer2;
 extern void* DemoFrameBuffer1;
+extern struct MEMAllocator DemoAllocator1;
+extern struct MEMAllocator DemoAllocator2;
 
 extern DEMODMPad DemoPad[4];
 extern u8 DemoStatEnable;
@@ -72,7 +75,12 @@ GXRenderModeObj* DEMOGetRenderModeObj(void);
 void DEMOReInit(GXRenderModeObj* mode);
 void DEMOInitCaption(s32, s32, s32);
 void DEMOPuts(s16, s16, s16, char*);
-void DEMOPrintf(s16, s16, s16, char*, ...);
+void DEMOSetupScrnSpc(s32 width, s32 height, f32 depth);
+struct OSFontHeader* DEMOInitROMFont(void);
+void DEMOGetROMFontSize(s16* size, s16* space);
+void DEMOPrintf(s16 x, s16 y, s16 z, char* fmt, ...);
+s32 DEMOGetRFTextWidth(const char* string);
+s32 DEMOGetRFTextHeight(const char* string);
 void DEMOPadRead(void);
 void DEMOPadInit(void);
 void DEMOUpdateStats(u8 inc);

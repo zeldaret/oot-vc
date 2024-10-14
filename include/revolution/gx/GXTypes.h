@@ -7,6 +7,9 @@
 extern "C" {
 #endif
 
+#define PHY_ADDR_MASK ~((~0x3FFF) << 16)
+#define GX_PHY_ADDR(a) ((u32)a & PHY_ADDR_MASK)
+
 /**
  * Pack value into bitfield.
  * Value is shifted to the specified bit position.
@@ -68,6 +71,14 @@ typedef struct _GXColorS10 {
 typedef struct _GXColorU32 {
     u32 r, g, b, a;
 } GXColorU32;
+
+typedef struct _GXTexRegion {
+    /* 0x00 */ u32 dummy[4];
+} GXTexRegion; // size = 0x10
+
+typedef struct _GXTlutRegion {
+    /* 0x00 */ u32 dummy[4];
+} GXTlutRegion; // size = 0x10
 
 /**
  * Common enums
@@ -207,32 +218,31 @@ typedef enum _GXCompare {
 
 typedef enum _GXCompCnt {
     GX_POS_XY = 0,
-    GX_POS_XYZ,
-
+    GX_POS_XYZ = 1,
     GX_NRM_XYZ = 0,
-    GX_NRM_NBT,
-    GX_NRM_NBT3,
-
+    GX_NRM_NBT = 1,
+    GX_NRM_NBT3 = 2,
     GX_CLR_RGB = 0,
-    GX_CLR_RGBA,
-
+    GX_CLR_RGBA = 1,
     GX_TEX_S = 0,
-    GX_TEX_ST
+    GX_TEX_ST = 1,
+
+    GX_COMPCNT_NULL = 0,
 } GXCompCnt;
 
 typedef enum _GXCompType {
-    GX_U8,
-    GX_S8,
-    GX_U16,
-    GX_S16,
-    GX_F32,
-
+    GX_U8 = 0,
+    GX_S8 = 1,
+    GX_U16 = 2,
+    GX_S16 = 3,
+    GX_F32 = 4,
     GX_RGB565 = 0,
-    GX_RGB8,
-    GX_RGBX8,
-    GX_RGBA4,
-    GX_RGBA6,
-    GX_RGBA8
+    GX_RGB8 = 1,
+    GX_RGBX8 = 2,
+    GX_RGBA4 = 3,
+    GX_RGBA6 = 4,
+    GX_RGBA8 = 5,
+    GX_COMP_NULL = 0,
 } GXCompType;
 
 typedef enum _GXCopyClamp {
@@ -240,6 +250,7 @@ typedef enum _GXCopyClamp {
     GX_CLAMP_TOP,
     GX_CLAMP_BOTTOM,
     GX_CLAMP_ALL,
+    GX_CLAMP_BOTH = GX_CLAMP_TOP | GX_CLAMP_BOTTOM,
 } GXCopyClamp;
 
 typedef enum _GXCullMode {
@@ -960,6 +971,119 @@ typedef enum _GXMiscToken {
     GX_MT_DL_SAVE_CONTEXT,
     GX_MT_ABORT_WAIT_COPYOUT,
 } GXMiscToken;
+
+typedef enum _GXPerf0 {
+    GX_PERF0_VERTICES,
+    GX_PERF0_CLIP_VTX,
+    GX_PERF0_CLIP_CLKS,
+    GX_PERF0_XF_WAIT_IN,
+    GX_PERF0_XF_WAIT_OUT,
+    GX_PERF0_XF_XFRM_CLKS,
+    GX_PERF0_XF_LIT_CLKS,
+    GX_PERF0_XF_BOT_CLKS,
+    GX_PERF0_XF_REGLD_CLKS,
+    GX_PERF0_XF_REGRD_CLKS,
+    GX_PERF0_CLIP_RATIO,
+    GX_PERF0_TRIANGLES,
+    GX_PERF0_TRIANGLES_CULLED,
+    GX_PERF0_TRIANGLES_PASSED,
+    GX_PERF0_TRIANGLES_SCISSORED,
+    GX_PERF0_TRIANGLES_0TEX,
+    GX_PERF0_TRIANGLES_1TEX,
+    GX_PERF0_TRIANGLES_2TEX,
+    GX_PERF0_TRIANGLES_3TEX,
+    GX_PERF0_TRIANGLES_4TEX,
+    GX_PERF0_TRIANGLES_5TEX,
+    GX_PERF0_TRIANGLES_6TEX,
+    GX_PERF0_TRIANGLES_7TEX,
+    GX_PERF0_TRIANGLES_8TEX,
+    GX_PERF0_TRIANGLES_0CLR,
+    GX_PERF0_TRIANGLES_1CLR,
+    GX_PERF0_TRIANGLES_2CLR,
+    GX_PERF0_QUAD_0CVG,
+    GX_PERF0_QUAD_NON0CVG,
+    GX_PERF0_QUAD_1CVG,
+    GX_PERF0_QUAD_2CVG,
+    GX_PERF0_QUAD_3CVG,
+    GX_PERF0_QUAD_4CVG,
+    GX_PERF0_AVG_QUAD_CNT,
+    GX_PERF0_CLOCKS,
+    GX_PERF0_NONE
+} GXPerf0;
+
+typedef enum _GXPerf1 {
+    GX_PERF1_TEXELS,
+    GX_PERF1_TX_IDLE,
+    GX_PERF1_TX_REGS,
+    GX_PERF1_TX_MEMSTALL,
+    GX_PERF1_TC_CHECK1_2,
+    GX_PERF1_TC_CHECK3_4,
+    GX_PERF1_TC_CHECK5_6,
+    GX_PERF1_TC_CHECK7_8,
+    GX_PERF1_TC_MISS,
+    GX_PERF1_VC_ELEMQ_FULL,
+    GX_PERF1_VC_MISSQ_FULL,
+    GX_PERF1_VC_MEMREQ_FULL,
+    GX_PERF1_VC_STATUS7,
+    GX_PERF1_VC_MISSREP_FULL,
+    GX_PERF1_VC_STREAMBUF_LOW,
+    GX_PERF1_VC_ALL_STALLS,
+    GX_PERF1_VERTICES,
+    GX_PERF1_FIFO_REQ,
+    GX_PERF1_CALL_REQ,
+    GX_PERF1_VC_MISS_REQ,
+    GX_PERF1_CP_ALL_REQ,
+    GX_PERF1_CLOCKS,
+    GX_PERF1_NONE
+} GXPerf1;
+
+typedef enum _GXTexCacheSize {
+    GX_TEXCACHE_32K,
+    GX_TEXCACHE_128K,
+    GX_TEXCACHE_512K,
+    GX_TEXCACHE_NONE,
+} GXTexCacheSize;
+
+typedef enum _GXTlut {
+    GX_TLUT0,
+    GX_TLUT1,
+    GX_TLUT2,
+    GX_TLUT3,
+    GX_TLUT4,
+    GX_TLUT5,
+    GX_TLUT6,
+    GX_TLUT7,
+    GX_TLUT8,
+    GX_TLUT9,
+    GX_TLUT10,
+    GX_TLUT11,
+    GX_TLUT12,
+    GX_TLUT13,
+    GX_TLUT14,
+    GX_TLUT15,
+    GX_BIGTLUT0,
+    GX_BIGTLUT1,
+    GX_BIGTLUT2,
+    GX_BIGTLUT3,
+
+    GX_MAX_TLUT = 16,
+    GX_MAX_BIGTLUT = 4,
+    GX_MAX_TLUT_ALL = GX_MAX_TLUT + GX_MAX_BIGTLUT,
+} GXTlut;
+
+typedef enum _GXTlutSize {
+    GX_TLUT_16 = 1,
+    GX_TLUT_32 = 2,
+    GX_TLUT_64 = 4,
+    GX_TLUT_128 = 8,
+    GX_TLUT_256 = 16,
+    GX_TLUT_512 = 32,
+    GX_TLUT_1K = 64,
+    GX_TLUT_2K = 128,
+    GX_TLUT_4K = 256,
+    GX_TLUT_8K = 512,
+    GX_TLUT_16K = 1024,
+} GXTlutSize;
 
 #ifdef __cplusplus
 }

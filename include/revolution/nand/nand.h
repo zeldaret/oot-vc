@@ -15,28 +15,28 @@ extern "C" {
 // Forward declarations
 typedef struct NANDCommandBlock;
 
-typedef enum {
+typedef enum NANDResult {
     NAND_RESULT_FATAL_ERROR = -128,
     NAND_RESULT_UNKNOWN = -64,
 
     NAND_RESULT_MAXDEPTH = -16,
-    NAND_RESULT_AUTHENTICATION,
-    NAND_RESULT_OPENFD,
-    NAND_RESULT_NOTEMPTY,
-    NAND_RESULT_NOEXISTS,
-    NAND_RESULT_MAXFILES,
-    NAND_RESULT_MAXFD,
-    NAND_RESULT_MAXBLOCKS,
-    NAND_RESULT_INVALID,
+    NAND_RESULT_AUTHENTICATION = -15,
+    NAND_RESULT_OPENFD = -14,
+    NAND_RESULT_NOTEMPTY = -13,
+    NAND_RESULT_NOEXISTS = -12,
+    NAND_RESULT_MAXFILES = -11,
+    NAND_RESULT_MAXFD = -10,
+    NAND_RESULT_MAXBLOCKS = -9,
+    NAND_RESULT_INVALID = -8,
 
     NAND_RESULT_EXISTS = -6,
-    NAND_RESULT_ECC_CRIT,
-    NAND_RESULT_CORRUPT,
-    NAND_RESULT_BUSY,
-    NAND_RESULT_ALLOC_FAILED,
-    NAND_RESULT_ACCESS,
+    NAND_RESULT_ECC_CRIT = -5,
+    NAND_RESULT_CORRUPT = -4,
+    NAND_RESULT_BUSY = -3,
+    NAND_RESULT_ALLOC_FAILED = -2,
+    NAND_RESULT_ACCESS = -1,
 
-    NAND_RESULT_OK,
+    NAND_RESULT_OK = 0,
 } NANDResult;
 
 typedef enum {
@@ -77,27 +77,27 @@ typedef enum {
 typedef void (*NANDAsyncCallback)(s32 result, struct NANDCommandBlock* block);
 
 typedef struct NANDStatus {
-    /* 0x0 */ u32 ownerId;
-    /* 0x4 */ u16 groupId;
-    /* 0x6 */ u8 attr;
-    /* 0x7 */ u8 perm;
-} NANDStatus;
+    /* 0x00 */ u32 ownerId;
+    /* 0x04 */ u16 groupId;
+    /* 0x06 */ u8 attr;
+    /* 0x07 */ u8 perm;
+} NANDStatus; // size = 0x8
 
 typedef struct NANDFileInfo {
-    /* 0x0 */ s32 fd;
-    /* 0x4 */ s32 tempFd;
-    /* 0x8 */ char openPath[FS_MAX_PATH];
+    /* 0x00 */ s32 fd;
+    /* 0x04 */ s32 tempFd;
+    /* 0x08 */ char openPath[FS_MAX_PATH];
     /* 0x48 */ char tempPath[FS_MAX_PATH];
     /* 0x88 */ u8 access;
     /* 0x89 */ u8 stage;
     /* 0x8A */ u8 mark;
-} NANDFileInfo;
+} NANDFileInfo; // size = 0x8C
 
 typedef struct NANDCommandBlock {
-    /* 0x0 */ void* userData;
-    /* 0x4 */ NANDAsyncCallback callback;
-    /* 0x8 */ NANDFileInfo* info;
-    /* 0xC */ void* bytes;
+    /* 0x00 */ void* userData;
+    /* 0x04 */ NANDAsyncCallback callback;
+    /* 0x08 */ NANDFileInfo* info;
+    /* 0x0C */ void* bytes;
     /* 0x10 */ void* inodes;
     /* 0x14 */ NANDStatus* status;
     /* 0x18 */ u32 ownerId;
@@ -126,7 +126,7 @@ typedef struct NANDCommandBlock {
     /* 0xAC */ u32 workBlocks;
     /* 0xB0 */ u32 workInodes;
     /* 0xB4 */ const char** dir;
-} NANDCommandBlock;
+} NANDCommandBlock; // size = 0xB8
 
 typedef struct NANDBanner {
     /* 0x0 */ u32 magic;

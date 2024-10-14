@@ -39,7 +39,7 @@ typedef struct OSExecParams;
 // Can be accessed directly or with OSAddress functions.
 #define OS_DEF_GLOBAL_ARR(type, name, arr, addr) \
     /* Memory-mapped value for direct access */  \
-    type OS_##name AT_ADDRESS(addr);             \
+    type OS_##name arr AT_ADDRESS(addr);         \
     __DEF_ADDR_OFFSETS(name, addr)
 
 // Define an global variable in the hardware-register range.

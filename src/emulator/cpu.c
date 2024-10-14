@@ -937,7 +937,7 @@ static bool cpuMakeDevice(Cpu* pCPU, s32* piDevice, void* pObject, u32 nOffset, 
                 pDevice->nAddressPhysical1 = 0xFFFFFFFF;
                 pDevice->nAddressVirtual1 = 0xFFFFFFFF;
 
-                for (j = 0; j < 0x10000; j++) {
+                for (j = 0; j < ARRAY_COUNT(pCPU->aiDevice); j++) {
                     pCPU->aiDevice[j] = iDevice;
                 }
             } else {
@@ -945,9 +945,8 @@ static bool cpuMakeDevice(Cpu* pCPU, s32* piDevice, void* pObject, u32 nOffset, 
                 pDevice->nAddressVirtual1 = nOffset + nSize - 1;
                 pDevice->nAddressPhysical0 = nAddress;
                 pDevice->nAddressPhysical1 = nAddress + nSize - 1;
-
                 for (j = nSize; j > 0; nOffset += 0x10000, j -= 0x10000) {
-                    pCPU->aiDevice[nOffset >> 16] = iDevice;
+                    pCPU->aiDevice[nOffset >> DEVICE_ADDRESS_OFFSET_BITS] = iDevice;
                 }
             }
 
@@ -1110,7 +1109,7 @@ static bool cpuSetTLB(Cpu* pCPU, s32 iEntry) {
  * @param peMode A pointer to the mode determined.
  * @return bool true on success, false otherwise.
  */
-static bool cpuGetMode(u64 nStatus, CpuMode* peMode) {
+static bool cpuGetMode(u64 nStatus, CpuMode* peMode) NO_INLINE {
     if (nStatus & 2) {
         *peMode = CM_KERNEL;
         return true;
@@ -1503,7 +1502,6 @@ static void cpuCompileNOP(s32* anCode, s32* iCode, s32 number) {
 
 #ifndef NON_MATCHING
 static bool fn_8000E734(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3);
-// #pragma GLOBAL_ASM("asm/non_matchings/cpu/fn_8000E734.s")
 #else
 static bool fn_8000E734(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3) {
     if (gpSystem->eTypeROM == CLBJ || gpSystem->eTypeROM == CLBE || gpSystem->eTypeROM == CLBP) {
@@ -1603,7 +1601,6 @@ s32 fn_8000E81C(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3, s32 arg5, s32* arg6, s3
  * @return bool true on success, false otherwise.
  */
 static bool cpuGetPPC(Cpu* pCPU, s32* pnAddress, CpuFunction* pFunction, s32* anCode, s32* piCode, bool bSlot);
-// #pragma GLOBAL_ASM("asm/non_matchings/cpu/cpuGetPPC.s")
 
 //! TODO: remove NO_INLINE once this is matched
 static bool fn_80031D4C(Cpu* pCPU, CpuFunction* pFunction, s32 unknown) NO_INLINE { return false; }
@@ -4850,7 +4847,7 @@ static s32 cpuExecuteLoadStore(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAddr
     }
 
     address = pCPU->aGPR[MIPS_RS(*opcode)].s32 + MIPS_IMM_S16(*opcode);
-    device = pCPU->aiDevice[(u32)(address) >> 16];
+    device = pCPU->aiDevice[(u32)(address) >> DEVICE_ADDRESS_OFFSET_BITS];
 
     if (pCPU->nCompileFlag & 0x100) {
         anCode = (s32*)nAddressGCN - 3;
@@ -5133,7 +5130,7 @@ static s32 cpuExecuteLoadStoreF(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAdd
     }
 
     address = pCPU->aGPR[MIPS_RS(*opcode)].s32 + MIPS_IMM_S16(*opcode);
-    device = pCPU->aiDevice[(u32)(address) >> 16];
+    device = pCPU->aiDevice[(u32)(address) >> DEVICE_ADDRESS_OFFSET_BITS];
 
     if (pCPU->nCompileFlag & 0x100) {
         anCode = (s32*)nAddressGCN - 3;
@@ -5838,35 +5835,26 @@ bool cpuReset(Cpu* pCPU) {
     }
 
     pCPU->nCompileFlag = 1;
-    pCPU->unk_12228 = 0;
 
-    //! TODO: make this struct match
-    // pCPU->alarmRetrace.handler = NULL;
-    // pCPU->alarmRetrace.tag = 0;
-    // pCPU->alarmRetrace.end = 0;
-    // pCPU->alarmRetrace.prev = NULL;
-    // pCPU->alarmRetrace.next = NULL;
-    // pCPU->alarmRetrace.period = 0;
-    // pCPU->alarmRetrace.start = 0;
-    // pCPU->alarmRetrace.userData = NULL;
-    pCPU->alarmRetrace[0] = 0;
-    pCPU->alarmRetrace[1] = 0;
-    pCPU->alarmRetrace[2] = 0;
-    pCPU->alarmRetrace[3] = 0;
-    pCPU->alarmRetrace[4] = 0;
-    pCPU->alarmRetrace[5] = 0;
-    pCPU->alarmRetrace[6] = 0;
-    pCPU->alarmRetrace[7] = 0;
-    pCPU->alarmRetrace[8] = 0;
-    pCPU->alarmRetrace[9] = 0;
-    pCPU->alarmRetrace[10] = 0;
-    pCPU->alarmRetrace[11] = 0;
+    pCPU->unk_12228[0] = 0;
+    pCPU->unk_12228[1] = 0;
+    pCPU->unk_12228[2] = 0;
+    pCPU->unk_12228[3] = 0;
+    pCPU->unk_12228[4] = 0;
+    pCPU->unk_12228[5] = 0;
+    pCPU->unk_12228[6] = 0;
+    pCPU->unk_12228[7] = 0;
+    pCPU->unk_12228[8] = 0;
+    pCPU->unk_12228[9] = 0;
+    pCPU->unk_12228[10] = 0;
+    pCPU->unk_12228[11] = 0;
+    pCPU->unk_12228[12] = 0;
+    pCPU->unk_12228[13] = 0;
+    pCPU->unk_12228[14] = 0;
+    pCPU->unk_12228[15] = 0;
+    pCPU->unk_12228[16] = 0;
+    pCPU->unk_12228[17] = 0;
 
-    pCPU->unk_1225C = 0;
-    pCPU->unk_12260 = 0;
-    pCPU->unk_12264 = 0;
-    pCPU->unk_12268 = 0;
-    pCPU->unk_1226C = 0;
     return true;
 }
 
@@ -5961,7 +5949,7 @@ bool cpuGetAddressOffset(Cpu* pCPU, s32* pnOffset, u32 nAddress) {
     if (0x80000000 <= nAddress && nAddress < 0xC0000000) {
         *pnOffset = nAddress & 0x7FFFFF;
     } else {
-        iDevice = pCPU->aiDevice[nAddress >> 0x10];
+        iDevice = pCPU->aiDevice[nAddress >> DEVICE_ADDRESS_OFFSET_BITS];
 
         if (pCPU->apDevice[iDevice]->nType & 0x100) {
             *pnOffset = (nAddress + pCPU->apDevice[iDevice]->nOffsetAddress) & 0x7FFFFF;
@@ -5974,7 +5962,7 @@ bool cpuGetAddressOffset(Cpu* pCPU, s32* pnOffset, u32 nAddress) {
 }
 
 bool cpuGetAddressBuffer(Cpu* pCPU, void** ppBuffer, u32 nAddress) {
-    CpuDevice* pDevice = pCPU->apDevice[pCPU->aiDevice[nAddress >> 0x10]];
+    CpuDevice* pDevice = pCPU->apDevice[pCPU->aiDevice[nAddress >> DEVICE_ADDRESS_OFFSET_BITS]];
 
     if ((Ram*)pDevice->pObject == SYSTEM_RAM(gpSystem)) {
         if (!ramGetBuffer(pDevice->pObject, ppBuffer, nAddress + pDevice->nOffsetAddress, NULL)) {

@@ -18,16 +18,17 @@ typedef enum {
 } SCEuRgb60Mode;
 
 typedef enum {
-    SC_LANG_JP,
-    SC_LANG_EN,
-    SC_LANG_DE,
-    SC_LANG_FR,
-    SC_LANG_SP,
-    SC_LANG_IT,
-    SC_LANG_NL,
-    SC_LANG_ZH_S,
-    SC_LANG_ZH_T,
-    SC_LANG_KR,
+    SC_LANG_NONE = -1,
+    SC_LANG_JP = 0,
+    SC_LANG_EN = 1,
+    SC_LANG_DE = 2,
+    SC_LANG_FR = 3,
+    SC_LANG_SP = 4,
+    SC_LANG_IT = 5,
+    SC_LANG_NL = 6,
+    SC_LANG_ZH_S = 7,
+    SC_LANG_ZH_T = 8,
+    SC_LANG_KR = 9
 } SCLanguage;
 
 typedef enum {

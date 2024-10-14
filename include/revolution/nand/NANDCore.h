@@ -22,6 +22,7 @@ s32 nandConvertErrorCode(s32 result);
 void nandGenerateAbsPath(char* abs, const char* rel);
 void nandGetParentDirectory(char* dir, const char* path);
 s32 NANDInit(void);
+s32 fn_800B48C4(const char* path);
 s32 NANDGetCurrentDir(char* out);
 s32 NANDGetHomeDir(char* out);
 void nandCallback(s32 result, void* arg);

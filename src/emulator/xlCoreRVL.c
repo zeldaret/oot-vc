@@ -1,11 +1,11 @@
 #include "emulator/xlCoreRVL.h"
+#include "emulator/errordisplay.h"
 #include "emulator/vc64_RVL.h"
 #include "emulator/xlHeap.h"
 #include "emulator/xlList.h"
 #include "emulator/xlPostRVL.h"
 #include "macros.h"
 #include "revolution/demo.h"
-#include "revolution/gx.h"
 #include "revolution/sc.h"
 #include "revolution/vi.h"
 
@@ -15,10 +15,6 @@ static char** gaszArgument;
 static void* DefaultFifo;
 static GXFifoObj* DefaultFifoObj;
 GXRenderModeObj* rmode;
-
-//! TODO: confirm these
-CNTFileInfo gCNTFileInfo;
-UnknownContentStruct gUnkContent;
 
 static inline u32 getFBTotalSize(f32 aspectRatio) {
     u16 lineCount = GXGetNumXfbLines(rmode->efbHeight, aspectRatio);
@@ -143,7 +139,6 @@ void xlExit(void) { OSPanic("xlCoreRVL.c", 524, "xlExit"); }
 int main(int nCount, char** aszArgument) {
     s32 nSizeHeap;
     s32 nSize;
-
     f32 aspectRatio;
 
     gnCountArgument = nCount;
@@ -160,23 +155,7 @@ int main(int nCount, char** aszArgument) {
     VIInit();
     xlCoreInitRenderMode(NULL);
     VIConfigure(rmode);
-
-#ifdef __MWERKS__ // clang-format off
-    asm {
-        li      r3, 0x4
-        oris    r3, r3, 0x4
-        mtspr   GQR2, r3
-        li      r3, 0x5
-        oris    r3, r3, 0x5
-        mtspr   GQR3, r3
-        li      r3, 0x6
-        oris    r3, r3, 0x6
-        mtspr   GQR4, r3
-        li      r3, 0x7
-        oris    r3, r3, 0x7
-        mtspr   GQR5, r3
-    }
-#endif // clang-format on
+    OSInitFastCast();
 
     if (!xlPostSetup()) {
         return false;
@@ -213,7 +192,7 @@ int main(int nCount, char** aszArgument) {
     DefaultFifoObj = GXInit(DefaultFifo, 0x40000);
 
     __xlCoreInitGX();
-    fn_80063C7C();
+    errorDisplayInit();
     xlMain();
 
     if (!xlObjectReset()) {
