@@ -32,7 +32,7 @@ jobs:
     - name: Build
       run: |
         python configure.py --map --binutils /binutils --compilers /compilers
-        ninja all_source build/oot-j/progress.json build/report.json
+        ninja all_source build/{oot-j,oot-u,oot-e}/progress.json build/report.json
 
     # Upload progress if we're on the main branch
     - name: Upload progress
@@ -42,8 +42,10 @@ jobs:
         PROGRESS_SLUG: oot-vc
         PROGRESS_API_KEY: ${{ secrets.PROGRESS_API_KEY }}
       run: |
-        python tools/upload_progress.py -b https://progress.decomp.club/ \
-          -p $PROGRESS_SLUG -v oot-j build/oot-j/progress.json
+        for version in {oot-j,oot-u,oot-e}; do
+          python tools/upload_progress.py -b https://progress.decomp.club/ \
+            -p $PROGRESS_SLUG -v $version build/$version/progress.json
+        done
 
     # Upload map files
     - name: Upload map
