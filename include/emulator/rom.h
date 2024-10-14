@@ -79,7 +79,7 @@ typedef struct Rom {
     /* 0x19A74 */ u8 acHeader[64];
     /* 0x19AB4 */ u32* anOffsetBlock;
     /* 0x19AB8 */ s32 nCountOffsetBlocks;
-    /* 0x19ABC */ s32 unk_19ABC; // game's segment `boot` checksum?
+    /* 0x19ABC */ s32 nChecksum;
     /* 0x19AC0 */ DVDFileInfo fileInfo;
     /* 0x19AFC */ s32 offsetToRom;
 } Rom; // size = 0x19B00

@@ -581,13 +581,11 @@ void errorDisplayInit(void) {
     u32 nLanguage;
 
     nLanguage = SCGetLanguage();
-    pDisplayFiles = &sSTFiles[0];
 
-    while (pDisplayFiles->szErrorsFilename != NULL) {
+    for (pDisplayFiles = &sSTFiles[0]; pDisplayFiles->szErrorsFilename != NULL; pDisplayFiles++) {
         if (pDisplayFiles->eLanguage == nLanguage) {
             break;
         }
-        pDisplayFiles++;
     }
 
     if (pDisplayFiles->szErrorsFilename == NULL) {

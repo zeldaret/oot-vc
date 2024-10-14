@@ -1,5 +1,6 @@
 #include "emulator/store.h"
 #include "emulator/banner.h"
+#include "emulator/controller.h"
 #include "emulator/flash.h"
 #include "emulator/pak.h"
 #include "emulator/sram.h"
@@ -30,7 +31,7 @@ static inline bool unknownInline(Store* pStore, u8 access) {
         return true;
     }
 
-    if (!fn_800641CC(&pStore->nandFileInfo, pStore->szFileName, pStore->unk_00, 0xAA, access)) {
+    if (!fn_800641CC(&pStore->nandFileInfo, pStore->szFileName, pStore->nFileSize, 0xAA, access)) {
         pStore->unk_A4 = 0;
     }
 
@@ -58,7 +59,7 @@ bool fn_80061770(void** ppObject, char* szName, SystemRomType eTypeROM, void* pA
         return false;
     }
 
-    STORE_OBJ->unk_00 = (s32)pArgument;
+    STORE_OBJ->nFileSize = (s32)pArgument;
     STORE_OBJ->eTypeROM = eTypeROM;
 
     // example: "RAM_CZLJ"
@@ -81,7 +82,7 @@ bool fn_80061770(void** ppObject, char* szName, SystemRomType eTypeROM, void* pA
     STORE_OBJ->unk_B9 = 1;
     STORE_OBJ->unk_B8 = 0;
     STORE_OBJ->unk_BA = 1;
-    STORE_OBJ->unk_BC = (s32)pArgument;
+    STORE_OBJ->nSize2 = (s32)pArgument;
 
     fn_800618D4(*ppObject, (void*)STORE_OBJ->unk_A8, 0, (s32)pArgument);
     return true;
@@ -171,12 +172,12 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
 }
 
 bool fn_80061B88(Store* pStore, void* pHeapTarget, s32 nOffset, s32 nByteCount) {
-    xlHeapCopy((s32*)pHeapTarget, (void*)(pStore->unk_A8 + nOffset), nByteCount);
+    xlHeapCopy((s32*)pHeapTarget, (void*)((u32)pStore->unk_A8 + nOffset), nByteCount);
     return true;
 }
 
 bool fn_80061BC0(Store* pStore, void* pHeapTarget, s32 nOffset, s32 nByteCount) {
-    xlHeapCopy((void*)(pStore->unk_A8 + nOffset), (s32*)pHeapTarget, nByteCount);
+    xlHeapCopy((void*)((u32)pStore->unk_A8 + nOffset), (s32*)pHeapTarget, nByteCount);
     pStore->unk_B8 = 1;
     return true;
 }
@@ -184,8 +185,8 @@ bool fn_80061BC0(Store* pStore, void* pHeapTarget, s32 nOffset, s32 nByteCount) 
 static void fn_80061C08(s32 nResult, NANDCommandBlock* block) {
     Store* pStore = (Store*)NANDGetUserData(block);
 
-    if (nResult != 0) {
-        pStore->unk_BC = nResult;
+    if (nResult != NAND_RESULT_OK) {
+        pStore->eResult = nResult;
     }
 
     pStore->unk_B9 = 1;
@@ -193,13 +194,13 @@ static void fn_80061C08(s32 nResult, NANDCommandBlock* block) {
 
 static void fn_80061C4C(s32 nResult, NANDCommandBlock* block) {
     Store* pStore = (Store*)NANDGetUserData(block);
-    bool bSuccess;
+    s32 nCloseResult;
 
-    pStore->unk_BC = nResult;
-    bSuccess = NANDCloseAsync(&pStore->nandFileInfo, fn_80061C08, &pStore->nandCmdBlock);
+    pStore->eResult = nResult;
+    nCloseResult = NANDCloseAsync(&pStore->nandFileInfo, fn_80061C08, &pStore->nandCmdBlock);
 
-    if (bSuccess) {
-        pStore->unk_BC = bSuccess;
+    if (nCloseResult != NAND_RESULT_OK) {
+        pStore->eResult = nCloseResult;
         pStore->unk_B9 = 1;
     }
 }
@@ -208,9 +209,9 @@ static bool fn_80061CAC(Store* pStore) {
     pStore->unk_B9 = 0;
     pStore->unk_B8 = 0;
 
-    memcpy(pStore->unk_AC, (void*)pStore->unk_A8, pStore->unk_00);
-    DCFlushRange(pStore->unk_AC, pStore->unk_00);
-    NANDSetUserData(&pStore->nandCmdBlock, &pStore->unk_00);
+    memcpy(pStore->unk_AC, (void*)pStore->unk_A8, pStore->nFileSize);
+    DCFlushRange(pStore->unk_AC, pStore->nFileSize);
+    NANDSetUserData(&pStore->nandCmdBlock, pStore);
 
     while (true) {
         if (!unknownInline(pStore, 3)) {
@@ -221,8 +222,8 @@ static bool fn_80061CAC(Store* pStore) {
             return true;
         }
 
-        if (NANDWriteAsync(&pStore->nandFileInfo, pStore->unk_AC, pStore->unk_00, fn_80061C4C, &pStore->nandCmdBlock) >=
-            0) {
+        if (NANDWriteAsync(&pStore->nandFileInfo, pStore->unk_AC, pStore->nFileSize, fn_80061C4C,
+                           &pStore->nandCmdBlock) >= 0) {
             break;
         }
 
@@ -241,7 +242,7 @@ static inline void fn_80061DB8_Inline(Store* pStore) {
     unk_B9 = pStore->unk_B9;
     OSRestoreInterrupts(interrupts);
 
-    if (unk_B9 == 1 && pStore->unk_BC != pStore->unk_00) {
+    if (unk_B9 == 1 && pStore->nSize2 != pStore->nFileSize) {
         pStore->unk_B8 = 1;
     }
 
@@ -270,7 +271,7 @@ bool fn_80061DB8(void) {
             unk_B9 = pStore->unk_B9;
             OSRestoreInterrupts(interrupts);
 
-            if (unk_B9 == 1 && pStore->unk_BC != pStore->unk_00) {
+            if (unk_B9 == 1 && pStore->nSize2 != pStore->nFileSize) {
                 pStore->unk_B8 = 1;
             }
 

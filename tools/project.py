@@ -79,7 +79,12 @@ class Object:
         set_default("asflags", config.asflags)
         set_default("asm_dir", config.asm_dir)
         set_default("host", False)
-        set_default("mw_version", config.linker_version)
+        if obj.options.get("mw_version") is not None:
+            set_default("mw_version", config.linker_version)
+        elif obj.options.get("mw_versions") is not None:
+            obj.options["mw_version"] = obj.options["mw_versions"].get(version, config.linker_version)
+        else:
+            sys.exit(f"ERROR: compiler version not found for '{version}'.")
         set_default("shift_jis", config.shift_jis)
         set_default("src_dir", config.src_dir)
 

@@ -1,5 +1,5 @@
-#ifndef _CODE_800633F8_H
-#define _CODE_800633F8_H
+#ifndef _ERRORDISPLAY_H
+#define _ERRORDISPLAY_H
 
 #include "emulator/banner.h"
 #include "emulator/stringtable.h"
@@ -49,6 +49,7 @@ typedef enum ErrorIndex {
     ERROR_BLANK = 11,
     // (nothing)
     ERROR_NULL = 12,
+    ERROR_MAX = 12
 } ErrorIndex;
 
 typedef struct DisplayFiles {
@@ -58,7 +59,7 @@ typedef struct DisplayFiles {
 } DisplayFiles; // size = 0xC
 
 typedef struct EDString {
-    /* 0x00 */ struct ErrorDisplay* apStringDraw[ERROR_NULL];
+    /* 0x00 */ struct ErrorDisplay* apStringDraw[ERROR_MAX];
     /* 0x30 */ ErrorIndex iString;
     /* 0x34 */ s32 iAction;
 } EDString; // size = 0x38
@@ -107,7 +108,7 @@ void OSFreeToHeap(s32 handle, void* p);
 void errorDisplayInit(void);
 bool errorDisplayShow(ErrorIndex iString);
 
-extern ErrorDisplay sStringDraw[12];
+extern ErrorDisplay sStringDraw[];
 extern struct_80174988 lbl_80174988[17];
 extern bool lbl_8025D130;
 extern s32 lbl_8025D12C;
