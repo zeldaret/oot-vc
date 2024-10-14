@@ -174,7 +174,7 @@ s32 AddAlphaTevOrder(CombineModeTev* tvP, s32 foundTypes, s32 curStage) {
     return ret;
 }
 
-#pragma GLOBAL_ASM("asm/non_matchings/_buildtev/SetupStage.s")
+// SetupStage
 
 void BuildCycle(CombineModeTev* tvP, u8 (*stageValues)[4]) {
     s32 numCParts;

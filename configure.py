@@ -252,7 +252,7 @@ config.libs = [
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/pi.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/mi.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/disk.c"),
-            Object(NotLinked, "emulator/cpu.c", asm_processor=True),
+            Object(NotLinked, "emulator/cpu.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/pif.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/ram.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/rom.c"),
