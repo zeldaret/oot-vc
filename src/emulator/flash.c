@@ -1,6 +1,6 @@
 #include "emulator/flash.h"
 #include "emulator/ram.h"
-#include "emulator/store.h"
+#include "emulator/storeRVL.h"
 #include "emulator/system.h"
 #include "emulator/vc64_RVL.h"
 #include "emulator/xlHeap.h"

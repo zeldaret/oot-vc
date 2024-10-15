@@ -148,7 +148,7 @@ emulator/video.c:
 	.data       start:0x801745F0 end:0x80174600
 	.sdata      start:0x8025CAF0 end:0x8025CAF8
 
-emulator/store.c:
+emulator/storeRVL.c:
 	.text       start:0x800617C4 end:0x80062080
 	.data       start:0x80174600 end:0x80174610
 	.sdata      start:0x8025CAF8 end:0x8025CB00

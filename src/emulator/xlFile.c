@@ -23,7 +23,6 @@ bool xlFileGetSize(s32* pnSize, char* szFileName) {
 bool xlFileLoad(char* szFileName, void** pTarget) {
     s32 pnSize;
     tXL_FILE* pFile;
-    s32 temp_r3;
 
     if (xlFileGetSize(&pnSize, szFileName)) {
         if (!xlHeapTake(pTarget, pnSize | 0x30000000)) {
@@ -38,8 +37,11 @@ bool xlFileLoad(char* szFileName, void** pTarget) {
             return false;
         }
 
-        temp_r3 = xlFileClose(&pFile);
-        return temp_r3 != 0;
+        if (!xlFileClose(&pFile)) {
+            return false;
+        }
+
+        return true;
     }
 
     return false;
