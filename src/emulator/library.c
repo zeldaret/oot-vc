@@ -894,6 +894,10 @@ void guOrthoF(Cpu* pCPU) {
     scale = data.f32;
 
     data0.f32 = 0.0f;
+
+    // float ordering fix
+    (void)65536.0f;
+
     data1.f32 = 1.0f;
 
     for (i = 0; i < 4; i++) {
@@ -3478,8 +3482,8 @@ static bool libraryFindFunctions(Library* pLibrary) {
 bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
     s32 iFunction;
     s32 iData;
-    bool bFlag; // bVar19
-    bool bDone; // bVar16
+    bool bFlag;
+    bool bDone;
     bool bReturn;
     u32 iCode;
     u32* pnCode;
