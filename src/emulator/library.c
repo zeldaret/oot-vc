@@ -3478,8 +3478,8 @@ static bool libraryFindFunctions(Library* pLibrary) {
 bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
     s32 iFunction;
     s32 iData;
-    bool bFlag;
-    bool bDone;
+    bool bFlag; // bVar19
+    bool bDone; // bVar16
     bool bReturn;
     u32 iCode;
     u32* pnCode;
@@ -3488,6 +3488,9 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
     u32 nChecksum;
     u32 nOpcode;
     u32 nAddress;
+    Frame* pFrame;
+
+    pFrame = SYSTEM_FRAME(gpSystem);
 
     if (!cpuGetFunctionChecksum(SYSTEM_CPU(gpSystem), &nChecksum, pFunction)) {
         return false;
@@ -3513,22 +3516,20 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
             bFlag = MIPS_OP(nOpcode) == 0x1F ? false : true;
             if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)osEepromLongRead && nChecksum == 0x5B919EF9) {
                 nAddress = (pFunction->nAddress0 & 0xF0000000) | (MIPS_TARGET(pnCode[17]) << 2);
-                if (!cpuGetAddressBuffer(SYSTEM_CPU(gpSystem), (void**)&pnCodeTemp, nAddress)) {
-                    return false;
-                }
-                if (pnCodeTemp[10] != 0xAFA00030) {
-                    bDone = true;
-                    iFunction += 1;
+                if (cpuGetAddressBuffer(SYSTEM_CPU(gpSystem), (void**)&pnCodeTemp, nAddress)) {
+                    if (pnCodeTemp[10] != 0xAFA00030) {
+                        bDone = true;
+                        iFunction += 1;
+                    }
                 }
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)osEepromLongWrite &&
                        nChecksum == 0x5B919EF9) {
                 nAddress = (pFunction->nAddress0 & 0xF0000000) | (MIPS_TARGET(pnCode[17]) << 2);
-                if (!cpuGetAddressBuffer(SYSTEM_CPU(gpSystem), (void**)&pnCodeTemp, nAddress)) {
-                    return false;
-                }
-                if (pnCodeTemp[10] == 0xAFA00030) {
-                    bDone = true;
-                    iFunction -= 1;
+                if (cpuGetAddressBuffer(SYSTEM_CPU(gpSystem), (void**)&pnCodeTemp, nAddress)) {
+                    if (pnCodeTemp[10] == 0xAFA00030) {
+                        bDone = true;
+                        iFunction -= 1;
+                    }
                 }
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)__osSpSetStatus) {
                 nChecksum = 0;
@@ -3556,6 +3557,10 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                     }
                     bFlag = MIPS_OP(pnCode[0]) == 0x1F ? 0 : 1;
                 }
+            } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B50C) {
+                if (MIPS_RD(pnCode[0]) != 9) {
+                    bFlag = false;
+                }
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)osViSwapBuffer_Entry) {
                 if (bFlag) {
                     bReturn = false;
@@ -3565,9 +3570,120 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                         pLibrary->nAddStackSwap = MIPS_IMM_S16(nOpcode);
                     }
                 }
-            } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)GenPerspective_1080) {
-                if (((System*)gpSystem)->eTypeROM != NTEA) {
+            } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B708) {
+                if (gpSystem->eTypeROM == NSMP) {
+                    bDone = true;
                     bFlag = false;
+                    pFrame->bUsingLens++;
+                }
+            } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B710) {
+                if (gpSystem->eTypeROM == NSMJ || gpSystem->eTypeROM == NSME || gpSystem->eTypeROM == NSMP) {
+                    bDone = true;
+                    bFlag = false;
+                    pFrame->cBlurAlpha++;
+                    treeCleanUpCheck(SYSTEM_CPU(gpSystem), NULL);
+                } else if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
+                    bDone = true;
+                    bFlag = false;
+
+                    if (pFrame->cBlurAlpha == 0) {
+                        pFrame->cBlurAlpha = 1;
+                        pFrame->bSnapShot = 0;
+                        pFrame->nFrameCounter = 0;
+                        pFrame->bCameFromBomberNotes = 0;
+                        pFrame->bInBomberNotes = 0;
+                        pFrame->bShrinking = 0;
+                        treeCleanUpCheck(SYSTEM_CPU(gpSystem), NULL);
+                    }
+                } else if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
+                    if (pFrame->bCameFromBomberNotes == 0 && pFrame->bInBomberNotes == 0 && nChecksum == 0x5D447143) {
+                        pFrame->bCameFromBomberNotes = 1;
+                        pFrame->bInBomberNotes = 0x3C;
+                    } else if (pFrame->bCameFromBomberNotes == 1 && pFrame->bInBomberNotes != 0 &&
+                               nChecksum == 0xBFD9B964) {
+                        pFrame->bCameFromBomberNotes = 2;
+                        pFrame->bInBomberNotes = 0x3C;
+                    } else if (pFrame->bCameFromBomberNotes == 2 && pFrame->bInBomberNotes != 0 &&
+                               nChecksum == 0x110CA1BB) {
+                        pFrame->cBlurAlpha++;
+                        treeCleanUpCheck(SYSTEM_CPU(gpSystem), NULL);
+                    }
+
+                    bDone = true;
+                    bFlag = false;
+                }
+            } else {
+                if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
+                    if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6C0) {
+                        pFrame->bPauseThisFrame = 1;
+                        bDone = true;
+                        bFlag = false;
+                    } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6C8) {
+                        pFrame->nFrameCounter = 1;
+                        pFrame->bCameFromBomberNotes = 0;
+                        bDone = true;
+                        bFlag = false;
+                        pFrame->bInBomberNotes = 0;
+                        pFrame->bShrinking = 0;
+                    } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6D0) {
+                        pFrame->nFrameCounter = 0;
+                        bDone = true;
+                        bFlag = false;
+
+                        //! TODO: fake match
+                        ((volatile Frame*)pFrame)->bCameFromBomberNotes = 1;
+
+                        pFrame->bInBomberNotes = 0;
+                        pFrame->bShrinking = 0;
+                    } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6D8) {
+                        pFrame->nFrameCounter = 0;
+                        bDone = true;
+                        bFlag = false;
+                        pFrame->bCameFromBomberNotes = 0;
+
+                        //! TODO: fake match
+                        ((volatile Frame*)pFrame)->bInBomberNotes = 1;
+
+                        pFrame->bShrinking = 0;
+                    } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6E0) {
+                        pFrame->nFrameCounter = 0;
+                        bDone = true;
+                        bFlag = false;
+                        pFrame->bCameFromBomberNotes = 0;
+                        pFrame->bInBomberNotes = 0;
+
+                        //! TODO: fake match
+                        ((volatile Frame*)pFrame)->bShrinking = 1;
+                    } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6E8) {
+                        pFrame->nFrameCounter = 0;
+                        bDone = true;
+                        bFlag = false;
+                        pFrame->bCameFromBomberNotes = 0;
+                        pFrame->bInBomberNotes = 0;
+                        pFrame->bShrinking = 0;
+                    }
+                } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6F0) {
+                    if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
+                        pFrame->nFrameCounter = 1;
+                        bDone = true;
+                        bFlag = false;
+                    }
+                } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6F8) {
+                    if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
+                        pFrame->nFrameCounter = 0;
+                        bDone = true;
+                        bFlag = false;
+                    }
+                } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B700) {
+                    if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
+                        pFrame->bBlurOn = 1;
+                        bDone = true;
+                        bFlag = false;
+                    }
+                } else if (gpSystem->eTypeROM != NTEJ && gpSystem->eTypeROM != NTEA && gpSystem->eTypeROM != NTEP) {
+                    if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)GenPerspective_1080) {
+                        bFlag = false;
+                    }
                 }
             }
 
