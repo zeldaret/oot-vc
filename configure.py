@@ -14,9 +14,18 @@
 
 import argparse
 import sys
+import glob
 from pathlib import Path
 from typing import Any, Dict, List
-from tools.project import *
+
+from tools.project import (
+    Object,
+    ProgressCategory,
+    ProjectConfig,
+    calculate_progress,
+    generate_build,
+    is_windows,
+)
 
 ### Script's arguments
 
@@ -32,6 +41,11 @@ parser.add_argument(
     "--non-matching",
     action="store_true",
     help="create non-matching build for modding",
+)
+parser.add_argument(
+    "--no-asm-processor",
+    action="store_true",
+    help="disable asm_processor for progress calculation",
 )
 parser.add_argument(
     "--build-dir",
@@ -100,7 +114,12 @@ args = parser.parse_args()
 
 config = ProjectConfig()
 
-# Only configure versions for which content1.app exists
+
+# Only configure versions for which an orig file exists
+def version_exists(version: str) -> bool:
+    return glob.glob(str(Path("orig") / version / "*")) != []
+
+
 ALL_VERSIONS = [
     "oot-j",
     "oot-u",
@@ -109,14 +128,21 @@ ALL_VERSIONS = [
 config.versions = [
     version
     for version in ALL_VERSIONS
-    if (Path("orig") / version / "content1.app").exists()
+    if version_exists(version)
 ]
+
+if not config.versions:
+    sys.exit("Error: no orig files found for any version")
+
 if "oot-j" in config.versions:
     config.default_version = "oot-j"
+else:
+    # Use the earliest version as default
+    config.default_version = config.versions[0]
 
 config.warn_missing_config = True
 config.warn_missing_source = False
-config.progress_all = False
+config.progress_all = True
 
 config.build_dir = args.build_dir
 config.dtk_path = args.dtk
@@ -126,6 +152,7 @@ config.compilers_path = args.compilers
 config.generate_map = args.map
 config.sjiswrap_path = args.sjiswrap
 config.non_matching = args.non_matching
+config.asm_processor = not args.no_asm_processor
 
 if not is_windows():
     config.wrapper = args.wrapper
@@ -136,10 +163,10 @@ if args.no_asm:
 ### Tool versions
 
 config.binutils_tag = "2.42-1"
-config.compilers_tag = "20231018"
-config.dtk_tag = "v0.9.2"
-config.objdiff_tag = "v2.0.0-beta.5"
-config.sjiswrap_tag = "v1.1.1"
+config.compilers_tag = "20240706"
+config.dtk_tag = "v1.4.1"
+config.objdiff_tag = "v2.7.1"
+config.sjiswrap_tag = "v1.2.0"
 config.wibo_tag = "0.6.11"
 config.linker_version = "GC/3.0a5"
 
@@ -172,6 +199,7 @@ cflags_base = [
     "-sym on",
     "-i include",
     "-i libc",
+    "-i src",
 ]
 
 if config.non_matching:
@@ -188,7 +216,7 @@ def EmulatorLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
             "oot-e": "GC/3.0a5",
         },
         "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-enc SJIS"],
-        "host": False,
+        "progress_category": "emulator",
         "objects": objects,
     }
 
@@ -197,7 +225,7 @@ def RevolutionLib(lib_name: str, objects: List[Object], cpp_exceptions: str = "o
         "lib": lib_name,
         "mw_version": "GC/3.0a5",
         "cflags": [*cflags_base, f"-Cpp_exceptions {cpp_exceptions}", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off"],
-        "host": False,
+        "progress_category": "revolution",
         "objects": objects,
     }
 
@@ -206,7 +234,7 @@ def LibC(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
         "lib": lib_name,
         "mw_version": "GC/3.0a3",
         "cflags": [*cflags_base, "-Cpp_exceptions on", "-O4,p", "-rostr", "-use_lmw_stmw on", "-lang c"],
-        "host": False,
+        "progress_category": "libc",
         "objects": objects,
     }
 
@@ -215,7 +243,7 @@ def RuntimeLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
         "lib": lib_name,
         "mw_version": "GC/3.0a3",
         "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-rostr", "-use_lmw_stmw on", "-enc SJIS"],
-        "host": False,
+        "progress_category": "runtime",
         "objects": objects,
     }
 
@@ -224,19 +252,20 @@ def MetroTRKLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
         "lib": lib_name,
         "mw_version": "GC/2.7",
         "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-rostr", "-use_lmw_stmw on", "-lang c"],
-        "host": False,
+        "progress_category": "metrotrk",
         "objects": objects,
     }
+
 
 ### Link order
 
 # Not matching for any version
 NotLinked: List[str] = []
 
-# Matching for all versions
+# Linked for all versions
 Linked = config.versions
 
-# Matching for specific versions
+# Linked for specific versions
 def LinkedFor(*versions):
     return versions
 
@@ -699,6 +728,16 @@ config.libs = [
             Object(NotLinked, "metrotrk/MWCriticalSection_gc.cpp"),
         ]
     )
+]
+
+# Optional extra categories for progress tracking
+# Adjust as desired for your project
+config.progress_categories = [
+    ProgressCategory("emulator", "Emulator"),
+    ProgressCategory("revolution", "Revolution SDK"),
+    ProgressCategory("libc", "Libc"),
+    ProgressCategory("runtime", "Runtime"),
+    ProgressCategory("metrotrk", "Metrotrk"),
 ]
 
 ### Execute mode
