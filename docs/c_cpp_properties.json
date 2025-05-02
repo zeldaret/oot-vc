@@ -1,0 +1,41 @@
+{
+    "configurations": [
+        {
+            "name": "oot-j",
+            "intelliSenseMode": "${default}",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/libc",
+                "${workspaceFolder}/build/oot-j/include"
+            ],
+            "defines": ["VERSION=OOT_J"]
+        },
+        {
+            "name": "oot-u",
+            "intelliSenseMode": "${default}",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/libc",
+                "${workspaceFolder}/build/oot-u/include"
+            ],
+            "defines": ["VERSION=OOT_U"]
+        },
+        {
+            "name": "oot-e",
+            "intelliSenseMode": "${default}",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/libc",
+                "${workspaceFolder}/build/oot-e/include"
+            ],
+            "defines": ["VERSION=OOT_E"]
+        }
+    ],
+    "version": 4
+}
