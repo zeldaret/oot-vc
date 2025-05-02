@@ -35,6 +35,9 @@ extern GXRenderModeObj GXMpal480IntDf;
 void GXSetTexCopySrc(u16 x, u16 y, u16 w, u16 h);
 void GXSetTexCopyDst(u16 w, u16 h, GXTexFmt fmt, GXBool mipmap);
 
+void GXSetDispCopySrc(u16 left, u16 top, u16 width, u16 height);
+void GXSetDispCopyDst(u16 width, u16 height);
+
 void GXSetCopyClamp(GXCopyClamp clamp);
 
 void GXSetCopyClear(GXColor color, u32 z);

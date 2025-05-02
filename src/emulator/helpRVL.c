@@ -26,18 +26,8 @@ char lbl_801C7D00[40];
 struct_801C7D28 lbl_801C7D28;
 
 // .rodata
-const GXColor lbl_8016A7C0[] = {
-    {196, 32, 0, 0},
-    {195, 240, 0, 0},
-    {68, 32, 0, 0},
-    {67, 240, 0, 0},
-};
-const GXColor lbl_8016A7D0[] = {
-    {196, 32, 0, 0},
-    {196, 4, 0, 0},
-    {68, 32, 0, 0},
-    {68, 4, 0, 0},
-};
+const Quaternion lbl_8016A7C0 = { -GC_FRAME_WIDTH, -GC_FRAME_HEIGHT, GC_FRAME_WIDTH, GC_FRAME_HEIGHT };
+const Quaternion lbl_8016A7D0 = { -GC_FRAME_WIDTH, -GC_FRAME_HEIGHT_PAL, GC_FRAME_WIDTH, GC_FRAME_HEIGHT_PAL };
 
 // .sbss
 s32 lbl_8025D118;
@@ -45,7 +35,7 @@ s32 lbl_8025D114;
 u8 lbl_8025D110;
 s32 lbl_8025D10C;
 s32 lbl_8025D108;
-s64 lbl_8025D100;
+void* lbl_8025D100[2];
 s32 lbl_8025D0FC;
 s32 lbl_8025D0F8;
 char* lbl_8025D0F4;
@@ -198,7 +188,7 @@ void fn_8005E638(GXColor color) {
     GXClearVtxDesc();
     GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
     GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_TEX_ST, GX_RGBA6, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_RGBA6, 0);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_TEX_ST, GX_RGBA8, 0);
     GXSetNumChans(1);
     GXSetNumTexGens(0);
@@ -221,7 +211,79 @@ void fn_8005E638(GXColor color) {
     GXSetTevColor(GX_TEVREG0, color);
 }
 
-static inline void fn_8005EDFC_UnknownInline(GXTexObj* pTexObj, GXColor color) {
+void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5, u32 param_6) {
+    Quaternion quaternion1;
+    Quaternion quaternion2;
+    f32 view[6];
+    void* pBuffer;
+    GXColor local_54;
+
+    if (param_6 != 0) {
+        local_54.r = local_54.g = local_54.b = 0;
+        local_54.a = param_6 & 0xFF;
+        quaternion1 = lbl_8016A7C0;
+        quaternion2 = lbl_8016A7D0;
+
+        GXGetViewportv(view);
+        fn_8005E638(local_54);
+
+        if (fn_8007FC84()) {
+            GXSetViewport(0.0f, 0.0f, 4.125f, 4.015625f, 0.0f, 1.875f);
+            GXSetScissor(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT_PAL);
+
+            GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+            GXPosition3f32(quaternion2.x, quaternion2.y, 0.0f);
+            GXColor1u32(0xFFFFFFFF);
+            GXPosition3f32(quaternion2.x, quaternion2.w, 0.0f);
+            GXColor1u32(0xFFFFFFFF);
+            GXPosition3f32(quaternion2.z, quaternion2.w, 0.0f);
+            GXColor1u32(0xFFFFFFFF);
+            GXPosition3f32(quaternion2.z, quaternion2.y, 0.0f);
+            GXColor1u32(0xFFFFFFFF);
+            GXEnd();
+        } else {
+            GXSetViewport(0.0f, 0.0f, 4.125f, 4.015625f, 0.0f, 1.875f);
+            GXSetScissor(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
+
+            GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+            GXPosition3f32(quaternion1.x, quaternion1.y, 0.0f);
+            GXColor1u32(0xFFFFFFFF);
+            GXPosition3f32(quaternion1.x, quaternion1.w, 0.0f);
+            GXColor1u32(0xFFFFFFFF);
+            GXPosition3f32(quaternion1.z, quaternion1.w, 0.0f);
+            GXColor1u32(0xFFFFFFFF);
+            GXPosition3f32(quaternion1.z, quaternion1.y, 0.0f);
+            GXColor1u32(0xFFFFFFFF);
+            GXEnd();
+        }
+
+        GXSetViewport(view[0], view[1], view[2], view[3], view[4], view[5]);
+    }
+
+    GXSetDispCopySrc(0, 0, param_3, param_4);
+
+    if (fn_8007FC84()) {
+        GXSetDispCopyDst(0x260, 0x210);
+        pBuffer = (void*)((s32)lbl_8025D100[lbl_8025D0FC ^ 1] + ((param_1 + param_2 * 0x260) * 2));
+        GXCopyDisp(pBuffer, GX_TRUE);
+    } else {
+        GXSetDispCopyDst(0x260, 0x1C8);
+        pBuffer = (void*)((s32)lbl_8025D100[lbl_8025D0FC ^ 1] + ((param_1 + param_2 * 0x260) * 2));
+        GXCopyDisp(pBuffer, GX_TRUE);
+    }
+
+    GXDrawDone();
+
+    if (param_5 != 0) {
+        lbl_8025D0FC ^= 1;
+        VISetNextFrameBuffer(lbl_8025D100[lbl_8025D0FC]);
+        VIFlush();
+        VIWaitForRetrace();
+    }
+}
+
+static inline void fn_8005EDFC_UnknownInline(GXColor color) {
+    GXTexObj texObj;
     GXColor color2;
 
     GXClearVtxDesc();
@@ -245,8 +307,8 @@ static inline void fn_8005EDFC_UnknownInline(GXTexObj* pTexObj, GXColor color) {
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     GXSetZMode(GX_DISABLE, GX_LEQUAL, GX_DISABLE);
     GXSetCurrentMtx(3);
-    TPLGetGXTexObjFromPalette(lbl_801C7D28.pTPLPalette, pTexObj, 0);
-    GXLoadTexObj(pTexObj, GX_TEXMAP0);
+    TPLGetGXTexObjFromPalette(lbl_801C7D28.pTPLPalette, &texObj, 0);
+    GXLoadTexObj(&texObj, GX_TEXMAP0);
 
     GXBegin(GX_QUADS, GX_VTXFMT5, 4);
     GXPosition2s16(0x20, 0x3C);
@@ -261,37 +323,33 @@ static inline void fn_8005EDFC_UnknownInline(GXTexObj* pTexObj, GXColor color) {
 }
 
 void fn_8005EDFC(void) {
-    GXTexObj sp10;
-    GXColor color2;
-    f32 temp_f3;
-
-    temp_f3 = OSTicksToMilliseconds(OSGetTick() - lbl_801C7D28.unk08);
+    f32 fTime = OSTicksToMilliseconds(OSGetTick() - lbl_801C7D28.unk08);
 
     switch (lbl_801C7D28.unk0C) {
         case 0:
-            lbl_801C7D28.unk0D = 255.9f * (temp_f3 / 250.0f);
-            if (temp_f3 >= 250.0f) {
+            lbl_801C7D28.unk0D = 255.9f * (fTime / 250.0f);
+            if (fTime >= 250.0f) {
                 lbl_801C7D28.unk08 = OSGetTick();
                 lbl_801C7D28.unk0C = 1;
                 lbl_801C7D28.unk0D = -1;
             }
             break;
         case 1:
-            if (temp_f3 >= 1000.0f) {
+            if (fTime >= 1000.0f) {
                 lbl_801C7D28.unk08 = OSGetTick();
                 lbl_801C7D28.unk0C = 2;
             }
             break;
         case 2:
-            lbl_801C7D28.unk0D = 255.9f * ((250.0f - temp_f3) / 250.0f);
-            if (temp_f3 >= 250.0f) {
+            lbl_801C7D28.unk0D = 255.9f * ((250.0f - fTime) / 250.0f);
+            if (fTime >= 250.0f) {
                 lbl_801C7D28.unk0D = 0;
                 lbl_801C7D28.unk04 = 0;
             }
             break;
     }
 
-    fn_8005EDFC_UnknownInline(&sp10, lbl_8025DEEC);
+    fn_8005EDFC_UnknownInline(lbl_8025DEEC);
 }
 
 void fn_8005F154(void) {
