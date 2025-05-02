@@ -11,17 +11,19 @@
 #include "math.h"
 #include "revolution/gx.h"
 #include "revolution/mem.h"
+#include "revolution/mtx.h"
 #include "revolution/nand.h"
 #include "revolution/os.h"
 #include "revolution/tpl.h"
 #include "revolution/vi.h"
-#include "revolution/mtx.h"
 #include "string.h"
 
 void fn_8005F1A0(void);
 void fn_8005F154(void);
 extern s32 fn_8008882C(void**, u32, MEMAllocator*, MEMAllocator*);
 extern void fn_800888DC(void**);
+
+#define MB(x) (x * 1024 * 1024)
 
 char lbl_801C7D00[40];
 struct_801C7D28 lbl_801C7D28;
@@ -58,7 +60,7 @@ s64 lbl_8025D0D0;
 s32 lbl_8025D0C8[2];
 void* lbl_8025D0C4;
 s32 lbl_8025D0C0;
-char** lbl_8025D0BC;
+char* lbl_8025D0BC;
 u8 lbl_8025D0B8;
 
 // .sdata2
@@ -156,9 +158,6 @@ s32 fn_8005E2D0(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, MEMAlloca
     contentCloseNAND(&fileInfo);
     return var_r31;
 }
-
-// .sdata
-s32 lbl_8025C864 = 0x2E000000;
 
 void fn_8005E45C(GXTexObj* pTexObj, GXColor color) {
     GXInvalidateVtxCache();
@@ -288,6 +287,91 @@ void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5
         VIFlush();
         VIWaitForRetrace();
     }
+}
+
+char* fn_800887C8(void*, char*, u8);
+
+void fn_8005EAFC(void) {
+    GXRenderModeObj sp8;
+    s32 var_r31;
+
+    var_r31 = MB(20);
+
+    if (lbl_8025D0BC == NULL) {
+        lbl_8025D0BC = lbl_801C7D00;
+    }
+
+    sp8 = *lbl_8025D10C;
+    sp8.viWidth = 0x29E;
+
+    if (fn_8007FC84()) {
+        sp8.fbWidth = 0x260;
+        sp8.viHeight = 0x210;
+        sp8.xfbHeight = 0x210;
+        sp8.efbHeight = 0x210;
+    } else {
+        sp8.fbWidth = 0x260;
+        sp8.viHeight = 0x1C8;
+        sp8.xfbHeight = 0x1C8;
+        sp8.efbHeight = 0x1C8;
+    }
+
+    if (fn_8007FC84()) {
+        sp8.viXOrigin = (720 - sp8.viWidth) / 2;
+        sp8.viYOrigin = 23;
+    } else {
+        switch (VIGetTvFormat()) {
+            case VI_TV_FMT_NTSC:
+                sp8.viXOrigin = (720 - sp8.viWidth) / 2;
+                sp8.viYOrigin = 12;
+                break;
+            case VI_TV_FMT_MPAL:
+                sp8.viXOrigin = (720 - sp8.viWidth) / 2;
+                sp8.viYOrigin = 12;
+                break;
+            case VI_TV_FMT_EURGB60:
+                sp8.viXOrigin = (720 - sp8.viWidth) / 2;
+                sp8.viYOrigin = 12;
+                break;
+            default:
+                break;
+        }
+    }
+
+    VIConfigure(&sp8);
+    VIFlush();
+    GXSetDispCopyYScale((f32)sp8.xfbHeight / (f32)sp8.efbHeight);
+    VIWaitForRetrace();
+    VIWaitForRetrace();
+
+    if (fn_8007FC84()) {
+        fn_80088668(0x260, 0x210);
+        fn_8008866C(0x260, 0x210);
+    } else {
+        fn_80088668(0x260, 0x1C8);
+        fn_8008866C(0x260, 0x1C8);
+    }
+
+    fn_80088670(0xC);
+
+    for (; var_r31 > 0; var_r31 -= MB(1)) {
+        if (fn_80088678(var_r31) != 0) {
+            break;
+        }
+    }
+
+    if (var_r31 <= 0) {
+        OSPanic("helpRVL.c", 938, ".");
+    }
+
+    fn_800887CC(&lbl_801C7D00);
+    lbl_8025D0BC = fn_800887C8(fn_8005E800, lbl_8025D0BC, lbl_8025D0B8);
+
+    VIConfigure(lbl_8025D10C);
+    VIFlush();
+    GXSetDispCopyYScale((f32)lbl_8025D10C->xfbHeight / (f32)lbl_8025D10C->efbHeight);
+    VIWaitForRetrace();
+    VIWaitForRetrace();
 }
 
 static inline void fn_8005EDFC_UnknownInline(GXColor color) {
