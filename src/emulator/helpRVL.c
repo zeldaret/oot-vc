@@ -15,6 +15,7 @@
 #include "revolution/os.h"
 #include "revolution/tpl.h"
 #include "revolution/vi.h"
+#include "revolution/mtx.h"
 #include "string.h"
 
 void fn_8005F1A0(void);
@@ -25,15 +26,22 @@ extern void fn_800888DC(void**);
 char lbl_801C7D00[40];
 struct_801C7D28 lbl_801C7D28;
 
+typedef struct Rect {
+    /* 0x0 */ f32 x0;
+    /* 0x4 */ f32 y0;
+    /* 0x8 */ f32 x1;
+    /* 0xC */ f32 y1;
+} Rect; // size = 0x10
+
 // .rodata
-const Quaternion lbl_8016A7C0 = {-GC_FRAME_WIDTH, -GC_FRAME_HEIGHT, GC_FRAME_WIDTH, GC_FRAME_HEIGHT};
-const Quaternion lbl_8016A7D0 = {-GC_FRAME_WIDTH, -GC_FRAME_HEIGHT_PAL, GC_FRAME_WIDTH, GC_FRAME_HEIGHT_PAL};
+const Rect lbl_8016A7C0 = {-GC_FRAME_WIDTH, -GC_FRAME_HEIGHT, GC_FRAME_WIDTH, GC_FRAME_HEIGHT};
+const Rect lbl_8016A7D0 = {-GC_FRAME_WIDTH, -GC_FRAME_HEIGHT_PAL, GC_FRAME_WIDTH, GC_FRAME_HEIGHT_PAL};
 
 // .sbss
 s32 lbl_8025D118;
 s32 lbl_8025D114;
 u8 lbl_8025D110;
-s32 lbl_8025D10C;
+GXRenderModeObj* lbl_8025D10C;
 s32 lbl_8025D108;
 void* lbl_8025D100[2];
 s32 lbl_8025D0FC;
@@ -50,7 +58,7 @@ s64 lbl_8025D0D0;
 s32 lbl_8025D0C8[2];
 void* lbl_8025D0C4;
 s32 lbl_8025D0C0;
-s32 lbl_8025D0BC;
+char** lbl_8025D0BC;
 u8 lbl_8025D0B8;
 
 // .sdata2
@@ -212,17 +220,17 @@ void fn_8005E638(GXColor color) {
 }
 
 void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5, u32 param_6) {
-    Quaternion quaternion1;
-    Quaternion quaternion2;
+    Rect rect;
+    Rect rectPAL;
+    GXColor local_54;
     f32 view[6];
     void* pBuffer;
-    GXColor local_54;
 
     if (param_6 != 0) {
         local_54.r = local_54.g = local_54.b = 0;
         local_54.a = param_6 & 0xFF;
-        quaternion1 = lbl_8016A7C0;
-        quaternion2 = lbl_8016A7D0;
+        rect = lbl_8016A7C0;
+        rectPAL = lbl_8016A7D0;
 
         GXGetViewportv(view);
         fn_8005E638(local_54);
@@ -232,13 +240,13 @@ void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5
             GXSetScissor(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT_PAL);
 
             GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-            GXPosition3f32(quaternion2.x, quaternion2.y, 0.0f);
+            GXPosition3f32(rectPAL.x0, rectPAL.y0, 0.0f);
             GXColor1u32(0xFFFFFFFF);
-            GXPosition3f32(quaternion2.x, quaternion2.w, 0.0f);
+            GXPosition3f32(rectPAL.x0, rectPAL.y1, 0.0f);
             GXColor1u32(0xFFFFFFFF);
-            GXPosition3f32(quaternion2.z, quaternion2.w, 0.0f);
+            GXPosition3f32(rectPAL.x1, rectPAL.y1, 0.0f);
             GXColor1u32(0xFFFFFFFF);
-            GXPosition3f32(quaternion2.z, quaternion2.y, 0.0f);
+            GXPosition3f32(rectPAL.x1, rectPAL.y0, 0.0f);
             GXColor1u32(0xFFFFFFFF);
             GXEnd();
         } else {
@@ -246,13 +254,13 @@ void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5
             GXSetScissor(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
 
             GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-            GXPosition3f32(quaternion1.x, quaternion1.y, 0.0f);
+            GXPosition3f32(rect.x0, rect.y0, 0.0f);
             GXColor1u32(0xFFFFFFFF);
-            GXPosition3f32(quaternion1.x, quaternion1.w, 0.0f);
+            GXPosition3f32(rect.x0, rect.y1, 0.0f);
             GXColor1u32(0xFFFFFFFF);
-            GXPosition3f32(quaternion1.z, quaternion1.w, 0.0f);
+            GXPosition3f32(rect.x1, rect.y1, 0.0f);
             GXColor1u32(0xFFFFFFFF);
-            GXPosition3f32(quaternion1.z, quaternion1.y, 0.0f);
+            GXPosition3f32(rect.x1, rect.y0, 0.0f);
             GXColor1u32(0xFFFFFFFF);
             GXEnd();
         }
