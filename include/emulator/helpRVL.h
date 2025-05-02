@@ -2,9 +2,9 @@
 #define _HELP_RVL
 
 #include "emulator/xlObject.h"
+#include "revolution/cnt.h"
 #include "revolution/tpl.h"
 #include "revolution/types.h"
-#include "revolution/cnt.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,14 +12,33 @@ extern "C" {
 
 typedef bool (*HelpMenuCallback)(void*);
 
+typedef struct struct_801C7D28_10 {
+    /* 0x00 */ void* pBuffer1;
+    /* 0x04 */ void* pBuffer2;
+    /* 0x08 */ void* pBuffer3;
+    /* 0x0C */ void* pBuffer4;
+    /* 0x10 */ void* unk20;
+    /* 0x14 */ void* unk24;
+    /* 0x18 */ s32 unk28;
+    /* 0x1C */ TPLPalette* pTPLPalette2;
+    /* 0x20 */ s32 unk30;
+    /* 0x24 */ s32 unk34;
+    /* 0x28 */ s32 unk38;
+    /* 0x2C */ f32 unk3C;
+    /* 0x30 */ f32 unk40;
+    /* 0x34 */ f32 unk44;
+    /* 0x38 */ s32 unk48;
+} struct_801C7D28_10; // size = 0x3C
+
 typedef struct struct_801C7D28 {
     /* 0x00 */ TPLPalette* pTPLPalette;
     /* 0x04 */ s32 unk04;
     /* 0x08 */ u32 unk08;
     /* 0x0C */ s8 unk0C;
     /* 0x0D */ u8 unk0D;
-    /* 0x10 */ u8 unk10[0x3C];
+    /* 0x10 */ struct_801C7D28_10 unk10;
     /* 0x4C */ CNTHandle handle;
+    /* 0x74 */ u8 unk74[0x1C];
 } struct_801C7D28; // size = 0x90
 
 typedef struct HelpMenu {

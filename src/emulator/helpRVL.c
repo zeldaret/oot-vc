@@ -9,33 +9,96 @@
 #include "emulator/xlHeap.h"
 #include "macros.h"
 #include "math.h"
-#include "revolution/tpl.h"
-#include "revolution/nand.h"
 #include "revolution/gx.h"
 #include "revolution/mem.h"
+#include "revolution/nand.h"
 #include "revolution/os.h"
+#include "revolution/tpl.h"
 #include "revolution/vi.h"
 #include "string.h"
 
 void fn_8005F1A0(void);
 void fn_8005F154(void);
+extern s32 fn_8008882C(void**, u32, MEMAllocator*, MEMAllocator*);
+extern void fn_800888DC(void**);
 
+char lbl_801C7D00[40];
 struct_801C7D28 lbl_801C7D28;
 
+// .rodata
+const GXColor lbl_8016A7C0[] = {
+    {196, 32, 0, 0},
+    {195, 240, 0, 0},
+    {68, 32, 0, 0},
+    {67, 240, 0, 0},
+};
+const GXColor lbl_8016A7D0[] = {
+    {196, 32, 0, 0},
+    {196, 4, 0, 0},
+    {68, 32, 0, 0},
+    {68, 4, 0, 0},
+};
 
-
-extern GXColorU32 lbl_8016A7C0;
-extern GXColorU32 lbl_8016A7D0;
-
+// .sbss
 s32 lbl_8025D118;
 s32 lbl_8025D114;
 u8 lbl_8025D110;
+s32 lbl_8025D10C;
+s32 lbl_8025D108;
 s64 lbl_8025D100;
 s32 lbl_8025D0FC;
+s32 lbl_8025D0F8;
+char* lbl_8025D0F4;
 s32 lbl_8025D0F0;
 s32 lbl_8025D0EC;
 s32 lbl_8025D0E8;
+s32 lbl_8025D0E4;
+s32 lbl_8025D0E0;
+s32 lbl_8025D0DC;
+s32 lbl_8025D0D8;
 s64 lbl_8025D0D0;
+s32 lbl_8025D0C8[2];
+void* lbl_8025D0C4;
+s32 lbl_8025D0C0;
+s32 lbl_8025D0BC;
+u8 lbl_8025D0B8;
+
+// .sdata2
+const f32 lbl_8025DEA8 = 0.0f;
+const f32 lbl_8025DEAC = 1408.0f;
+const f32 lbl_8025DEB0 = 1148.0f;
+const f32 lbl_8025DEB4 = 287.0f;
+const f32 lbl_8025DEB8 = 320.0f;
+const f32 lbl_8025DEBC = -1.0f;
+const f32 lbl_8025DEC0 = 960.0f;
+const f32 lbl_8025DEC4 = 240.0f;
+const f32 lbl_8025DEC8 = 1.0f;
+const f32 lbl_8025DECC = 1000.0f;
+const f64 lbl_8025DED0 = 4503601774854144.0;
+const f64 lbl_8025DED8 = 4503599627370496.0;
+const f32 lbl_8025DEE0 = 640.0f;
+const f32 lbl_8025DEE4 = 528.0f;
+const f32 lbl_8025DEE8 = 480.0f;
+const GXColor lbl_8025DEEC = {255, 255, 255, 0};
+const f32 lbl_8025DEF0 = 255.9f;
+const f32 lbl_8025DEF4 = 250.0f;
+const f32 lbl_8025DEF8 = 1.3684211f;
+const f32 lbl_8025DEFC = 239.0f;
+const f32 lbl_8025DF00 = 339.0f;
+const f32 lbl_8025DF04 = 1001.0f;
+const f32 lbl_8025DF08 = -243.84001f;
+const f32 lbl_8025DF0C = -320.0f;
+const f32 lbl_8025DF10 = 500.0f;
+const f32 lbl_8025DF14 = -240.0f;
+
+// .data
+char lbl_801743B0[] = "html.arc";
+char lbl_801743BC[] = "helpRVL.c";
+char lbl_801743C8[] = "/tmp/HBMSE.brsar";
+char lbl_801743DC[] = "/tmp/opera.arc";
+
+// .sdata
+GXColor lbl_8025C850[] = {255, 255, 255, 255};
 
 s32 fn_8005E2D0(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, MEMAllocator* arg3, void* arg4) {
     CNTFileInfoNAND fileInfo;
@@ -96,6 +159,9 @@ s32 fn_8005E2D0(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, MEMAlloca
     return var_r31;
 }
 
+// .sdata
+s32 lbl_8025C864 = 0x2E000000;
+
 void fn_8005E45C(GXTexObj* pTexObj, GXColor color) {
     GXInvalidateVtxCache();
     GXInvalidateTexAll();
@@ -155,16 +221,49 @@ void fn_8005E638(GXColor color) {
     GXSetTevColor(GX_TEVREG0, color);
 }
 
-GXColor lbl_8025DEEE = {255, 255, 255, 0};
+static inline void fn_8005EDFC_UnknownInline(GXTexObj* pTexObj, GXColor color) {
+    GXColor color2;
+
+    GXClearVtxDesc();
+    GXSetVtxAttrFmt(GX_VTXFMT5, GX_VA_POS, GX_POS_XY, GX_RGBA4, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT5, GX_VA_TEX0, GX_TEX_ST, GX_RGBA4, 0);
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetNumChans(1);
+    GXSetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
+    GXSetNumTexGens(1);
+    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, 0x3C, GX_FALSE, 0x7D);
+    GXSetNumTevStages(1);
+    color2 = color;
+    color2.a = lbl_801C7D28.unk0D;
+    GXSetTevColor(GX_TEVREG0, color2);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_A0, GX_CA_TEXA, GX_CA_ZERO);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GXSetZMode(GX_DISABLE, GX_LEQUAL, GX_DISABLE);
+    GXSetCurrentMtx(3);
+    TPLGetGXTexObjFromPalette(lbl_801C7D28.pTPLPalette, pTexObj, 0);
+    GXLoadTexObj(pTexObj, GX_TEXMAP0);
+
+    GXBegin(GX_QUADS, GX_VTXFMT5, 4);
+    GXPosition2s16(0x20, 0x3C);
+    GXTexCoord2s16(0, 1);
+    GXPosition2s16(0x20, 0x20);
+    GXTexCoord2s16(0, 0);
+    GXPosition2s16(0x3C, 0x20);
+    GXTexCoord2s16(1, 0);
+    GXPosition2s16(0x3C, 0x3C);
+    GXTexCoord2s16(1, 1);
+    GXEnd();
+}
+
 void fn_8005EDFC(void) {
     GXTexObj sp10;
-    s32 spC;
-    u8 spB;
-    u8 spA;
-    u8 sp9;
-    u8 sp8;
-    f32 temp_f3;
     GXColor color2;
+    f32 temp_f3;
 
     temp_f3 = OSTicksToMilliseconds(OSGetTick() - lbl_801C7D28.unk08);
 
@@ -192,42 +291,7 @@ void fn_8005EDFC(void) {
             break;
     }
 
-    GXClearVtxDesc();
-    GXSetVtxAttrFmt(GX_VTXFMT5, GX_VA_POS, GX_COMPCNT_NULL, GX_RGBA4, 0);
-    GXSetVtxAttrFmt(GX_VTXFMT5, GX_VA_TEX0, GX_TEX_ST, GX_RGBA4, 0);
-    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
-    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
-    GXSetNumChans(1);
-    GXSetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
-    GXSetNumTexGens(1);
-    GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, 0x3C, GX_FALSE, 0x7D);
-    GXSetNumTevStages(1);
-    color2.r = lbl_8025DEEE.r;
-    color2.g = lbl_8025DEEE.g;
-    color2.b = lbl_8025DEEE.b;
-    color2.a = lbl_801C7D28.unk0D;
-    GXSetTevColor(GX_TEVREG0, color2);
-    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
-    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
-    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
-    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_A0, GX_CA_TEXA, GX_CA_ZERO);
-    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
-    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-    GXSetZMode(0U, GX_LEQUAL, 0);
-    GXSetCurrentMtx(3);
-    TPLGetGXTexObjFromPalette(lbl_801C7D28.pTPLPalette, &sp10, 0);
-    GXLoadTexObj(&sp10, GX_TEXMAP0);
-
-    GXBegin(GX_QUADS, GX_VTXFMT5, 4);
-    GXPosition2s16(0x20, 0x3C);
-    GXPosition2s16(0, 1);
-    GXPosition2s16(0x20, 0x20);
-    GXPosition2s16(0, 0);
-    GXPosition2s16(0x3C, 0x20);
-    GXPosition2s16(1, 0);
-    GXPosition2s16(0x3C, 0x3C);
-    GXPosition2s16(1,  1);
-    GXEnd();
+    fn_8005EDFC_UnknownInline(&sp10, lbl_8025DEEC);
 }
 
 void fn_8005F154(void) {
@@ -248,93 +312,106 @@ void fn_8005F1A0(void) {
     }
 }
 
-s32 fn_8005F1EC(void) { return 0; }
+bool fn_8005F1EC(void) { return 0; }
 
-/*
-extern s32 lbl_8025D0C0;
-extern s32* lbl_8025D0C4;
-extern void* lbl_801C7CE0;
-char lbl_8016A7E0[] = "HomeButton3/";
+typedef struct struct_801C7CE0 {
+    /* 0x00 */ MEMAllocator allocator1;
+    /* 0x10 */ MEMAllocator allocator2;
+} struct_801C7CE0; // size = 0x20
+struct_801C7CE0 lbl_801C7CE0;
 
-typedef struct struct_801C7D00 {
-    /* 0x00 */ MEMAllocator allocator;
-    /* 0x10 *
-} struct_801C7D00; // size = 0x28
-
-struct_801C7D00 lbl_801C7D00;
+inline void test(void** truc, struct_801C7CE0* truc2, s32 size) {
+    fn_8008882C(&lbl_8025D0C4, size, &truc2->allocator2, &truc2->allocator1);
+}
 
 void fn_8005F1F4(HelpMenu* pHelpMenu) {
-    s32 spBC;
     NANDFileInfo sp30;
     void* sp8;
-    u32 temp_r14;
-    u32 temp_r14_2;
-    void** temp_r14_3;
-
+    s32 temp_r14;
+    s32 temp_r14_2;
     char* temp_r16;
-    char sp10[120];
-    s32 i;
+    struct_801C7D28* truc;
+    struct_801C7CE0* truc2;
+    char sp10[32] = "HomeButton3/";
 
-    for (i = 0; i < ARRAY_COUNT(lbl_8016A7E0); i++) {
-        sp10[i] = lbl_8016A7E0[i];
-    }
+    temp_r16 = &sp10[strlen(sp10)];
+    truc = &lbl_801C7D28;
+    truc2 = &lbl_801C7CE0;
 
-    temp_r16 = &sp10[strlen((char*)sp10)];
-
-    xlHeapFill8(lbl_801C7D28.unk10, sizeof(lbl_801C7D28.unk10), 0);
+    xlHeapFill8(&truc->unk10, sizeof(struct_801C7D28_10), 0);
     lbl_8025D0C4 = NULL;
-    contentInitHandleNAND(4, &lbl_801C7D28.handle.handleNAND, &lbl_801C7D00.allocator);
+    contentInitHandleNAND(4, &truc->handle.handleNAND, &truc2->allocator2);
 
     if (lbl_8025D0C0 == 0) {
         sp8 = NULL;
         lbl_8025D0C0 = 1;
         strcpy(temp_r16, "Huf8_HomeButtonSe.brsar");
-        temp_r14 = fn_8005E2D0(&lbl_801C7D28.handle.handleNAND, (char*)sp10, &sp8, &lbl_801C7D00.allocator, lbl_801C7CE0);
-        NANDCreate("/tmp/HBMSE.brsar", 0x30, 0);
-        NANDOpen("/tmp/HBMSE.brsar", &sp30, 2);
+        temp_r14 = fn_8005E2D0(&truc->handle.handleNAND, sp10, &sp8, &truc2->allocator2, &lbl_801C7CE0);
+        NANDCreate(lbl_801743C8, 0x30, 0);
+        NANDOpen(lbl_801743C8, &sp30, 2);
         NANDWrite(&sp30, sp8, temp_r14);
         NANDClose(&sp30);
         fn_800888DC(&sp8);
-        temp_r14_2 = fn_8005F6F4(SYSTEM_HELP(gpSystem), "Opera.arc", &sp8, &lbl_801C7D00.allocator);
-        NANDCreate("/tmp/opera.arc", 0x30, 0);
-        NANDOpen("/tmp/opera.arc", &sp30, 2);
+
+        temp_r14_2 = fn_8005F6F4(SYSTEM_HELP(gpSystem), "Opera.arc", &sp8, &truc2->allocator2);
+        NANDCreate(lbl_801743DC, 0x30, 0);
+        NANDOpen(lbl_801743DC, &sp30, 2);
         NANDWrite(&sp30, sp8, temp_r14_2);
         NANDClose(&sp30);
-        fn_800888DC(sp8);
+        fn_800888DC(&sp8);
     }
 
-    strcpy(&lbl_801C7CE0 + 0x20, "arc:/html/");
-    // temp_r14_3 = &lbl_801C7CE0 + 0x58;
-    // lbl_8025D0F4 = &lbl_801C7CE0 + 0x20 + strlen(&lbl_801C7CE0 + 0x20);
-    // temp_r14_3->unk1C = 0;
-    // strcpy(temp_r16, "LZ77_homeBtn.arc");
-    // strcpy(lbl_8025D0F4, "index/index_Frameset.html");
-    // fn_8005E2D0(&lbl_801C7D28.handle, &sp10, temp_r14_3, &lbl_801C7D00.allocator, &lbl_801C7CE0);
-    // strcpy(temp_r16, "Huf8_SpeakerSe.arc");
-    // fn_8005E2D0(&lbl_801C7D28.handle, &sp10, temp_r14_3 + 4, &lbl_801C7D00.allocator, &lbl_801C7CE0);
-    // strcpy(temp_r16, "home.csv");
-    // fn_8005E2D0(&lbl_801C7D28.handle, &sp10, temp_r14_3 + 8, &lbl_801C7D00.allocator, &lbl_801C7CE0);
-    // strcpy(temp_r16, "config.txt");
-    // fn_8005E2D0(&lbl_801C7D28.handle, &sp10, temp_r14_3 + 0xC, &lbl_801C7D00.allocator, &lbl_801C7CE0);
-    // temp_r14_3->unk14 = &fn_8005F1EC;
-    // temp_r14_3->unk18 = 0;
-    // temp_r14_3->unk20 = 0;
-    // temp_r14_3->unk30 = (f32) lbl_8025DEF8;
-    // temp_r14_3->unk34 = (f32) lbl_8025DEC8;
-    // temp_r14_3->unk2C = (f32) lbl_8025DEC8;
-    // strcpy(temp_r16, "homeBtnIcon.tpl", lbl_8025DEF8);
-    // fn_8005E2D0(&lbl_801C7D28.handle, &sp10, &lbl_801C7CE0 + 0x48, &lbl_801C7D00.allocator, &lbl_801C7CE0);
-    // TPLBind(lbl_801C7CE0.unk48);
-    // temp_r14_3->unk28 = 0x80000;
-    // fn_8008882C(temp_r14_3 + 0x10, 0x80000, &lbl_801C7D00.allocator, &lbl_801C7CE0);
-    // temp_r14_3->unk38 = 0;
-    fn_80088994(temp_r14_3);
-    fn_80100870(temp_r14_3);
-    // fn_8008882C(&lbl_8025D0C4, 0xA0000, &lbl_801C7D00.allocator, &lbl_801C7CE0);
-    // fn_80100CD8("/tmp/HBMSE.brsar", lbl_8025D0C4, 0xA0000);
+    strcpy(lbl_801C7D00, "arc:/html/");
+    lbl_8025D0F4 = lbl_801C7D00 + strlen(lbl_801C7D00);
+    truc->unk10.pTPLPalette2 = NULL;
+    strcpy(temp_r16, "LZ77_homeBtn.arc");
+    strcpy(lbl_8025D0F4, "index/index_Frameset.html");
+    fn_8005E2D0(&truc->handle.handleNAND, sp10, &truc->unk10.pBuffer1, &truc2->allocator2, &lbl_801C7CE0);
+    strcpy(temp_r16, "Huf8_SpeakerSe.arc");
+    fn_8005E2D0(&truc->handle.handleNAND, sp10, &truc->unk10.pBuffer2, &truc2->allocator2, &lbl_801C7CE0);
+    strcpy(temp_r16, "home.csv");
+    fn_8005E2D0(&truc->handle.handleNAND, sp10, &truc->unk10.pBuffer3, &truc2->allocator2, &lbl_801C7CE0);
+    strcpy(temp_r16, "config.txt");
+    fn_8005E2D0(&truc->handle.handleNAND, sp10, &truc->unk10.pBuffer4, &truc2->allocator2, &lbl_801C7CE0);
+
+    truc->unk10.unk24 = fn_8005F1EC;
+    truc->unk10.unk28 = 0;
+    truc->unk10.unk30 = 0;
+    truc->unk10.unk40 = lbl_8025DEF8;
+    truc->unk10.unk44 = lbl_8025DEC8;
+    truc->unk10.unk3C = lbl_8025DEC8;
+
+    strcpy(temp_r16, "homeBtnIcon.tpl");
+    fn_8005E2D0(&truc->handle.handleNAND, sp10, (void**)&truc->pTPLPalette, &truc2->allocator2, &lbl_801C7CE0);
+    TPLBind(truc->pTPLPalette);
+    truc->unk10.unk38 = 0x80000;
+    // fn_8008882C(&truc->unk10.unk20, 0x80000, &truc2->allocator2, &truc2->allocator1);
+    test(&lbl_8025D0C4, &lbl_801C7CE0, 0x80000);
+    truc->unk10.unk48 = 0;
+    fn_80088994(&truc->unk10.pBuffer1);
+    fn_80100870(&truc->unk10.pBuffer1);
+    test(&lbl_8025D0C4, &lbl_801C7CE0, 0xa0000);
+    // fn_8008882C(&lbl_8025D0C4, 0xa0000, &truc2->allocator2, &truc2->allocator1);
+    fn_80100CD8(lbl_801743C8, lbl_8025D0C4, 0xa0000);
     fn_80100940();
 }
-*/
+
+// .data
+extern void* lbl_8005FF60;
+extern void* lbl_80060224;
+extern void* lbl_8005FF68;
+extern void* lbl_8005FFA8;
+extern void* lbl_8005FFF8;
+extern void* lbl_8006019C;
+extern void* lbl_80060224;
+extern void* lbl_80060224;
+extern void* lbl_8005FF58;
+extern void* lbl_800601C4;
+extern void* lbl_80060200;
+void* jumptable_80174490[] = {
+    &lbl_8005FF60, &lbl_80060224, &lbl_8005FF68, &lbl_8005FFA8, &lbl_8005FFF8, &lbl_8006019C,
+    &lbl_80060224, &lbl_80060224, &lbl_8005FF58, &lbl_800601C4, &lbl_80060200,
+};
 
 bool fn_8005F5F4(HelpMenu* pHelpMenu, void* pObject, s32 nByteCount, HelpMenuCallback callback) {
     u32 nSize;
