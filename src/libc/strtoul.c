@@ -157,7 +157,7 @@ unsigned long long __strtoull(int base, int max_width, int (*ReadProc)(void*, in
     int spaces = 0;
     unsigned long long value = 0;
     unsigned long long value_max = 0;
-    unsigned long long ullmax = ULLONG_MAX;
+    unsigned long long ullmax = ULONG_MAX;
     int c;
 
     *negative = *overflow = 0;
@@ -169,7 +169,7 @@ unsigned long long __strtoull(int base, int max_width, int (*ReadProc)(void*, in
     }
 
     if (base != 0) {
-        value_max = ULLONG_MAX / base;
+        value_max = ULONG_MAX / base;
     }
 
     while (count <= max_width && c != -1 && !final_state(scan_state)) {
@@ -283,31 +283,29 @@ unsigned long long __strtoull(int base, int max_width, int (*ReadProc)(void*, in
 }
 
 unsigned long strtoul(const char* str, char** end, int base) {
-    unsigned long value;
+    unsigned long uvalue;
+    long svalue;
     int count, negative, overflow;
 
     __InStrCtrl isc;
     isc.NextChar = (char*)str;
     isc.NullCharDetected = 0;
 
-    value = __strtoul(base, 0x7FFFFFFF, &__StringRead, (void*)&isc, &count, &negative, &overflow);
+    uvalue = __strtoul(base, LONG_MAX, &__StringRead, (void*)&isc, &count, &negative, &overflow);
 
-    if (end) {
+    if (end != NULL) {
         *end = (char*)str + count;
     }
 
     if (overflow) {
-        value = ULONG_MAX;
+        svalue = -1;
         errno = ERANGE;
-    } else if (negative) {
-        value = -value;
+    } else {
+        svalue = negative ? -uvalue : uvalue;
     }
 
-    return value;
+    return svalue;
 }
-
-// unused
-void strtoull() {}
 
 long strtol(const char* str, char** end, int base) {
     unsigned long uvalue;
@@ -318,9 +316,9 @@ long strtol(const char* str, char** end, int base) {
     isc.NextChar = (char*)str;
     isc.NullCharDetected = 0;
 
-    uvalue = __strtoul(base, 0x7FFFFFFF, &__StringRead, (void*)&isc, &count, &negative, &overflow);
+    uvalue = __strtoul(base, LONG_MAX, &__StringRead, (void*)&isc, &count, &negative, &overflow);
 
-    if (end) {
+    if (end != NULL) {
         *end = (char*)str + count;
     }
 
@@ -328,19 +326,12 @@ long strtol(const char* str, char** end, int base) {
         svalue = (negative ? -LONG_MIN : LONG_MAX);
         errno = ERANGE;
     } else {
-        svalue = (negative ? (long)-uvalue : (long)uvalue);
+        svalue = negative ? -uvalue : uvalue;
     }
 
     return svalue;
 }
 
-// unused
-void strtoll() {}
+int atoi(const char* str) { return strtol(str, NULL, 10); }
 
-int atoi(const char* str) { return (strtol(str, 0, 10)); }
-
-// unused
-void atol() {}
-
-// unused
-void atoll() {}
+long atol(const char* str) { return strtol(str, NULL, 10); }
