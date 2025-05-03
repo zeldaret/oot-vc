@@ -363,12 +363,12 @@ revolution/os/OSStateTM.c:
 	.bss        start:0x801DD920 end:0x801DD9E0
 	.sbss       start:0x8025D868 end:0x8025D888
 
+revolution/os/time.dolphin.c:
+	.text       start:0x800945FC end:0x80094648
+
 revolution/os/__start.c:
 	.init       start:0x80004000 end:0x800042E0
 	.sbss       start:0x8025D888 end:0x8025D890
-
-revolution/os/time.dolphin.c:
-	.text       start:0x800945FC end:0x80094648
 
 revolution/os/OSPlayRecord.c:
 	.text       start:0x80094648 end:0x80094D20
