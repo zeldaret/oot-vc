@@ -1,5 +1,5 @@
-#ifndef _STORE_H
-#define _STORE_H
+#ifndef _STORERVL_H
+#define _STORERVL_H
 
 #include "emulator/system.h"
 #include "emulator/xlObject.h"
