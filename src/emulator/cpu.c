@@ -1010,26 +1010,18 @@ static bool cpuMapAddress(Cpu* pCPU, s32* piDevice, u32 nVirtual, u32 nPhysical,
 }
 
 static bool cpuSetTLB(Cpu* pCPU, s32 iEntry) {
-    u64* pTLB = pCPU->aTLB[iEntry];
     s32 iDevice;
-    u32 nMask;
+    s32 nPageSize;
     u32 nVirtual;
     u32 nPhysical;
-    s32 nPageSize;
 
-    s32 i;
-    s32 page_size;
-    s32 tmp;
-    u32 vpn2;
-    u32 pfn;
+    pCPU->aTLB[iEntry][3] = pCPU->anCP0[5] & TLB_PGSZ_MASK;
+    pCPU->aTLB[iEntry][2] = pCPU->anCP0[10];
+    pCPU->aTLB[iEntry][0] = pCPU->anCP0[2];
+    pCPU->aTLB[iEntry][1] = pCPU->anCP0[3];
 
-    pTLB[3] = pCPU->anCP0[5] & TLB_PGSZ_MASK;
-    pTLB[2] = pCPU->anCP0[10];
-    pTLB[0] = pCPU->anCP0[2];
-    pTLB[1] = pCPU->anCP0[3];
-
-    if (pTLB[0] & 2 || pTLB[1] & 2) {
-        switch (pTLB[3]) {
+    if (pCPU->aTLB[iEntry][0] & 2 || pCPU->aTLB[iEntry][1] & 2) {
+        switch (pCPU->aTLB[iEntry][3]) {
             case TLB_PGSZ_4K:
                 nPageSize = 4 * 1024;
                 break;
@@ -1056,47 +1048,57 @@ static bool cpuSetTLB(Cpu* pCPU, s32 iEntry) {
                 break;
         }
 
-        nVirtual = pTLB[3] & 0xFFFFE000;
+        nVirtual = (u32)pCPU->aTLB[iEntry][2] & 0xFFFFE000;
 
-        if (pTLB[0] & 2) {
-            // nPhysical = pTLB[0] & 0x3FFFFC0;
-            tmp = pTLB[4] & 0xFF;
+        if (pCPU->aTLB[iEntry][0] & 2) {
+            nPhysical = ((u32)pCPU->aTLB[iEntry][0] & 0x3FFFFC0) << 6;
+            iDevice = pCPU->aTLB[iEntry][4] & 0xFF;
 
-            if (!cpuFreeDevice(pCPU, tmp)) {
+            if (iDevice != 0xFF) {
+                if (!cpuFreeDevice(pCPU, iDevice)) {
+                    return false;
+                }
+            }
+
+            if (!cpuMapAddress(pCPU, &iDevice, nVirtual, nPhysical, nPageSize)) {
                 return false;
             }
 
-            if (!cpuMapAddress(pCPU, &tmp, nVirtual, nPhysical, nPageSize)) {
-                return false;
-            }
-
-            pTLB[4] = (tmp & 0xFF) | (pTLB[4] & ~0xFF);
+            pCPU->aTLB[iEntry][4] = (iDevice & 0xFF) | (pCPU->aTLB[iEntry][4] & ~0xFF);
         }
 
-        if (pTLB[1] & 2) {
-            // nPhysical = (pTLB[1] & 0x3FFFFC0) << 6;
-            tmp = (pTLB[4] >> 16) & 0xFF;
+        if (pCPU->aTLB[iEntry][1] & 2) {
+            nPhysical = ((u32)pCPU->aTLB[iEntry][1] & 0x3FFFFC0) << 6;
+            iDevice = ((u32)pCPU->aTLB[iEntry][4] >> 16) & 0xFF;
 
-            if (!cpuFreeDevice(pCPU, tmp)) {
+            if (iDevice != 0xFF) {
+                if (!cpuFreeDevice(pCPU, iDevice)) {
+                    return false;
+                }
+            }
+
+            if (!cpuMapAddress(pCPU, &iDevice, nVirtual + nPageSize, nPhysical, nPageSize)) {
                 return false;
             }
 
-            if (!cpuMapAddress(pCPU, &tmp, nVirtual, nPhysical, nPageSize)) {
-                return false;
-            }
-
-            pTLB[4] = ((tmp & 0xFF) << 16) | (pTLB[4] & ~0xFF00);
+            pCPU->aTLB[iEntry][4] = ((iDevice & 0xFF) << 16) | (pCPU->aTLB[iEntry][4] & ~0xFF0000);
         }
     } else {
-        if (!cpuFreeDevice(pCPU, pTLB[4] & 0xFF)) {
-            return false;
+        iDevice = pCPU->aTLB[iEntry][4] & 0xFF;
+        if (iDevice != 0xFF) {
+            if (!cpuFreeDevice(pCPU, iDevice)) {
+                return false;
+            }
         }
 
-        if (!cpuFreeDevice(pCPU, (pTLB[4] & 0xFF) >> 16)) {
-            return false;
+        iDevice = ((u32)pCPU->aTLB[iEntry][4] >> 16) & 0xFF;
+        if (iDevice != 0xFF) {
+            if (!cpuFreeDevice(pCPU, iDevice)) {
+                return false;
+            }
         }
 
-        pTLB[4] = -1;
+        pCPU->aTLB[iEntry][4] = -1;
     }
 
     return true;
@@ -1500,93 +1502,66 @@ static void cpuCompileNOP(s32* anCode, s32* iCode, s32 number) {
     }
 }
 
-#ifndef NON_MATCHING
-static bool fn_8000E734(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3);
-#else
-static bool fn_8000E734(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3) {
+#pragma optimization_level 1
+
+#define EMIT_PPC(i, instruction)         \
+    do {                                 \
+        if (anCode != NULL) {            \
+            anCode[(i)++] = instruction; \
+        } else {                         \
+            (i)++;                       \
+        }                                \
+    } while (0)
+
+static bool fn_8000E734(Cpu* pCPU, s32 nOpcode, s32 nOpcodePrev, s32 nOpcodeNext) {
     if (gpSystem->eTypeROM == CLBJ || gpSystem->eTypeROM == CLBE || gpSystem->eTypeROM == CLBP) {
         // Mario Party
-        if (arg1 == 0x8C9F0004 && arg2 == 0x8C9D0000 && arg3 == 0x8C900008) {
+        if (nOpcode == 0x8C9F0004 && nOpcodePrev == 0x8C9D0000 && nOpcodeNext == 0x8C900008) {
             pCPU->nFlagCODE |= 2;
         }
     } else if (gpSystem->eTypeROM == NFXJ || gpSystem->eTypeROM == NFXE || gpSystem->eTypeROM == NFXP) {
         // Star Fox 64
-        if (arg1 == 0x8FBF003C && arg2 == 0 && arg3 == 0xAFB20040) {
+        if (nOpcode == 0x8FBF003C && nOpcodePrev == 0x00000000 && nOpcodeNext == 0xAFB20040) {
             pCPU->nFlagCODE |= 2;
         }
     }
 
     return true;
 }
-#endif
 
-s32 fn_8000E81C(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3, s32 arg5, s32* arg6, s32* arg7) {
-    s32 temp_r5;
-    s32 temp_r5_2;
-    s32 temp_r5_3;
-    s32 temp_r5_4;
-    s32 temp_r5_5;
-    s32 temp_r5_6;
+static bool fn_8000E81C(Cpu* pCPU, s32 nOpcode, s32 nOpcodePrev, s32 nOpcodeNext, s32 nAddress, s32* anCode, int* iCode,
+                        s32* arg8) {
+    s32 var_r4;
 
     if (gpSystem->eTypeROM == CLBJ || gpSystem->eTypeROM == CLBE || gpSystem->eTypeROM == CLBP) {
-        if (arg1 == 0xAC9F0004 && arg2 == 0xAC9D0000 && arg3 == 0xAC900008) {
-            if (arg6 != NULL) {
-                temp_r5 = *arg7;
-                arg6[temp_r5] = 0x80A30000;
-                *arg7 = temp_r5 + 1;
+        // Mario Party
+        if (nOpcode == 0xAC9F0004 && nOpcodePrev == 0xAC9D0000 && nOpcodeNext == 0xAC900008) {
+            EMIT_PPC(*iCode, 0x80A30000 + OFFSETOF(pCPU, nReturnAddrLast));
+            var_r4 = ganMapGPR[31];
+            *arg8 = var_r4;
+            if (var_r4 & 0x100) {
+                EMIT_PPC(*iCode, 0x90A30000 + ((OFFSETOF(pCPU, aGPR[31]) + 4) & 0xFFFF));
             } else {
-                *arg7 += 1;
+                EMIT_PPC(*iCode, 0x7CA02B78 | (*arg8 << 16));
             }
-
-            if (ganMapGPR[31] & 0x100) {
-                if (arg6 != NULL) {
-                    temp_r5_2 = *arg7;
-                    arg6[temp_r5_2] = 0x90A30000;
-                    *arg7 = temp_r5_2 + 1;
-                } else {
-                    *arg7 += 1;
-                }
-            } else if (arg6 != NULL) {
-                temp_r5_3 = *arg7;
-                arg6[temp_r5_3] = (ganMapGPR[31] << 0x10) | 0x7CA00000 | 0x2B78;
-                *arg7 = temp_r5_3 + 1;
-            } else {
-                *arg7 += 1;
-            }
-
             pCPU->nFlagCODE |= 2;
         }
     } else if (gpSystem->eTypeROM == NFXJ || gpSystem->eTypeROM == NFXE || gpSystem->eTypeROM == NFXP) {
-        if (arg1 == 0xAFBF003C && arg2 == 0x0080A025 && arg3 == 0xAFB00018) {
-            if (arg6 != NULL) {
-                temp_r5_4 = *arg7;
-                arg6[temp_r5_4] = 0x80A30000;
-                *arg7 = temp_r5_4 + 1;
+        // Star Fox 64
+        if (nOpcode == 0xAFBF003C && nOpcodePrev == 0x0080A025 && nOpcodeNext == 0xAFB00018) {
+            EMIT_PPC(*iCode, 0x80A30000 + OFFSETOF(pCPU, nReturnAddrLast));
+            var_r4 = ganMapGPR[31];
+            *arg8 = var_r4;
+            if (var_r4 & 0x100) {
+                EMIT_PPC(*iCode, 0x90A30000 + ((OFFSETOF(pCPU, aGPR[31]) + 4) & 0xFFFF));
             } else {
-                *arg7 += 1;
+                EMIT_PPC(*iCode, 0x7CA02B78 | (*arg8 << 16));
             }
-
-            if (ganMapGPR[31] & 0x100) {
-                if (arg6 != NULL) {
-                    temp_r5_5 = *arg7;
-                    arg6[temp_r5_5] = 0x90A30000;
-                    *arg7 = temp_r5_5 + 1;
-                } else {
-                    *arg7 += 1;
-                }
-            } else if (arg6 != NULL) {
-                temp_r5_6 = *arg7;
-                arg6[temp_r5_6] = (ganMapGPR[31] << 0x10) | 0x7CA00000 | 0x2B78;
-                *arg7 = temp_r5_6 + 1;
-            } else {
-                *arg7 += 1;
-            }
-
             pCPU->nFlagCODE |= 2;
         }
     }
 
-    return 1;
+    return true;
 }
 
 /**
@@ -1601,6 +1576,8 @@ s32 fn_8000E81C(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3, s32 arg5, s32* arg6, s3
  * @return bool true on success, false otherwise.
  */
 static bool cpuGetPPC(Cpu* pCPU, s32* pnAddress, CpuFunction* pFunction, s32* anCode, s32* piCode, bool bSlot);
+
+#pragma optimization_level reset
 
 //! TODO: remove NO_INLINE once this is matched
 static bool fn_80031D4C(Cpu* pCPU, CpuFunction* pFunction, s32 unknown) NO_INLINE { return false; }
@@ -1909,7 +1886,7 @@ static bool cpuStackOffset(Cpu* pCPU, s32 currentAddress, s32* anCode, s32 sourc
     return true;
 }
 
-static bool cpuNextInstruction(Cpu* pCPU, s32 addressN64, s32 opcode, s32* anCode, s32* iCode) {
+static bool cpuNextInstruction(Cpu* pCPU, s32 addressN64, s32 opcode, s32* anCode, int* iCode) {
     if (anCode == NULL) {
         return false;
     }
@@ -2043,7 +2020,7 @@ static bool cpuExecuteUpdate(Cpu* pCPU, s32* pnAddressGCN, u32 nCount) {
             if (nDelta < 4) {
                 pCPU->nRetraceUsed++;
             } else {
-                pCPU->nRetraceUsed = ((Cpu*)pCPU)->nRetrace;
+                pCPU->nRetraceUsed = pCPU->nRetrace;
             }
         }
     }
@@ -6283,7 +6260,6 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
     s32 temp_address;
     s32 branch;
     int anAddr[3];
-    s32 pad;
 
     save_restore = false;
     alert = false;
@@ -6376,8 +6352,7 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
                                 anAddr[0] = 0;
                                 anAddr[1] = 0;
                                 anAddr[2] = 0;
-                                beginAddress = current_address + branch + 4;
-                                current_address = current_address + branch + 4;
+                                current_address = beginAddress = current_address + branch + 4;
                                 alert = true;
                                 continue;
                             }
@@ -6402,8 +6377,7 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
                         anAddr[0] = 0;
                         anAddr[1] = 0;
                         anAddr[2] = 0;
-                        beginAddress = current_address + branch + 4;
-                        current_address = current_address + branch + 4;
+                        current_address = beginAddress = current_address + branch + 4;
                         alert = true;
                         continue;
                     }
@@ -6447,8 +6421,7 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
                         anAddr[0] = 0;
                         anAddr[1] = 0;
                         anAddr[2] = 0;
-                        beginAddress = current_address + branch + 4;
-                        current_address = current_address + branch + 4;
+                        current_address = beginAddress = current_address + branch + 4;
                         alert = true;
                         continue;
                     }
@@ -6488,8 +6461,7 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
                                                 anAddr[0] = 0;
                                                 anAddr[1] = 0;
                                                 anAddr[2] = 0;
-                                                beginAddress = current_address + branch + 4;
-                                                current_address = current_address + branch + 4;
+                                                current_address = beginAddress = current_address + branch + 4;
                                                 alert = true;
                                                 continue;
                                             }
@@ -6520,8 +6492,7 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
                                     anAddr[0] = 0;
                                     anAddr[1] = 0;
                                     anAddr[2] = 0;
-                                    beginAddress = current_address + branch + 4;
-                                    current_address = current_address + branch + 4;
+                                    current_address = beginAddress = current_address + branch + 4;
                                     alert = true;
                                     continue;
                                 }
@@ -6545,20 +6516,18 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
                 if (MIPS_RT(opcode) == 31) {
                     save_restore = false;
                     if (check == 1 && alert) {
-                        current_address = beginAddress;
-
                         while (true) {
-                            CPU_DEVICE_GET32(apDevice, aiDevice, current_address, &opcode);
+                            CPU_DEVICE_GET32(apDevice, aiDevice, beginAddress, &opcode);
                             if (MIPS_OP(opcode) == 0x2B && MIPS_RT(opcode) == 31) { // sw ra, ...
                                 break;
                             }
-                            current_address -= 4;
+                            beginAddress -= 4;
                         }
 
                         do {
-                            current_address -= 4;
-                            CPU_DEVICE_GET32(apDevice, aiDevice, current_address, &opcode);
-                            if (opcode != 0 && treeSearch(pCPU, current_address - 4, tree_node)) {
+                            beginAddress -= 4;
+                            CPU_DEVICE_GET32(apDevice, aiDevice, beginAddress, &opcode);
+                            if (opcode != 0 && treeSearch(pCPU, beginAddress - 4, tree_node)) {
                                 break;
                             }
                         } while (opcode != 0);
@@ -6566,7 +6535,7 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
                         anAddr[0] = 0;
                         anAddr[1] = 0;
                         anAddr[2] = 0;
-                        current_address = beginAddress = current_address + 4;
+                        current_address = beginAddress = beginAddress + 4;
                         alert = false;
                         continue;
                     }
@@ -6600,7 +6569,7 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
                 } else if (gpSystem->eTypeROM == NMQE || gpSystem->eTypeROM == NMQJ || gpSystem->eTypeROM == NMQP) {
                     if (anAddr[0] == 0x802C88FC) {
                         anAddr[2] = 0x802C8974;
-                    } else if (anAddr[0] = 0x802C8978) {
+                    } else if (anAddr[0] == 0x802C8978) {
                         anAddr[2] = 0x802C8A5C;
                     } else if (anAddr[0] == 0x802C8A60) {
                         anAddr[2] = 0x802C8C60;
@@ -6614,8 +6583,8 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
 
             if (cheat_address != 0) {
                 treeSearch(pCPU, cheat_address, tree_node);
-                cheat_address = 0;
                 (*tree_node)->timeToLive = 0;
+                cheat_address = 0;
             }
 
             if (check == 1) {
@@ -6627,10 +6596,10 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
                 }
             }
 
-            follow = false;
             anAddr[0] = 0;
             anAddr[1] = 0;
             anAddr[2] = 0;
+            follow = false;
             if (check == 0 && pCPU->gTree->total > 3970) {
                 valid = false;
             }
