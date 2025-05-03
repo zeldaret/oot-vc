@@ -1,19 +1,36 @@
-#ifndef _STDDEF_H_
-#define _STDDEF_H_
+#ifndef _STDDEF_H
+#define _STDDEF_H
 
-#define offsetof(type, member) ((size_t) & (((type*)0)->member))
-
-/* These break 1.2.5 */
-// typedef __typeof__(sizeof(0)) size_t;
-// typedef __typeof__((char*)0 - (char*)0) ptrdiff_t;
-typedef unsigned long size_t;
-typedef long ptrdiff_t;
-#ifndef NULL
-#define NULL 0L
+#ifdef __cplusplus
+extern "C" {
 #endif
+
+#ifndef NULL
+#define NULL 0
+#endif
+
+#ifndef nullptr
+#define nullptr 0
+#endif
+
+#define offsetof(ST, M) ((size_t) & (((ST*)0)->M))
+
+typedef signed long intptr_t;
+typedef unsigned long uintptr_t;
+typedef intptr_t ptrdiff_t;
+
+typedef unsigned long size_t;
 
 #ifndef __cplusplus
 typedef unsigned short wchar_t;
+#endif
+
+typedef wchar_t wint_t;
+
+typedef void (*funcptr_t)(void);
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

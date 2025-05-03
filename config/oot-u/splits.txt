@@ -975,103 +975,103 @@ libc/extras.c:
 	extabindex  start:0x80006FF4 end:0x80007000
 	.text       start:0x80160B2C end:0x80160C1C
 
-libc/e_acos.c:
+libc/math/e_acos.c:
 	.text       start:0x80160C1C end:0x80160EE0
 
-libc/e_asin.c:
+libc/math/e_asin.c:
 	.text       start:0x80160EE0 end:0x80161178
 
-libc/e_atan2.c:
+libc/math/e_atan2.c:
 	.text       start:0x80161178 end:0x801613E8
 
-libc/e_exp.c:
+libc/math/e_exp.c:
 	.text       start:0x801613E8 end:0x8016161C
 
-libc/e_fmod.c:
+libc/math/e_fmod.c:
 	.text       start:0x8016161C end:0x8016194C
 
-libc/e_log.c:
+libc/math/e_log.c:
 	.text       start:0x8016194C end:0x80161C00
 
-libc/e_log10.c:
+libc/math/e_log10.c:
 	.text       start:0x80161C00 end:0x80161D14
 
-libc/e_pow.c:
+libc/math/e_pow.c:
 	.text       start:0x80161D14 end:0x8016255C
 
-libc/e_rem_pio2.c:
+libc/math/e_rem_pio2.c:
 	.text       start:0x8016255C end:0x801628F4
 
-libc/k_cos.c:
+libc/math/k_cos.c:
 	.text       start:0x801628F4 end:0x80162A04
 
-libc/k_rem_pio2.c:
+libc/math/k_rem_pio2.c:
 	.text       start:0x80162A04 end:0x80164110
 
-libc/k_sin.c:
+libc/math/k_sin.c:
 	.text       start:0x80164110 end:0x801641D0
 
-libc/k_tan.c:
+libc/math/k_tan.c:
 	.text       start:0x801641D0 end:0x80164428
 
-libc/s_atan.c:
+libc/math/s_atan.c:
 	.text       start:0x80164428 end:0x80164668
 
-libc/s_ceil.c:
+libc/math/s_ceil.c:
 	.text       start:0x80164668 end:0x801647A8
 
-libc/s_copysign.c:
+libc/math/s_copysign.c:
 	.text       start:0x801647A8 end:0x801647D4
 
-libc/s_cos.c:
+libc/math/s_cos.c:
 	.text       start:0x801647D4 end:0x801648A8
 
-libc/s_floor.c:
+libc/math/s_floor.c:
 	.text       start:0x801648A8 end:0x801649EC
 
-libc/s_frexp.c:
+libc/math/s_frexp.c:
 	.text       start:0x801649EC end:0x80164A74
 
-libc/s_ldexp.c:
+libc/math/s_ldexp.c:
 	.text       start:0x80164A74 end:0x80164BE0
 
-libc/s_sin.c:
+libc/math/s_sin.c:
 	.text       start:0x80164BE0 end:0x80164CB8
 
-libc/s_tan.c:
+libc/math/s_tan.c:
 	.text       start:0x80164CB8 end:0x80164D30
 
-libc/w_acos.c:
+libc/math/w_acos.c:
 	.text       start:0x80164D30 end:0x80164D34
 
-libc/w_asin.c:
+libc/math/w_asin.c:
 	.text       start:0x80164D34 end:0x80164D38
 
-libc/w_atan2.c:
+libc/math/w_atan2.c:
 	.text       start:0x80164D38 end:0x80164D3C
 
-libc/w_exp.c:
+libc/math/w_exp.c:
 	.text       start:0x80164D3C end:0x80164D40
 
-libc/w_fmod.c:
+libc/math/w_fmod.c:
 	.text       start:0x80164D40 end:0x80164D44
 
-libc/w_log.c:
+libc/math/w_log.c:
 	.text       start:0x80164D44 end:0x80164D48
 
-libc/w_log10f.c:
+libc/math/w_log10f.c:
 	.text       start:0x80164D48 end:0x80164D4C
 
-libc/w_pow.c:
+libc/math/w_pow.c:
 	.text       start:0x80164D4C end:0x80164D50
 
-libc/e_sqrt.c:
+libc/math/e_sqrt.c:
 	.text       start:0x80164D50 end:0x80164F98
 
-libc/math_ppc.c:
+libc/math/math_ppc.c:
 	.text       start:0x80164F98 end:0x80164F9C
 
-libc/w_sqrt.c:
+libc/math/w_sqrt.c:
 	.text       start:0x80164F9C end:0x80164FA0
 
 metrotrk/mainloop.c:

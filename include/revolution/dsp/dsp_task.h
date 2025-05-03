@@ -4,7 +4,6 @@
 #include "revolution/os/OSContext.h"
 #include "revolution/os/OSInterrupt.h"
 #include "revolution/types.h"
-#include "stdint.h"
 
 #ifdef __cplusplus
 extern "C" {

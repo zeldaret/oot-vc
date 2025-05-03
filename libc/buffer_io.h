@@ -1,17 +1,10 @@
-#ifndef _BUFFER_IO
-#define _BUFFER_IO
+#ifndef _MSL_BUFFER_IO_H
+#define _MSL_BUFFER_IO_H
 
+#include "revolution/types.h"
 #include "stdio.h"
 
-enum {
-    __align_buffer,
-    __dont_align_buffer
-};
+int __flush_buffer(FILE* file, size_t* length);
+void __prep_buffer(FILE* file);
 
-void __convert_from_newlines(unsigned char* p, size_t* n);
-void __convert_to_newlines(unsigned char* p, size_t* n);
-void __prep_buffer(FILE*);
-int __load_buffer(FILE*, size_t* bytes_loaded, int alignment);
-int __flush_buffer(FILE*, size_t* bytes_flushed);
-
-#endif // _BUFFER_IO
+#endif

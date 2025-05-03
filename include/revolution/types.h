@@ -56,4 +56,13 @@ typedef void (*funcptr_t)(void);
 }
 #endif
 
+#include "stddef.h"
+#include "stdint.h"
+
+#if !defined(__cplusplus) && __STDC_VERSION__ >= 199901L
+#define RESTRICT restrict
+#else
+#define RESTRICT
+#endif
+
 #endif

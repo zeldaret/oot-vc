@@ -1,5 +1,5 @@
-#ifndef _MEM_FUNCS_H_
-#define _MEM_FUNCS_H_
+#ifndef _MSL_MEM_FUNCS_H
+#define _MSL_MEM_FUNCS_H
 
 #include "macros.h"
 #include "stddef.h"
@@ -13,9 +13,9 @@ void* memmove(void*, const void*, size_t);
 
 void __copy_mem(void* dst, const void* src, unsigned long n);
 void __move_mem(void* dst, const void* src, unsigned long n);
-void __copy_longs_aligned(void* dst, const void* src, unsigned long n);
-void __copy_longs_rev_aligned(void* dst, const void* src, unsigned long n);
-void __copy_longs_unaligned(void* dst, const void* src, unsigned long n);
-void __copy_longs_rev_unaligned(void* dst, const void* src, unsigned long n);
+void __copy_longs_aligned(void* dst, const void* src, size_t len);
+void __copy_longs_rev_aligned(void* dst, const void* src, size_t len);
+void __copy_longs_unaligned(void* dst, const void* src, size_t len);
+void __copy_longs_rev_unaligned(void* dst, const void* src, size_t len);
 
 #endif

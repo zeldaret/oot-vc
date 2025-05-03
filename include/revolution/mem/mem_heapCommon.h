@@ -5,7 +5,6 @@
 #include "revolution/mem/mem_list.h"
 #include "revolution/os.h"
 #include "revolution/types.h"
-#include "stdint.h"
 
 #ifdef __cplusplus
 extern "C" {
