@@ -795,6 +795,7 @@ revolution/hbm/code_80109CB8.cpp:
 
 revolution/hbm/nw4hbm/ut/ut_ResFont.cpp:
 	.text       start:0x80143E14 end:0x80144E2C
+	.data       start:0x8019EDC0 end:0x8019F678
 
 revolution/hbm/code_80144E2C.cpp:
 	.text       start:0x80144E2C end:0x801524F8

@@ -229,6 +229,15 @@ def RevolutionLib(lib_name: str, objects: List[Object], cpp_exceptions: str = "o
         "objects": objects,
     }
 
+def RevolutionHBMLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
+    return {
+        "lib": lib_name,
+        "mw_version": "GC/3.0a5",
+        "cflags": [*cflags_base, f"-Cpp_exceptions off", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off", "-lang c++"],
+        "progress_category": "nw4hbm",
+        "objects": objects,
+    }
+
 def LibC(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
@@ -606,7 +615,7 @@ config.libs = [
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/tpl/TPL.c"),
         ]
     ),
-    RevolutionLib(
+    RevolutionHBMLib(
         "hbm",
         [
             Object(NotLinked, "revolution/hbm/code_80109CB8.cpp"),
@@ -735,6 +744,7 @@ config.libs = [
 config.progress_categories = [
     ProgressCategory("emulator", "Emulator"),
     ProgressCategory("revolution", "Revolution SDK"),
+    ProgressCategory("nw4hbm", "NW4HBM Lib"),
     ProgressCategory("libc", "Libc"),
     ProgressCategory("runtime", "Runtime"),
     ProgressCategory("metrotrk", "Metrotrk"),

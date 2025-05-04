@@ -48,9 +48,23 @@ typedef int bool;
 #define null 0
 #endif
 
+#ifndef nullptr
+#define nullptr null
+#endif
+
 typedef int UNKWORD;
 typedef void UNKTYPE;
 typedef void (*funcptr_t)(void);
+
+typedef unsigned long int byte4_t;
+typedef unsigned short int byte2_t;
+typedef unsigned char byte1_t;
+typedef byte1_t byte_t;
+typedef unsigned long int register_t;
+typedef unsigned char char_t;
+typedef unsigned char char8_t;
+typedef unsigned short char16_t;
+typedef unsigned long char32_t;
 
 #ifdef __cplusplus
 }

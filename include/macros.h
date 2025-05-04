@@ -71,6 +71,42 @@ inline void padStack(void) { int pad = 0; }
 #define CTORS DECL_SECTION(".ctors")
 #define DTORS DECL_SECTION(".dtors")
 
+#define NW4R_VERSION(major_, minor_) ((major_) << 8 | (minor_))
+#define NW4HBM_VERSION NW4R_VERSION
+
+#define NW4HBM_ASSERT_PTR(ptr, line)                                                                             \
+    {                                                                                                            \
+        bool bVar3 = (((u32)(ptr) & 0xFF000000) == 0x80000000 || ((u32)(ptr) & 0xFF800000) == 0x81000000) ||     \
+                     !(((u32)(ptr) & 0xF8000000) != 0x90000000) || !(((u32)(ptr) & 0xFF000000) != 0xC0000000) || \
+                     !(((u32)(ptr) & 0xFF800000) != 0xC1000000) || !(((u32)(ptr) & 0xF8000000) != 0xD0000000) || \
+                     !(((u32)(ptr) & 0xFFFFC000) != 0xE0000000);                                                 \
+                                                                                                                 \
+        if (!bVar3) {                                                                                            \
+            fn_8010CB20(__FILE__, line, "NW4HBM:Pointer Error\n" #ptr "(=%p) is not valid pointer.", ptr);       \
+        }                                                                                                        \
+    }
+
+#define NW4HBM_PANIC(cond, line, ...)                 \
+    {                                                 \
+        if ((cond)) {                                 \
+            fn_8010CB20(__FILE__, line, __VA_ARGS__); \
+        }                                             \
+    }
+
+#define NW4HBM_ASSERT(cond, line) NW4HBM_PANIC(cond, line, "NW4HBM:Failed assertion " #cond)
+
+#define NW4HBM_ASSERT2(cond, line) NW4HBM_PANIC(!(cond), line, "NW4HBM:Failed assertion " #cond)
+
+#define NW4HBM_ASSERT_ALIGN(var, line)  \
+    NW4HBM_PANIC((u32)var & 0x1F, line, \
+                 "NW4HBM:Alignment Error(0x%x)\n" #var " must be aligned to 32 bytes boundary.", var)
+
+#define NW4HBM_ASSERT_PTR_NULL(ptr, line) \
+    NW4HBM_PANIC(ptr == NULL, line, "NW4HBM:Pointer must not be NULL (" #ptr ")", ptr)
+
+#define FONT_TYPE_NNGCTEXTURE 1
+#define GLYPH_INDEX_NOT_FOUND 0xFFFF
+
 #ifdef __cplusplus
 }
 #endif
