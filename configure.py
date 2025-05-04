@@ -620,7 +620,8 @@ config.libs = [
         [
             Object(NotLinked, "revolution/hbm/code_80109CB8.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_ResFont.cpp"),
-            Object(NotLinked, "revolution/hbm/code_80144E2C.cpp"),
+            Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_ResFontBase.cpp"),
+            Object(NotLinked, "revolution/hbm/code_8014860C.cpp"),
         ]
     ),
     RuntimeLib(

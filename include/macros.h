@@ -93,6 +93,26 @@ inline void padStack(void) { int pad = 0; }
         }                                             \
     }
 
+#define NW4HBM_PANIC2(cond, line, ...)                \
+    {                                                 \
+        if (!(cond)) {                                \
+            fn_8010CB20(__FILE__, line, __VA_ARGS__); \
+        }                                             \
+    }
+
+#define NW4HBM_PANIC3(cond, line, ...)                \
+    {                                                 \
+        bool b = false;                               \
+                                                      \
+        if ((cond)) {                                 \
+            b = true;                                 \
+        }                                             \
+                                                      \
+        if (!b) {                                     \
+            fn_8010CB20(__FILE__, line, __VA_ARGS__); \
+        }                                             \
+    }
+
 #define NW4HBM_ASSERT(cond, line) NW4HBM_PANIC(cond, line, "NW4HBM:Failed assertion " #cond)
 
 #define NW4HBM_ASSERT2(cond, line) NW4HBM_PANIC(!(cond), line, "NW4HBM:Failed assertion " #cond)
