@@ -1,6 +1,6 @@
 #include "emulator/xlText.h"
 
-s32 xlTextGetLength(char* szTextSource) {
+s32 xlTextGetLength(const char* szTextSource) {
     s32 nCount = 0;
 
     while (szTextSource[nCount] != '\0') {
@@ -10,7 +10,7 @@ s32 xlTextGetLength(char* szTextSource) {
     return nCount;
 }
 
-s32 xlTextCopy(char* acTextTarget, char* szTextSource) {
+s32 xlTextCopy(char* acTextTarget, const char* szTextSource) {
     s32 iCharacter;
 
     for (iCharacter = 0; szTextSource[iCharacter] != '\0'; iCharacter++) {
@@ -21,7 +21,7 @@ s32 xlTextCopy(char* acTextTarget, char* szTextSource) {
     return iCharacter;
 }
 
-s32 xlTextAppend(char* acTextTarget, char* szTextSource) {
+s32 xlTextAppend(char* acTextTarget, const char* szTextSource) {
     s32 iSource;
     s32 iTarget;
 
