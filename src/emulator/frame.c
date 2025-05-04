@@ -99,44 +99,6 @@ s32 GBIcode[] = {
     0x0A000000,
 };
 
-// fn_8004B940
-#ifndef NON_MATCHING
-extern void* lbl_8004BB44;
-extern void* lbl_8004B994;
-extern void* lbl_8004B9A0;
-extern void* lbl_8004B9AC;
-extern void* lbl_8004B9B8;
-extern void* lbl_8004B9C4;
-extern void* lbl_8004B9D0;
-extern void* lbl_8004B9DC;
-extern void* lbl_8004B9E8;
-extern void* lbl_8004B9F4;
-extern void* lbl_8004BA00;
-extern void* lbl_8004BA0C;
-extern void* lbl_8004BA18;
-extern void* lbl_8004BA24;
-extern void* lbl_8004BA30;
-extern void* lbl_8004BA3C;
-extern void* lbl_8004BA48;
-extern void* lbl_8004BA54;
-extern void* lbl_8004BA60;
-extern void* lbl_8004BA6C;
-
-void* jumptable_8017279C[61] = {
-    &lbl_8004BB44, &lbl_8004BB44, &lbl_8004B994, &lbl_8004B9A0, &lbl_8004B9AC, &lbl_8004B9B8, &lbl_8004B9C4,
-    &lbl_8004B9D0, &lbl_8004B9DC, &lbl_8004B9E8, &lbl_8004B9F4, &lbl_8004BA00, &lbl_8004BA0C, &lbl_8004BA18,
-    &lbl_8004BA24, &lbl_8004BA30, &lbl_8004BA3C, &lbl_8004BA48, &lbl_8004BA54, &lbl_8004BA60, &lbl_8004BB44,
-    &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44,
-    &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44,
-    &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44,
-    &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44,
-    &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44,
-    &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BB44, &lbl_8004BA6C,
-};
-#else
-void* jumptable_8017279C[61] = {0};
-#endif
-
 s32 sZBufShift[] = {
     0x0003F800, 0x00000000, 0x0003F000, 0x00000000, 0x0003E000, 0x00000001, 0x0003C000, 0x00000002,
     0x00038000, 0x00000003, 0x00030000, 0x00000004, 0x00020000, 0x00000005, 0x00000000, 0x00000006,
@@ -903,9 +865,6 @@ bool frameDrawSetupFog_Default(Frame* pFrame) {
 }
 
 //! TODO: make sFrameObj a static variable in the function
-#ifndef NON_MATCHING
-void ZeldaDrawFrame(Frame* pFrame, u16* pData);
-#else
 void ZeldaDrawFrame(Frame* pFrame, u16* pData) {
     Mtx matrix;
     u32 pad[8];
@@ -956,12 +915,8 @@ void ZeldaDrawFrame(Frame* pFrame, u16* pData) {
     pFrame->nModeVtx = -1;
     frameDrawReset(pFrame, 0x47F2D);
 }
-#endif
 
 //! TODO: make sFrameObj and cAlpha a static variable in the function
-#ifndef NON_MATCHING
-void ZeldaGreyScaleConvert(Frame* pFrame);
-#else
 void ZeldaGreyScaleConvert(Frame* pFrame) {
     Mtx matrix;
     void* dataP;
@@ -1031,7 +986,6 @@ void ZeldaGreyScaleConvert(Frame* pFrame) {
     pFrame->nModeVtx = -1;
     frameDrawReset(pFrame, 0x47F2D);
 }
-#endif
 
 // fn_8004B198
 
@@ -1177,9 +1131,6 @@ static bool frameMakeTLUT(Frame* pFrame, FrameTexture* pTexture, s32 nCount, s32
 
 static bool frameMakePixels(Frame* pFrame, FrameTexture* pTexture, Tile* pTile, bool bReload);
 
-#ifndef NON_MATCHING
-static bool frameLoadTexture(Frame* pFrame, FrameTexture* pTexture, s32 iTextureCode, Tile* pTile);
-#else
 static bool frameLoadTexture(Frame* pFrame, FrameTexture* pTexture, s32 iTextureCode, Tile* pTile) {
     void* pData;
     s32 iName;
@@ -1265,11 +1216,7 @@ static bool frameLoadTexture(Frame* pFrame, FrameTexture* pTexture, s32 iTexture
 
     return true;
 }
-#endif
 
-#ifndef NON_MATCHING
-bool frameDrawSetup2D(Frame* pFrame);
-#else
 bool frameDrawSetup2D(Frame* pFrame) {
     Mtx44 matrix44;
 
@@ -1300,7 +1247,6 @@ bool frameDrawSetup2D(Frame* pFrame) {
 
     return true;
 }
-#endif
 
 static inline void frameSetZMode(Frame* pFrame) {
     u32 mode = pFrame->aMode[FMT_OTHER0];
@@ -1332,9 +1278,6 @@ static inline void frameSetZMode(Frame* pFrame) {
     }
 }
 
-#ifndef NON_MATCHING
-static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVertexCount);
-#else
 static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVertexCount) {
     f32 rValue23;
     bool bTextureGen;
@@ -1489,11 +1432,7 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
     *pnColors = nColors;
     return true;
 }
-#endif
 
-#ifndef NON_MATCHING
-static bool frameDrawSetupDP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 vertexCount);
-#else
 static bool frameDrawSetupDP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 vertexCount) {
     u32 nMode;
     s32 numCycles;
@@ -1611,7 +1550,6 @@ static bool frameDrawSetupDP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 ver
 
     return true;
 }
-#endif
 
 static bool frameDrawTriangle_C0T0(Frame* pFrame, Primitive* pPrimitive) {
     s32 iData;
@@ -1789,9 +1727,6 @@ static inline void frameWriteVertex(Vertex* pVertex) {
     GXTexCoord2f32(pVertex->rS, pVertex->rT);
 }
 
-#ifndef NON_MATCHING
-static bool frameCheckTriangleDivide(Frame* pFrame, Primitive* pPrimitive);
-#else
 static bool frameCheckTriangleDivide(Frame* pFrame, Primitive* pPrimitive) {
     s32 pad1[3];
     Vertex* v0;
@@ -2005,11 +1940,7 @@ static bool frameCheckTriangleDivide(Frame* pFrame, Primitive* pPrimitive) {
 
     return true;
 }
-#endif
 
-#ifndef NON_MATCHING
-bool frameDrawTriangle_C3T3(Frame* pFrame, Primitive* pPrimitive);
-#else
 bool frameDrawTriangle_C3T3(Frame* pFrame, Primitive* pPrimitive) {
     if (pFrame->nModeVtx != 0x17) {
         GXClearVtxDesc();
@@ -2025,7 +1956,6 @@ bool frameDrawTriangle_C3T3(Frame* pFrame, Primitive* pPrimitive) {
     frameCheckTriangleDivide(pFrame, pPrimitive);
     return true;
 }
-#endif
 
 static bool frameDrawTriangle_Setup(Frame* pFrame, Primitive* pPrimitive) {
     bool bFlag;
@@ -2047,9 +1977,6 @@ static bool frameDrawTriangle_Setup(Frame* pFrame, Primitive* pPrimitive) {
     return true;
 }
 
-#ifndef NON_MATCHING
-static bool frameDrawLine_C0T0(Frame* pFrame, Primitive* pPrimitive);
-#else
 static bool frameDrawLine_C0T0(Frame* pFrame, Primitive* pPrimitive) {
     s32 iData;
     u8* anData;
@@ -2078,11 +2005,7 @@ static bool frameDrawLine_C0T0(Frame* pFrame, Primitive* pPrimitive) {
 
     return true;
 }
-#endif
 
-#ifndef NON_MATCHING
-static bool frameDrawLine_C1T0(Frame* pFrame, Primitive* pPrimitive);
-#else
 static bool frameDrawLine_C1T0(Frame* pFrame, Primitive* pPrimitive) {
     s32 iData;
     u8* anData;
@@ -2119,11 +2042,7 @@ static bool frameDrawLine_C1T0(Frame* pFrame, Primitive* pPrimitive) {
 
     return true;
 }
-#endif
 
-#ifndef NON_MATCHING
-static bool frameDrawLine_C2T0(Frame* pFrame, Primitive* pPrimitive);
-#else
 static bool frameDrawLine_C2T0(Frame* pFrame, Primitive* pPrimitive) {
     s32 iData;
     u8* anData;
@@ -2156,11 +2075,7 @@ static bool frameDrawLine_C2T0(Frame* pFrame, Primitive* pPrimitive) {
 
     return true;
 }
-#endif
 
-#ifndef NON_MATCHING
-static bool frameDrawLine_C0T2(Frame* pFrame, Primitive* pPrimitive);
-#else
 static bool frameDrawLine_C0T2(Frame* pFrame, Primitive* pPrimitive) {
     s32 iData;
     u8* anData;
@@ -2193,11 +2108,7 @@ static bool frameDrawLine_C0T2(Frame* pFrame, Primitive* pPrimitive) {
 
     return true;
 }
-#endif
 
-#ifndef NON_MATCHING
-static bool frameDrawLine_C1T2(Frame* pFrame, Primitive* pPrimitive);
-#else
 static bool frameDrawLine_C1T2(Frame* pFrame, Primitive* pPrimitive) {
     s32 iData;
     u8* anData;
@@ -2238,11 +2149,7 @@ static bool frameDrawLine_C1T2(Frame* pFrame, Primitive* pPrimitive) {
 
     return true;
 }
-#endif
 
-#ifndef NON_MATCHING
-static bool frameDrawLine_C2T2(Frame* pFrame, Primitive* pPrimitive);
-#else
 static bool frameDrawLine_C2T2(Frame* pFrame, Primitive* pPrimitive) {
     s32 iData;
     u8* anData;
@@ -2279,7 +2186,6 @@ static bool frameDrawLine_C2T2(Frame* pFrame, Primitive* pPrimitive) {
 
     return true;
 }
-#endif
 
 static bool frameDrawLine_Setup(Frame* pFrame, Primitive* pPrimitive) {
     bool bFlag;
@@ -2301,9 +2207,6 @@ static bool frameDrawLine_Setup(Frame* pFrame, Primitive* pPrimitive) {
     return true;
 }
 
-#ifndef NON_MATCHING
-static bool frameDrawRectFill(Frame* pFrame, Rectangle* pRectangle);
-#else
 static bool frameDrawRectFill(Frame* pFrame, Rectangle* pRectangle) {
     bool bFlag;
     f32 rDepth;
@@ -2364,7 +2267,6 @@ static bool frameDrawRectFill(Frame* pFrame, Rectangle* pRectangle) {
 
     return true;
 }
-#endif
 
 static bool frameDrawRectFill_Setup(Frame* pFrame, Rectangle* pRectangle) {
     bool bFlag;
@@ -2390,9 +2292,6 @@ static bool frameDrawRectFill_Setup(Frame* pFrame, Rectangle* pRectangle) {
     return true;
 }
 
-#ifndef NON_MATCHING
-static bool frameDrawRectTexture(Frame* pFrame, Rectangle* pRectangle);
-#else
 static bool frameDrawRectTexture(Frame* pFrame, Rectangle* pRectangle) {
     s32 bCopy;
     f32 rDepth;
@@ -2490,11 +2389,7 @@ static bool frameDrawRectTexture(Frame* pFrame, Rectangle* pRectangle) {
 
     return true;
 }
-#endif
 
-#ifndef NON_MATCHING
-static bool frameDrawRectTexture_Setup(Frame* pFrame, Rectangle* pRectangle);
-#else
 static bool frameDrawRectTexture_Setup(Frame* pFrame, Rectangle* pRectangle) {
     Mtx matrix;
     Mtx matrixA;
@@ -2582,13 +2477,9 @@ static bool frameDrawRectTexture_Setup(Frame* pFrame, Rectangle* pRectangle) {
 
     return true;
 }
-#endif
 
 bool frameShow(Frame* pFrame) { return true; }
 
-#ifndef NON_MATCHING
-bool frameSetScissor(Frame* pFrame, Rectangle* pScissor);
-#else
 bool frameSetScissor(Frame* pFrame, Rectangle* pScissor) {
     s32 nTemp;
     s32 nX0;
@@ -2616,7 +2507,6 @@ bool frameSetScissor(Frame* pFrame, Rectangle* pScissor) {
     GXSetScissor(nX0, nY0, nX1 - nX0, nY1 - nY0);
     return true;
 }
-#endif
 
 bool frameSetDepth(Frame* pFrame, f32 rDepth, f32 rDelta) {
     pFrame->rDepth = rDepth;
@@ -2952,9 +2842,6 @@ bool frameHackCIMG_Zelda(Frame* pFrame, FrameBuffer* pBuffer, u64* pnGBI, u32 nC
     return true;
 }
 
-#ifndef NON_MATCHING
-bool frameGetDepth(Frame* pFrame, u16* pnData, s32 nAddress);
-#else
 bool frameGetDepth(Frame* pFrame, u16* pnData, s32 nAddress) {
     u32 nX;
     u32 nY;
@@ -3001,7 +2888,6 @@ bool frameGetDepth(Frame* pFrame, u16* pnData, s32 nAddress) {
 
     return false;
 }
-#endif
 
 bool frameLoadTexturePack(Frame* pFrame, char* szFileName) {
     char sp50[64];
@@ -3100,9 +2986,6 @@ bool frameLoadTexturePack(Frame* pFrame, char* szFileName) {
     return true;
 }
 
-#ifndef NON_MATCHING
-bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument);
-#else
 static inline bool frameEvent_UnknownInline(Frame* pFrame) {
     if (!fn_8005F5F4(SYSTEM_HELP(gpSystem), &pFrame->aPixelData, 0x30300000, &frameSetupCache)) {
         return false;
@@ -3235,7 +3118,6 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
 
     return true;
 }
-#endif
 
 static inline bool frameCopyMatrix(Mtx44 matrixTarget, Mtx44 matrixSource) {
     matrixTarget[0][0] = matrixSource[0][0];
@@ -3295,9 +3177,6 @@ bool frameSetFill(Frame* pFrame, bool bFill) {
     return true;
 }
 
-#ifndef NON_MATCHING
-bool frameSetSize(Frame* pFrame, FrameSize eSize, s32 nSizeX, s32 nSizeY);
-#else
 bool frameSetSize(Frame* pFrame, FrameSize eSize, s32 nSizeX, s32 nSizeY) {
     if (nSizeX > 0 && nSizeY > 0) {
         pFrame->anSizeX[eSize] = nSizeX;
@@ -3313,7 +3192,6 @@ bool frameSetSize(Frame* pFrame, FrameSize eSize, s32 nSizeX, s32 nSizeY) {
 
     return true;
 }
-#endif
 
 bool frameSetMode(Frame* pFrame, FrameModeType eType, u32 nMode) {
     u32 nFlag;
@@ -3402,9 +3280,6 @@ bool frameGetMode(Frame* pFrame, FrameModeType eType, u32* pnMode) {
     return true;
 }
 
-#ifndef NON_MATCHING
-bool frameSetMatrix(Frame* pFrame, Mtx44 matrix, FrameMatrixType eType, bool bLoad, bool bPush, s32 nAddressN64);
-#else
 bool frameSetMatrix(Frame* pFrame, Mtx44 matrix, FrameMatrixType eType, bool bLoad, bool bPush, s32 nAddressN64) {
     s32 pad1;
     bool bFlag;
@@ -3459,7 +3334,6 @@ bool frameSetMatrix(Frame* pFrame, Mtx44 matrix, FrameMatrixType eType, bool bLo
 
     return true;
 }
-#endif
 
 bool frameGetMatrix(Frame* pFrame, Mtx44 matrix, FrameMatrixType eType, bool bPull) {
     switch (eType) {
@@ -3553,9 +3427,6 @@ static inline void s16tof32Scaled32Pair(register s16* src, register f32* dst) {
 #endif
 }
 
-#ifndef NON_MATCHING
-bool frameLoadVertex(Frame* pFrame, void* pBuffer, s32 iVertex0, s32 nCount);
-#else
 bool frameLoadVertex(Frame* pFrame, void* pBuffer, s32 iVertex0, s32 nCount) {
     f32 mag;
     s32 iLight;
@@ -3823,7 +3694,6 @@ bool frameLoadVertex(Frame* pFrame, void* pBuffer, s32 iVertex0, s32 nCount) {
 
     return true;
 }
-#endif
 
 bool frameCullDL(Frame* pFrame, s32 nVertexStart, s32 nVertexEnd) {
     f32 rX;
@@ -3914,9 +3784,6 @@ bool frameSetLightCount(Frame* pFrame, s32 nCount) {
     return true;
 }
 
-#ifndef NON_MATCHING
-bool frameSetLight(Frame* pFrame, s32 iLight, s8* pData);
-#else
 bool frameSetLight(Frame* pFrame, s32 iLight, s8* pData) {
     Light* pLight;
 
@@ -3947,7 +3814,6 @@ bool frameSetLight(Frame* pFrame, s32 iLight, s8* pData) {
         return false;
     }
 }
-#endif
 
 bool frameSetLookAt(Frame* pFrame, s32 iLookAt, s8* pData) {
     switch (iLookAt) {
@@ -3971,9 +3837,6 @@ bool frameSetLookAt(Frame* pFrame, s32 iLookAt, s8* pData) {
     return true;
 }
 
-#ifndef NON_MATCHING
-bool frameSetViewport(Frame* pFrame, s16* pData);
-#else
 bool frameSetViewport(Frame* pFrame, s16* pData) {
     s32 iScale;
     f32 arScale[3];
@@ -4012,7 +3875,6 @@ bool frameSetViewport(Frame* pFrame, s16* pData) {
     frameDrawReset(pFrame, 0x10000);
     return true;
 }
-#endif
 
 bool frameResetUCode(Frame* pFrame, FrameResetType eType) {
     u32 iMode;
@@ -4043,10 +3905,6 @@ bool frameSetBuffer(Frame* pFrame, FrameBufferType eType) {
     return true;
 }
 
-#ifndef NON_MATCHING
-bool frameSetMatrixHint(Frame* pFrame, FrameMatrixProjection eProjection, s32 nAddressFloat, s32 nAddressFixed,
-                        f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale, void* mf);
-#else
 bool frameSetMatrixHint(Frame* pFrame, FrameMatrixProjection eProjection, s32 nAddressFloat, s32 nAddressFixed,
                         f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale, void* mf) {
     s32 iHint;
@@ -4094,7 +3952,6 @@ bool frameSetMatrixHint(Frame* pFrame, FrameMatrixProjection eProjection, s32 nA
     pFrame->iHintLast = iHint;
     return true;
 }
-#endif
 
 bool frameInvalidateCache(Frame* pFrame, s32 nOffset0, s32 nOffset1) {
     s32 iTexture0;
