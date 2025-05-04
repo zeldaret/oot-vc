@@ -54,7 +54,7 @@ ResFont::~ResFont() {}
 bool ResFont::SetResource(void* brfnt) {
     NW4HBM_ASSERT_PTR(this, 97);
     NW4HBM_ASSERT_PTR(brfnt, 98);
-    NW4HBM_ASSERT_ALIGN(brfnt, 99);
+    NW4HBM_ASSERT_ALIGN32(brfnt, 99);
 
     FontInformation* pFontInfo = nullptr;
     BinaryFileHeader* fileHeader = static_cast<BinaryFileHeader*>(brfnt);
@@ -114,7 +114,7 @@ FontInformation* ResFont::Rebuild(BinaryFileHeader* fileHeader) {
     int nBlocks = 0;
 
     NW4HBM_ASSERT_PTR(fileHeader, 218);
-    NW4HBM_ASSERT_ALIGN(fileHeader, 219);
+    NW4HBM_ASSERT_ALIGN32(fileHeader, 219);
 
     while (nBlocks < fileHeader->dataBlocks) {
         NW4HBM_ASSERT_PTR(blockHeader, 230);
@@ -124,23 +124,23 @@ FontInformation* ResFont::Rebuild(BinaryFileHeader* fileHeader) {
             case MAGIC_FONT_INFO: {
                 info = CONVERT_OFFSET_TO_PTR(FontInformation, blockHeader, sizeof *blockHeader);
 
-                NW4HBM_ASSERT(info == NULL, 237);
-                NW4HBM_ASSERT(info->fontType == FONT_TYPE_NNGCTEXTURE, 243);
-                NW4HBM_ASSERT(info->alterCharIndex != GLYPH_INDEX_NOT_FOUND, 244);
+                NW4HBM_ASSERT2(info == NULL, 237);
+                NW4HBM_ASSERT2(info->fontType == FONT_TYPE_NNGCTEXTURE, 243);
+                NW4HBM_ASSERT2(info->alterCharIndex != GLYPH_INDEX_NOT_FOUND, 244);
 
                 // no check
                 NW4HBM_ASSERT_PTR_NULL(info->pGlyph, 247);
-                NW4HBM_ASSERT_PTR(info->pGlyph, 249);
                 ResolveOffset(info->pGlyph, fileHeader);
+                NW4HBM_ASSERT_PTR(info->pGlyph, 249);
 
                 if (info->pWidth) {
-                    NW4HBM_ASSERT_PTR(info->pWidth, 255);
                     ResolveOffset(info->pWidth, fileHeader);
+                    NW4HBM_ASSERT_PTR(info->pWidth, 255);
                 }
 
                 if (info->pMap) {
-                    NW4HBM_ASSERT_PTR(info->pMap, 255);
                     ResolveOffset(info->pMap, fileHeader);
+                    NW4HBM_ASSERT_PTR(info->pMap, 260);
                 }
             } break;
 
@@ -148,34 +148,40 @@ FontInformation* ResFont::Rebuild(BinaryFileHeader* fileHeader) {
                 FontTextureGlyph* glyph = CONVERT_OFFSET_TO_PTR(FontTextureGlyph, blockHeader, sizeof *blockHeader);
 
                 NW4HBM_ASSERT_PTR_NULL(glyph->sheetImage, 274);
-                NW4HBM_ASSERT_PTR(glyph->sheetImage, 276);
-                NW4HBM_PANIC(1 <= glyph->cellWidth, 279,
-                             "glyph->cellWidth is out of bounds(%d)\n%d <= glyph->cellWidth not satisfied.", 0, 1);
-                NW4HBM_PANIC(1 <= glyph->cellHeight, 280,
-                             "glyph->cellHeight is out of bounds(%d)\n%d <= glyph->cellHeight not satisfied.", 0, 1);
-                NW4HBM_PANIC(0x200 <= glyph->sheetSize <= 0x400000, 281,
-                             "glyph->sheetSize is out of bounds(%d)\n%d <= glyph->sheetSize <= %d not satisfied.",
-                             glyph->sheetSize, 0x200, 0x400000);
-                NW4HBM_PANIC(1 <= glyph->sheetNum, 282,
-                             "glyph->sheetNum is out of bounds(%d)\n%d <= glyph->sheetNum not satisfied.", 0, 1);
-                NW4HBM_PANIC(1 <= glyph->sheetRow, 283,
-                             "glyph->sheetRow is out of bounds(%d)\n%d <= glyph->sheetRow not satisfied.", 0, 1);
-                NW4HBM_PANIC(1 <= glyph->sheetLine, 284,
-                             "glyph->sheetLine is out of bounds(%d)\n%d <= glyph->sheetLine not satisfied.", 0, 1);
-                NW4HBM_PANIC(0x20 <= glyph->sheetWidth <= 0x400, 285,
-                             "glyph->sheetWidth is out of bounds(%d)\n%d <= glyph->sheetWidth <= %d not satisfied.",
-                             glyph->sheetWidth, 0x20, 0x400);
-                NW4HBM_PANIC(0x20 <= glyph->sheetHeight <= 0x400, 286,
-                             "glyph->sheetHeight is out of bounds(%d)\n%d <= glyph->sheetHeight <= %d not satisfied.",
-                             glyph->sheetHeight, 0x20, 0x400);
                 // no check
-                // ResolveOffset(glyph->sheetImage, fileHeader);
+                ResolveOffset(glyph->sheetImage, fileHeader);
+                NW4HBM_ASSERT_PTR(glyph->sheetImage, 276);
+
+                NW4HBM_PANIC(glyph->cellWidth < 1, 279,
+                             "glyph->cellWidth is out of bounds(%d)\n%d <= glyph->cellWidth not satisfied.",
+                             glyph->cellWidth, 1);
+                NW4HBM_PANIC(glyph->cellHeight < 1, 280,
+                             "glyph->cellHeight is out of bounds(%d)\n%d <= glyph->cellHeight not satisfied.",
+                             glyph->cellHeight, 1);
+                NW4HBM_PANIC3(glyph->sheetSize >= 0x200 && glyph->sheetSize <= 0x400000, 281,
+                              "glyph->sheetSize is out of bounds(%d)\n%d <= glyph->sheetSize <= %d not satisfied.",
+                              glyph->sheetSize, 0x200, 0x400000);
+                NW4HBM_PANIC(glyph->sheetNum < 1, 282,
+                             "glyph->sheetNum is out of bounds(%d)\n%d <= glyph->sheetNum not satisfied.",
+                             glyph->sheetNum, 1);
+                NW4HBM_PANIC(glyph->sheetRow < 1, 283,
+                             "glyph->sheetRow is out of bounds(%d)\n%d <= glyph->sheetRow not satisfied.",
+                             glyph->sheetRow, 1);
+                NW4HBM_PANIC(glyph->sheetLine < 1, 284,
+                             "glyph->sheetLine is out of bounds(%d)\n%d <= glyph->sheetLine not satisfied.",
+                             glyph->sheetLine, 1);
+                NW4HBM_PANIC3(glyph->sheetWidth >= 0x20 && glyph->sheetWidth <= 0x400, 285,
+                              "glyph->sheetWidth is out of bounds(%d)\n%d <= glyph->sheetWidth <= %d not satisfied.",
+                              glyph->sheetWidth, 0x20, 0x400);
+                NW4HBM_PANIC3(glyph->sheetHeight >= 0x20 && glyph->sheetHeight <= 0x400, 286,
+                              "glyph->sheetHeight is out of bounds(%d)\n%d <= glyph->sheetHeight <= %d not satisfied.",
+                              glyph->sheetHeight, 0x20, 0x400);
             } break;
 
             case MAGIC_FONT_CHAR_WIDTH: {
                 FontWidth* width = CONVERT_OFFSET_TO_PTR(FontWidth, blockHeader, sizeof *blockHeader);
 
-                NW4HBM_ASSERT(width->indexBegin <= width->indexEnd, 237);
+                NW4HBM_ASSERT2(width->indexBegin <= width->indexEnd, 298);
 
                 if (width->pNext) {
                     ResolveOffset(width->pNext, fileHeader);

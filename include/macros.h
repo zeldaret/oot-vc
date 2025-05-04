@@ -31,8 +31,10 @@ extern "C" {
 
 #ifndef __INTELLISENSE__
 #define NO_INLINE __attribute__((never_inline))
+#define ATTRIBUTE_UNUSED __attribute__((unused))
 #else
 #define NO_INLINE
+#define ATTRIBUTE_UNUSED
 #endif
 
 #define __CONCAT(x, y) x##y
@@ -71,6 +73,15 @@ inline void padStack(void) { int pad = 0; }
 #define CTORS DECL_SECTION(".ctors")
 #define DTORS DECL_SECTION(".dtors")
 
+#define BOOLIFY_TRUE_TERNARY_TYPE(type_, exp_) ((exp_) ? (type_)1 : (type_)0)
+#define BOOLIFY_TRUE_TERNARY(exp_) BOOLIFY_TRUE_TERNARY_TYPE(int, exp_)
+
+#define BOOLIFY_FALSE_TERNARY_TYPE(type_, exp_) ((exp_) ? (type_)0 : (type_)1)
+#define BOOLIFY_FALSE_TERNARY(exp_) BOOLIFY_FALSE_TERNARY_TYPE(int, exp_)
+
+#define BOOLIFY_TERNARY_TYPE BOOLIFY_TRUE_TERNARY_TYPE
+#define BOOLIFY_TERNARY BOOLIFY_TRUE_TERNARY
+
 #define NW4R_VERSION(major_, minor_) ((major_) << 8 | (minor_))
 #define NW4HBM_VERSION NW4R_VERSION
 
@@ -84,6 +95,29 @@ inline void padStack(void) { int pad = 0; }
         if (!bVar3) {                                                                                            \
             fn_8010CB20(__FILE__, line, "NW4HBM:Pointer Error\n" #ptr "(=%p) is not valid pointer.", ptr);       \
         }                                                                                                        \
+    }
+
+#define NW4HBM_ASSERT_PTR2(ptr, file, line)                                                                      \
+    {                                                                                                            \
+        bool bVar3 = (((u32)(ptr) & 0xFF000000) == 0x80000000 || ((u32)(ptr) & 0xFF800000) == 0x81000000) ||     \
+                     !(((u32)(ptr) & 0xF8000000) != 0x90000000) || !(((u32)(ptr) & 0xFF000000) != 0xC0000000) || \
+                     !(((u32)(ptr) & 0xFF800000) != 0xC1000000) || !(((u32)(ptr) & 0xF8000000) != 0xD0000000) || \
+                     !(((u32)(ptr) & 0xFFFFC000) != 0xE0000000);                                                 \
+                                                                                                                 \
+        if (!bVar3) {                                                                                            \
+            fn_8010CB20(file, line, "NW4HBM:Pointer Error\n" #ptr "(=%p) is not valid pointer.", ptr);           \
+        }                                                                                                        \
+    }
+
+#define NW4HBM_ASSERT_PTR3(ptr, file, line)                                                             \
+    {                                                                                                   \
+        if ((((u32)(ptr) & 0xFF000000) == 0x80000000 || ((u32)(ptr) & 0xFF800000) == 0x81000000) ||     \
+            !(((u32)(ptr) & 0xF8000000) != 0x90000000) || !(((u32)(ptr) & 0xFF000000) != 0xC0000000) || \
+            !(((u32)(ptr) & 0xFF800000) != 0xC1000000) || !(((u32)(ptr) & 0xF8000000) != 0xD0000000) || \
+            !(((u32)(ptr) & 0xFFFFC000) != 0xE0000000)) {                                               \
+                                                                                                        \
+            fn_8010CB20(file, line, "NW4HBM:Pointer Error\n" #ptr "(=%p) is not valid pointer.", ptr);  \
+        }                                                                                               \
     }
 
 #define NW4HBM_PANIC(cond, line, ...)                 \
@@ -113,13 +147,26 @@ inline void padStack(void) { int pad = 0; }
         }                                             \
     }
 
+#define NW4HBM_PANIC4(cond, file, line, ...)      \
+    {                                             \
+        if ((cond)) {                             \
+            fn_8010CB20(file, line, __VA_ARGS__); \
+        }                                         \
+    }
+
 #define NW4HBM_ASSERT(cond, line) NW4HBM_PANIC(cond, line, "NW4HBM:Failed assertion " #cond)
 
 #define NW4HBM_ASSERT2(cond, line) NW4HBM_PANIC(!(cond), line, "NW4HBM:Failed assertion " #cond)
 
-#define NW4HBM_ASSERT_ALIGN(var, line)  \
-    NW4HBM_PANIC((u32)var & 0x1F, line, \
+#define NW4HBM_ASSERT3(cond, file, line) NW4HBM_PANIC4(!(cond), file, line, "NW4HBM:Failed assertion " #cond)
+
+#define NW4HBM_ASSERT_ALIGN32(var, line) \
+    NW4HBM_PANIC((u32)var & 0x1F, line,  \
                  "NW4HBM:Alignment Error(0x%x)\n" #var " must be aligned to 32 bytes boundary.", var)
+
+#define NW4HBM_ASSERT_ALIGN2(var, file, line) \
+    NW4HBM_PANIC4((u32)var & 0x1, file, line, \
+                  "NW4HBM:Alignment Error(0x%x)\n" #var " must be aligned to 2 bytes boundary.", var)
 
 #define NW4HBM_ASSERT_PTR_NULL(ptr, line) \
     NW4HBM_PANIC(ptr == NULL, line, "NW4HBM:Pointer must not be NULL (" #ptr ")", ptr)

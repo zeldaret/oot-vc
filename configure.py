@@ -233,7 +233,7 @@ def RevolutionHBMLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/3.0a5",
-        "cflags": [*cflags_base, f"-Cpp_exceptions off", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off", "-lang c++"],
+        "cflags": [*cflags_base, f"-Cpp_exceptions off", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off", "-lang c++", "-i libcpp"],
         "progress_category": "nw4hbm",
         "objects": objects,
     }
@@ -621,7 +621,8 @@ config.libs = [
             Object(NotLinked, "revolution/hbm/code_80109CB8.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_ResFont.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_ResFontBase.cpp"),
-            Object(NotLinked, "revolution/hbm/code_8014860C.cpp"),
+            Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_TagProcessorBase.cpp"),
+            Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_TextWriterBase.cpp"),
         ]
     ),
     RuntimeLib(

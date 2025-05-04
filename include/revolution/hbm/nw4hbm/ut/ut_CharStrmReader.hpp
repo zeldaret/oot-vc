@@ -5,7 +5,12 @@
  * headers
  */
 
+#include "macros.h"
 #include "revolution/types.h"
+
+//! TODO: remove once matched
+extern "C" void fn_8010CB20(char*, int, ...);
+extern "C" void fn_8010CBAC(char*, int, ...);
 
 /*******************************************************************************
  * classes and functions
@@ -26,7 +31,12 @@ class CharStrmReader {
     // methods
     const void* GetCurrentPos() const { return mCharStrm; }
 
-    void Set(const char* stream) { mCharStrm = stream; }
+    void Set(const char* stream) {
+        NW4HBM_ASSERT_PTR3(this, "CharStrmReader.h", 59);
+        NW4HBM_ASSERT_ALIGN2(stream, "CharStrmReader.h", 60);
+        NW4HBM_ASSERT_PTR2(stream, "CharStrmReader.h", 61);
+        mCharStrm = stream;
+    }
     void Set(const wchar_t* stream) { mCharStrm = stream; }
 
     char16_t ReadNextCharUTF8();
@@ -34,7 +44,10 @@ class CharStrmReader {
     char16_t ReadNextCharCP1252();
     char16_t ReadNextCharSJIS();
 
-    char16_t Next() { return (this->*mReadFunc)(); }
+    char16_t Next() {
+        NW4HBM_ASSERT3(mReadFunc == ReadNextCharUTF16, "CharStrmReader.h", 62);
+        return (this->*mReadFunc)();
+    }
 
     template <typename charT> charT GetChar(int offset) const {
         const charT* const charStrm = static_cast<const charT* const>(mCharStrm);
