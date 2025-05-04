@@ -789,8 +789,12 @@ revolution/tpl/TPL.c:
 	.sdata      start:0x8025CD50 end:0x8025CD58
 	.sdata2     start:0x8025E590 end:0x8025E598
 
-revolution/hbm/code_80109CB8.cpp:
-	.text       start:0x80109CB8 end:0x80143E14
+revolution/hbm/homebutton/HBMFrameController.cpp:
+	.text       start:0x80109CB8 end:0x80109E58
+	.sdata2     start:0x8025E5F8 end:0x8025E600
+
+revolution/hbm/code_80109E58.cpp:
+	.text       start:0x80109E58 end:0x80143E14
 	.ctors      start:0x8016A6E8 end:0x8016A730
 
 revolution/hbm/nw4hbm/ut/ut_ResFont.cpp:

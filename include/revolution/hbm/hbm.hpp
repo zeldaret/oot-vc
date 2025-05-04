@@ -1,6 +1,8 @@
 #ifndef RVL_SDK_HBM_HPP
 #define RVL_SDK_HBM_HPP
 
+#include "revolution/hbm/homebutton/HBMFrameController.hpp"
+
 #include "revolution/hbm/nw4hbm/ut/ut_CharStrmReader.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_CharWriter.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_Color.hpp"

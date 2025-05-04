@@ -618,6 +618,7 @@ config.libs = [
     RevolutionHBMLib(
         "hbm",
         [
+            Object(NotLinked, "revolution/hbm/homebutton/HBMFrameController.cpp"),
             Object(NotLinked, "revolution/hbm/code_80109CB8.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_ResFont.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_ResFontBase.cpp"),
