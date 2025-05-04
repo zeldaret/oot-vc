@@ -23,7 +23,6 @@ namespace ut {
 struct Rect;
 template <typename> class TagProcessorBase;
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x49b65b, 0x4a55da...
 template <typename charT> class TextWriterBase : public CharWriter {
     // methods
   public:

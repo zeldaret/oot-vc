@@ -8,7 +8,6 @@
 namespace nw4hbm {
 namespace ut {
 namespace {
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x475f53, 0x4851db...
 class NonCopyable {
     // methods
   public:

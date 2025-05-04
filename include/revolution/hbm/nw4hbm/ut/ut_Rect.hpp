@@ -14,7 +14,6 @@
 
 namespace nw4hbm {
 namespace ut {
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x477ce7
 struct Rect {
     // methods
   public:

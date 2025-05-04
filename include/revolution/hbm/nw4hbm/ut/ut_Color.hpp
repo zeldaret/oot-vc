@@ -15,7 +15,6 @@
 
 namespace nw4hbm {
 namespace ut {
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x476546
 struct Color : public GXColor{// methods
                               public :
                                   // cdtors

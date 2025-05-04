@@ -20,11 +20,9 @@ namespace ut {
 class Font;
 struct Glyph;
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x49b670
 class CharWriter {
     // enums
   public:
-    // [SGLEA4]/GormitiDebug.elf:.debug_info::0x49b895
     enum GradationMode {
         GRADMODE_NONE,
         GRADMODE_H,
@@ -35,13 +33,11 @@ class CharWriter {
 
     // nested types
   private:
-    // [SGLEA4]/GormitiDebug.elf:.debug_info::0x49b7d7
     struct ColorMapping {
         Color min; // size 0x04, offset 0x00
         Color max; // size 0x04, offset 0x04
     }; // size 0x08
 
-    // [SGLEA4]/GormitiDebug.elf:.debug_info::0x49b807
     struct VertexColor {
         Color lu; // size 0x04, offset 0x00
         Color ru; // size 0x04, offset 0x04
@@ -49,7 +45,6 @@ class CharWriter {
         Color rd; // size 0x04, offset 0x0c
     }; // size 0x10
 
-    // [SGLEA4]/GormitiDebug.elf:.debug_info::0x49b8f6
     struct TextureFilter {
         // methods
       public:
@@ -62,14 +57,12 @@ class CharWriter {
         GXTexFilter atLarge; // size 0x04, offset 0x04
     }; // size 0x08
 
-    // [SGLEA4]/GormitiDebug.elf:.debug_info::0x49b84e
     struct TextColor {
         Color start; // size 0x04, offset 0x00
         Color end; // size 0x04, offset 0x04
         GradationMode gradationMode; // size 0x04, offset 0x08
     }; // size 0x0c
 
-    // [SGLEA4]/GormitiDebug.elf:.debug_info::0x4a14c7
     struct LoadingTexture {
         // methods
       public:

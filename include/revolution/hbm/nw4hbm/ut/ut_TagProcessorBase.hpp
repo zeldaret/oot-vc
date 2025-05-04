@@ -17,7 +17,6 @@ namespace ut {
 struct Rect;
 template <typename> class TextWriterBase;
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x49ba0b
 enum Operation {
     OPERATION_DEFAULT,
     OPERATION_NO_CHAR_SPACE,
@@ -28,7 +27,6 @@ enum Operation {
     NUM_OF_OPERATION
 };
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x4a555b, 0x49b98c...
 template <typename charT> struct PrintContext {
     TextWriterBase<charT>* writer; // offset 0x00, size 0x04
     const charT* str; // offset 0x04, size 0x04
@@ -37,7 +35,6 @@ template <typename charT> struct PrintContext {
     u32 flags; // offset 0x10, size 0x04
 }; // size 0x14
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x4a547f, 0x49b13e...
 template <typename charT> class TagProcessorBase {
     // methods
   public:

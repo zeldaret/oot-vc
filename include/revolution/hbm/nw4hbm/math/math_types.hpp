@@ -18,25 +18,20 @@ namespace math {
 // Base types
 //
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x4766e4
 struct _VEC2 {
     f32 x; // size 0x04, offset 0x00
     f32 y; // size 0x04, offset 0x04
 }; // size 0x08
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x47669b
 struct _VEC3 {
     f32 x; // size 0x04, offset 0x00
     f32 y; // size 0x04, offset 0x04
     f32 z; // size 0x04, offset 0x08
 }; // size 0x0c
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x47674f
 struct _MTX34 {
-    // [SGLEA4]/GormitiDebug.elf:.debug_info::0x47684d
     union /* explicitly untagged */
     {
-        // [SGLEA4]/GormitiDebug.elf:.debug_info::0x47693a
         struct /* explicitly untagged */
         {
             f32 _00; // size 0x04, offset 0x00
@@ -63,7 +58,6 @@ struct _MTX34 {
 // Derived types
 //
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x4766cc
 struct VEC2 : public _VEC2 {
     // methods
   public:
@@ -83,7 +77,6 @@ struct VEC2 : public _VEC2 {
     /* base _VEC2 */ // size 0x08, offset 0x00
 }; // size 0x08
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x476683
 struct VEC3 : public _VEC3 {
     // methods
   public:
@@ -103,7 +96,6 @@ struct VEC3 : public _VEC3 {
     /* base _VEC3 */ // size 0x0c, offset 0x00
 }; // size 0x0c
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x476736
 struct MTX34 : public _MTX34 {
     // methods
   public:

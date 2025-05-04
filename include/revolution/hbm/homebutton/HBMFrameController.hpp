@@ -12,7 +12,6 @@
  */
 
 namespace homebutton {
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x4759d8
 class FrameController {
     // enums
   public:
