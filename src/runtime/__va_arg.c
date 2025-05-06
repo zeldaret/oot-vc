@@ -56,8 +56,9 @@ void* __va_arg(va_list ap, _va_arg_type type) {
         addr = (char*)ALIGN(addr, size);
         ap->input_arg_area = addr + size;
     }
-    if (type == 0)
+    if (type == 0) {
         addr = *((char**)addr);
+    }
 
     return addr;
 }
