@@ -258,7 +258,7 @@ typedef struct Rectangle {
     /* 0x24 */ f32 rDeltaT;
 } Rectangle; // size = 0x28
 
-//! TODO: fix the offsets
+//! TODO: fix the names and offsets
 typedef struct Frame {
     /* 0x00000 */ u32 anCIMGAddresses[8];
     /* 0x00020 */ u16 nNumCIMGAddresses;
@@ -271,7 +271,7 @@ typedef struct Frame {
     /* 0x0003C */ bool bInBomberNotes;
     /* 0x00040 */ s32 bShrinking; // bitfield (not a bool)
     /* 0x00044 */ bool bSnapShot;
-    /* 0x00048 */ bool bUsingLens;
+    /* 0x00048 */ u32 bUsingLens; // unsigned (not a bool)
     /* 0x0004C */ u32 cBlurAlpha;
     /* 0x00050 */ bool bBlurredThisFrame;
     /* 0x00054 */ s32 nFrameCIMGCalls;
@@ -291,7 +291,7 @@ typedef struct Frame {
     /* 0x000A4 */ f32 unk_A4;
     /* 0x000A8 */ f32 unk_A8;
     /* 0x000AC */ u32 nCountFrames;
-    /* 0x000B0 */ u32 nMode;
+    /* 0x000B0 */ volatile u32 nMode;
     /* 0x000B4 */ u32 aMode[FMT_COUNT];
     /* 0x000DC */ Viewport viewport;
     /* 0x000EC */ FrameBuffer aBuffer[FBT_COUNT];

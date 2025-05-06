@@ -1,7 +1,7 @@
+#include "macros.h"
 #include "revolution/os.h"
 #include "runtime/Gecko_ExceptionPPC.h"
 #include "runtime/global_destructor_chain.h"
-#include "macros.h"
 
 static int fragmentID = -2;
 
