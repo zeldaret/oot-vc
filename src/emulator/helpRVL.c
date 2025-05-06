@@ -18,15 +18,13 @@
 #include "revolution/vi.h"
 #include "string.h"
 
-void fn_8005F1A0(void);
-void fn_8005F154(void);
+extern void fn_8005F1A0(void);
+extern void fn_8005F154(void);
+extern char* fn_800887C8(void*, char*, u8);
 extern s32 fn_8008882C(void**, u32, MEMAllocator*, MEMAllocator*);
 extern void fn_800888DC(void**);
 
 #define MB(x) (x * 1024 * 1024)
-
-char lbl_801C7D00[40];
-struct_801C7D28 lbl_801C7D28;
 
 typedef struct Rect {
     /* 0x0 */ f32 x0;
@@ -34,6 +32,15 @@ typedef struct Rect {
     /* 0x8 */ f32 x1;
     /* 0xC */ f32 y1;
 } Rect; // size = 0x10
+
+// .bss
+MEMAllocator bss_00 = {0};
+MEMAllocator bss_10 = {0}; // gCNTAllocator?
+char bss_20[0x28]; // lbl_801C7D00?
+struct_801C7D28 bss_48;
+struct_801C7D28_10 bss_58;
+CNTHandle bss_94; // gCNTHandle?
+u8 bss_bc[0x1C]; // unknown
 
 // .rodata
 const Rect lbl_8016A7C0 = {-GC_FRAME_WIDTH, -GC_FRAME_HEIGHT, GC_FRAME_WIDTH, GC_FRAME_HEIGHT};
@@ -219,13 +226,13 @@ void fn_8005E638(GXColor color) {
 }
 
 void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5, u32 param_6) {
-    Rect rect;
-    Rect rectPAL;
-    GXColor local_54;
     f32 view[6];
     void* pBuffer;
+    Rect rect;
+    Rect rectPAL;
 
     if (param_6 != 0) {
+        GXColor local_54;
         local_54.r = local_54.g = local_54.b = 0;
         local_54.a = param_6 & 0xFF;
         rect = lbl_8016A7C0;
@@ -235,31 +242,49 @@ void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5
         fn_8005E638(local_54);
 
         if (fn_8007FC84()) {
+            f32 x1;
+            f32 y1;
+            f32 y0;
+            f32 x0;
+
             GXSetViewport(0.0f, 0.0f, 4.125f, 4.015625f, 0.0f, 1.875f);
             GXSetScissor(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT_PAL);
 
             GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-            GXPosition3f32(rectPAL.x0, rectPAL.y0, 0.0f);
+            x0 = rectPAL.x0;
+            y0 = rectPAL.y0;
+            x1 = rectPAL.x1;
+            y1 = rectPAL.y1;
+            GXPosition3f32(x0, y0, 0.0f);
             GXColor1u32(0xFFFFFFFF);
-            GXPosition3f32(rectPAL.x0, rectPAL.y1, 0.0f);
+            GXPosition3f32(x0, y1, 0.0f);
             GXColor1u32(0xFFFFFFFF);
-            GXPosition3f32(rectPAL.x1, rectPAL.y1, 0.0f);
+            GXPosition3f32(x1, y1, 0.0f);
             GXColor1u32(0xFFFFFFFF);
-            GXPosition3f32(rectPAL.x1, rectPAL.y0, 0.0f);
+            GXPosition3f32(x1, y0, 0.0f);
             GXColor1u32(0xFFFFFFFF);
             GXEnd();
         } else {
+            f32 x1;
+            f32 y1;
+            f32 y0;
+            f32 x0;
+
             GXSetViewport(0.0f, 0.0f, 4.125f, 4.015625f, 0.0f, 1.875f);
             GXSetScissor(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
 
             GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-            GXPosition3f32(rect.x0, rect.y0, 0.0f);
+            x0 = rect.x0;
+            y0 = rect.y0;
+            x1 = rect.x1;
+            y1 = rect.y1;
+            GXPosition3f32(x0, y0, 0.0f);
             GXColor1u32(0xFFFFFFFF);
-            GXPosition3f32(rect.x0, rect.y1, 0.0f);
+            GXPosition3f32(x0, y1, 0.0f);
             GXColor1u32(0xFFFFFFFF);
-            GXPosition3f32(rect.x1, rect.y1, 0.0f);
+            GXPosition3f32(x1, y1, 0.0f);
             GXColor1u32(0xFFFFFFFF);
-            GXPosition3f32(rect.x1, rect.y0, 0.0f);
+            GXPosition3f32(x1, y0, 0.0f);
             GXColor1u32(0xFFFFFFFF);
             GXEnd();
         }
@@ -289,8 +314,6 @@ void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5
     }
 }
 
-char* fn_800887C8(void*, char*, u8);
-
 void fn_8005EAFC(void) {
     GXRenderModeObj sp8;
     s32 var_r31;
@@ -298,7 +321,7 @@ void fn_8005EAFC(void) {
     var_r31 = MB(20);
 
     if (lbl_8025D0BC == NULL) {
-        lbl_8025D0BC = lbl_801C7D00;
+        lbl_8025D0BC = bss_20;
     }
 
     sp8 = *lbl_8025D10C;
@@ -361,10 +384,10 @@ void fn_8005EAFC(void) {
     }
 
     if (var_r31 <= 0) {
-        OSPanic("helpRVL.c", 938, ".");
+        OSPanic(lbl_801743BC, 938, ".");
     }
 
-    fn_800887CC(&lbl_801C7D00);
+    fn_800887CC(bss_20);
     lbl_8025D0BC = fn_800887C8(fn_8005E800, lbl_8025D0BC, lbl_8025D0B8);
 
     VIConfigure(lbl_8025D10C);
@@ -389,7 +412,7 @@ static inline void fn_8005EDFC_UnknownInline(GXColor color) {
     GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, 0x3C, GX_FALSE, 0x7D);
     GXSetNumTevStages(1);
     color2 = color;
-    color2.a = lbl_801C7D28.unk0D;
+    color2.a = bss_48.unk0D;
     GXSetTevColor(GX_TEVREG0, color2);
     GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
     GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
@@ -399,7 +422,7 @@ static inline void fn_8005EDFC_UnknownInline(GXColor color) {
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     GXSetZMode(GX_DISABLE, GX_LEQUAL, GX_DISABLE);
     GXSetCurrentMtx(3);
-    TPLGetGXTexObjFromPalette(lbl_801C7D28.pTPLPalette, &texObj, 0);
+    TPLGetGXTexObjFromPalette(bss_48.pTPLPalette, &texObj, 0);
     GXLoadTexObj(&texObj, GX_TEXMAP0);
 
     GXBegin(GX_QUADS, GX_VTXFMT5, 4);
@@ -415,28 +438,28 @@ static inline void fn_8005EDFC_UnknownInline(GXColor color) {
 }
 
 void fn_8005EDFC(void) {
-    f32 fTime = OSTicksToMilliseconds(OSGetTick() - lbl_801C7D28.unk08);
+    f32 fTime = OSTicksToMilliseconds(OSGetTick() - bss_48.unk08);
 
-    switch (lbl_801C7D28.unk0C) {
+    switch (bss_48.unk0C) {
         case 0:
-            lbl_801C7D28.unk0D = 255.9f * (fTime / 250.0f);
+            bss_48.unk0D = 255.9f * (fTime / 250.0f);
             if (fTime >= 250.0f) {
-                lbl_801C7D28.unk08 = OSGetTick();
-                lbl_801C7D28.unk0C = 1;
-                lbl_801C7D28.unk0D = -1;
+                bss_48.unk08 = OSGetTick();
+                bss_48.unk0C = 1;
+                bss_48.unk0D = -1;
             }
             break;
         case 1:
             if (fTime >= 1000.0f) {
-                lbl_801C7D28.unk08 = OSGetTick();
-                lbl_801C7D28.unk0C = 2;
+                bss_48.unk08 = OSGetTick();
+                bss_48.unk0C = 2;
             }
             break;
         case 2:
-            lbl_801C7D28.unk0D = 255.9f * ((250.0f - fTime) / 250.0f);
+            bss_48.unk0D = 255.9f * ((250.0f - fTime) / 250.0f);
             if (fTime >= 250.0f) {
-                lbl_801C7D28.unk0D = 0;
-                lbl_801C7D28.unk04 = 0;
+                bss_48.unk0D = 0;
+                bss_48.unk04 = 0;
             }
             break;
     }
@@ -464,84 +487,70 @@ void fn_8005F1A0(void) {
 
 bool fn_8005F1EC(void) { return 0; }
 
-typedef struct struct_801C7CE0 {
-    /* 0x00 */ MEMAllocator allocator1;
-    /* 0x10 */ MEMAllocator allocator2;
-} struct_801C7CE0; // size = 0x20
-struct_801C7CE0 lbl_801C7CE0;
-
-inline void test(void** truc, struct_801C7CE0* truc2, s32 size) {
-    fn_8008882C(&lbl_8025D0C4, size, &truc2->allocator2, &truc2->allocator1);
-}
+bool fn_8005F6F4(HelpMenu* pHelpMenu, char* szFileName, s32** arg2, MEMAllocator* arg3);
 
 void fn_8005F1F4(HelpMenu* pHelpMenu) {
     NANDFileInfo sp30;
-    void* sp8;
     s32 temp_r14;
-    s32 temp_r14_2;
+    void* sp8;
     char* temp_r16;
-    struct_801C7D28* truc;
-    struct_801C7CE0* truc2;
     char sp10[32] = "HomeButton3/";
 
     temp_r16 = &sp10[strlen(sp10)];
-    truc = &lbl_801C7D28;
-    truc2 = &lbl_801C7CE0;
 
-    xlHeapFill8(&truc->unk10, sizeof(struct_801C7D28_10), 0);
+    xlHeapFill8(&bss_58, sizeof(struct_801C7D28_10), 0);
     lbl_8025D0C4 = NULL;
-    contentInitHandleNAND(4, &truc->handle.handleNAND, &truc2->allocator2);
+    contentInitHandleNAND(4, &bss_94.handleNAND, &bss_10);
 
     if (lbl_8025D0C0 == 0) {
         sp8 = NULL;
         lbl_8025D0C0 = 1;
         strcpy(temp_r16, "Huf8_HomeButtonSe.brsar");
-        temp_r14 = fn_8005E2D0(&truc->handle.handleNAND, sp10, &sp8, &truc2->allocator2, &lbl_801C7CE0);
+        temp_r14 = fn_8005E2D0(&bss_94.handleNAND, sp10, &sp8, &bss_10, &bss_00);
         NANDCreate(lbl_801743C8, 0x30, 0);
         NANDOpen(lbl_801743C8, &sp30, 2);
         NANDWrite(&sp30, sp8, temp_r14);
         NANDClose(&sp30);
         fn_800888DC(&sp8);
-
-        temp_r14_2 = fn_8005F6F4(SYSTEM_HELP(gpSystem), "Opera.arc", &sp8, &truc2->allocator2);
+#ifdef __MWERKS__
+        temp_r14 = fn_8005F6F4(SYSTEM_HELP(gpSystem), "Opera.arc", &((s32*)sp8), &bss_10);
+#endif
         NANDCreate(lbl_801743DC, 0x30, 0);
         NANDOpen(lbl_801743DC, &sp30, 2);
-        NANDWrite(&sp30, sp8, temp_r14_2);
+        NANDWrite(&sp30, sp8, temp_r14);
         NANDClose(&sp30);
         fn_800888DC(&sp8);
     }
 
-    strcpy(lbl_801C7D00, "arc:/html/");
-    lbl_8025D0F4 = lbl_801C7D00 + strlen(lbl_801C7D00);
-    truc->unk10.pTPLPalette2 = NULL;
+    strcpy(bss_20, "arc:/html/");
+    lbl_8025D0F4 = bss_20 + strlen(bss_20);
+    bss_58.pTPLPalette2 = NULL;
     strcpy(temp_r16, "LZ77_homeBtn.arc");
     strcpy(lbl_8025D0F4, "index/index_Frameset.html");
-    fn_8005E2D0(&truc->handle.handleNAND, sp10, &truc->unk10.pBuffer1, &truc2->allocator2, &lbl_801C7CE0);
+    fn_8005E2D0(&bss_94.handleNAND, sp10, &bss_58.pBuffer1, &bss_10, &bss_00);
     strcpy(temp_r16, "Huf8_SpeakerSe.arc");
-    fn_8005E2D0(&truc->handle.handleNAND, sp10, &truc->unk10.pBuffer2, &truc2->allocator2, &lbl_801C7CE0);
+    fn_8005E2D0(&bss_94.handleNAND, sp10, &bss_58.pBuffer2, &bss_10, &bss_00);
     strcpy(temp_r16, "home.csv");
-    fn_8005E2D0(&truc->handle.handleNAND, sp10, &truc->unk10.pBuffer3, &truc2->allocator2, &lbl_801C7CE0);
+    fn_8005E2D0(&bss_94.handleNAND, sp10, &bss_58.pBuffer3, &bss_10, &bss_00);
     strcpy(temp_r16, "config.txt");
-    fn_8005E2D0(&truc->handle.handleNAND, sp10, &truc->unk10.pBuffer4, &truc2->allocator2, &lbl_801C7CE0);
+    fn_8005E2D0(&bss_94.handleNAND, sp10, &bss_58.pBuffer4, &bss_10, &bss_00);
 
-    truc->unk10.unk24 = fn_8005F1EC;
-    truc->unk10.unk28 = 0;
-    truc->unk10.unk30 = 0;
-    truc->unk10.unk40 = lbl_8025DEF8;
-    truc->unk10.unk44 = lbl_8025DEC8;
-    truc->unk10.unk3C = lbl_8025DEC8;
+    bss_58.unk24 = fn_8005F1EC;
+    bss_58.unk28 = 0;
+    bss_58.unk30 = 0;
+    bss_58.unk40 = lbl_8025DEF8;
+    bss_58.unk44 = lbl_8025DEC8;
+    bss_58.unk3C = lbl_8025DEC8;
 
     strcpy(temp_r16, "homeBtnIcon.tpl");
-    fn_8005E2D0(&truc->handle.handleNAND, sp10, (void**)&truc->pTPLPalette, &truc2->allocator2, &lbl_801C7CE0);
-    TPLBind(truc->pTPLPalette);
-    truc->unk10.unk38 = 0x80000;
-    // fn_8008882C(&truc->unk10.unk20, 0x80000, &truc2->allocator2, &truc2->allocator1);
-    test(&lbl_8025D0C4, &lbl_801C7CE0, 0x80000);
-    truc->unk10.unk48 = 0;
-    fn_80088994(&truc->unk10.pBuffer1);
-    fn_80100870(&truc->unk10.pBuffer1);
-    test(&lbl_8025D0C4, &lbl_801C7CE0, 0xa0000);
-    // fn_8008882C(&lbl_8025D0C4, 0xa0000, &truc2->allocator2, &truc2->allocator1);
+    fn_8005E2D0(&bss_94.handleNAND, sp10, (void**)&bss_48, &bss_10, &bss_00);
+    TPLBind(bss_48.pTPLPalette);
+    bss_58.unk38 = 0x80000;
+    fn_8008882C(&bss_58.unk20, 0x80000, &bss_10, &bss_00);
+    bss_58.unk48 = 0;
+    fn_80088994(&bss_58);
+    fn_80100870(&bss_58);
+    fn_8008882C(&lbl_8025D0C4, 0xa0000, &bss_10, &bss_00);
     fn_80100CD8(lbl_801743C8, lbl_8025D0C4, 0xa0000);
     fn_80100940();
 }
@@ -662,16 +671,16 @@ s32 fn_800607B0(HelpMenu* pHelpMenu, s32 arg1) {
 
 s32 fn_800607C4(HelpMenu* pHelpMenu, s32 arg1) {
     if (pHelpMenu->unk0C == 0) {
-        lbl_801C7D28.unk0C = 0;
-        lbl_801C7D28.unk04 = 1;
-        lbl_801C7D28.unk08 = OSGetTick();
-        lbl_801C7D28.unk0D = 0;
+        bss_48.unk0C = 0;
+        bss_48.unk04 = 1;
+        bss_48.unk08 = OSGetTick();
+        bss_48.unk0D = 0;
     } else {
         if (OSGetTime() - lbl_8025D0D0 < OSMillisecondsToTicks(250)) {
             arg1 = 0;
         }
 
-        pHelpMenu->unk08 = arg1 != 0 && lbl_801C7D28.unk04 == 0;
+        pHelpMenu->unk08 = arg1 != 0 && bss_48.unk04 == 0;
     }
 
     return 1;
@@ -716,11 +725,11 @@ bool helpMenuEvent(HelpMenu* pHelpMenu, s32 nEvent, void* pArgument) {
             OSSetResetCallback(fn_8005F1A0);
             OSSetPowerCallback(fn_8005F154);
 
-            lbl_801C7D28.pTPLPalette = NULL;
-            lbl_801C7D28.unk04 = 0;
+            bss_48.pTPLPalette = NULL;
+            bss_48.unk04 = 0;
 
-            if (xlFileLoad("homeBtnIcon.tpl", (void**)&lbl_801C7D28.pTPLPalette)) {
-                TPLBind(lbl_801C7D28.pTPLPalette);
+            if (xlFileLoad("homeBtnIcon.tpl", (void**)&bss_48.pTPLPalette)) {
+                TPLBind(bss_48.pTPLPalette);
             }
 
             pHelpMenu->unk10 = 0;

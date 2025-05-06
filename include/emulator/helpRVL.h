@@ -36,9 +36,7 @@ typedef struct struct_801C7D28 {
     /* 0x08 */ u32 unk08;
     /* 0x0C */ s8 unk0C;
     /* 0x0D */ u8 unk0D;
-    /* 0x10 */ struct_801C7D28_10 unk10;
-    /* 0x4C */ CNTHandle handle;
-    /* 0x74 */ u8 unk74[0x1C];
+    /* 0x0E */ u8 pad[2];
 } struct_801C7D28; // size = 0x90
 
 typedef struct HelpMenu {
