@@ -1,2 +1,2 @@
 #!/bin/bash
-find include libc src -name '*.h' -o -name '*.c' | xargs clang-format -i
+find include libc src -name '*.h' -o -name '*.c' -o -name '*.hpp' -o -name '*.cpp' | xargs clang-format -i
