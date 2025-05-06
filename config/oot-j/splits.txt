@@ -1077,31 +1077,40 @@ libc/w_sqrt.c:
 	.text       start:0x80164F90 end:0x80164F94
 
 metrotrk/mainloop.c:
-	.text       start:0x80164F94 end:0x8016525C
+	.text       start:0x80164F94 end:0x8016508C
 
 metrotrk/nubevent.c:
-	.text       start:0x8016525C end:0x801652B4
+	.text       start:0x8016508C end:0x801652B4
+	.bss        start:0x8025A1F8 end:0x8025A220
 
 metrotrk/nubinit.c:
 	.text       start:0x801652B4 end:0x80165438
+	.rodata     start:0x8016F588 end:0x8016F5A8
+	.bss        start:0x8025A220 end:0x8025A228
 
 metrotrk/msg.c:
 	.text       start:0x80165438 end:0x80165464
 
 metrotrk/msgbuf.c:
-	.text       start:0x80165464 end:0x80165CA8
+	.text       start:0x80165464 end:0x80165CA0
+	.rodata     start:0x8016F5A8 end:0x8016F5C8
+	.bss        start:0x8025A228 end:0x8025BBD8
 
 metrotrk/serpoll.c:
-	.text       start:0x80165CA8 end:0x80165E4C
+	.text       start:0x80165CA0 end:0x80165E4C
+	.bss        start:0x8025BBD8 end:0x8025BBF0
+	.sbss       start:0x8025DD18 end:0x8025DD20
 
 metrotrk/usr_put.c:
-	.text       start:0x80165E4C end:0x80165E50
+	.text       start:0x80165E4C end:0x80165ED8
 
 metrotrk/dispatch.c:
-	.text       start:0x80165E50 end:0x80166020
+	.text       start:0x80165ED8 end:0x80166020
+	.data       start:0x801A0B78 end:0x801A0BE8
 
 metrotrk/msghndlr.c:
 	.text       start:0x80166020 end:0x801670FC
+	.bss        start:0x8025BBF0 end:0x8025BBF8
 
 metrotrk/support.c:
 	.text       start:0x801670FC end:0x801677B0
@@ -1119,10 +1128,16 @@ metrotrk/mem_TRK.c:
 	.init       start:0x8000446C end:0x800044C0
 	.text       start:0x80167898 end:0x80167950
 
-metrotrk/targimpl.c:
-	.text       start:0x80167950 end:0x80169390
+metrotrk/string_TRK.c:
+	.text       start:0x80167950 end:0x8016796C
 
-metrotrk/targsupp.c:
+metrotrk/targimpl.c:
+	.text       start:0x8016796C end:0x80169390
+	.rodata     start:0x8016F600 end:0x8016F688
+	.data       start:0x801A0C20 end:0x801A0C54
+	.bss        start:0x8025BBF8 end:0x8025C178
+
+metrotrk/targsupp.s:
 	.text       start:0x80169390 end:0x801693B0
 
 metrotrk/mpc_7xx_603e.c:

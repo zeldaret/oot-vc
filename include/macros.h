@@ -35,6 +35,38 @@ extern "C" {
 #define NO_INLINE
 #endif
 
+#define OLD_NO_INLINE() \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0;            \
+    (void)0
+
 #define __CONCAT(x, y) x##y
 #define CONCAT(x, y) __CONCAT(x, y)
 
