@@ -7,7 +7,10 @@
 extern "C" {
 #endif
 
-u32 TRKAccessFile(u32, u32, u32*, u8*);
+extern u32 TRKAccessFile(u32, u32, u32*, u8*);
+extern u32 TRKOpenFile(u32, u32, u32*, u8*);
+extern u32 TRKCloseFile(u32, u32);
+extern u32 TRKPositionFile(u32, u32, u32*, u8*);
 
 #ifdef __cplusplus
 }

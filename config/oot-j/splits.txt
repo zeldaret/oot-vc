@@ -1139,7 +1139,7 @@ metrotrk/targimpl.c:
 	.data       start:0x801A0C20 end:0x801A0C50
 	.bss        start:0x8025BBF8 end:0x8025C178
 
-metrotrk/targsupp.s:
+metrotrk/targsupp.c:
 	.text       start:0x80169390 end:0x801693B0
 
 metrotrk/mpc_7xx_603e.c:
@@ -1182,5 +1182,5 @@ metrotrk/cc_gdev.c:
 metrotrk/CircleBuffer.c:
 	.text       start:0x8016A410 end:0x8016A678
 
-metrotrk/MWCriticalSection_gc.cpp:
+metrotrk/MWCriticalSection_gc.c:
 	.text       start:0x8016A678 end:0x8016A6D0

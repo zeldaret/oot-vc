@@ -20,9 +20,9 @@ DSError TRK_SuppAccessFile(u32 file_handle, u8* data, size_t* count, DSIOResult*
     DSError error;
     int replyBufferId;
     MessageBuffer* replyBuffer;
+    u32 length;
     int bufferId;
     MessageBuffer* buffer;
-    u32 length;
     u32 i;
     u8 replyIOResult;
     u32 replyLength;
@@ -33,23 +33,32 @@ DSError TRK_SuppAccessFile(u32 file_handle, u8* data, size_t* count, DSIOResult*
         return kParameterError;
     }
 
-    for (exit = false, *io_result = kDSIONoError, i = 0, error = kNoError;
-         !exit && i < *count && error == kNoError && *io_result == 0; i += length) {
+    exit = false;
+    *io_result = kDSIONoError;
+    i = 0;
+    error = kNoError;
+    while (!exit && i < *count && error == kNoError && *io_result == 0) {
         TRK_memset(&reply, 0, sizeof(msgbuf_t));
 
-        length = DS_MAXREADWRITELENGTH;
-
-        if (*count - i <= DS_MAXREADWRITELENGTH) {
+        if (*count - i <= 0x800) {
             length = *count - i;
+        } else {
+            length = 0x800;
         }
 
         reply.command[0] = read ? kDSReadFile : kDSWriteFile;
-        reply.msg_length = read ? TRK_MSG_HEADER_LENGTH : ((u32)length + TRK_MSG_HEADER_LENGTH);
+
+        if (read) {
+            reply.msg_length = 0x40;
+        } else {
+            reply.msg_length = length + 0x40;
+        }
+
         *(DSFileHandle*)reply.handle = file_handle;
-        reply.length[0] = (u16)length;
+        *(u16*)&reply.length = length;
 
         TRK_GetFreeBuffer(&bufferId, &buffer);
-        error = TRKAppendBuffer_ui8(buffer, (const u8*)&reply, TRK_MSG_HEADER_LENGTH);
+        error = TRKAppendBuffer_ui8(buffer, (u8*)&reply, 0x40);
 
         if (!read && error == kNoError) {
             error = TRKAppendBuffer_ui8(buffer, data + i, length);
@@ -57,17 +66,13 @@ DSError TRK_SuppAccessFile(u32 file_handle, u8* data, size_t* count, DSIOResult*
 
         if (error == kNoError) {
             if (need_reply) {
-                bool some_bool = false;
+                bool b = read && file_handle == 0;
 
-                if (read == 0 || file_handle == 0) {
-                    some_bool = true;
-                }
-
-                error = TRK_RequestSend(buffer, &replyBufferId, 5, 3, some_bool == 0);
+                error = TRK_RequestSend(buffer, &replyBufferId, read ? 5 : 5, 3, !b);
                 if (error == kNoError) {
-                    replyBuffer = TRKGetBuffer(replyBufferId);
+                    replyBuffer = (MessageBuffer*)TRKGetBuffer(replyBufferId);
                 }
-                replyIOResult = (u8) * (u32*)(replyBuffer->fData + 0x10);
+                replyIOResult = *(u32*)(replyBuffer->fData + 0x10);
                 replyLength = *(u16*)(replyBuffer->fData + 0x14);
                 if (read && error == kNoError && replyLength <= length) {
                     TRK_SetBufferPosition(replyBuffer, 0x40);
@@ -82,7 +87,7 @@ DSError TRK_SuppAccessFile(u32 file_handle, u8* data, size_t* count, DSIOResult*
                     exit = true;
                 }
 
-                *io_result = replyIOResult;
+                *io_result = (DSIOResult)replyIOResult;
                 TRK_ReleaseBuffer(replyBufferId);
             } else {
                 error = TRK_MessageSend(buffer);
@@ -90,53 +95,75 @@ DSError TRK_SuppAccessFile(u32 file_handle, u8* data, size_t* count, DSIOResult*
         }
 
         TRK_ReleaseBuffer(bufferId);
+        i += length;
     }
 
     *count = i;
     return error;
 }
 
-DSError TRK_RequestSend(MessageBuffer* msgBuf, int* bufferId, int arg3, int arg4, int arg5) {
-    DSError error;
+DSError TRK_RequestSend(MessageBuffer* msgBuf, int* bufferId, int p1, int p2, int p3) {
+    int error = kNoError;
     MessageBuffer* buffer;
+    u32 counter;
+    int count;
     u8 msgCmd;
-    u8 msgReplyError;
-    bool badReply;
+    int msgReplyError;
+    bool badReply = true;
 
-    error = TRK_MessageSend(msgBuf);
-    if (error == kNoError) {
-        badReply = false;
+    *bufferId = -1;
 
-        while (true) {
-            do {
-                *bufferId = TRKTestForPacket();
-            } while (*bufferId == -1);
+    for (count = p2 + 1; count != 0 && *bufferId == -1 && error == kNoError; count--) {
+        error = TRK_MessageSend(msgBuf);
+        if (error == kNoError) {
 
-            buffer = TRKGetBuffer(*bufferId);
-            TRK_SetBufferPosition(buffer, 0);
-            msgCmd = buffer->fData[4];
-            if (msgCmd >= kDSReplyACK) {
-                break;
+            if (p3) {
+                counter = 0;
             }
-            TRKProcessInput(*bufferId);
-            *bufferId = -1;
-        }
 
-        if (*bufferId != -1) {
-            if (buffer->fLength < TRK_MSG_HEADER_LENGTH) {
-                badReply = true;
+            while (true) {
+                do {
+                    *bufferId = TRKTestForPacket();
+                    if (*bufferId != -1) {
+                        break;
+                    }
+                } while (!p3 || ++counter < 79999980);
+
+                if (*bufferId == -1) {
+                    break;
+                }
+
+                badReply = 0;
+
+                buffer = TRKGetBuffer(*bufferId);
+                TRK_SetBufferPosition(buffer, 0);
+                OutputData(&buffer->fData[0], buffer->fLength);
+                msgCmd = buffer->fData[4];
+
+                if (msgCmd >= kDSReplyACK) {
+                    break;
+                }
+
+                TRKProcessInput(*bufferId);
+                *bufferId = -1;
             }
-            if (error == kNoError && !badReply) {
-                msgReplyError = buffer->fData[8];
-            }
-            if (error == kNoError && !badReply) {
-                if ((int)msgCmd != kDSReplyACK || msgReplyError != kDSReplyNoError) {
+
+            if (*bufferId != -1) {
+                if (buffer->fLength < 0x40) {
                     badReply = true;
                 }
-            }
-            if (error != kNoError || badReply) {
-                TRK_ReleaseBuffer(*bufferId);
-                *bufferId = -1;
+                if (error == kNoError && !badReply) {
+                    msgReplyError = buffer->fData[8];
+                }
+                if (error == kNoError && !badReply) {
+                    if ((int)msgCmd != kDSReplyACK || msgReplyError != kNoError) {
+                        badReply = true;
+                    }
+                }
+                if (error != kNoError || badReply) {
+                    TRK_ReleaseBuffer(*bufferId);
+                    *bufferId = -1;
+                }
             }
         }
     }

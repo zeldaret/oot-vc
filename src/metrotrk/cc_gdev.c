@@ -7,29 +7,9 @@ static CircleBuffer gRecvCB;
 static u8 gRecvBuf[0x500];
 
 void OutputData(u8* arg0, s32 arg1) {
-    s32 temp_r3;
-    s32 var_ctr_2;
-    s32 var_r5;
-    u32 var_ctr;
+    s32 var_r5 = 0;
 
-    var_r5 = 0;
-
-    if (arg1 > 0) {
-        temp_r3 = arg1 - 8;
-
-        if (arg1 > 8) {
-            var_ctr = (u32)(temp_r3 + 7) >> 3;
-
-            if (temp_r3 > 0) {
-                do {
-                    var_r5 += 8;
-                    var_ctr -= 1;
-                } while (var_ctr != 0);
-            }
-        }
-
-        while (var_r5++ < arg1) {}
-    }
+    for (var_r5 = 0; var_r5 < arg1; var_r5++) {}
 }
 
 int gdev_cc_initialize(void* flagOut, OSInterruptHandler handler) {

@@ -117,9 +117,6 @@ DSError TRKValidMemory32(const void* addr, size_t length, ValidMemoryOptions rea
     return err;
 }
 
-// This is a certified metrowerks moment
-#include "metrotrk/ppc_mem.h"
-
 ASM static void TRK_ppc_memcpy(void* dest, const void* src, int n, u32 param_4, u32 param_5){
 #ifdef __MWERKS__ // clang-format off
 	nofralloc
@@ -273,51 +270,46 @@ DSError TRKTargetAccessFP(u32 firstRegister, u32 lastRegister, MessageBuffer* b,
 
 DSError TRKTargetAccessExtended1(u32 firstRegister, u32 lastRegister, MessageBuffer* b, size_t* registerStorageSize,
                                  s32 read) {
-    DSError err;
-    DefaultType* start;
-    s32 count;
-    TRKExceptionStatus savedException;
+    TRKExceptionStatus tempExceptionStatus;
+    int error;
+    u32* data;
+    int count;
 
     if (lastRegister > 0x60) {
         return kInvalidRegister;
     }
 
-    savedException = gTRKExceptionStatus;
-    gTRKExceptionStatus.exceptionDetected = 0;
+    tempExceptionStatus = gTRKExceptionStatus;
+    gTRKExceptionStatus.exceptionDetected = false;
 
     *registerStorageSize = 0;
 
     if (firstRegister <= lastRegister) {
-        start = (((u32*)&gTRKCPUState.Extended1) + firstRegister);
-        count = (s32)(lastRegister - firstRegister + 1);
-
-        *registerStorageSize += (count * 1);
+        data = (u32*)&gTRKCPUState.Extended1 + firstRegister;
+        count = lastRegister - firstRegister + 1;
+        *registerStorageSize += count * sizeof(u32);
 
         if (read) {
-            err = TRKAppendBuffer_ui32(b, start, (s32)count);
+            error = TRKAppendBuffer_ui32(b, data, count);
         } else {
-            if ((start <= (u32*)&gTRKCPUState.Extended1.TBU) && // TBU
-                ((start + count - 1) >= (u32*)&gTRKCPUState.Extended1.TBL)) { // TBL
+
+            if (data <= &gTRKCPUState.Extended1.TBU && (data + count - 1) >= &gTRKCPUState.Extended1.TBL) {
                 gTRKRestoreFlags.TBR = 1;
             }
 
-            if ((start <= (u32*)&gTRKCPUState.Extended1.DEC) &&
-                ((start + count - 1) >= (u32*)&gTRKCPUState.Extended1.DEC)) {
+            if (data <= &gTRKCPUState.Extended1.DEC && (data + count - 1) >= &gTRKCPUState.Extended1.DEC) {
                 gTRKRestoreFlags.DEC = 1;
             }
-
-            err = TRKReadBuffer_ui32(b, start, (s32)count);
+            error = TRKReadBuffer_ui32(b, data, count);
         }
     }
-
     if (gTRKExceptionStatus.exceptionDetected) {
-        err = kCWDSException;
         *registerStorageSize = 0;
+        error = kCWDSException;
     }
 
-    gTRKExceptionStatus = savedException;
-
-    return err;
+    gTRKExceptionStatus = tempExceptionStatus;
+    return error;
 }
 
 /*
@@ -330,52 +322,63 @@ DSError TRKTargetAccessExtended1(u32 firstRegister, u32 lastRegister, MessageBuf
 
 DSError TRKTargetAccessExtended2(u32 firstRegister, u32 lastRegister, MessageBuffer* b, size_t* registersLengthPtr,
                                  bool read) {
-    TRKExceptionStatus tempExceptionStatus;
-    FloatType temp;
-    u32 temp2;
-    DSError error;
+    TRKExceptionStatus savedException;
+    u32 i;
+    u32 value_buf0[1];
+    u32 value_buf[2];
+    DSError err;
+    u32 access_func[10];
 
-    if (lastRegister > ALTIVEC_VECTOR_REG_ACCESS_MAX) {
+    if (lastRegister > 0x1f) {
         return kInvalidRegister;
     }
 
-    tempExceptionStatus = gTRKExceptionStatus;
+    /*
+    ** Save any existing exception status and clear the exception flag.
+    ** This allows detection of exceptions that occur ONLY within this
+    ** function.
+    */
+
+    savedException = gTRKExceptionStatus;
     gTRKExceptionStatus.exceptionDetected = false;
 
-    TRKPPCAccessSPR(&temp2, SPR_HID2, true);
-    temp2 |= 0xA0000000;
-    TRKPPCAccessSPR(&temp2, SPR_HID2, false);
-    temp2 = 0;
-    TRKPPCAccessSPR(&temp2, SPR_GQR0, false);
-    *registersLengthPtr = 0;
-    error = kNoError;
+    TRKPPCAccessSPR(value_buf0, SPR_HID2, true);
 
-    while (firstRegister <= lastRegister && error == kNoError) {
+    value_buf0[0] |= 0xA0000000;
+    TRKPPCAccessSPR(value_buf0, SPR_HID2, false);
+
+    value_buf0[0] = 0;
+    TRKPPCAccessSPR(value_buf0, SPR_GQR0, false);
+
+    *registersLengthPtr = 0;
+    err = kNoError;
+
+    for (i = firstRegister; (i <= lastRegister) && (err == kNoError); i++) {
+
         if (read) {
-            error = TRKPPCAccessPairedSingleRegister(&temp, firstRegister, read);
-            error = TRKAppendBuffer1_ui64(b, temp);
+            err = TRKPPCAccessPairedSingleRegister((u64*)value_buf, i, read);
+            err = TRKAppendBuffer1_ui64(b, *(u64*)value_buf);
         } else {
-            error = TRKReadBuffer1_ui64(b, &temp);
-            error = TRKPPCAccessPairedSingleRegister(&temp, firstRegister, read);
+            err = TRKReadBuffer1_ui64(b, (u64*)value_buf);
+            err = TRKPPCAccessPairedSingleRegister((u64*)value_buf, i, read);
         }
 
-        firstRegister++;
-        *registersLengthPtr += sizeof(FloatType);
+        *registersLengthPtr += sizeof(u64);
     }
 
     if (gTRKExceptionStatus.exceptionDetected) {
         *registersLengthPtr = 0;
-        error = kCWDSException;
+        err = kCWDSException;
     }
 
-    gTRKExceptionStatus = tempExceptionStatus;
+    gTRKExceptionStatus = savedException;
 
-    return error;
+    return err;
 }
 
 void TRKUARTInterruptHandler(void);
 
-ASM void TRKInterruptHandler() {
+ASM void TRKInterruptHandler(u16) {
 #ifdef __MWERKS__ // clang-format off
 	nofralloc
 	mtsrr0 r2
@@ -939,7 +942,7 @@ DSError TRKPPCAccessPairedSingleRegister(void* srcDestPtr, u32 psr, bool read) {
 #define FP_FPSCR_ACCESS 32
 #define FP_FPECR_ACCESS 33
 
-ASM s32 ReadFPSCR(){
+ASM s32 ReadFPSCR(void* ptr){
 #ifdef __MWERKS__ // clang-format off
     nofralloc
 
@@ -955,7 +958,7 @@ ASM s32 ReadFPSCR(){
 #endif // clang-format on
 }
 
-ASM void WriteFPSCR(){
+ASM void WriteFPSCR(void* ptr){
 #ifdef __MWERKS__ // clang-format off
     nofralloc
 
@@ -987,9 +990,9 @@ DSError TRKPPCAccessFPRegister(void* srcDestPtr, u32 fpr, bool read) {
         error = TRKPPCAccessSpecialReg(srcDestPtr, instructionData1, read);
     } else if (fpr == FP_FPSCR_ACCESS) {
         if (read) {
-            ReadFPSCR();
+            ReadFPSCR(srcDestPtr);
         } else {
-            WriteFPSCR();
+            WriteFPSCR(srcDestPtr);
         }
 
         *(u64*)srcDestPtr &= 0xFFFFFFFF;
@@ -1001,7 +1004,7 @@ DSError TRKPPCAccessFPRegister(void* srcDestPtr, u32 fpr, bool read) {
         error = TRKPPCAccessSPR(srcDestPtr, SPR_FPECR, read);
 
         if (read) {
-            *(u64*)srcDestPtr = (*(u64*)srcDestPtr >> 32) & 0xFFFFFFFF;
+            DSFetch_u64(srcDestPtr) = DSFetch_u32(srcDestPtr) & 0xFFFFFFFFLL;
         }
     }
 
