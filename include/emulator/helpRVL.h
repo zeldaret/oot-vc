@@ -20,7 +20,7 @@ typedef struct struct_801C7D28_10 {
     /* 0x10 */ void* unk20;
     /* 0x14 */ void* unk24;
     /* 0x18 */ s32 unk28;
-    /* 0x1C */ TPLPalette* pTPLPalette2;
+    /* 0x1C */ TPLPalette* pTPLPalette;
     /* 0x20 */ s32 unk30;
     /* 0x24 */ s32 unk34;
     /* 0x28 */ s32 unk38;
@@ -37,7 +37,7 @@ typedef struct struct_801C7D28 {
     /* 0x0C */ s8 unk0C;
     /* 0x0D */ u8 unk0D;
     /* 0x0E */ u8 pad[2];
-} struct_801C7D28; // size = 0x90
+} struct_801C7D28; // size = 0x10
 
 typedef struct HelpMenu {
     /* 0x00 */ s32 unk00;

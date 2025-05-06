@@ -524,7 +524,7 @@ void fn_8005F1F4(HelpMenu* pHelpMenu) {
 
     strcpy(bss_20, "arc:/html/");
     lbl_8025D0F4 = bss_20 + strlen(bss_20);
-    bss_58.pTPLPalette2 = NULL;
+    bss_58.pTPLPalette = NULL;
     strcpy(temp_r16, "LZ77_homeBtn.arc");
     strcpy(lbl_8025D0F4, "index/index_Frameset.html");
     fn_8005E2D0(&bss_94.handleNAND, sp10, &bss_58.pBuffer1, &bss_10, &bss_00);
