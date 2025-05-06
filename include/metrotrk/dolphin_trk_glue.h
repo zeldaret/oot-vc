@@ -24,17 +24,17 @@ typedef int (*DBCommReadFunc)(u8*, int);
 typedef int (*DBCommWriteFunc)(const u8*, int);
 
 typedef struct DBCommTable {
-    DBCommInitFunc initialize_func;
-    DBCommFunc initinterrupts_func;
-    DBCommFunc shutdown_func;
-    DBCommFunc peek_func;
-    DBCommReadFunc read_func;
-    DBCommWriteFunc write_func;
-    DBCommFunc open_func;
-    DBCommFunc close_func;
-    DBCommFunc pre_continue_func;
-    DBCommFunc post_stop_func;
-} DBCommTable;
+    /* 0x00 */ DBCommInitFunc initialize_func;
+    /* 0x04 */ DBCommFunc initinterrupts_func;
+    /* 0x08 */ DBCommFunc shutdown_func;
+    /* 0x0C */ DBCommFunc peek_func;
+    /* 0x10 */ DBCommReadFunc read_func;
+    /* 0x14 */ DBCommWriteFunc write_func;
+    /* 0x18 */ DBCommFunc open_func;
+    /* 0x1C */ DBCommFunc close_func;
+    /* 0x20 */ DBCommFunc pre_continue_func;
+    /* 0x24 */ DBCommFunc post_stop_func;
+} DBCommTable; // size = 0x28
 
 int InitMetroTRKCommTable(int);
 void TRKUARTInterruptHandler();

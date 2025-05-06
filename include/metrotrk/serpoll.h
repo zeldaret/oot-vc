@@ -1,5 +1,5 @@
-#ifndef _TRK_SERPOLL_H
-#define _TRK_SERPOLL_H
+#ifndef _METROTRK_SERPOLL_H
+#define _METROTRK_SERPOLL_H
 
 #include "metrotrk/msgbuf.h"
 #include "metrotrk/trk.h"
@@ -20,11 +20,11 @@ typedef enum ReceiverState {
 
 typedef struct FramingState {
     /* 0x00 */ MessageBufferID fBufferID;
-    /* 0x00 */ MessageBuffer* fBuffer;
-    /* 0x00 */ ReceiverState fReceiveState;
-    /* 0x00 */ int fEscape;
-    /* 0x00 */ FCSType fFCS;
-} FramingState;
+    /* 0x04 */ MessageBuffer* fBuffer;
+    /* 0x08 */ ReceiverState fReceiveState;
+    /* 0x0C */ int fEscape;
+    /* 0x10 */ FCSType fFCS;
+} FramingState; // size = 0x11
 
 void TRKGetInput(void);
 void TRKProcessInput(int);

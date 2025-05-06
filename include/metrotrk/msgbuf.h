@@ -25,7 +25,7 @@ typedef struct MessageBuffer {
 
 typedef struct TRKMsgBufs {
     /* 0x00 */ MessageBuffer buffers[NUM_BUFFERS];
-} TRKMsgBufs; // size =
+} TRKMsgBufs; // size = 0x19A4
 
 DSError TRK_InitializeMessageBuffers(void);
 DSError TRK_GetFreeBuffer(int*, MessageBuffer**);

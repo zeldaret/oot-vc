@@ -4,6 +4,10 @@
 #include "metrotrk/trk.h"
 #include "revolution/types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  *    Default register block (all registers typically requested by debugger)
  */
@@ -14,13 +18,13 @@ typedef u64 FloatType;
 typedef FloatType FPType; /* TRK core calls it FPType */
 
 typedef struct Default_PPC {
-    DefaultType GPR[32];
-    DefaultType PC;
-    DefaultType LR;
-    DefaultType CR;
-    DefaultType CTR;
-    DefaultType XER;
-} Default_PPC;
+    /* 0x00 */ DefaultType GPR[32];
+    /* 0x80 */ DefaultType PC;
+    /* 0x84 */ DefaultType LR;
+    /* 0x88 */ DefaultType CR;
+    /* 0x8C */ DefaultType CTR;
+    /* 0x90 */ DefaultType XER;
+} Default_PPC; // size = 0x94
 
 /*
 ** Register indices
@@ -38,10 +42,10 @@ typedef struct Default_PPC {
 #define TRK_DEFAULT_SIZE (sizeof(DefaultType))
 
 typedef struct Float_PPC {
-    FloatType FPR[32];
-    FloatType FPSCR;
-    FloatType FPECR;
-} Float_PPC;
+    /* 0x000 */ FloatType FPR[32];
+    /* 0x100 */ FloatType FPSCR;
+    /* 0x108 */ FloatType FPECR;
+} Float_PPC; // size = 0x110
 
 /*
 ** Register indices
@@ -64,10 +68,10 @@ typedef u32 InstructionType;
 typedef u16 ExceptionCauseType;
 
 typedef struct StopInfo_PPC {
-    PCType PC;
-    InstructionType PCInstruction;
-    ExceptionCauseType exceptionID;
-} StopInfo_PPC;
+    /* 0x00 */ PCType PC;
+    /* 0x04 */ InstructionType PCInstruction;
+    /* 0x08 */ ExceptionCauseType exceptionID;
+} StopInfo_PPC; // size = 0x0A
 
 //
 // Info stored in NotifyException message.
@@ -225,5 +229,9 @@ typedef InstructionType BreakpointRestore;
 #define MSR_IR 0x0020 /* IR bit of MSR (bit 26) */
 #define MSR_FP 0x2000 /* FP bit of MSR (bit 18) */
 #define MSR_VEC 0x02000000 /* VEC bit of MSR (bit 6) */ /* AltiVec support */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

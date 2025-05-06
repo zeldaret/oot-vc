@@ -17,7 +17,6 @@ static u32 g_CurrentSequence;
 
 bool GetTRKConnected() { return IsTRKConnected; }
 
-// unused
 void SetTRKConnected(bool value) { IsTRKConnected = value; }
 
 static DSError TRKSendACK(MessageBuffer* b) { return TRK_MessageSend(b); }

@@ -1,8 +1,12 @@
-#ifndef TRK_CC_UDP_H
-#define TRK_CC_UDP_H
+#ifndef _METROTRK_CC_UDP_H
+#define _METROTRK_CC_UDP_H
 
 #include "revolution/os/OSInterrupt.h"
 #include "revolution/types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int udp_cc_initialize(void* flagOut, OSInterruptHandler handler);
 int udp_cc_shutdown();
@@ -14,5 +18,9 @@ int udp_cc_pre_continue();
 int udp_cc_post_stop();
 int udp_cc_peek();
 int udp_cc_initinterrupts();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

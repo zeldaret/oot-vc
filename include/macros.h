@@ -35,38 +35,6 @@ extern "C" {
 #define NO_INLINE
 #endif
 
-#define OLD_NO_INLINE() \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0;            \
-    (void)0
-
 #define __CONCAT(x, y) x##y
 #define CONCAT(x, y) __CONCAT(x, y)
 
@@ -102,7 +70,6 @@ inline void padStack(void) { int pad = 0; }
 #define INIT DECL_SECTION(".init")
 #define CTORS DECL_SECTION(".ctors")
 #define DTORS DECL_SECTION(".dtors")
-#define RODATA DECL_SECTION(".rodata")
 
 #ifdef __cplusplus
 }

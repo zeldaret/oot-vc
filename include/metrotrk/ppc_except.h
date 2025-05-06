@@ -1,6 +1,10 @@
 #ifndef _METROTRK_PPC_EXCEPT_H
 #define _METROTRK_PPC_EXCEPT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define PPC_SYSTEMRESET 0x0100
 #define PPC_MACHINECHECK 0x0200
 #define PPC_DATAACCESSERROR 0x0300
@@ -46,5 +50,9 @@
 #define PPC_INSTBREAKPOINT 0x1D00 /* PPC 821, 860, and 505 */
 #define PPC_PERIPHERALBREAKPOINT 0x1E00 /* PPC 821, 860, and 505 */
 #define PPC_NMDEVELOPMENTPORT 0x1F00 /* PPC 821, 860, and 505 */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

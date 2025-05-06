@@ -3,7 +3,7 @@
 #include "revolution/os.h"
 
 // Custom structure used as temporary buffer for message data transmission
-typedef struct {
+typedef struct msgbuf_s {
     u32 msg_length;
     u8 command[4];
     u8 handle[4];

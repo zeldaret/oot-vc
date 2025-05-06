@@ -1,8 +1,12 @@
-#ifndef TRK_CC_GDEV_H
-#define TRK_CC_GDEV_H
+#ifndef _METROTRK_CC_GDEV_H
+#define _METROTRK_CC_GDEV_H
 
 #include "revolution/ndevexi2ad/DebuggerDriver.h"
 #include "revolution/types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //! TODO: figure out what these values represent
 typedef enum UnkGdevEnum {
@@ -23,5 +27,9 @@ int gdev_cc_pre_continue();
 int gdev_cc_post_stop();
 int gdev_cc_peek();
 int gdev_cc_initinterrupts();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

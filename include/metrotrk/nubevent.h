@@ -24,7 +24,7 @@ typedef struct NubEvent {
     /* 0x00 */ NubEventType fType;
     /* 0x04 */ NubEventID fID;
     /* 0x08 */ MessageBufferID fMessageBufferID;
-} NubEvent; // size = 0xC
+} NubEvent; // size = 0x0C
 
 DSError TRKInitializeEventQueue(void);
 bool TRKGetNextEvent(NubEvent*);

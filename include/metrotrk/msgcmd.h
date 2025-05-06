@@ -3,6 +3,10 @@
 
 #include "revolution/types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define DSFetch_s8(_p_) (*((s8*)_p_))
 #define DSFetch_s16(_p_) (*((s16*)_p_))
 #define DSFetch_s32(_p_) (*((s32*)_p_))
@@ -289,5 +293,9 @@ typedef enum DSReplyError {
     kDSReplyInvalidThreadId = 0x22,
     kDSDebugSecurityError = 0x23
 } DSReplyError;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
