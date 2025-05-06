@@ -20,10 +20,6 @@ extract:
 force_active:
 - lbl_801E3380
 - DemoAllocator2
-- TRKAccessFile
-- TRKOpenFile
-- TRKCloseFile
-- TRKPositionFile
 
 block_relocations:
 - source: 0x8002C248
