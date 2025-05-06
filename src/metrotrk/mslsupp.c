@@ -24,18 +24,6 @@ DSIOResult __write_file(__file_handle handle, u8* buffer, size_t* count, __ref_c
     return __access_file(handle, buffer, count, ref_con, kDSWriteFile);
 }
 
-// unused
-DSIOResult __open_file() {}
-
-// unused
-DSIOResult __close_file() {}
-
-// unused
-int __position_file() {}
-
-// unused
-int convertFileMode() {}
-
 DSIOResult __access_file(__file_handle handle, u8* buffer, size_t* count, __ref_con ref_con, MessageCommandID id) {
     size_t countTemp;
     u32 r0;
@@ -57,6 +45,3 @@ DSIOResult __access_file(__file_handle handle, u8* buffer, size_t* count, __ref_
             return kDSIOError;
     }
 }
-
-// unused
-int __open_temp_file() {}

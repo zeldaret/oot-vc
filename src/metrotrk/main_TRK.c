@@ -4,14 +4,14 @@
 static int TRK_mainError;
 
 int TRK_main(void) {
-    TRK_mainError = TRK_InitializeNub();
+    TRK_mainError = TRKInitializeNub();
 
     if (!TRK_mainError) {
-        TRK_NubWelcome();
-        TRK_NubMainLoop();
+        TRKNubWelcome();
+        TRKNubMainLoop();
     }
 
-    TRK_mainError = TRK_TerminateNub();
+    TRK_mainError = TRKTerminateNub();
 
     return TRK_mainError;
 }

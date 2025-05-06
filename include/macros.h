@@ -102,6 +102,7 @@ inline void padStack(void) { int pad = 0; }
 #define INIT DECL_SECTION(".init")
 #define CTORS DECL_SECTION(".ctors")
 #define DTORS DECL_SECTION(".dtors")
+#define RODATA DECL_SECTION(".rodata")
 
 #ifdef __cplusplus
 }

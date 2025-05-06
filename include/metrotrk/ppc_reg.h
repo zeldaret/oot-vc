@@ -174,6 +174,9 @@ typedef InstructionType BreakpointRestore;
 #define SPR_UPMC4 942
 #define SPR_USDA 943
 
+#define SPR_MMCR2 944
+#define SPR_BAMR 951
+
 #define SPR_MMCR0 952
 #define SPR_PMC1 953
 #define SPR_PMC2 954
@@ -183,12 +186,23 @@ typedef InstructionType BreakpointRestore;
 #define SPR_PMC4 958
 #define SPR_SDA 959
 
+#define SPR_DMISS 976
+#define SPR_DCMP 977
+#define SPR_HASH1 978
+#define SPR_HASH2 979
+#define SPR_IMISS 980
+#define SPR_ICMP 981
+#define SPR_RPA 982
+
 #define SPR_HID0 1008
 #define SPR_HID1 1009
 #define SPR_IABR 1010
 #define SPR_HID4 1011
 #define SPR_TDCL 1012
 #define SPR_DABR 1013
+
+#define SPR_MSSCR0 1014
+#define SPR_MSSCR1 1015
 
 #define SPR_L2CR 1017
 #define SPR_TDCH 1018
@@ -199,6 +213,8 @@ typedef InstructionType BreakpointRestore;
 #define SPR_THRM3 1022
 
 #define SPR_FPECR 1022
+
+#define SPR_PIR 1023
 
 // MSR Register bits
 #define COND_EQ 2

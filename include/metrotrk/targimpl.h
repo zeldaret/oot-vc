@@ -71,7 +71,7 @@ DSError TRKTargetStop(void);
 
 void* TRKTargetTranslate(u32*);
 
-void TRK_InterruptHandler(u16);
+void TRKInterruptHandler(u16);
 
 #if TRK_TRANSPORT_INT_DRIVEN
 void TRKTargetSetInputPendingPtr(void*);
