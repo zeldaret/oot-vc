@@ -55,6 +55,8 @@ void SetTableTevStages(Frame* pFrame, CombineModeTev* ctP) {
     GXTevColorArg* cArgP;
     GXTevAlphaArg* aArgP;
 
+    (void)strings;
+
     if (gpSystem->eTypeROM == NFXJ || gpSystem->eTypeROM == NFXE || gpSystem->eTypeROM == NFXP) {
         if (pFrame->aMode[FMT_OTHER0] == 0x0C192078 && pFrame->aMode[FMT_OTHER1] == 0x00182C00 &&
             pFrame->aMode[FMT_COMBINE_COLOR1] == 0x050A0507 && pFrame->aMode[FMT_COMBINE_COLOR2] == 0x03000302) {

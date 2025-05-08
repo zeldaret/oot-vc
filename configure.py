@@ -292,7 +292,7 @@ config.libs = [
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/_frameGCNcc.c"),
             Object(NotLinked, "emulator/_buildtev.c"),
             Object(NotLinked, "emulator/frame.c", extra_cflags=["-ipa file"]),
-            Object(NotLinked, "emulator/library.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/library.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/codeRVL.c"),
             Object(NotLinked, "emulator/helpRVL.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/soundRVL.c"),
