@@ -42,7 +42,7 @@ typedef struct Sound {
     /* 0x098 */ s32 nVolumeCurve[257];
     /* 0x49C */ s32 iBufferPlay;
     /* 0x4A0 */ s32 iBufferMake;
-    /* 0x4A4 */ SoundPlayMode eMode;
+    /* 0x4A4 */ volatile SoundPlayMode eMode;
     /* 0x4A8 */ void* pBufferZero;
     /* 0x4AC */ void* pBufferHold;
     /* 0x4B0 */ void* pBufferRampUp;

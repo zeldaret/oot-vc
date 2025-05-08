@@ -671,7 +671,7 @@ bool errorDisplayShow(ErrorIndex iString) {
         errorDisplayDrawSetup();
         errorDisplayPrint(&string);
         fn_8005F7E4(SYSTEM_HELP(gpSystem));
-        fn_80007020();
+        simulatorDEMODoneRender();
         nResult = fn_80063688(&string, var_r31 & (var_r31 ^ var_r30));
     } while (nResult == 0);
 

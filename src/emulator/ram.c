@@ -300,7 +300,7 @@ bool ramSetSize(Ram* pRAM, s32 nSize) {
         return false;
     }
 
-    nSizeRAM = (nSize + 0x3FF) & 0xFFFFFC00;
+    nSizeRAM = (nSize + 0x3FF) & ~0x3FF;
 
     if (!xlHeapTake((void**)&pRAM->pBuffer, nSizeRAM | 0x30000000)) {
         return false;

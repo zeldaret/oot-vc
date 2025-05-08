@@ -2695,7 +2695,7 @@ bool osEepromLongRead(Cpu* pCPU) {
         }
 
         length -= 8;
-        address += 1;
+        address++;
         buffer += 8;
     }
 
@@ -2724,7 +2724,7 @@ bool osEepromLongWrite(Cpu* pCPU) {
         }
 
         length -= 8;
-        address += 1;
+        address++;
         buffer += 8;
     }
 
@@ -2786,7 +2786,7 @@ bool starfoxCopy(Cpu* pCPU) {
         if (A2 == 0) {
             A2 = 0x20;
             T0 = *A0;
-            A0 += 1;
+            A0++;
         }
 
         if (T0 < 0) {
@@ -2798,8 +2798,8 @@ bool starfoxCopy(Cpu* pCPU) {
         if (T2) {
             cpuGetAddressBuffer(pCPU, (void**)&source, T9);
             cpuGetAddressBuffer(pCPU, (void**)&target, A1);
-            T9 += 1;
-            A1 += 1;
+            T9++;
+            A1++;
             *target = *source;
         } else {
             cpuGetAddressBuffer(pCPU, (void**)&pData16, A3);
@@ -2810,15 +2810,15 @@ bool starfoxCopy(Cpu* pCPU) {
             do {
                 cpuGetAddressBuffer(pCPU, (void**)&source, T1 - 1);
                 cpuGetAddressBuffer(pCPU, (void**)&target, A1);
-                T3 -= 1;
-                T1 += 1;
-                A1 += 1;
+                T3--;
+                T1++;
+                A1++;
                 *target = *source;
             } while (T3 != 0);
         }
 
         T0 *= 2;
-        A2 -= 1;
+        A2--;
     } while (A1 != T8);
 
     return true;
@@ -3449,7 +3449,8 @@ static bool libraryFindFunctions(Library* pLibrary) {
     for (iFunction = 0;
          iFunction < ARRAY_COUNTU(gaFunction) && gaFunction[iFunction].pfLibrary != (LibraryFuncImpl)__osPopThread;
          iFunction++) {}
-    // bug: Tests if nAddressEnqueueThread + 8 != -1 instead of nAddressEnqueueThread != -1
+
+    //! @bug: Tests if nAddressEnqueueThread + 8 != -1 instead of nAddressEnqueueThread != -1
     if (iFunction < ARRAY_COUNTU(gaFunction) && (nAddress = nAddressEnqueueThread + 8) != -1) {
         do {
             CPU_DEVICE_GET32(apDevice, aiDevice, nAddress, &nOpcode);
@@ -3523,7 +3524,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                 if (cpuGetAddressBuffer(SYSTEM_CPU(gpSystem), (void**)&pnCodeTemp, nAddress)) {
                     if (pnCodeTemp[10] != 0xAFA00030) {
                         bDone = true;
-                        iFunction += 1;
+                        iFunction++;
                     }
                 }
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)osEepromLongWrite &&
@@ -3532,7 +3533,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                 if (cpuGetAddressBuffer(SYSTEM_CPU(gpSystem), (void**)&pnCodeTemp, nAddress)) {
                     if (pnCodeTemp[10] == 0xAFA00030) {
                         bDone = true;
-                        iFunction -= 1;
+                        iFunction--;
                     }
                 }
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)__osSpSetStatus) {
@@ -3546,12 +3547,12 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)osInvalICache) {
                 if (MIPS_IMM_U16(pnCode[2]) == 0x2000) {
                     bDone = true;
-                    iFunction += 1;
+                    iFunction++;
                 }
             } else if (gaFunction[iFunction].pfLibrary == NULL && nChecksum == 0x376979EF) {
                 if (MIPS_IMM_U16(pnCode[2]) == 0x4000) {
                     bDone = true;
-                    iFunction -= 1;
+                    iFunction--;
                 }
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)__osDisableInt) {
                 if (pnCode[2] == 0 && pnCode[3] == 0) {
