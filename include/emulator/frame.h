@@ -273,7 +273,7 @@ typedef struct Frame {
     /* 0x00040 */ s32 bShrinking; // bitfield (not a bool)
     /* 0x00044 */ bool bSnapShot;
     /* 0x00048 */ u32 bUsingLens; // unsigned (not a bool)
-    /* 0x0004C */ u32 cBlurAlpha;
+    /* 0x0004C */ u32 unk4C;
     /* 0x00050 */ bool bBlurredThisFrame;
     /* 0x00054 */ s32 nFrameCIMGCalls;
     /* 0x00058 */ bool bModifyZBuffer;
@@ -284,7 +284,8 @@ typedef struct Frame {
     /* 0x0006C */ bool bFrameOn;
     /* 0x00070 */ bool bBackBufferDrawn;
     /* 0x00074 */ bool bGrabbedFrame;
-    /* 0x00078 */ s32 pad1[7];
+    /* 0x00078 */ u8 cBlurAlpha;
+    /* 0x0007C */ s32 pad1[6];
     /* 0x00094 */ u64* pnGBI;
     /* 0x00098 */ u32 nFlag;
     /* 0x0009C */ f32 rScaleX;

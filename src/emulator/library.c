@@ -3574,14 +3574,14 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                 if (gpSystem->eTypeROM == NSMJ || gpSystem->eTypeROM == NSME || gpSystem->eTypeROM == NSMP) {
                     bDone = true;
                     bFlag = false;
-                    pFrame->cBlurAlpha++;
+                    pFrame->unk4C++;
                     treeCleanUpCheck(SYSTEM_CPU(gpSystem), NULL);
                 } else if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
                     bDone = true;
                     bFlag = false;
 
-                    if (pFrame->cBlurAlpha == 0) {
-                        pFrame->cBlurAlpha = 1;
+                    if (pFrame->unk4C == 0) {
+                        pFrame->unk4C = 1;
                         pFrame->bSnapShot = 0;
                         pFrame->nFrameCounter = 0;
                         pFrame->bCameFromBomberNotes = 0;
@@ -3599,7 +3599,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                         pFrame->bInBomberNotes = 0x3C;
                     } else if (pFrame->bCameFromBomberNotes == 2 && pFrame->bInBomberNotes != 0 &&
                                nChecksum == 0x110CA1BB) {
-                        pFrame->cBlurAlpha++;
+                        pFrame->unk4C++;
                         treeCleanUpCheck(SYSTEM_CPU(gpSystem), NULL);
                     }
 

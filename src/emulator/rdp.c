@@ -300,9 +300,9 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                     primitive.nY1--;
                 }
 
-                if (pFrame->cBlurAlpha > 1) {
-                    pFrame->cBlurAlpha++;
-                    if (pFrame->cBlurAlpha > 1900 && pFrame->cBlurAlpha < 2200) {
+                if (pFrame->unk4C > 1) {
+                    pFrame->unk4C++;
+                    if (pFrame->unk4C > 1900 && pFrame->unk4C < 2200) {
                         if (primitive.nX0 == 0 && primitive.nY0 == 0 && primitive.nX1 == 319 && primitive.nY1 == 7) {
                             primitive.nY1 = 0x1E;
                         }
@@ -327,9 +327,9 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                     primitive.nY0 = 0;
                     primitive.nY1 = 240;
                 }
-                if (pFrame->cBlurAlpha > 1) {
-                    pFrame->cBlurAlpha++;
-                    if (pFrame->cBlurAlpha > 1900 && pFrame->cBlurAlpha < 2200) {
+                if (pFrame->unk4C > 1) {
+                    pFrame->unk4C++;
+                    if (pFrame->unk4C > 1900 && pFrame->unk4C < 2200) {
                         if (primitive.nX0 == 1 && primitive.nY0 == 31 && primitive.nX1 == 318 && primitive.nY1 == 208) {
                             primitive.nX1 = 317;
                             primitive.nY1 = 207;
