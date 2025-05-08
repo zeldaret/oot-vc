@@ -55,6 +55,7 @@ void SetTableTevStages(Frame* pFrame, CombineModeTev* ctP) {
     GXTevColorArg* cArgP;
     GXTevAlphaArg* aArgP;
 
+    // fixes .data issues
     (void)strings;
 
     if (gpSystem->eTypeROM == NFXJ || gpSystem->eTypeROM == NFXE || gpSystem->eTypeROM == NFXP) {
