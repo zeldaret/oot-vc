@@ -264,7 +264,8 @@ bool xlHeapCompact(s32 iHeap) {
 
     pBlockPrevious = NULL;
     pBlock = gpHeapBlockFirst[iHeap];
-    while (nBlock = *pBlock, (nBlockSize = BLOCK_SIZE(*pBlock)) != 0) {
+    while ((nBlockSize = BLOCK_SIZE(*pBlock)) != 0) {
+        nBlock = *pBlock;
         pBlockNext = pBlock + 1 + nBlockSize;
         nBlockNext = *pBlockNext;
 
