@@ -467,7 +467,6 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
         }
         case 0xED: { // G_SETSCISSOR
             Rectangle rectangle;
-            s32 pad;
 
             rectangle.nX0 = (nCommandHi >> 12) & 0xFFF; // sp48
             rectangle.nY0 = nCommandHi & 0xFFF; // sp4C

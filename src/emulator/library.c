@@ -761,7 +761,6 @@ static bool osInvalICache(Cpu* pCPU) {
 static bool __osDisableInt(Cpu* pCPU) {
     u32 nStatus;
     u64 nData64;
-    s32 pad[2];
 
     if (!cpuGetRegisterCP0(pCPU, 12, (s64*)&nData64)) {
         return false;
@@ -953,7 +952,6 @@ void guOrtho(Cpu* pCPU) {
     f32 n;
     f32 f;
     f32 scale;
-    s32 pad[2];
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
     cpuGetAddressBuffer(pCPU, (void**)&sp, pCPU->aGPR[29].u32);
@@ -1109,7 +1107,6 @@ void guPerspective(Cpu* pCPU) {
     u32* sp;
     s32* ai;
     s32* af;
-    s32 pad[2];
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
     cpuGetAddressBuffer(pCPU, (void**)&sp, pCPU->aGPR[29].u32);
@@ -1238,7 +1235,6 @@ void guScale(Cpu* pCPU) {
     CpuFpr data;
     s32* ai;
     s32* af;
-    s32 pad[2];
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
 
@@ -1316,7 +1312,6 @@ void guTranslate(Cpu* pCPU) {
     f32 mf[4][4];
     s32* ai;
     s32* af;
-    s32 pad[2];
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
 
@@ -1475,7 +1470,6 @@ void guRotate(Cpu* pCPU) {
     f32 magnitude;
     s32* ai;
     s32* af;
-    s32 pad[2];
     static f32 dtor = (f32)M_PI / 180;
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
@@ -1698,7 +1692,6 @@ void guLookAt(Cpu* pCPU) {
     f32 xUp;
     f32 yUp;
     f32 zUp;
-    s32 pad[2];
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
     cpuGetAddressBuffer(pCPU, (void**)&sp, pCPU->aGPR[29].u32);
@@ -2088,7 +2081,6 @@ void guLookAtHilite(Cpu* pCPU) {
     f32 zl2;
     s32 twidth;
     s32 theight;
-    s32 pad[2];
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
     cpuGetAddressBuffer(pCPU, (void**)&l, pCPU->aGPR[5].u32);
@@ -2445,7 +2437,6 @@ void guLookAtReflect(Cpu* pCPU) {
     f32 xRight;
     f32 yRight;
     f32 zRight;
-    s32 pad[2];
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
     cpuGetAddressBuffer(pCPU, (void**)&l, pCPU->aGPR[5].u32);
@@ -2647,7 +2638,6 @@ bool __osEepStatus(Cpu* pCPU) {
 }
 
 bool osEepromRead(Cpu* pCPU) {
-    s32 pad[2];
     s32 address;
     u8* buffer;
 
@@ -2661,7 +2651,6 @@ bool osEepromRead(Cpu* pCPU) {
 }
 
 bool osEepromWrite(Cpu* pCPU) {
-    s32 pad[2];
     s32 address;
     u8* buffer;
 
