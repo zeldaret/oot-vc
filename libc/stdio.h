@@ -64,6 +64,7 @@ typedef struct {
     unsigned char error;
 } __file_state;
 
+typedef void* __ref_con;
 typedef void (*__idle_proc)(void);
 typedef int (*__pos_proc)(__file_handle file, fpos_t* position, int mode, __idle_proc idle_proc);
 typedef int (*__io_proc)(__file_handle file, unsigned char* buff, size_t* count, __idle_proc idle_proc);

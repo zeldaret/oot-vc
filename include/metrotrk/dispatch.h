@@ -10,7 +10,7 @@ extern "C" {
 #endif
 
 DSError TRKInitializeDispatcher(void);
-DSError TRKDispatchMessage(TRKMessageBuffer* buf);
+DSError TRKDispatchMessage(MessageBuffer* buf);
 
 #ifdef __cplusplus
 }
