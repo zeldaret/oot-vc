@@ -386,7 +386,7 @@ bool xlHeapTake(void** ppHeap, s32 nByteCount) {
             }
 
             *pBlock = MAKE_BLOCK(nSize, FLAG_TAKEN);
-            gnHeapTakeCount[iHeap] += 1;
+            gnHeapTakeCount[iHeap]++;
 
             pBlock++;
             while (((u32)pBlock & nSizeExtra) != 0) {

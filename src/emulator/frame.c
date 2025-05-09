@@ -421,7 +421,7 @@ static bool packTakeBlocks(s32* piPack, u32* anPack, s32 nPackCount, s32 nBlockC
                     return true;
                 }
                 nMask <<= 1;
-                nOffset -= 1;
+                nOffset--;
             } while (nOffset != 0);
         }
     }
@@ -4027,7 +4027,7 @@ bool frameInvalidateCache(Frame* pFrame, s32 nOffset0, s32 nOffset1) {
             pTexture = pTextureNext;
         }
         pFrame->apTextureCached[iTexture0] = NULL;
-        iTexture0 += 1;
+        iTexture0++;
     }
 
     return true;

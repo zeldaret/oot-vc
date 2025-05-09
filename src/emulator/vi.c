@@ -16,7 +16,6 @@ bool viPut32(VI* pVI, u32 nAddress, s32* pData) {
     Frame* pFrame;
     FrameBuffer* pBuffer;
     s32 nAddressData;
-    s32 temp;
 
     switch (nAddress & 0x3F) {
         case 0x0:

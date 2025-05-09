@@ -61,7 +61,7 @@ const s32 D_801360D8[2] = {
     0x00000000,
 };
 
-// special ``memset`` function?
+// special `memset` function?
 inline void BuildTevMemset(void* ptr, int value, size_t num) {
     u8* p = ptr;
 

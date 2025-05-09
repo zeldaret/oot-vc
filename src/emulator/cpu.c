@@ -742,7 +742,7 @@ static inline bool cpuMakeCachedAddress(Cpu* pCPU, s32 nAddressN64, s32 nAddress
 
     aAddressCache = pCPU->aAddressCache;
     if ((iAddress = pCPU->nCountAddress) == ARRAY_COUNT(pCPU->aAddressCache)) {
-        iAddress -= 1;
+        iAddress--;
     } else {
         pCPU->nCountAddress++;
     }
@@ -6873,7 +6873,7 @@ static bool treeKillNodes(Cpu* pCPU, CpuFunction* tree) {
                 PAD_STACK();
                 PAD_STACK();
 
-                count += 1;
+                count++;
                 if (current == tree) {
                     return count;
                 }
@@ -6897,7 +6897,7 @@ static bool treeKillNodes(Cpu* pCPU, CpuFunction* tree) {
             PAD_STACK();
             PAD_STACK();
 
-            count += 1;
+            count++;
         } while (current != NULL);
     } while (current != NULL);
 
@@ -7847,7 +7847,7 @@ static bool treePrintNode(Cpu* pCPU, CpuFunction* tree, s32 print_flag, s32* lef
 
             while (current != current->prev->left) {
                 current = current->prev;
-                level -= 1;
+                level--;
                 if (current == tree) {
                     return true;
                 }

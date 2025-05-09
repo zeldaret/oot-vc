@@ -14,7 +14,7 @@ _XL_OBJECTTYPE gClassPIF = {
     (EventFunc)pifEvent,
 };
 
-// this function is a copy-paste of ``__osContDataCrc``
+// this function is a copy-paste of `__osContDataCrc`
 static u8 pifContDataCrc(u8* data) {
     u32 i;
     u32 j;
