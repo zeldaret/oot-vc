@@ -17,6 +17,7 @@ extern "C" {
 // N64 frame buffer dimensions
 #define N64_FRAME_WIDTH 320
 #define N64_FRAME_HEIGHT 240
+#define N64_FRAME_HEIGHT_PAL (240 + 47)
 
 // GC is rendered at double the resolution
 #define GC_FRAME_WIDTH (N64_FRAME_WIDTH * 2)

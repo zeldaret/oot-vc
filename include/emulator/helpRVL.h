@@ -10,9 +10,9 @@
 extern "C" {
 #endif
 
-typedef bool (*HelpMenuCallback)(void*);
+typedef bool (*HelpMenuCallback)(void);
 
-typedef struct struct_801C7D28_10 {
+typedef struct struct_801C7D38 {
     /* 0x00 */ void* pBuffer1;
     /* 0x04 */ void* pBuffer2;
     /* 0x08 */ void* pBuffer3;
@@ -28,7 +28,7 @@ typedef struct struct_801C7D28_10 {
     /* 0x30 */ f32 unk40;
     /* 0x34 */ f32 unk44;
     /* 0x38 */ s32 unk48;
-} struct_801C7D28_10; // size = 0x3C
+} struct_801C7D38; // size = 0x3C
 
 typedef struct struct_801C7D28 {
     /* 0x00 */ TPLPalette* pTPLPalette;

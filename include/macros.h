@@ -19,6 +19,8 @@ extern "C" {
 
 #define OFFSETOF(p, field) ((u8*)&(p)->field - (u8*)(p))
 
+#define MB(x) (x * 1024 * 1024)
+
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) < (b) ? (b) : (a))
 #define SQ(x) ((x) * (x))

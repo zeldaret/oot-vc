@@ -1,4 +1,5 @@
 #include "emulator/helpRVL.h"
+#include "emulator/controller.h"
 #include "emulator/cpu.h"
 #include "emulator/frame.h"
 #include "emulator/system.h"
@@ -9,7 +10,11 @@
 #include "emulator/xlHeap.h"
 #include "macros.h"
 #include "math.h"
+#include "revolution/ai.h"
+#include "revolution/ax.h"
+#include "revolution/demo.h"
 #include "revolution/gx.h"
+#include "revolution/hbm.h"
 #include "revolution/mem.h"
 #include "revolution/mtx.h"
 #include "revolution/nand.h"
@@ -22,90 +27,48 @@ extern void fn_8005F1A0(void);
 extern void fn_8005F154(void);
 extern char* fn_800887C8(void*, char*, u8);
 extern s32 fn_8008882C(void**, u32, MEMAllocator*, MEMAllocator*);
+extern void* fn_80083140(void);
 extern void fn_800888DC(void**);
+extern HBMControllerData lbl_801CA670;
 
-#define MB(x) (x * 1024 * 1024)
+static MEMAllocator sMemAllocator1 = {0};
+static MEMAllocator sMemAllocator2 = {0};
+static char sWebsitePath[40] = {0};
+static struct_801C7D28 lbl_801C7D28 = {0};
+static struct_801C7D38 lbl_801C7D38 = {0};
+static CNTHandleNAND sHandleNAND;
+static GXTexObj sTexObj;
 
-typedef struct Rect {
-    /* 0x0 */ f32 x0;
-    /* 0x4 */ f32 y0;
-    /* 0x8 */ f32 x1;
-    /* 0xC */ f32 y1;
-} Rect; // size = 0x10
-
-// .bss
-MEMAllocator bss_00 = {0};
-MEMAllocator bss_10 = {0}; // gCNTAllocator?
-char bss_20[0x28]; // lbl_801C7D00?
-struct_801C7D28 bss_48;
-struct_801C7D28_10 bss_58;
-CNTHandle bss_94; // gCNTHandle?
-u8 bss_bc[0x1C]; // unknown
-
-// .rodata
 const Rect lbl_8016A7C0 = {-GC_FRAME_WIDTH, -GC_FRAME_HEIGHT, GC_FRAME_WIDTH, GC_FRAME_HEIGHT};
 const Rect lbl_8016A7D0 = {-GC_FRAME_WIDTH, -GC_FRAME_HEIGHT_PAL, GC_FRAME_WIDTH, GC_FRAME_HEIGHT_PAL};
 
-// .sbss
 s32 lbl_8025D118;
 s32 lbl_8025D114;
 u8 lbl_8025D110;
-GXRenderModeObj* lbl_8025D10C;
-s32 lbl_8025D108;
+static GXRenderModeObj* sRenderMode;
+AIDMACallback lbl_8025D108;
 void* lbl_8025D100[2];
 s32 lbl_8025D0FC;
-s32 lbl_8025D0F8;
+s32* lbl_8025D0F8;
 char* lbl_8025D0F4;
-s32 lbl_8025D0F0;
-s32 lbl_8025D0EC;
-s32 lbl_8025D0E8;
-s32 lbl_8025D0E4;
-s32 lbl_8025D0E0;
+bool lbl_8025D0F0;
+bool lbl_8025D0EC;
+bool lbl_8025D0E8;
+MEMiHeapHead* lbl_8025D0E4;
+MEMiHeapHead* lbl_8025D0E0;
 s32 lbl_8025D0DC;
 s32 lbl_8025D0D8;
 s64 lbl_8025D0D0;
-s32 lbl_8025D0C8[2];
+s32 lbl_8025D0CC;
+void* lbl_8025D0C8;
 void* lbl_8025D0C4;
 s32 lbl_8025D0C0;
 char* lbl_8025D0BC;
 u8 lbl_8025D0B8;
 
-// .sdata2
-const f32 lbl_8025DEA8 = 0.0f;
-const f32 lbl_8025DEAC = 1408.0f;
-const f32 lbl_8025DEB0 = 1148.0f;
-const f32 lbl_8025DEB4 = 287.0f;
-const f32 lbl_8025DEB8 = 320.0f;
-const f32 lbl_8025DEBC = -1.0f;
-const f32 lbl_8025DEC0 = 960.0f;
-const f32 lbl_8025DEC4 = 240.0f;
-const f32 lbl_8025DEC8 = 1.0f;
-const f32 lbl_8025DECC = 1000.0f;
-const f64 lbl_8025DED0 = 4503601774854144.0;
-const f64 lbl_8025DED8 = 4503599627370496.0;
-const f32 lbl_8025DEE0 = 640.0f;
-const f32 lbl_8025DEE4 = 528.0f;
-const f32 lbl_8025DEE8 = 480.0f;
-const GXColor lbl_8025DEEC = {255, 255, 255, 0};
-const f32 lbl_8025DEF0 = 255.9f;
-const f32 lbl_8025DEF4 = 250.0f;
-const f32 lbl_8025DEF8 = 1.3684211f;
-const f32 lbl_8025DEFC = 239.0f;
-const f32 lbl_8025DF00 = 339.0f;
-const f32 lbl_8025DF04 = 1001.0f;
-const f32 lbl_8025DF08 = -243.84001f;
-const f32 lbl_8025DF0C = -320.0f;
-const f32 lbl_8025DF10 = 500.0f;
-const f32 lbl_8025DF14 = -240.0f;
-
-// .data
-char lbl_801743B0[] = "html.arc";
-char lbl_801743BC[] = "helpRVL.c";
-char lbl_801743C8[] = "/tmp/HBMSE.brsar";
-char lbl_801743DC[] = "/tmp/opera.arc";
-
-// .sdata
 GXColor lbl_8025C850[] = {255, 255, 255, 255};
+
+const GXColor lbl_8025DEEC = {255, 255, 255, 0};
 
 s32 fn_8005E2D0(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, MEMAllocator* arg3, void* arg4) {
     CNTFileInfoNAND fileInfo;
@@ -172,8 +135,8 @@ void fn_8005E45C(GXTexObj* pTexObj, GXColor color) {
     GXClearVtxDesc();
     GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
     GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_TEX_ST, GX_RGBA6, 0);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_RGB565, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_U8, 0);
     GXSetNumChans(0);
     GXSetNumTexGens(1);
     GXSetNumIndStages(0);
@@ -202,7 +165,7 @@ void fn_8005E638(GXColor color) {
     GXClearVtxDesc();
     GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
     GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
-    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_RGBA6, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_TEX_ST, GX_RGBA8, 0);
     GXSetNumChans(1);
     GXSetNumTexGens(0);
@@ -247,7 +210,7 @@ void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5
             f32 y0;
             f32 x0;
 
-            GXSetViewport(0.0f, 0.0f, 4.125f, 4.015625f, 0.0f, 1.875f);
+            GXSetViewport(0.0f, 0.0f, GC_FRAME_WIDTH, GC_FRAME_HEIGHT_PAL, 0.0f, 1.0f);
             GXSetScissor(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT_PAL);
 
             GXBegin(GX_QUADS, GX_VTXFMT0, 4);
@@ -270,7 +233,7 @@ void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5
             f32 y0;
             f32 x0;
 
-            GXSetViewport(0.0f, 0.0f, 4.125f, 4.015625f, 0.0f, 1.875f);
+            GXSetViewport(0.0f, 0.0f, GC_FRAME_WIDTH, GC_FRAME_HEIGHT, 0.0f, 1.0f);
             GXSetScissor(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
 
             GXBegin(GX_QUADS, GX_VTXFMT0, 4);
@@ -314,6 +277,10 @@ void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5
     }
 }
 
+static bool fn_8005F7E4_UnknownInline(void) {
+    return fn_8005F6F4(SYSTEM_HELP(gpSystem), "html.arc", &lbl_8025D0F8, &sMemAllocator2);
+}
+
 void fn_8005EAFC(void) {
     GXRenderModeObj sp8;
     s32 var_r31;
@@ -321,10 +288,10 @@ void fn_8005EAFC(void) {
     var_r31 = MB(20);
 
     if (lbl_8025D0BC == NULL) {
-        lbl_8025D0BC = bss_20;
+        lbl_8025D0BC = sWebsitePath;
     }
 
-    sp8 = *lbl_8025D10C;
+    sp8 = *sRenderMode;
     sp8.viWidth = 0x29E;
 
     if (fn_8007FC84()) {
@@ -384,15 +351,15 @@ void fn_8005EAFC(void) {
     }
 
     if (var_r31 <= 0) {
-        OSPanic(lbl_801743BC, 938, ".");
+        OSPanic("helpRVL.c", 938, ".");
     }
 
-    fn_800887CC(bss_20);
+    fn_800887CC(sWebsitePath);
     lbl_8025D0BC = fn_800887C8(fn_8005E800, lbl_8025D0BC, lbl_8025D0B8);
 
-    VIConfigure(lbl_8025D10C);
+    VIConfigure(sRenderMode);
     VIFlush();
-    GXSetDispCopyYScale((f32)lbl_8025D10C->xfbHeight / (f32)lbl_8025D10C->efbHeight);
+    GXSetDispCopyYScale((f32)sRenderMode->xfbHeight / (f32)sRenderMode->efbHeight);
     VIWaitForRetrace();
     VIWaitForRetrace();
 }
@@ -412,7 +379,7 @@ static inline void fn_8005EDFC_UnknownInline(GXColor color) {
     GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, 0x3C, GX_FALSE, 0x7D);
     GXSetNumTevStages(1);
     color2 = color;
-    color2.a = bss_48.unk0D;
+    color2.a = lbl_801C7D28.unk0D;
     GXSetTevColor(GX_TEVREG0, color2);
     GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
     GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
@@ -422,7 +389,7 @@ static inline void fn_8005EDFC_UnknownInline(GXColor color) {
     GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     GXSetZMode(GX_DISABLE, GX_LEQUAL, GX_DISABLE);
     GXSetCurrentMtx(3);
-    TPLGetGXTexObjFromPalette(bss_48.pTPLPalette, &texObj, 0);
+    TPLGetGXTexObjFromPalette(lbl_801C7D28.pTPLPalette, &texObj, 0);
     GXLoadTexObj(&texObj, GX_TEXMAP0);
 
     GXBegin(GX_QUADS, GX_VTXFMT5, 4);
@@ -438,28 +405,28 @@ static inline void fn_8005EDFC_UnknownInline(GXColor color) {
 }
 
 void fn_8005EDFC(void) {
-    f32 fTime = OSTicksToMilliseconds(OSGetTick() - bss_48.unk08);
+    f32 fTime = OSTicksToMilliseconds(OSGetTick() - lbl_801C7D28.unk08);
 
-    switch (bss_48.unk0C) {
+    switch (lbl_801C7D28.unk0C) {
         case 0:
-            bss_48.unk0D = 255.9f * (fTime / 250.0f);
+            lbl_801C7D28.unk0D = 255.9f * (fTime / 250.0f);
             if (fTime >= 250.0f) {
-                bss_48.unk08 = OSGetTick();
-                bss_48.unk0C = 1;
-                bss_48.unk0D = -1;
+                lbl_801C7D28.unk08 = OSGetTick();
+                lbl_801C7D28.unk0C = 1;
+                lbl_801C7D28.unk0D = -1;
             }
             break;
         case 1:
             if (fTime >= 1000.0f) {
-                bss_48.unk08 = OSGetTick();
-                bss_48.unk0C = 2;
+                lbl_801C7D28.unk08 = OSGetTick();
+                lbl_801C7D28.unk0C = 2;
             }
             break;
         case 2:
-            bss_48.unk0D = 255.9f * ((250.0f - fTime) / 250.0f);
+            lbl_801C7D28.unk0D = 255.9f * ((250.0f - fTime) / 250.0f);
             if (fTime >= 250.0f) {
-                bss_48.unk0D = 0;
-                bss_48.unk04 = 0;
+                lbl_801C7D28.unk0D = 0;
+                lbl_801C7D28.unk04 = 0;
             }
             break;
     }
@@ -468,18 +435,18 @@ void fn_8005EDFC(void) {
 }
 
 void fn_8005F154(void) {
-    lbl_8025D0F0 = 0;
-    lbl_8025D0E8 = 1;
-    if ((s32)lbl_8025D118 == 7) {
+    lbl_8025D0F0 = false;
+    lbl_8025D0E8 = true;
+    if (lbl_8025D118 == 7) {
         fn_800887D4(0x1E);
         lbl_8025D110 = 0;
     }
 }
 
 void fn_8005F1A0(void) {
-    lbl_8025D0F0 = 0;
-    lbl_8025D0EC = 1;
-    if ((s32)lbl_8025D118 == 7) {
+    lbl_8025D0F0 = false;
+    lbl_8025D0EC = true;
+    if (lbl_8025D118 == 7) {
         fn_800887D4(0x1E);
         lbl_8025D110 = 0;
     }
@@ -487,90 +454,78 @@ void fn_8005F1A0(void) {
 
 bool fn_8005F1EC(void) { return 0; }
 
-bool fn_8005F6F4(HelpMenu* pHelpMenu, char* szFileName, s32** arg2, MEMAllocator* arg3);
+bool fn_8005F6F4(HelpMenu* pHelpMenu, char* szFileName, s32** arg2, MEMAllocator* arg3) NO_INLINE;
+
+static void fn_8005F1F4_UnknownInline1(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
+    s32 nLength = fn_8005E2D0(&sHandleNAND, szPath, ppBuffer, &sMemAllocator2, &sMemAllocator1);
+    NANDCreate("/tmp/HBMSE.brsar", 0x30, 0);
+    NANDOpen("/tmp/HBMSE.brsar", pFileInfo, 2);
+    NANDWrite(pFileInfo, *ppBuffer, nLength);
+    NANDClose(pFileInfo);
+    fn_800888DC(ppBuffer);
+}
+
+static void fn_8005F1F4_UnknownInline2(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
+    s32 nLength = fn_8005F6F4(SYSTEM_HELP(gpSystem), szPath, (s32**)ppBuffer, &sMemAllocator2);
+    NANDCreate("/tmp/opera.arc", 0x30, 0);
+    NANDOpen("/tmp/opera.arc", pFileInfo, 2);
+    NANDWrite(pFileInfo, *ppBuffer, nLength);
+    NANDClose(pFileInfo);
+    fn_800888DC(ppBuffer);
+}
 
 void fn_8005F1F4(HelpMenu* pHelpMenu) {
     NANDFileInfo sp30;
-    s32 temp_r14;
     void* sp8;
     char* temp_r16;
     char sp10[32] = "HomeButton3/";
 
     temp_r16 = &sp10[strlen(sp10)];
 
-    xlHeapFill8(&bss_58, sizeof(struct_801C7D28_10), 0);
+    xlHeapFill8(&lbl_801C7D38, sizeof(struct_801C7D38), 0);
     lbl_8025D0C4 = NULL;
-    contentInitHandleNAND(4, &bss_94.handleNAND, &bss_10);
+    contentInitHandleNAND(4, &sHandleNAND, &sMemAllocator2);
 
     if (lbl_8025D0C0 == 0) {
         sp8 = NULL;
         lbl_8025D0C0 = 1;
         strcpy(temp_r16, "Huf8_HomeButtonSe.brsar");
-        temp_r14 = fn_8005E2D0(&bss_94.handleNAND, sp10, &sp8, &bss_10, &bss_00);
-        NANDCreate(lbl_801743C8, 0x30, 0);
-        NANDOpen(lbl_801743C8, &sp30, 2);
-        NANDWrite(&sp30, sp8, temp_r14);
-        NANDClose(&sp30);
-        fn_800888DC(&sp8);
-#ifdef __MWERKS__
-        temp_r14 = fn_8005F6F4(SYSTEM_HELP(gpSystem), "Opera.arc", &((s32*)sp8), &bss_10);
-#endif
-        NANDCreate(lbl_801743DC, 0x30, 0);
-        NANDOpen(lbl_801743DC, &sp30, 2);
-        NANDWrite(&sp30, sp8, temp_r14);
-        NANDClose(&sp30);
-        fn_800888DC(&sp8);
+        fn_8005F1F4_UnknownInline1(&sp30, &sp8, sp10);
+        fn_8005F1F4_UnknownInline2(&sp30, &sp8, "Opera.arc");
     }
 
-    strcpy(bss_20, "arc:/html/");
-    lbl_8025D0F4 = bss_20 + strlen(bss_20);
-    bss_58.pTPLPalette = NULL;
+    strcpy(sWebsitePath, "arc:/html/");
+    lbl_8025D0F4 = sWebsitePath + strlen(sWebsitePath);
+    lbl_801C7D38.pTPLPalette = NULL;
     strcpy(temp_r16, "LZ77_homeBtn.arc");
     strcpy(lbl_8025D0F4, "index/index_Frameset.html");
-    fn_8005E2D0(&bss_94.handleNAND, sp10, &bss_58.pBuffer1, &bss_10, &bss_00);
+    fn_8005E2D0(&sHandleNAND, sp10, &lbl_801C7D38.pBuffer1, &sMemAllocator2, &sMemAllocator1);
     strcpy(temp_r16, "Huf8_SpeakerSe.arc");
-    fn_8005E2D0(&bss_94.handleNAND, sp10, &bss_58.pBuffer2, &bss_10, &bss_00);
+    fn_8005E2D0(&sHandleNAND, sp10, &lbl_801C7D38.pBuffer2, &sMemAllocator2, &sMemAllocator1);
     strcpy(temp_r16, "home.csv");
-    fn_8005E2D0(&bss_94.handleNAND, sp10, &bss_58.pBuffer3, &bss_10, &bss_00);
+    fn_8005E2D0(&sHandleNAND, sp10, &lbl_801C7D38.pBuffer3, &sMemAllocator2, &sMemAllocator1);
     strcpy(temp_r16, "config.txt");
-    fn_8005E2D0(&bss_94.handleNAND, sp10, &bss_58.pBuffer4, &bss_10, &bss_00);
+    fn_8005E2D0(&sHandleNAND, sp10, &lbl_801C7D38.pBuffer4, &sMemAllocator2, &sMemAllocator1);
 
-    bss_58.unk24 = fn_8005F1EC;
-    bss_58.unk28 = 0;
-    bss_58.unk30 = 0;
-    bss_58.unk40 = lbl_8025DEF8;
-    bss_58.unk44 = lbl_8025DEC8;
-    bss_58.unk3C = lbl_8025DEC8;
+    lbl_801C7D38.unk24 = fn_8005F1EC;
+    lbl_801C7D38.unk28 = 0;
+    lbl_801C7D38.unk30 = 0;
+    lbl_801C7D38.unk40 = 1.3684211f;
+    lbl_801C7D38.unk44 = 1.0f;
+    lbl_801C7D38.unk3C = 1.0f;
 
     strcpy(temp_r16, "homeBtnIcon.tpl");
-    fn_8005E2D0(&bss_94.handleNAND, sp10, (void**)&bss_48, &bss_10, &bss_00);
-    TPLBind(bss_48.pTPLPalette);
-    bss_58.unk38 = 0x80000;
-    fn_8008882C(&bss_58.unk20, 0x80000, &bss_10, &bss_00);
-    bss_58.unk48 = 0;
-    fn_80088994(&bss_58);
-    fn_80100870(&bss_58);
-    fn_8008882C(&lbl_8025D0C4, 0xa0000, &bss_10, &bss_00);
-    fn_80100CD8(lbl_801743C8, lbl_8025D0C4, 0xa0000);
+    fn_8005E2D0(&sHandleNAND, sp10, (void**)&lbl_801C7D28, &sMemAllocator2, &sMemAllocator1);
+    TPLBind(lbl_801C7D28.pTPLPalette);
+    lbl_801C7D38.unk38 = 0x80000;
+    fn_8008882C(&lbl_801C7D38.unk20, 0x80000, &sMemAllocator2, &sMemAllocator1);
+    lbl_801C7D38.unk48 = 0;
+    fn_80088994(&lbl_801C7D38);
+    fn_80100870(&lbl_801C7D38);
+    fn_8008882C(&lbl_8025D0C4, 0xa0000, &sMemAllocator2, &sMemAllocator1);
+    fn_80100CD8("/tmp/HBMSE.brsar", lbl_8025D0C4, 0xa0000);
     fn_80100940();
 }
-
-// .data
-extern void* lbl_8005FF60;
-extern void* lbl_80060224;
-extern void* lbl_8005FF68;
-extern void* lbl_8005FFA8;
-extern void* lbl_8005FFF8;
-extern void* lbl_8006019C;
-extern void* lbl_80060224;
-extern void* lbl_80060224;
-extern void* lbl_8005FF58;
-extern void* lbl_800601C4;
-extern void* lbl_80060200;
-void* jumptable_80174490[] = {
-    &lbl_8005FF60, &lbl_80060224, &lbl_8005FF68, &lbl_8005FFA8, &lbl_8005FFF8, &lbl_8006019C,
-    &lbl_80060224, &lbl_80060224, &lbl_8005FF58, &lbl_800601C4, &lbl_80060200,
-};
 
 bool fn_8005F5F4(HelpMenu* pHelpMenu, void* pObject, s32 nByteCount, HelpMenuCallback callback) {
     u32 nSize;
@@ -663,6 +618,439 @@ bool fn_8005F6F4(HelpMenu* pHelpMenu, char* szFileName, s32** arg2, MEMAllocator
     return false;
 }
 
+static inline bool helpMenuAllocateHeap(HelpMenu* pHelpMenu) {
+    lbl_8025D0E4 = MEMCreateExpHeapEx(pHelpMenu->unk14, 0x700000, 0x0);
+    if (lbl_8025D0E4 == NULL) {
+        return false;
+    }
+    MEMInitAllocatorForExpHeap(&sMemAllocator1, lbl_8025D0E4, 0x20);
+
+    lbl_8025D0E0 = MEMCreateExpHeapEx(pHelpMenu->unk1C, 0x2900000, 0x0);
+    if (lbl_8025D0E0 == NULL) {
+        return false;
+    }
+    MEMInitAllocatorForExpHeap(&sMemAllocator2, lbl_8025D0E0, 0x20);
+
+    return true;
+}
+
+static inline bool helpMenuDestroyHeap(HelpMenu* pHelpMenu) {
+    s32 i;
+    void* pMVar5;
+
+    MEMDestroyExpHeap(lbl_8025D0E4);
+    pMVar5 = MEMDestroyExpHeap(lbl_8025D0E0);
+
+    for (i = 0; i < pHelpMenu->unk10; i++) {
+        if (pHelpMenu->unk24[i] != NULL && !pHelpMenu->unk24[i]()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static inline void helpMenuSetupRender() {
+    GXColor color;
+    GXSetFog(GX_FOG_NONE, lbl_8025C850[0], 0.0f, 0.0f, 0.0f, 4.4765625f);
+    GXFlush();
+
+    color.a = color.r = color.g = color.b = 0xFF;
+    fn_8005E45C(&sTexObj, color);
+}
+
+static inline void helpMenuUnknownControllerInline() {
+    u8 i;
+
+    for (i = 0; i < KPAD_MAX_CONTROLLERS; i++) {
+        if (lbl_801CA670.wiiCon[i].kpad != NULL) {
+            if (lbl_801CA670.wiiCon[i].use_devtype == 0) {
+                if (lbl_801CA670.wiiCon[i].kpad->trig & 0x800) {
+                    lbl_8025D0B8 = i;
+                }
+            } else if ((lbl_801CA670.wiiCon[i].kpad->ex_status).cl.trig & 0x10) {
+                lbl_8025D0B8 = i;
+            }
+        }
+    }
+}
+
+s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
+    f32 fWidth;
+    f32 fHeight;
+    Mtx44 matrix44_4;
+    Mtx matrix;
+    Mtx44 matrix44;
+    s32 iVar9;
+    void* pCurrentFrameBuffer;
+    Mtx44 matrix44_2;
+    Mtx44 matrix44_3;
+    s32 i;
+    bool bVar8 = false;
+
+    if (lbl_801C7D28.unk04 != 0 && lbl_801C7D28.pTPLPalette != NULL) {
+        GXSetViewport(0.0f, 0.0f, 4.125f, 3.96875f, 0.0f, 1.875f);
+        GXSetScissor(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
+        GXSetCullMode(GX_CULL_NONE);
+        GXSetZMode(GX_FALSE, GX_LEQUAL, GX_TRUE);
+        C_MTXOrtho(matrix44, 0.0f, 3.7167969f, 0.0f, 3.8310547f, 0.0f, 4.477539f);
+        GXSetProjection(matrix44, GX_ORTHOGRAPHIC);
+        PSMTXIdentity(matrix);
+        GXLoadPosMtxImm(matrix, 3);
+        fn_8005EDFC();
+    }
+
+    if (pHelpMenu->unk08 != 0) {
+        pHelpMenu->unk08 = 0;
+
+        if (!fn_800631B8(SYSTEM_CONTROLLER(gpSystem), 0)) {
+            return false;
+        }
+
+        if (!helpMenuAllocateHeap(pHelpMenu)) {
+            return false;
+        }
+
+        lbl_8025D0DC = rmode->fbWidth;
+        lbl_8025D0D8 = rmode->efbHeight;
+
+        if (lbl_8025D0C8 == NULL) {
+            s32 result = ((u32)((lbl_8025D0DC / 2) * lbl_8025D0D8));
+            lbl_8025D0C8 = MEMAllocFromAllocator(&sMemAllocator2, result / 2 * 2);
+        }
+
+        GXSetTexCopySrc(0, 0, (u16)lbl_8025D0DC, (u16)lbl_8025D0D8);
+        GXSetTexCopyDst(lbl_8025D0DC / 2, lbl_8025D0D8 / 2, GX_TF_RGB565, GX_ENABLE);
+        GXCopyTex(lbl_8025D0C8, 0);
+        GXDrawDone();
+
+        iVar9 = (lbl_8025D0DC / 2) * lbl_8025D0D8;
+        DCInvalidateRange(lbl_8025D0C8, iVar9 / 2 * 2);
+        GXInitTexObj(&sTexObj, lbl_8025D0C8, lbl_8025D0DC / 2, lbl_8025D0D8 / 2, GX_TF_RGB565, GX_CLAMP, GX_CLAMP,
+                     GX_DISABLE);
+        GXInitTexObjLOD(&sTexObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+        lbl_8025D100[0] = DemoFrameBuffer1;
+        lbl_8025D100[1] = DemoFrameBuffer2;
+        pCurrentFrameBuffer = VIGetCurrentFrameBuffer();
+        sRenderMode = rmode;
+        lbl_8025D0FC = (u32)(((s32)DemoFrameBuffer1 - (s32)pCurrentFrameBuffer) |
+                             ((s32)pCurrentFrameBuffer - (s32)DemoFrameBuffer1)) >>
+                       0x1F;
+        GXSetDispCopySrc(0, 0, rmode->fbWidth, rmode->efbHeight);
+        GXSetDispCopyDst(sRenderMode->fbWidth, sRenderMode->xfbHeight);
+
+        if (lbl_8025D0C8 != NULL) {
+            Rect rect = {0};
+            f32 x1;
+            f32 y1;
+            f32 y0;
+            f32 x0;
+
+            rect.x1 = sRenderMode->fbWidth / 2;
+            rect.y1 = sRenderMode->xfbHeight / 2;
+
+            GXInvalidateVtxCache();
+            GXInvalidateTexAll();
+
+            if (fn_8007FC84()) {
+                fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
+                fHeight = ((sRenderMode->viHeight - 574) * 287) / 1148.0f;
+                C_MTXOrtho(matrix44_2, -fHeight, fHeight + 287.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
+            } else {
+                fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
+                fHeight = ((sRenderMode->viHeight - 480) * 240) / 960.0f;
+                C_MTXOrtho(matrix44_2, -fHeight, fHeight + 240.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
+            }
+
+            GXSetViewport(0.0f, 0.0f, sRenderMode->fbWidth, sRenderMode->efbHeight, 0.0f, 1.0f);
+            GXSetProjection(matrix44_2, GX_ORTHOGRAPHIC);
+
+            helpMenuSetupRender();
+
+            GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+            x0 = rect.x0;
+            y0 = rect.y0;
+            x1 = rect.x1;
+            y1 = rect.y1;
+            GXPosition3f32(x0, y0, 0.0f);
+            GXTexCoord2u8(0, 0);
+            GXPosition3f32(x0, y1, 0.0f);
+            GXTexCoord2u8(0, 1);
+            GXPosition3f32(x1, y1, 0.0f);
+            GXTexCoord2u8(1, 1);
+            GXPosition3f32(x1, y0, 0.0f);
+            GXTexCoord2u8(1, 0);
+            GXEnd();
+        }
+
+        lbl_8025D0FC ^= 1;
+        GXCopyDisp(lbl_8025D100[lbl_8025D0FC], GX_TRUE);
+        GXDrawDone();
+        VIConfigure(sRenderMode);
+        VISetNextFrameBuffer(lbl_8025D100[lbl_8025D0FC]);
+        VIFlush();
+        VIWaitForRetrace();
+        fn_80088654(&sMemAllocator1, &sMemAllocator2);
+        AIStopDMA();
+        lbl_8025D108 = AIRegisterDMACallback(NULL);
+        AXInit();
+        fn_800B1AB8();
+        AXSetMode(0);
+        fn_800B1B84(1);
+        fn_8005F1F4(fn_80083140());
+        fn_80100AD8(0);
+
+        for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
+            fn_800CB958(i);
+        }
+
+        lbl_801C7D28.unk04 = 0;
+        lbl_8025D118 = 2;
+
+        while (!bVar8) {
+            fn_80088934();
+
+            if (lbl_8025D0EC || lbl_8025D0E8) {
+                switch (lbl_8025D118) {
+                    case 3:
+                    case 4:
+                        if (!lbl_8025D0F0) {
+                            lbl_8025D0F0 = true;
+                            fn_80100AE4();
+                        }
+                        break;
+                    default:
+                        lbl_8025D118 = 0x9;
+                        break;
+                }
+            }
+
+            switch (lbl_8025D118) {
+            case_8:
+            case 8:
+                bVar8 = true;
+                break;
+                case 0:
+                    lbl_8025D114 = 0;
+                    lbl_8025D118 = 2;
+                case 2:
+                    lbl_8025D114++;
+                    lbl_8025D110 = 0xFF - lbl_8025D114 * 0xFF / 10;
+                    if (lbl_8025D114 < 10) {
+                        break;
+                    }
+                    lbl_8025D114 = -3;
+                    lbl_8025D118 = 3;
+                case 3:
+                    lbl_8025D114++;
+                    lbl_8025D110 = lbl_8025D114 * 0xFF / 10;
+                    if (lbl_8025D114 < 10) {
+                        if (lbl_8025D114 <= 0) {
+                            lbl_8025D110 = 0;
+                        } else {
+                            lbl_8025D110 = 0xFF;
+                            lbl_8025D114 = 0x0;
+                            lbl_8025D118 = 4;
+                        }
+                    }
+                case_4:
+                case 4:
+                    helpMenuUnknownControllerInline();
+                    fn_80100E40();
+                    if (fn_80100948(&lbl_801CA670) == -1) {
+                        break;
+                    }
+
+                    switch (fn_80100AB8()) {
+                        case 1:
+                            VISetBlack(true);
+                            VIFlush();
+                            fn_8000A830(gpSystem, 0x1004, NULL);
+                            OSReturnToMenu();
+                        case 2:
+                            lbl_8025D110 = 0;
+                            lbl_8025D0EC = true;
+                            goto case_9;
+                        case 3:
+                            lbl_8025D118 = 6;
+                            fn_80088660();
+                            fn_8005F7E4_UnknownInline();
+                            fn_800887C4(lbl_8025D0F8);
+
+                            OSDisableInterrupts();
+                            if (!lbl_8025D0EC && !lbl_8025D0E8) {
+                                lbl_8025D118 = 7;
+                                fn_8005EAFC();
+                            }
+                            fn_80088674();
+                            fn_8008876C();
+                            fn_800888DC((void**)&lbl_8025D0F8);
+                            fn_80088664();
+                            OSEnableInterrupts();
+                            if (lbl_8025D0EC || lbl_8025D0E8) {
+                                goto case_9;
+                            }
+                            lbl_8025D114 = -3;
+                            lbl_8025D118 = 8;
+                            goto case_8;
+                        case 0:
+                            lbl_8025D118 = 8;
+                            goto case_8;
+                    }
+                case 5:
+                    lbl_8025D114++;
+                    if (lbl_8025D114 > 0xA) {
+                        lbl_8025D114 = 0xA;
+                    }
+                    lbl_8025D110 = 0xFF;
+                    goto case_4;
+                case_9:
+                    lbl_8025D118 = 9;
+                case 9:
+                    if (lbl_8025D110 != 0) {
+                        lbl_8025D110 = (lbl_8025D110 - 4) & 0xF8;
+                    } else if (lbl_8025D0E8 || lbl_8025D0EC) {
+                        bVar8 = true;
+                    }
+                    break;
+                case 10:
+                    if (lbl_8025D110 < 0xFF) {
+                        lbl_8025D110 = (lbl_8025D110 + 4) | 7;
+                    } else {
+                        lbl_8025D118 = 0;
+                    }
+                    break;
+            }
+
+            if (lbl_8025D0C8 != NULL) {
+                Rect rect = {0};
+                f32 x1;
+                f32 y1;
+                f32 y0;
+                f32 x0;
+
+                rect.x1 = sRenderMode->fbWidth / 2;
+                rect.y1 = sRenderMode->xfbHeight / 2;
+
+                GXInvalidateVtxCache();
+                GXInvalidateTexAll();
+
+                if (fn_8007FC84()) {
+                    fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
+                    fHeight = ((sRenderMode->viHeight - 574) * 287) / 1148.0f;
+                    C_MTXOrtho(matrix44_3, -fHeight, fHeight + 287.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
+                } else {
+                    fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
+                    fHeight = ((sRenderMode->viHeight - 480) * 240) / 960.0f;
+                    C_MTXOrtho(matrix44_3, -fHeight, fHeight + 240.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
+                }
+
+                GXSetViewport(0.0f, 0.0f, sRenderMode->fbWidth, sRenderMode->efbHeight, 0.0f, 1.0f);
+                GXSetProjection(matrix44_3, GX_ORTHOGRAPHIC);
+
+                helpMenuSetupRender();
+
+                GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+                x0 = rect.x0;
+                y0 = rect.y0;
+                x1 = rect.x1;
+                y1 = rect.y1;
+                GXPosition3f32(x0, y0, 0.0f);
+                GXTexCoord2u8(0, 0);
+                GXPosition3f32(x0, y1, 0.0f);
+                GXTexCoord2u8(0, 1);
+                GXPosition3f32(x1, y1, 0.0f);
+                GXTexCoord2u8(1, 1);
+                GXPosition3f32(x1, y0, 0.0f);
+                GXTexCoord2u8(1, 0);
+                GXEnd();
+            }
+
+            if (fn_8007FC84()) {
+                C_MTXOrtho(matrix44_4, 3.71875f, -3.72625f, -3.8125f, 3.8125f, 0.0f, 3.9882812f);
+            } else {
+                C_MTXOrtho(matrix44_4, 3.71875f, -3.71875f, -3.8125f, 3.8125f, 0.0f, 3.9882812f);
+            }
+
+            GXSetProjection(matrix44_4, GX_ORTHOGRAPHIC);
+            GXSetCullMode(GX_CULL_NONE);
+            GXClearVtxDesc();
+            GXSetVtxAttrFmt(GX_VTXFMT4, GX_VA_POS, GX_POS_XY, GX_F32, 0);
+            GXSetVtxAttrFmt(GX_VTXFMT4, GX_VA_CLR0, GX_CLR_RGB, GX_RGB8, 0);
+            GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+            GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+            GXSetNumChans(1);
+            GXSetNumTexGens(0);
+            GXSetNumTevStages(1);
+            GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+            GXSetTevOp(GX_TEVSTAGE0, GX_BLEND);
+            GXSetBlendMode(GX_BM_NONE, GX_BL_ZERO, GX_BL_ZERO, GX_LO_CLEAR);
+            GXSetZMode(GX_ENABLE, GX_LEQUAL, GX_ENABLE);
+            GXSetCurrentMtx(3);
+            fn_8010098C();
+            lbl_8025D0FC ^= 1;
+            GXCopyDisp(lbl_8025D100[lbl_8025D0FC], GX_TRUE);
+            GXDrawDone();
+            VIConfigure(sRenderMode);
+            VISetNextFrameBuffer(lbl_8025D100[lbl_8025D0FC]);
+            VIFlush();
+            VIWaitForRetrace();
+        }
+
+        if (lbl_8025D0C8 != NULL) {
+            MEMFreeToAllocator(&sMemAllocator2, lbl_8025D0C8);
+        }
+
+        lbl_8025D0C8 = NULL;
+
+        fn_80100E0C();
+        fn_801008F8();
+        fn_80083154();
+        AXQuit();
+        fn_800B1B80();
+        AIStopDMA();
+        AIRegisterDMACallback(lbl_8025D108);
+        fn_800888DC(&lbl_801C7D38.unk20);
+        contentReleaseHandleNAND(&sHandleNAND);
+
+        if (!fn_800631B8(SYSTEM_CONTROLLER(gpSystem), 1)) {
+            return false;
+        }
+
+        if (!xlCoreInitGX()) {
+            return false;
+        }
+
+        frameDrawReset(SYSTEM_FRAME(gpSystem), 0x5FFED);
+
+        if (!helpMenuDestroyHeap(pHelpMenu)) {
+            return false;
+        }
+
+        lbl_8025D0D0 = OSGetTime();
+    }
+
+    if (lbl_8025D0E8) {
+        VISetBlack(true);
+        VIFlush();
+        VIWaitForRetrace();
+        fn_8000A830(gpSystem, 0x1004, NULL);
+        OSShutdownSystem();
+    }
+
+    if (lbl_8025D0EC) {
+        VISetBlack(true);
+        VIFlush();
+        VIWaitForRetrace();
+
+        if (!fn_8000A8A8(gpSystem)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 s32 fn_800607B0(HelpMenu* pHelpMenu, s32 arg1) {
     pHelpMenu->unk0C = arg1;
     pHelpMenu->unk08 = 0;
@@ -671,16 +1059,16 @@ s32 fn_800607B0(HelpMenu* pHelpMenu, s32 arg1) {
 
 s32 fn_800607C4(HelpMenu* pHelpMenu, s32 arg1) {
     if (pHelpMenu->unk0C == 0) {
-        bss_48.unk0C = 0;
-        bss_48.unk04 = 1;
-        bss_48.unk08 = OSGetTick();
-        bss_48.unk0D = 0;
+        lbl_801C7D28.unk0C = 0;
+        lbl_801C7D28.unk04 = 1;
+        lbl_801C7D28.unk08 = OSGetTick();
+        lbl_801C7D28.unk0D = 0;
     } else {
         if (OSGetTime() - lbl_8025D0D0 < OSMillisecondsToTicks(250)) {
             arg1 = 0;
         }
 
-        pHelpMenu->unk08 = arg1 != 0 && bss_48.unk04 == 0;
+        pHelpMenu->unk08 = arg1 != 0 && lbl_801C7D28.unk04 == 0;
     }
 
     return 1;
@@ -719,17 +1107,17 @@ bool helpMenuEvent(HelpMenu* pHelpMenu, s32 nEvent, void* pArgument) {
     switch (nEvent) {
         case 0:
             pHelpMenu->unk0C = 1;
-            lbl_8025D0EC = 0;
-            lbl_8025D0E8 = 0;
+            lbl_8025D0EC = false;
+            lbl_8025D0E8 = false;
 
             OSSetResetCallback(fn_8005F1A0);
             OSSetPowerCallback(fn_8005F154);
 
-            bss_48.pTPLPalette = NULL;
-            bss_48.unk04 = 0;
+            lbl_801C7D28.pTPLPalette = NULL;
+            lbl_801C7D28.unk04 = 0;
 
-            if (xlFileLoad("homeBtnIcon.tpl", (void**)&bss_48.pTPLPalette)) {
-                TPLBind(bss_48.pTPLPalette);
+            if (xlFileLoad("homeBtnIcon.tpl", (void**)&lbl_801C7D28.pTPLPalette)) {
+                TPLBind(lbl_801C7D28.pTPLPalette);
             }
 
             pHelpMenu->unk10 = 0;
