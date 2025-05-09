@@ -68,10 +68,6 @@ typedef struct _GXColorS10 {
     s16 r, g, b, a;
 } GXColorS10;
 
-typedef struct _GXColorU32 {
-    u32 r, g, b, a;
-} GXColorU32;
-
 typedef struct _GXTexRegion {
     /* 0x00 */ u32 dummy[4];
 } GXTexRegion; // size = 0x10
