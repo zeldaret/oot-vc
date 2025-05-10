@@ -695,8 +695,13 @@ revolution/sc/scapi_prdinfo.c:
 	.data       start:0x8018AB40 end:0x8018AB88
 	.sdata      start:0x8025CCB0 end:0x8025CCB8
 
+revolution/wenc/wenc.c:
+	.text       start:0x800B7420 end:0x800B76F8
+	.rodata     start:0x8016BE70 end:0x8016BEB0
+	.sdata2     start:0x8025E590 end:0x8025E598
+
 revolution/arc/arc.c:
-	.text       start:0x800B7420 end:0x800B8098
+	.text       start:0x800B76F8 end:0x800B8098
 	.data       start:0x8018AB88 end:0x8018ABF8
 	.sdata      start:0x8025CCB8 end:0x8025CCC0
 

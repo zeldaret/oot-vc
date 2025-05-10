@@ -1,4 +1,3 @@
-#define USE_CURRENT_LOCALE
 #include "strtold.h"
 #include "ansi_fp.h"
 #include "ctype.h"

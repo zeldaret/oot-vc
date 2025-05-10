@@ -200,6 +200,7 @@ cflags_base = [
     "-i include",
     "-i libc",
     "-i src",
+    "-DUSE_CURRENT_LOCALE",
 ]
 
 if config.non_matching:
@@ -436,7 +437,7 @@ config.libs = [
     RevolutionLib(
         "dvd",
         [
-            Object(NotLinked, "revolution/dvd/dvdfs.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dvd/dvdfs.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dvd/dvd.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dvd/dvdqueue.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dvd/dvderror.c"),
@@ -523,9 +524,15 @@ config.libs = [
         ]
     ),
     RevolutionLib(
+        "wenc",
+        [
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/wenc/wenc.c"),
+        ]
+    ),
+    RevolutionLib(
         "arc",
         [
-            Object(NotLinked, "revolution/arc/arc.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/arc/arc.c"),
         ]
     ),
     RevolutionLib(

@@ -1,4 +1,3 @@
-#define USE_CURRENT_LOCALE
 #include "ansi_fp.h"
 #include "ctype.h"
 #include "locale.h"

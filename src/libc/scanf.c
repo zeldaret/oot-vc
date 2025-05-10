@@ -1,5 +1,3 @@
-#define USE_CURRENT_LOCALE
-
 #include "ctype.h"
 #include "math.h"
 #include "stdarg.h"

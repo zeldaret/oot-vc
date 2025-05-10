@@ -1,4 +1,3 @@
-#define USE_CURRENT_LOCALE
 #include "strtoul.h"
 #include "ctype.h"
 #include "errno.h"
