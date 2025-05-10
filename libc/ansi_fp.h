@@ -1,9 +1,13 @@
-#ifndef _MSL_C_ANSI_FP_H
-#define _MSL_C_ANSI_FP_H
+#ifndef _ANSI_FP_H
+#define _ANSI_FP_H
 
 #include "float.h"
 #include "math.h"
 #include "revolution/types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define SIGDIGLEN 36
 
@@ -34,5 +38,9 @@ void __minus_dec(decimal*, const decimal*, const decimal*);
 void __num2dec_internal(decimal*, double);
 void __num2dec(const decform*, double, decimal*);
 double __dec2num(const decimal*);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

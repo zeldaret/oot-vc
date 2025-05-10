@@ -1,5 +1,5 @@
-#ifndef _MSL_RAND_H
-#define _MSL_RAND_H
+#ifndef _RAND_H
+#define _RAND_H
 
 #include "revolution/types.h"
 

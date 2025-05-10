@@ -1,6 +1,10 @@
 #ifndef _UART_H
 #define _UART_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef int UARTError;
 
 enum {
@@ -32,5 +36,9 @@ typedef enum {
 
 extern UARTError InitializeUART(UARTBaudRate baudRate);
 extern UARTError WriteUARTN(const void* bytes, unsigned long length);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

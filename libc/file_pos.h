@@ -1,5 +1,5 @@
-#ifndef MSL_FILE_POS_H
-#define MSL_FILE_POS_H
+#ifndef _FILE_POS_H
+#define _FILE_POS_H
 
 #include "revolution/types.h"
 #include "stdio.h"

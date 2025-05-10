@@ -1,7 +1,3 @@
-#ifndef _MSL_WIDE_CHAR
-#define _MSL_WIDE_CHAR
-#endif
-
 #include "wchar_io.h"
 
 int fwide(FILE* stream, int mode) {

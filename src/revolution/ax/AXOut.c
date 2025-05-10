@@ -84,7 +84,7 @@ u32 __AXOutNewFrame(void) {
     __AXLocalProfile.timeProcessAuxEnd = OSGetTime();
 
     __AXLocalProfile.timeUserFrameBegin = OSGetTime();
-    if (__AXUserFrameCallback != null) {
+    if (__AXUserFrameCallback != nullptr) {
         __AXUserFrameCallback();
     }
     __AXLocalProfile.timeUserFrameEnd = OSGetTime();
@@ -118,7 +118,7 @@ u32 __AXOutNewFrame(void) {
     __AXLocalProfile.numVoices = __AXGetNumVoices();
 
     current = __AXGetCurrentProfile();
-    if (current != null) {
+    if (current != nullptr) {
         FUNNY_COPY(current, &__AXLocalProfile, u8, sizeof(AXPROFILE));
     }
 

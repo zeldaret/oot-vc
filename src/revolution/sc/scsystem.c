@@ -974,7 +974,7 @@ void SCFlushAsync(SCFlushCallback callback) {
             }
         }
     } else {
-        if (callback != null) {
+        if (callback != nullptr) {
             callback(status == SC_STATUS_BUSY ? status : SC_STATUS_FATAL);
         }
 
@@ -1108,7 +1108,7 @@ static void FinishFromFlush(void) {
     }
 
     callback = ctrl->flushCallback;
-    if (callback != null) {
+    if (callback != nullptr) {
         ctrl->flushCallback = NULL;
         callback(ctrl->flushStatus);
 

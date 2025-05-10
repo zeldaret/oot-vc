@@ -1,10 +1,14 @@
-#ifndef _MATH_H_
-#define _MATH_H_
+#ifndef _MATH_H
+#define _MATH_H
 
 #include "fdlibm.h"
 #include "intrinsics.h"
 #include "macros.h"
 #include "revolution/types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define DONT_INLINE_SQRT
 
@@ -60,5 +64,9 @@ static inline float _inv_sqrtf(float x) {
     }
     return INFINITY;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

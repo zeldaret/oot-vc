@@ -1,11 +1,6 @@
-#include "revolution/types.h"
-
-#ifndef _MSL_WIDE_CHAR
-#define _MSL_WIDE_CHAR
-#endif
-
 #include "buffer_io.h"
 #include "misc_io.h"
+#include "revolution/types.h"
 #include "stdio.h"
 #include "string.h"
 #include "wchar_io.h"

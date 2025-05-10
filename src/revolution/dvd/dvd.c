@@ -469,11 +469,11 @@ static bool CheckCancel(u32 resume) {
         executing = &DummyCommandBlock;
 
         block->state = DVD_STATE_CANCELED;
-        if (block->callback != null) {
+        if (block->callback != nullptr) {
             block->callback(DVD_RESULT_CANCELED, block);
         }
 
-        if (CancelCallback != null) {
+        if (CancelCallback != nullptr) {
             CancelCallback(DVD_RESULT_OK, block);
         }
 
@@ -734,7 +734,7 @@ static void cbForStateReadingPartitionInfo(u32 intType) {
             }
         }
 
-        if (BootGameInfo != null) {
+        if (BootGameInfo != nullptr) {
             switch (CurrCommand) {
                 case COMMAND_CHANGE_DISK:
                     NumInternalRetry = 0;

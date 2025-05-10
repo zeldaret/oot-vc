@@ -1,7 +1,11 @@
-#ifndef _MSL_COMMON_FILE_STRUC_H
-#define _MSL_COMMON_FILE_STRUC_H
+#ifndef _FILE_STRUC_H
+#define _FILE_STRUC_H
 
 #include "revolution/types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef unsigned long __file_handle;
 typedef unsigned long fpos_t;
@@ -40,11 +44,7 @@ typedef struct __file_modes {
     u32 io_mode : 3;
     u32 buffer_mode : 2;
     u32 file_kind : 3;
-
-#ifdef _MSL_WIDE_CHAR
     u32 file_orientation : 2;
-#endif /* _MSL_WIDE_CHAR */
-
     u32 binary_io : 1;
 } __file_modes;
 
@@ -111,5 +111,9 @@ typedef struct _FILE FILE;
 #define _STATIC_FILES 4
 
 extern FILE __files[];
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

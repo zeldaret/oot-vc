@@ -1,5 +1,9 @@
-#ifndef _LIMITS_H_
-#define _LIMITS_H_
+#ifndef _LIMITS_H
+#define _LIMITS_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define SCHAR_MIN (-0x7F - 1)
 #define SCHAR_MAX 0x7F
@@ -28,5 +32,9 @@
 #define LLONG_MIN (-0x7FFFFFFFFFFFFFFFLL - 1)
 #define LLONG_MAX 0x7FFFFFFFFFFFFFFFLL
 #define ULLONG_MAX 0xFFFFFFFFFFFFFFFFULL
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

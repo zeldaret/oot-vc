@@ -1,5 +1,5 @@
-#ifndef _MSL_ANSI_FILES_H
-#define _MSL_ANSI_FILES_H
+#ifndef _ANSI_FILES_H
+#define _ANSI_FILES_H
 
 #include "revolution/types.h"
 #include "stdio.h"

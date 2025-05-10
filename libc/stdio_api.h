@@ -5,6 +5,10 @@
 #include "revolution/types.h"
 #include "wchar_io.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum __ReadProcActions {
     __GetAChar,
     __UngetAChar,
@@ -39,9 +43,12 @@ typedef struct {
     int wNullCharDetected;
 } __wInStrCtrl;
 
-// __fread
 size_t __fwrite(const void* pPtr, size_t memb_size, size_t num_memb, FILE* file);
 int __StringRead(void*, int, int);
 wint_t __wStringRead(void*, wint_t, int);
 
-#endif // STDIO_API_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif

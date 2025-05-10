@@ -1,18 +1,17 @@
-#ifndef MSL_SCANF_H
-#define MSL_SCANF_H
+#ifndef _SCANF_H
+#define _SCANF_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "stdarg.h"
 
-// fscanf
-// fscanf_s
-// vscanf
-// scanf
-// scanf_s
-// vfscanf
-// vfscanf_s
 int vsscanf(const char*, const char*, va_list);
-// vsscanf_s
 int sscanf(const char*, const char*, ...);
-// sscanf_s
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

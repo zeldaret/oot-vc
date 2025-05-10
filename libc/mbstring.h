@@ -1,5 +1,5 @@
-#ifndef MSL_MBSTRING_H
-#define MSL_MBSTRING_H
+#ifndef _MBSTRING_H
+#define _MBSTRING_H
 
 #include "revolution/types.h"
 

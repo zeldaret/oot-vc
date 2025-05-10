@@ -1,12 +1,7 @@
-#include "revolution/types.h"
-
-#ifndef _MSL_WIDE_CHAR
-#define _MSL_WIDE_CHAR
-#endif
-
+#include "file_pos.h"
 #include "buffer_io.h"
 #include "errno.h"
-#include "file_pos.h"
+#include "revolution/types.h"
 
 int _ftell(FILE* file) {
     int charsInUndoBuffer = 0;

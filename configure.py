@@ -200,7 +200,6 @@ cflags_base = [
     "-i include",
     "-i libc",
     "-i src",
-    "-DUSE_CURRENT_LOCALE",
 ]
 
 if config.non_matching:

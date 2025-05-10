@@ -6,9 +6,10 @@ extern "C" {
 #endif
 
 #ifndef NULL
-#define NULL 0
+#define NULL (void*)0
 #endif
 
+// some conditions don't match if it's using `(void*)0`
 #ifndef nullptr
 #define nullptr 0
 #endif
