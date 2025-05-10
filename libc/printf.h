@@ -4,7 +4,7 @@
 #include "stdarg.h"
 #include "stdio.h"
 
-// printf
+int printf(const char* format, ...);
 // printf_s
 int fprintf(FILE*, const char* format, ...);
 // fprintf_s

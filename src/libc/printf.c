@@ -1278,7 +1278,16 @@ static void* __StringWrite(void* pCtrl, const char* pBuffer, size_t char_num) {
     return (void*)1;
 }
 
-void printf() {}
+int printf(const char* format, ...) {
+    va_list args;
+
+    if (fwide(&__files[1], -1) >= 0) {
+        return -1;
+    }
+
+    va_start(args, format);
+    return __pformatter(&__FileWrite, (void*)&__files[1], format, args);
+}
 
 int fprintf(FILE* file, const char* format, ...) {
     int res;
