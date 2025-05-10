@@ -10,9 +10,6 @@
 #include "revolution/vi.h"
 #include "revolution/wpad.h"
 
-//! TODO: document
-bool fn_800607C4(void*, s32);
-
 u32 lbl_80174508[] = {
     PAD_CHAN0_BIT,
     PAD_CHAN1_BIT,

@@ -36,7 +36,6 @@ typedef struct struct_801C7D28 {
     /* 0x08 */ u32 unk08;
     /* 0x0C */ s8 unk0C;
     /* 0x0D */ u8 unk0D;
-    /* 0x0E */ u8 pad[2];
 } struct_801C7D28; // size = 0x10
 
 typedef struct HelpMenu {
@@ -52,7 +51,10 @@ typedef struct HelpMenu {
     /* 0x24 */ HelpMenuCallback unk24[8];
 } HelpMenu; // size = 0x28
 
-bool fn_8005F5F4(HelpMenu* pHelpMenu, void* pObject, s32 arg2, HelpMenuCallback callback);
+bool fn_8005F5F4(HelpMenu* pHelpMenu, void* pObject, s32 nByteCount, HelpMenuCallback callback);
+s32 fn_8005F7E4(HelpMenu* pHelpMenu);
+bool fn_800607B0(HelpMenu* pHelpMenu, s32 arg1);
+bool fn_800607C4(HelpMenu* pHelpMenu, s32 arg1);
 bool helpMenuEvent(HelpMenu* pHelpMenu, s32 nEvent, void* pArgument);
 
 extern _XL_OBJECTTYPE gClassHelpMenu;

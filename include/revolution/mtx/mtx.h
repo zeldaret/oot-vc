@@ -11,20 +11,9 @@ typedef f32 Mtx[3][4];
 typedef f32 Mtx44[4][4];
 typedef f32 (*Mtx44Ptr)[4];
 
-typedef struct Rect {
-    /* 0x0 */ f32 x0;
-    /* 0x4 */ f32 y0;
-    /* 0x8 */ f32 x1;
-    /* 0xC */ f32 y1;
-} Rect; // size = 0x10
-
 typedef struct Vec {
     f32 x, y, z;
 } Vec;
-
-typedef struct Vec2 {
-    f32 x, y;
-} Vec2;
 
 typedef struct Quaternion {
     f32 x, y, z, w;

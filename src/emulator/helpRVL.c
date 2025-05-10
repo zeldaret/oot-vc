@@ -23,13 +23,42 @@
 #include "revolution/vi.h"
 #include "string.h"
 
-extern void fn_8005F1A0(void);
-extern void fn_8005F154(void);
+//! TODO: move to the proper headers when documented properly
 extern char* fn_800887C8(void*, char*, u8);
 extern s32 fn_8008882C(void**, u32, MEMAllocator*, MEMAllocator*);
 extern void* fn_80083140(void);
 extern void fn_800888DC(void**);
 extern HBMControllerData lbl_801CA670;
+
+typedef struct Rect {
+    /* 0x0 */ f32 x0;
+    /* 0x4 */ f32 y0;
+    /* 0x8 */ f32 x1;
+    /* 0xC */ f32 y1;
+} Rect; // size = 0x10
+
+static s32 fn_8005E2D0(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, MEMAllocator* arg3, void* arg4);
+static void fn_8005E45C(GXTexObj* pTexObj, GXColor color);
+static void fn_8005E638(GXColor color);
+static void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5, u32 param_6);
+static void fn_8005EAFC(void);
+static void fn_8005EDFC(void);
+static void fn_8005F154(void);
+static void fn_8005F1A0(void);
+static bool fn_8005F1EC(void);
+static void fn_8005F1F4(HelpMenu* pHelpMenu);
+static bool fn_8005F6F4(HelpMenu* pHelpMenu, char* szFileName, s32** arg2, MEMAllocator* arg3) NO_INLINE;
+
+static inline bool fn_8005F7E4_UnknownInline(void);
+static inline void fn_8005EDFC_UnknownInline(GXColor color);
+static inline void fn_8005F1F4_UnknownInline1(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath);
+static inline void fn_8005F1F4_UnknownInline2(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath);
+static inline bool helpMenuAllocateHeap(HelpMenu* pHelpMenu);
+static inline bool helpMenuDestroyHeap(HelpMenu* pHelpMenu);
+static inline void helpMenuSetupRender();
+static inline void helpMenuUnknownControllerInline();
+static inline bool helpMenuHeapTake(HelpMenu* pHelpMenu);
+static inline bool helpMenuFree(HelpMenu* pHelpMenu);
 
 static MEMAllocator sMemAllocator1 = {0};
 static MEMAllocator sMemAllocator2 = {0};
@@ -67,10 +96,9 @@ char* lbl_8025D0BC;
 u8 lbl_8025D0B8;
 
 GXColor lbl_8025C850[] = {255, 255, 255, 255};
-
 const GXColor lbl_8025DEEC = {255, 255, 255, 0};
 
-s32 fn_8005E2D0(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, MEMAllocator* arg3, void* arg4) {
+static s32 fn_8005E2D0(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, MEMAllocator* arg3, void* arg4) {
     CNTFileInfoNAND fileInfo;
     void* pNANDBuffer;
     s32 var_r31;
@@ -129,7 +157,7 @@ s32 fn_8005E2D0(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, MEMAlloca
     return var_r31;
 }
 
-void fn_8005E45C(GXTexObj* pTexObj, GXColor color) {
+static void fn_8005E45C(GXTexObj* pTexObj, GXColor color) {
     GXInvalidateVtxCache();
     GXInvalidateTexAll();
     GXClearVtxDesc();
@@ -159,7 +187,7 @@ void fn_8005E45C(GXTexObj* pTexObj, GXColor color) {
     GXSetTevColor(GX_TEVREG0, color);
 }
 
-void fn_8005E638(GXColor color) {
+static void fn_8005E638(GXColor color) {
     GXInvalidateVtxCache();
     GXInvalidateTexAll();
     GXClearVtxDesc();
@@ -188,7 +216,7 @@ void fn_8005E638(GXColor color) {
     GXSetTevColor(GX_TEVREG0, color);
 }
 
-void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5, u32 param_6) {
+static void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5, u32 param_6) {
     f32 view[6];
     void* pBuffer;
     Rect rect;
@@ -197,7 +225,7 @@ void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5
     if (param_6 != 0) {
         GXColor local_54;
         local_54.r = local_54.g = local_54.b = 0;
-        local_54.a = param_6 & 0xFF;
+        local_54.a = param_6;
         rect = lbl_8016A7C0;
         rectPAL = lbl_8016A7D0;
 
@@ -277,11 +305,11 @@ void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5
     }
 }
 
-static bool fn_8005F7E4_UnknownInline(void) {
+static inline bool fn_8005F7E4_UnknownInline(void) {
     return fn_8005F6F4(SYSTEM_HELP(gpSystem), "html.arc", &lbl_8025D0F8, &sMemAllocator2);
 }
 
-void fn_8005EAFC(void) {
+static void fn_8005EAFC(void) {
     GXRenderModeObj sp8;
     s32 var_r31;
 
@@ -404,7 +432,7 @@ static inline void fn_8005EDFC_UnknownInline(GXColor color) {
     GXEnd();
 }
 
-void fn_8005EDFC(void) {
+static void fn_8005EDFC(void) {
     f32 fTime = OSTicksToMilliseconds(OSGetTick() - lbl_801C7D28.unk08);
 
     switch (lbl_801C7D28.unk0C) {
@@ -434,7 +462,7 @@ void fn_8005EDFC(void) {
     fn_8005EDFC_UnknownInline(lbl_8025DEEC);
 }
 
-void fn_8005F154(void) {
+static void fn_8005F154(void) {
     lbl_8025D0F0 = false;
     lbl_8025D0E8 = true;
     if (lbl_8025D118 == 7) {
@@ -443,7 +471,7 @@ void fn_8005F154(void) {
     }
 }
 
-void fn_8005F1A0(void) {
+static void fn_8005F1A0(void) {
     lbl_8025D0F0 = false;
     lbl_8025D0EC = true;
     if (lbl_8025D118 == 7) {
@@ -452,11 +480,9 @@ void fn_8005F1A0(void) {
     }
 }
 
-bool fn_8005F1EC(void) { return 0; }
+static bool fn_8005F1EC(void) { return false; }
 
-bool fn_8005F6F4(HelpMenu* pHelpMenu, char* szFileName, s32** arg2, MEMAllocator* arg3) NO_INLINE;
-
-static void fn_8005F1F4_UnknownInline1(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
+static inline void fn_8005F1F4_UnknownInline1(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
     s32 nLength = fn_8005E2D0(&sHandleNAND, szPath, ppBuffer, &sMemAllocator2, &sMemAllocator1);
     NANDCreate("/tmp/HBMSE.brsar", 0x30, 0);
     NANDOpen("/tmp/HBMSE.brsar", pFileInfo, 2);
@@ -465,7 +491,7 @@ static void fn_8005F1F4_UnknownInline1(NANDFileInfo* pFileInfo, void** ppBuffer,
     fn_800888DC(ppBuffer);
 }
 
-static void fn_8005F1F4_UnknownInline2(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
+static inline void fn_8005F1F4_UnknownInline2(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
     s32 nLength = fn_8005F6F4(SYSTEM_HELP(gpSystem), szPath, (s32**)ppBuffer, &sMemAllocator2);
     NANDCreate("/tmp/opera.arc", 0x30, 0);
     NANDOpen("/tmp/opera.arc", pFileInfo, 2);
@@ -474,7 +500,7 @@ static void fn_8005F1F4_UnknownInline2(NANDFileInfo* pFileInfo, void** ppBuffer,
     fn_800888DC(ppBuffer);
 }
 
-void fn_8005F1F4(HelpMenu* pHelpMenu) {
+static void fn_8005F1F4(HelpMenu* pHelpMenu) {
     NANDFileInfo sp30;
     void* sp8;
     char* temp_r16;
@@ -585,7 +611,7 @@ bool fn_8005F5F4(HelpMenu* pHelpMenu, void* pObject, s32 nByteCount, HelpMenuCal
     return true;
 }
 
-bool fn_8005F6F4(HelpMenu* pHelpMenu, char* szFileName, s32** arg2, MEMAllocator* arg3) {
+static bool fn_8005F6F4(HelpMenu* pHelpMenu, char* szFileName, s32** arg2, MEMAllocator* arg3) {
     s32 nSize;
     tXL_FILE* pFile;
 
@@ -1051,13 +1077,13 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
     return true;
 }
 
-s32 fn_800607B0(HelpMenu* pHelpMenu, s32 arg1) {
+bool fn_800607B0(HelpMenu* pHelpMenu, s32 arg1) {
     pHelpMenu->unk0C = arg1;
     pHelpMenu->unk08 = 0;
-    return 1;
+    return true;
 }
 
-s32 fn_800607C4(HelpMenu* pHelpMenu, s32 arg1) {
+bool fn_800607C4(HelpMenu* pHelpMenu, s32 arg1) {
     if (pHelpMenu->unk0C == 0) {
         lbl_801C7D28.unk0C = 0;
         lbl_801C7D28.unk04 = 1;
@@ -1071,7 +1097,7 @@ s32 fn_800607C4(HelpMenu* pHelpMenu, s32 arg1) {
         pHelpMenu->unk08 = arg1 != 0 && lbl_801C7D28.unk04 == 0;
     }
 
-    return 1;
+    return true;
 }
 
 static inline bool helpMenuHeapTake(HelpMenu* pHelpMenu) {
