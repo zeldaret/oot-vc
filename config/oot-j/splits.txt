@@ -978,6 +978,7 @@ libc/time.c:
 	extab       start:0x80006940 end:0x80006988
 	extabindex  start:0x80006F70 end:0x80006FDC
 	.text       start:0x8015EFF8 end:0x80160920
+	.bss        start:0x8025A1D0 end:0x8025A1F8
 
 libc/wstring.c:
 	.text       start:0x80160920 end:0x80160980
