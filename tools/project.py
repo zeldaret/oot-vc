@@ -80,7 +80,7 @@ class Object:
         set_default("asflags", config.asflags)
         set_default("asm_dir", config.asm_dir)
         set_default("host", False)
-        if obj.options.get("mw_versions") is not None:
+        if obj.options["mw_version"] is None and obj.options.get("mw_versions") is not None:
             obj.options["mw_version"] = obj.options["mw_versions"].get(version, config.linker_version)
         else:
             set_default("mw_version", config.linker_version)

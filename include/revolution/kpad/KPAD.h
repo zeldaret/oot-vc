@@ -63,6 +63,8 @@ typedef struct KPADStatus {
     /* 0x85 */ s8 wpad_err;
 } KPADStatus; // size = 0x88
 
+s32 fn_800CB890(s32);
+
 #ifdef __cplusplus
 }
 #endif
