@@ -52,6 +52,7 @@ class Object:
             "shift_jis": None,
             "source": name,
             "src_dir": None,
+            "mw_versions": None,
         }
         self.options.update(options)
 
@@ -79,7 +80,10 @@ class Object:
         set_default("asflags", config.asflags)
         set_default("asm_dir", config.asm_dir)
         set_default("host", False)
-        set_default("mw_version", config.linker_version)
+        if obj.options.get("mw_versions") is not None:
+            obj.options["mw_version"] = obj.options["mw_versions"].get(version, config.linker_version)
+        else:
+            set_default("mw_version", config.linker_version)
         set_default("shift_jis", config.shift_jis)
         set_default("src_dir", config.src_dir)
 
