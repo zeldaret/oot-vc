@@ -646,7 +646,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "libc/ansi_files.c"),
             Object(NotLinked, "libc/ansi_fp.c"),
             Object(LinkedFor("oot-j"), "libc/arith.c"),
-            Object(NotLinked, "libc/bsearch.c"),
+            Object(LinkedFor("oot-j"), "libc/bsearch.c"),
             Object(LinkedFor("oot-j"), "libc/buffer_io.c"),
             Object(LinkedFor("oot-j"), "libc/direct_io.c"),
             Object(LinkedFor("oot-j"), "libc/file_io.c"),
