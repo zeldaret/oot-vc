@@ -134,7 +134,9 @@ emulator/helpRVL.c:
 	.text       start:0x8005E2D0 end:0x80060B1C
 	.rodata     start:0x8016A7E0 end:0x8016A820
 	.data       start:0x801743D0 end:0x801745E0
+	.bss        start:0x801C7F60 end:0x801C8038
 	.sdata      start:0x8025CAD0 end:0x8025CAE8
+	.sbss       start:0x8025D338 end:0x8025D3A0
 	.sdata2     start:0x8025E128 end:0x8025E198
 
 emulator/soundRVL.c:

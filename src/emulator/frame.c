@@ -1,5 +1,6 @@
 #include "emulator/frame.h"
 #include "emulator/cpu.h"
+#include "emulator/helpRVL.h"
 #include "emulator/ram.h"
 #include "emulator/rdp.h"
 #include "emulator/rsp.h"
@@ -3068,9 +3069,10 @@ bool frameLoadTexturePack(Frame* pFrame, const char* szFileName) {
 }
 
 static inline bool frameEvent_UnknownInline(Frame* pFrame) {
-    if (!fn_8005F5F4(SYSTEM_HELP(gpSystem), &pFrame->aPixelData, 0x30300000, &frameSetupCache)) {
+    if (!fn_8005F5F4(SYSTEM_HELP(gpSystem), &pFrame->aPixelData, 0x30300000, (HelpMenuCallback)&frameSetupCache)) {
         return false;
-    } else if (!fn_8005F5F4(SYSTEM_HELP(gpSystem), &pFrame->aColorData, 0x30050000, &frameSetupCache)) {
+    } else if (!fn_8005F5F4(SYSTEM_HELP(gpSystem), &pFrame->aColorData, 0x30050000,
+                            (HelpMenuCallback)&frameSetupCache)) {
         return false;
     }
 

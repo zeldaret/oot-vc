@@ -10,6 +10,7 @@
 #include "emulator/errordisplay.h"
 #include "emulator/controller.h"
 #include "emulator/frame.h"
+#include "emulator/helpRVL.h"
 #include "emulator/rom.h"
 #include "emulator/system.h"
 #include "emulator/vc64_RVL.h"
