@@ -14,9 +14,15 @@
 static char* gaszArgument[12];
 System* gpSystem;
 
-static bool simulatorParseArguments(void);
+static void simulatorDEMOSwapBuffers(void) {
+    if ((void*)DemoCurrentBuffer == (void*)DemoFrameBuffer1) {
+        DemoCurrentBuffer = DemoFrameBuffer2;
+    } else {
+        DemoCurrentBuffer = DemoFrameBuffer1;
+    }
+}
 
-void fn_80007020(void) {
+void simulatorDEMODoneRender(void) {
     SYSTEM_FRAME(gpSystem)->nMode = 0;
     SYSTEM_FRAME(gpSystem)->nModeVtx = -1;
     frameDrawReset(SYSTEM_FRAME(gpSystem), 0x5FFED);
@@ -28,12 +34,7 @@ void fn_80007020(void) {
     VISetNextFrameBuffer(DemoCurrentBuffer);
     VIFlush();
     VIWaitForRetrace();
-
-    if (DemoCurrentBuffer == DemoFrameBuffer1) {
-        DemoCurrentBuffer = DemoFrameBuffer2;
-    } else {
-        DemoCurrentBuffer = DemoFrameBuffer1;
-    }
+    simulatorDEMOSwapBuffers();
 }
 
 bool simulatorDVDShowError(s32 nStatus, void* anData, s32 nSizeRead, u32 nOffset) { return true; }
@@ -59,11 +60,11 @@ static bool simulatorParseArguments(void) {
 
     while (iArgument < xlCoreGetArgumentCount()) {
         xlCoreGetArgument(iArgument, &szText);
-        iArgument += 1;
+        iArgument++;
         if (szText[0] == '-' || szText[0] == '/' || szText[0] == '\\') {
             if (szText[2] == '\0') {
                 xlCoreGetArgument(iArgument, &szValue);
-                iArgument += 1;
+                iArgument++;
             } else {
                 szValue = &szText[2];
             }
@@ -164,7 +165,7 @@ bool xlMain(void) {
     }
 #endif
 
-    VISetBlack(1);
+    VISetBlack(true);
     VIFlush();
     VIWaitForRetrace();
 

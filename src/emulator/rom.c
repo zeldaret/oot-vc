@@ -335,7 +335,6 @@ static inline void romSetEndianness(Rom* pROM) { pROM->bFlip = pROM->acHeader[0]
 
 static bool romCopyUpdate(Rom* pROM) {
     RomBlock* pBlock;
-    s32 pad;
     s32 iCache;
     s32 nTickLast;
     u8* anData;

@@ -1,26 +1,9 @@
 #include "metrotrk/mem_TRK.h"
 #include "macros.h"
+#include "metrotrk/ppc_mem.h"
 #include "revolution/types.h"
 
-static inline u8 ppc_readbyte1(const u8* ptr) {
-    u32* alignedPtr = (u32*)((u32)ptr & ~3);
-    return (u8)(*alignedPtr >> ((3 - ((u32)ptr - (u32)alignedPtr)) << 3));
-}
-
-static inline void ppc_writebyte1(u8* ptr, u8 val) {
-    u32* alignedPtr = (u32*)((u32)ptr & ~3);
-    u32 v = *alignedPtr;
-    u32 uVar3 = 0xff << ((3 - ((u32)ptr - (u32)alignedPtr)) << 3);
-    u32 iVar1 = (3 - ((u32)ptr - (u32)alignedPtr)) << 3;
-    *alignedPtr = (v & ~uVar3) | (uVar3 & (val << iVar1));
-}
-
 void TRK_fill_mem(void* dest, int val, size_t count);
-
-INIT void* TRK_memset(void* dest, int val, size_t count) {
-    TRK_fill_mem(dest, val, count);
-    return dest;
-}
 
 INIT void* TRK_memcpy(void* dest, const void* src, size_t count) {
     u8* s;
@@ -28,5 +11,71 @@ INIT void* TRK_memcpy(void* dest, const void* src, size_t count) {
 
     for (s = (u8*)src - 1, d = (u8*)dest - 1, count++; --count;) {
         *++d = *++s;
+    }
+}
+
+INIT void* TRK_memset(void* dest, int val, size_t count) {
+    TRK_fill_mem(dest, val, count);
+    return dest;
+}
+
+void TRK_fill_mem(void* dest, int val, size_t count) {
+    u32 v = (u8)val;
+    u32 i;
+
+    union {
+        u8* cpd;
+        u32* lpd;
+    } dstu;
+
+    dstu.cpd = (((u8*)dest) - 1);
+
+    if (count >= 32) {
+        i = ((~(u32)dstu.cpd) & 3);
+
+        if (i) {
+            count -= i;
+
+            do {
+                *++(dstu.cpd) = (u8)v;
+            } while (--i);
+        }
+
+        if (v) {
+            v |= ((v << 24) | (v << 16) | (v << 8));
+        }
+
+        dstu.lpd = (((u32*)(dstu.cpd + 1)) - 1);
+        i = (count >> 5);
+
+        if (i) {
+            do {
+                *++(dstu.lpd) = v;
+                *++(dstu.lpd) = v;
+                *++(dstu.lpd) = v;
+                *++(dstu.lpd) = v;
+                *++(dstu.lpd) = v;
+                *++(dstu.lpd) = v;
+                *++(dstu.lpd) = v;
+                *++(dstu.lpd) = v;
+            } while (--i);
+        }
+
+        i = ((count & 31) >> 2);
+
+        if (i) {
+            do {
+                *++(dstu.lpd) = v;
+            } while (--i);
+        }
+
+        dstu.cpd = (((u8*)(dstu.lpd + 1)) - 1);
+        count &= 3;
+    }
+
+    if (count) {
+        do {
+            *++(dstu.cpd) = (u8)v;
+        } while (--count);
     }
 }

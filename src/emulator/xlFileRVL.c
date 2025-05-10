@@ -113,7 +113,7 @@ bool xlFileGet(tXL_FILE* pFile, void* pTarget, s32 nSizeBytes) {
                 pFile->unk_24 = nOffset;
 
                 if (nOffsetExtra <= 0x1000) {
-                    nSize = (nOffsetExtra + 0x1F) & ~0x1F;
+                    nSize = ALIGN(nOffsetExtra, 0x1F);
                 }
 
                 if (gpfRead != NULL) {

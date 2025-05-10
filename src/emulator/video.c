@@ -1,7 +1,12 @@
 #include "emulator/video.h"
 #include "emulator/xlObject.h"
 
-_XL_OBJECTTYPE gClassVideo = {"Video", sizeof(Video), NULL, (EventFunc)videoEvent};
+_XL_OBJECTTYPE gClassVideo = {
+    "Video",
+    sizeof(Video),
+    NULL,
+    (EventFunc)videoEvent,
+};
 
 bool videoEvent(Video* pVideo, s32 nEvent, void* pArgument) {
     switch (nEvent) {

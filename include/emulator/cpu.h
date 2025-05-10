@@ -282,8 +282,8 @@ struct Cpu {
     /* 0x00030 */ s32 nReturnAddrLast;
     /* 0x00034 */ s32 survivalTimer;
     /* 0x00038 */ u32 nTickLast;
-    /* 0x0003C */ u32 nRetrace;
-    /* 0x00040 */ u32 nRetraceUsed;
+    /* 0x0003C */ volatile u32 nRetrace;
+    /* 0x00040 */ volatile u32 nRetraceUsed;
     /* 0x00048 */ CpuGpr aGPR[32];
     /* 0x00148 */ CpuFpr aFPR[32];
     /* 0x00248 */ u64 aTLB[48][5];
@@ -360,7 +360,6 @@ bool cpuGetRegisterCP0(Cpu* pCPU, s32 iRegister, s64* pnData);
 bool __cpuERET(Cpu* pCPU);
 bool __cpuBreak(Cpu* pCPU);
 bool cpuFindBranchOffset(Cpu* pCPU, CpuFunction* pFunction, s32* pnOffset, s32 nAddress, s32* anCode);
-s32 fn_8000E81C(Cpu* pCPU, s32 arg1, s32 arg2, s32 arg3, s32 arg5, s32* arg6, s32* arg7);
 bool cpuExecute(Cpu* pCPU, s32 nCount, u64 nAddressBreak);
 bool cpuMapObject(Cpu* pCPU, void* pObject, u32 nAddress0, u32 nAddress1, s32 nType);
 bool cpuGetBlock(Cpu* pCPU, CpuBlock* pBlock);
