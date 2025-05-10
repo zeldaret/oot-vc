@@ -215,7 +215,7 @@ bool soundMakeBuffer(Sound* pSound) {
     nSamples = ((nSize * 32000) + 16000) / pSound->nFrequency;
     temp_r3 = ((nSamples >> 2) & ~7);
     vol = pSound->unk_94;
-    temp_r6 = pSound->anSizeBuffer[iBuffer] = nSamples & (~0x1F);
+    temp_r6 = pSound->anSizeBuffer[iBuffer] = nSamples & ~0x1F;
     curBufP = pSound->apBuffer[iBuffer];
 
     sampleStep = ((nSize << 14) & 0xFFFF0000) / temp_r3;
@@ -298,7 +298,7 @@ bool soundSetBufferSize(Sound* pSound, s32 nSize) {
     int iBuffer;
 
     if (nSize % 32 != 0) {
-        nSize = (nSize + 0x1F) & ~0x1F;
+        nSize = ALIGN(nSize, 0x1F);
     }
 
     pSound->nSizePlay = nSize;

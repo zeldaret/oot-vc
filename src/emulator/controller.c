@@ -1,4 +1,5 @@
 #include "emulator/controller.h"
+#include "emulator/helpRVL.h"
 #include "emulator/system.h"
 #include "emulator/vc64_RVL.h"
 #include "emulator/xlCoreRVL.h"
@@ -8,9 +9,6 @@
 #include "revolution/mem.h"
 #include "revolution/vi.h"
 #include "revolution/wpad.h"
-
-//! TODO: document
-bool fn_800607C4(void*, s32);
 
 u32 lbl_80174508[] = {
     PAD_CHAN0_BIT,
