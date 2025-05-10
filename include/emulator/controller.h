@@ -57,15 +57,13 @@ typedef struct Controller {
 } Controller; // size = 0x290
 
 s32 fn_80062028(EDString* pSTString);
+bool simulatorDetectController(Controller* pController, s32 arg1);
+bool fn_80062C18(Controller* pController, s32 iController, s32* pnButton, s32* arg3, s32* pnStickLeftX,
+                 s32* pnStickLeftY, s32* pnStickRightX, s32* pnStickRightY);
+bool fn_80062CE4(Controller* pController, s32 iController, bool bUnknown);
 bool simulatorSetControllerMap(Controller* pController, s32 channel, u32* mapData);
 bool simulatorCopyControllerMap(Controller* pController, u32* mapDataOutput, u32* mapDataInput);
-bool fn_80062E5C(Controller* pController, s32, s32*) NO_INLINE;
-bool simulatorDetectController(Controller* pController, s32 arg1);
-bool fn_800622B8(Controller* pController) NO_INLINE;
-bool fn_800623F4(Controller* pController) NO_INLINE;
-bool fn_80062C18(Controller* pController, s32 iController, s32* arg2, s32* arg3, s32* arg4, s32* arg5, s32* arg6,
-                 s32* arg7);
-bool fn_80062CE4(Controller* pController, s32 iController, bool bUnknown);
+bool fn_80062E5C(Controller* pController, s32 iController, s32* pnInput);
 bool fn_800631B8(Controller* pController, s32 arg1);
 bool controllerEvent(Controller* pController, s32 nEvent, void* pArgument);
 

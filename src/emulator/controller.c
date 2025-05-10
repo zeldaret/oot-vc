@@ -13,6 +13,19 @@
 //! TODO: document
 bool fn_800607C4(void*, s32);
 
+static void* fn_80061FB0(u32 nSize);
+static bool fn_80061FF8(Controller* pController);
+static bool fn_80080C04(Controller* pController, ErrorIndex iString);
+static bool fn_800620A8(Controller* pController);
+static bool fn_800622B8(Controller* pController);
+static bool fn_800623F4(Controller* pController);
+static void* controllerThread(void* pArg);
+static void controllerVIPostRetrace(u32 retraceCount);
+
+static inline bool unk4C_UnknownInline(Controller* pController);
+static inline bool controllerValidateIndex(s32 index);
+static inline s32 fn_800623F4_UnknownInline(f32 value);
+
 u32 lbl_80174508[] = {
     PAD_CHAN0_BIT,
     PAD_CHAN1_BIT,
@@ -39,7 +52,7 @@ ControllerThread gControllerThread;
 static void* sControllerHeap;
 static VIRetraceCallback sControllerVICallback;
 
-void* fn_80061FB0(u32 nSize) {
+static void* fn_80061FB0(u32 nSize) {
     void* pBuffer = MEMAllocFromAllocator(&gControllerAllocator, nSize);
 
     if (pBuffer == NULL) {
@@ -49,7 +62,7 @@ void* fn_80061FB0(u32 nSize) {
     return pBuffer;
 }
 
-bool fn_80061FF8(Controller* pController) {
+static bool fn_80061FF8(Controller* pController) {
     MEMFreeToAllocator(&gControllerAllocator, pController);
     return true;
 }
@@ -86,7 +99,7 @@ s32 fn_80062028(EDString* pSTString) {
     return 0;
 }
 
-bool fn_80080C04(Controller* pController, ErrorIndex iString) {
+static bool fn_80080C04(Controller* pController, ErrorIndex iString) {
     pController->unk_248 = OSGetTime();
     pController->iString = iString;
     errorDisplayShow(iString);
@@ -99,7 +112,7 @@ bool fn_80080C04(Controller* pController, ErrorIndex iString) {
     return true;
 }
 
-bool fn_800620A8(Controller* pController) {
+static bool fn_800620A8(Controller* pController) {
     void* sp8;
     s32 i;
 
@@ -148,7 +161,7 @@ static inline bool controllerValidateIndex(s32 index) {
     return ret;
 }
 
-bool fn_800622B8(Controller* pController) {
+static bool fn_800622B8(Controller* pController) {
     s32 i;
 
     pController->unk_220 = 1;
@@ -179,7 +192,7 @@ static inline s32 fn_800623F4_UnknownInline(f32 value) {
     }
 }
 
-bool fn_800623F4(Controller* pController) {
+static bool fn_800623F4(Controller* pController) {
     PADStatus status[PAD_MAX_CONTROLLERS];
     s32 i;
     s32 var_r26;
@@ -622,7 +635,7 @@ static void* controllerThread(void* pArg) {
     }
 }
 
-void controllerVIPostRetrace(u32 retraceCount) {
+static void controllerVIPostRetrace(u32 retraceCount) {
     if (SYSTEM_CONTROLLER(gpSystem)->unk_224 != 0 && OSIsThreadSuspended(&gControllerThread.thread)) {
         OSResumeThread(&gControllerThread.thread);
     }
