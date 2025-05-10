@@ -298,7 +298,7 @@ config.libs = [
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/soundRVL.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/video.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/storeRVL.c"),
-            Object(NotLinked, "emulator/controller.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/controller.c", mw_version="GC/3.0a5.2"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/errordisplay.c"),
             Object(NotLinked, "emulator/banner.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/stringtable.c"),

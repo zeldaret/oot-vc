@@ -5,6 +5,7 @@
 #include "emulator/system.h"
 #include "emulator/xlObject.h"
 #include "macros.h"
+#include "revolution/kpad/KPAD.h"
 #include "revolution/pad.h"
 #include "revolution/types.h"
 
@@ -18,23 +19,34 @@ typedef enum ControllerStickAxis {
     AXIS_MAX = 2
 } ControllerStickAxis;
 
+typedef struct struct_801C7DC8 {
+    /* 0x000 */ KPADStatus status[KPAD_MAX_CONTROLLERS];
+    /* 0x220 */ u8 pad[0x330];
+} struct_801C7DC8; // size = 0x550
+
 typedef struct ControllerThread {
     /* 0x000 */ OSThread thread;
     /* 0x318 */ u8 unk_318[0xA];
 } ControllerThread; // size = 0x328
 
 typedef struct Controller {
-    /* 0x000 */ u32 unk_00[19];
+    /* 0x000 */ u32 unk_00[19]; // see lbl_80174518 for values
     /* 0x04C */ s32 unk_4C[PAD_MAX_CONTROLLERS];
     /* 0x05C */ s32 analogTriggerLeft[PAD_MAX_CONTROLLERS];
     /* 0x06C */ s32 analogTriggerRight[PAD_MAX_CONTROLLERS];
-    /* 0x07C */ s32 stickLeft[PAD_MAX_CONTROLLERS][AXIS_MAX];
-    /* 0x09C */ s32 stickRight[PAD_MAX_CONTROLLERS][AXIS_MAX];
-    /* 0x0BC */ s32 unk_BC[PAD_MAX_CONTROLLERS];
-    /* 0x0CC */ s32 unk_CC[PAD_MAX_CONTROLLERS];
+    /* 0x07C */ volatile s32 stickLeft[PAD_MAX_CONTROLLERS][AXIS_MAX];
+    /* 0x09C */ volatile s32 stickRight[PAD_MAX_CONTROLLERS][AXIS_MAX];
+
+    //! TODO: fake match?
+    /* 0x0BC */ union {
+        s32 unk_BC[PAD_MAX_CONTROLLERS];
+        volatile s32 vunk_BC[PAD_MAX_CONTROLLERS];
+    };
+
+    /* 0x0CC */ volatile s32 unk_CC[PAD_MAX_CONTROLLERS];
     /* 0x0DC */ u32 controllerConfiguration[PAD_MAX_CONTROLLERS][GCN_BTN_COUNT];
     /* 0x21C */ ErrorIndex iString;
-    /* 0x220 */ s32 unk_220;
+    /* 0x220 */ volatile s32 unk_220;
     /* 0x224 */ s32 unk_224;
     /* 0x228 */ u32 unk_228[PAD_MAX_CONTROLLERS];
     /* 0x238 */ u32 unk_238[PAD_MAX_CONTROLLERS];
