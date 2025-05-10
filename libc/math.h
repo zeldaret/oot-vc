@@ -29,9 +29,9 @@ extern int __double_huge[];
 #define FP_NORMAL 4
 #define FP_SUBNORMAL 5
 
-int __fpclassifyd__Fd(f64 x);
+int __fpclassifyd(f64 x);
 
-#define fpclassify(x) __fpclassifyd__Fd(x)
+#define fpclassify(x) __fpclassifyd(x)
 #define isnormal(x) (fpclassify(x) == FP_NORMAL)
 #define isnan(x) (fpclassify(x) == FP_NAN)
 #define isinf(x) (fpclassify(x) == FP_INFINITE)

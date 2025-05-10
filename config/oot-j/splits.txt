@@ -907,9 +907,12 @@ libc/mem.c:
 	.text       start:0x80158858 end:0x801589C8
 
 libc/mem_funcs.c:
+	.text       start:0x801589C8 end:0x80158C98
+
+libc/math_api.c:
 	extab       start:0x80006848 end:0x80006858
 	extabindex  start:0x80006DFC end:0x80006E14
-	.text       start:0x801589C8 end:0x80158D30
+	.text       start:0x80158C98 end:0x80158D30
 
 libc/misc_io.c:
 	.text       start:0x80158D30 end:0x80158D40

@@ -155,18 +155,17 @@ void __copy_longs_unaligned(void* pDest, const void* pSrc, unsigned long len) {
     }
 }
 
-void __copy_longs_rev_unaligned(void* pDest, const void* pSrc, unsigned long len) {
-    unsigned long i;
-    unsigned long v1;
-    unsigned long v2;
-
+void __copy_longs_rev_unaligned(void* pDest, const void* pSrc, size_t len) {
+    unsigned int i;
+    unsigned int v1;
+    unsigned int v2;
     unsigned int src;
-    unsigned int rs;
     unsigned int ls;
+    unsigned int rs;
 
     srcCharPtr = ((unsigned char*)pSrc) + len;
     destCharPtr = ((unsigned char*)pDest) + len;
-    i = ((unsigned long)pDest) & 3;
+    i = ((unsigned int)pDest) & 3;
 
     if (i != 0) {
         len -= i;
@@ -181,9 +180,6 @@ void __copy_longs_rev_unaligned(void* pDest, const void* pSrc, unsigned long len
     rs = 32 - ls;
 
     srcCharPtr += 4 - src;
-
-    srcLongPtr = ((unsigned long*)srcCharPtr);
-    destLongPtr = ((unsigned long*)destCharPtr);
 
     i = len >> 3;
     v1 = *--srcLongPtr;
@@ -201,9 +197,6 @@ void __copy_longs_rev_unaligned(void* pDest, const void* pSrc, unsigned long len
     }
 
     len &= 3;
-
-    srcCharPtr = ((unsigned char*)pSrc);
-    destCharPtr = ((unsigned char*)pDest);
 
     if (len != 0) {
         srcCharPtr += src;
