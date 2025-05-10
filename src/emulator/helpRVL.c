@@ -30,35 +30,15 @@ extern void* fn_80083140(void);
 extern void fn_800888DC(void**);
 extern HBMControllerData lbl_801CA670;
 
+static void fn_8005F1A0(void);
+static void fn_8005F154(void);
+
 typedef struct Rect {
     /* 0x0 */ f32 x0;
     /* 0x4 */ f32 y0;
     /* 0x8 */ f32 x1;
     /* 0xC */ f32 y1;
 } Rect; // size = 0x10
-
-static s32 fn_8005E2D0(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, MEMAllocator* arg3, void* arg4);
-static void fn_8005E45C(GXTexObj* pTexObj, GXColor color);
-static void fn_8005E638(GXColor color);
-static void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5, u32 param_6);
-static void fn_8005EAFC(void);
-static void fn_8005EDFC(void);
-static void fn_8005F154(void);
-static void fn_8005F1A0(void);
-static bool fn_8005F1EC(void);
-static void fn_8005F1F4(HelpMenu* pHelpMenu);
-static bool fn_8005F6F4(HelpMenu* pHelpMenu, char* szFileName, s32** arg2, MEMAllocator* arg3) NO_INLINE;
-
-static inline bool fn_8005F7E4_UnknownInline(void);
-static inline void fn_8005EDFC_UnknownInline(GXColor color);
-static inline void fn_8005F1F4_UnknownInline1(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath);
-static inline void fn_8005F1F4_UnknownInline2(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath);
-static inline bool helpMenuAllocateHeap(HelpMenu* pHelpMenu);
-static inline bool helpMenuDestroyHeap(HelpMenu* pHelpMenu);
-static inline void helpMenuSetupRender();
-static inline void helpMenuUnknownControllerInline();
-static inline bool helpMenuHeapTake(HelpMenu* pHelpMenu);
-static inline bool helpMenuFree(HelpMenu* pHelpMenu);
 
 static MEMAllocator sMemAllocator1 = {0};
 static MEMAllocator sMemAllocator2 = {0};
@@ -96,7 +76,6 @@ char* lbl_8025D0BC;
 u8 lbl_8025D0B8;
 
 GXColor lbl_8025C850[] = {255, 255, 255, 255};
-const GXColor lbl_8025DEEC = {255, 255, 255, 0};
 
 static s32 fn_8005E2D0(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, MEMAllocator* arg3, void* arg4) {
     CNTFileInfoNAND fileInfo;
@@ -216,6 +195,62 @@ static void fn_8005E638(GXColor color) {
     GXSetTevColor(GX_TEVREG0, color);
 }
 
+#pragma inline_max_auto_size(100)
+
+void helpMenuSetupRender(GXTexObj* pTexObj) {
+    Rect rect = {0};
+    GXColor color;
+    f32 fWidth;
+    f32 fHeight;
+    Mtx44 matrix44;
+    f32 x1 = 0.0f;
+    f32 y1 = 0.0f;
+    f32 y0 = 0.0f;
+    f32 x0 = 0.0f;
+
+    rect.x1 = sRenderMode->fbWidth / 2;
+    rect.y1 = sRenderMode->xfbHeight / 2;
+
+    GXInvalidateVtxCache();
+    GXInvalidateTexAll();
+
+    if (fn_8007FC84()) {
+        fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
+        fHeight = ((sRenderMode->viHeight - 574) * 287) / 1148.0f;
+        C_MTXOrtho(matrix44, -fHeight, fHeight + 287.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
+    } else {
+        fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
+        fHeight = ((sRenderMode->viHeight - 480) * 240) / 960.0f;
+        C_MTXOrtho(matrix44, -fHeight, fHeight + 240.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
+    }
+
+    GXSetViewport(0.0f, 0.0f, sRenderMode->fbWidth, sRenderMode->efbHeight, 0.0f, 1.0f);
+    GXSetProjection(matrix44, GX_ORTHOGRAPHIC);
+
+    GXSetFog(GX_FOG_NONE, lbl_8025C850[0], 0.0f, 0.0f, 0.0f, 1000.0f);
+    GXFlush();
+
+    color.a = color.r = color.g = color.b = 0xFF;
+    fn_8005E45C(pTexObj, color);
+
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    x0 = rect.x0;
+    y0 = rect.y0;
+    x1 = rect.x1;
+    y1 = rect.y1;
+    GXPosition3f32(x0, y0, 0.0f);
+    GXTexCoord2u8(0, 0);
+    GXPosition3f32(x0, y1, 0.0f);
+    GXTexCoord2u8(0, 1);
+    GXPosition3f32(x1, y1, 0.0f);
+    GXTexCoord2u8(1, 1);
+    GXPosition3f32(x1, y0, 0.0f);
+    GXTexCoord2u8(1, 0);
+    GXEnd();
+}
+
+#pragma inline_max_auto_size(10)
+
 static void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5, u32 param_6) {
     f32 view[6];
     void* pBuffer;
@@ -305,7 +340,7 @@ static void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 
     }
 }
 
-static inline bool fn_8005F7E4_UnknownInline(void) {
+bool fn_8005F7E4_UnknownInline(void) {
     return fn_8005F6F4(SYSTEM_HELP(gpSystem), "html.arc", &lbl_8025D0F8, &sMemAllocator2);
 }
 
@@ -432,6 +467,8 @@ static inline void fn_8005EDFC_UnknownInline(GXColor color) {
     GXEnd();
 }
 
+const GXColor lbl_8025DEEC = {255, 255, 255, 0};
+
 static void fn_8005EDFC(void) {
     f32 fTime = OSTicksToMilliseconds(OSGetTick() - lbl_801C7D28.unk08);
 
@@ -482,7 +519,7 @@ static void fn_8005F1A0(void) {
 
 static bool fn_8005F1EC(void) { return false; }
 
-static inline void fn_8005F1F4_UnknownInline1(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
+void fn_8005F1F4_UnknownInline1(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
     s32 nLength = fn_8005E2D0(&sHandleNAND, szPath, ppBuffer, &sMemAllocator2, &sMemAllocator1);
     NANDCreate("/tmp/HBMSE.brsar", 0x30, 0);
     NANDOpen("/tmp/HBMSE.brsar", pFileInfo, 2);
@@ -491,7 +528,7 @@ static inline void fn_8005F1F4_UnknownInline1(NANDFileInfo* pFileInfo, void** pp
     fn_800888DC(ppBuffer);
 }
 
-static inline void fn_8005F1F4_UnknownInline2(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
+void fn_8005F1F4_UnknownInline2(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
     s32 nLength = fn_8005F6F4(SYSTEM_HELP(gpSystem), szPath, (s32**)ppBuffer, &sMemAllocator2);
     NANDCreate("/tmp/opera.arc", 0x30, 0);
     NANDOpen("/tmp/opera.arc", pFileInfo, 2);
@@ -676,15 +713,6 @@ static inline bool helpMenuDestroyHeap(HelpMenu* pHelpMenu) {
     return true;
 }
 
-static inline void helpMenuSetupRender() {
-    GXColor color;
-    GXSetFog(GX_FOG_NONE, lbl_8025C850[0], 0.0f, 0.0f, 0.0f, 4.4765625f);
-    GXFlush();
-
-    color.a = color.r = color.g = color.b = 0xFF;
-    fn_8005E45C(&sTexObj, color);
-}
-
 static inline void helpMenuUnknownControllerInline() {
     u8 i;
 
@@ -702,24 +730,20 @@ static inline void helpMenuUnknownControllerInline() {
 }
 
 s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
-    f32 fWidth;
-    f32 fHeight;
     Mtx44 matrix44_4;
     Mtx matrix;
     Mtx44 matrix44;
     s32 iVar9;
     void* pCurrentFrameBuffer;
-    Mtx44 matrix44_2;
-    Mtx44 matrix44_3;
     s32 i;
     bool bVar8 = false;
 
     if (lbl_801C7D28.unk04 != 0 && lbl_801C7D28.pTPLPalette != NULL) {
-        GXSetViewport(0.0f, 0.0f, 4.125f, 3.96875f, 0.0f, 1.875f);
+        GXSetViewport(0.0f, 0.0f, GC_FRAME_WIDTH, GC_FRAME_HEIGHT, 0.0f, 1.0f);
         GXSetScissor(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
         GXSetCullMode(GX_CULL_NONE);
         GXSetZMode(GX_FALSE, GX_LEQUAL, GX_TRUE);
-        C_MTXOrtho(matrix44, 0.0f, 3.7167969f, 0.0f, 3.8310547f, 0.0f, 4.477539f);
+        C_MTXOrtho(matrix44, 0.0f, 239.0f, 0.0f, 339.0f, 0.0f, 1001.0f);
         GXSetProjection(matrix44, GX_ORTHOGRAPHIC);
         PSMTXIdentity(matrix);
         GXLoadPosMtxImm(matrix, 3);
@@ -766,47 +790,7 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
         GXSetDispCopyDst(sRenderMode->fbWidth, sRenderMode->xfbHeight);
 
         if (lbl_8025D0C8 != NULL) {
-            Rect rect = {0};
-            f32 x1;
-            f32 y1;
-            f32 y0;
-            f32 x0;
-
-            rect.x1 = sRenderMode->fbWidth / 2;
-            rect.y1 = sRenderMode->xfbHeight / 2;
-
-            GXInvalidateVtxCache();
-            GXInvalidateTexAll();
-
-            if (fn_8007FC84()) {
-                fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
-                fHeight = ((sRenderMode->viHeight - 574) * 287) / 1148.0f;
-                C_MTXOrtho(matrix44_2, -fHeight, fHeight + 287.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
-            } else {
-                fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
-                fHeight = ((sRenderMode->viHeight - 480) * 240) / 960.0f;
-                C_MTXOrtho(matrix44_2, -fHeight, fHeight + 240.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
-            }
-
-            GXSetViewport(0.0f, 0.0f, sRenderMode->fbWidth, sRenderMode->efbHeight, 0.0f, 1.0f);
-            GXSetProjection(matrix44_2, GX_ORTHOGRAPHIC);
-
-            helpMenuSetupRender();
-
-            GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-            x0 = rect.x0;
-            y0 = rect.y0;
-            x1 = rect.x1;
-            y1 = rect.y1;
-            GXPosition3f32(x0, y0, 0.0f);
-            GXTexCoord2u8(0, 0);
-            GXPosition3f32(x0, y1, 0.0f);
-            GXTexCoord2u8(0, 1);
-            GXPosition3f32(x1, y1, 0.0f);
-            GXTexCoord2u8(1, 1);
-            GXPosition3f32(x1, y0, 0.0f);
-            GXTexCoord2u8(1, 0);
-            GXEnd();
+            helpMenuSetupRender(&sTexObj);
         }
 
         lbl_8025D0FC ^= 1;
@@ -949,53 +933,13 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
             }
 
             if (lbl_8025D0C8 != NULL) {
-                Rect rect = {0};
-                f32 x1;
-                f32 y1;
-                f32 y0;
-                f32 x0;
-
-                rect.x1 = sRenderMode->fbWidth / 2;
-                rect.y1 = sRenderMode->xfbHeight / 2;
-
-                GXInvalidateVtxCache();
-                GXInvalidateTexAll();
-
-                if (fn_8007FC84()) {
-                    fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
-                    fHeight = ((sRenderMode->viHeight - 574) * 287) / 1148.0f;
-                    C_MTXOrtho(matrix44_3, -fHeight, fHeight + 287.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
-                } else {
-                    fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
-                    fHeight = ((sRenderMode->viHeight - 480) * 240) / 960.0f;
-                    C_MTXOrtho(matrix44_3, -fHeight, fHeight + 240.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
-                }
-
-                GXSetViewport(0.0f, 0.0f, sRenderMode->fbWidth, sRenderMode->efbHeight, 0.0f, 1.0f);
-                GXSetProjection(matrix44_3, GX_ORTHOGRAPHIC);
-
-                helpMenuSetupRender();
-
-                GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-                x0 = rect.x0;
-                y0 = rect.y0;
-                x1 = rect.x1;
-                y1 = rect.y1;
-                GXPosition3f32(x0, y0, 0.0f);
-                GXTexCoord2u8(0, 0);
-                GXPosition3f32(x0, y1, 0.0f);
-                GXTexCoord2u8(0, 1);
-                GXPosition3f32(x1, y1, 0.0f);
-                GXTexCoord2u8(1, 1);
-                GXPosition3f32(x1, y0, 0.0f);
-                GXTexCoord2u8(1, 0);
-                GXEnd();
+                helpMenuSetupRender(&sTexObj);
             }
 
             if (fn_8007FC84()) {
-                C_MTXOrtho(matrix44_4, 3.71875f, -3.72625f, -3.8125f, 3.8125f, 0.0f, 3.9882812f);
+                C_MTXOrtho(matrix44_4, 240.0f, -243.84001f, -320.0f, 320.0f, 0.0f, 500.0f);
             } else {
-                C_MTXOrtho(matrix44_4, 3.71875f, -3.71875f, -3.8125f, 3.8125f, 0.0f, 3.9882812f);
+                C_MTXOrtho(matrix44_4, 240.0f, -240.0f, -320.0f, 320.0f, 0.0f, 500.0f);
             }
 
             GXSetProjection(matrix44_4, GX_ORTHOGRAPHIC);
