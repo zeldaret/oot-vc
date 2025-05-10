@@ -1128,8 +1128,6 @@ static int __pformatter(void* (*WriteProc)(void*, const char*, size_t), void* Wr
                 if (format.argument_options == wchar_argument) {
                     wchar_t* wcs_ptr = va_arg(arg, wchar_t*);
 
-
-
                     if (wcs_ptr == NULL) {
                         wcs_ptr = L"";
                     }
@@ -1142,7 +1140,6 @@ static int __pformatter(void* (*WriteProc)(void*, const char*, size_t), void* Wr
                 } else {
                     buff_ptr = va_arg(arg, char*);
                 }
-
 
                 if (buff_ptr == NULL) {
                     buff_ptr = "";
@@ -1168,7 +1165,6 @@ static int __pformatter(void* (*WriteProc)(void*, const char*, size_t), void* Wr
 
             case 'n':
                 buff_ptr = va_arg(arg, char*);
-
 
                 switch (format.argument_options) {
                     case normal_argument:
@@ -1235,8 +1231,6 @@ static int __pformatter(void* (*WriteProc)(void*, const char*, size_t), void* Wr
                 ++buff_ptr;
                 num_chars--;
             }
-
-
 
             while (field_width < format.field_width) {
                 if ((*WriteProc)(WriteProcArg, &fill_char, 1) == 0) {
@@ -1343,9 +1337,8 @@ int snprintf(char* s, size_t n, const char* format, ...) {
     return vsnprintf(s, n, format, args);
 }
 
-int sprintf(char* s, const char* format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	return vsnprintf(s, 0xFFFFFFFF, format, args);
+int sprintf(char* s, const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    return vsnprintf(s, 0xFFFFFFFF, format, args);
 }

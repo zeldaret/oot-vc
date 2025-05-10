@@ -151,8 +151,8 @@ unsigned long __strtoul(int base, int max_width, int (*ReadProc)(void*, int, int
     return value;
 }
 
-unsigned long long __strtoull(int base, int max_width, int (*ReadProc)(void*, int, int), void* ReadProcArg, int* chars_scanned,
-               int* negative, int* overflow) {
+unsigned long long __strtoull(int base, int max_width, int (*ReadProc)(void*, int, int), void* ReadProcArg,
+                              int* chars_scanned, int* negative, int* overflow) {
     int scan_state = start;
     int count = 0;
     int spaces = 0;
