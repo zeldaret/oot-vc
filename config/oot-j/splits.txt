@@ -865,6 +865,9 @@ libc/ansi_fp.c:
 	extab       start:0x800067B8 end:0x800067F0
 	extabindex  start:0x80006D24 end:0x80006D78
 	.text       start:0x80156064 end:0x801579D4
+	.rodata     start:0x8016E4C8 end:0x8016E5A8
+	.data       start:0x801A02C8 end:0x801A0430
+	.sdata2     start:0x8025E968 end:0x8025E9A0
 
 libc/arith.c:
 	extab       start:0x800067F0 end:0x80006800
