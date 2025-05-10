@@ -649,7 +649,7 @@ config.libs = [
             Object(NotLinked, "libc/bsearch.c"),
             Object(LinkedFor("oot-j"), "libc/buffer_io.c"),
             Object(LinkedFor("oot-j"), "libc/direct_io.c"),
-            Object(NotLinked, "libc/file_io.c"),
+            Object(LinkedFor("oot-j"), "libc/file_io.c"),
             Object(LinkedFor("oot-j"), "libc/file_pos.c"),
             Object(LinkedFor("oot-j"), "libc/mbstring.c"),
             Object(LinkedFor("oot-j"), "libc/mem.c"),

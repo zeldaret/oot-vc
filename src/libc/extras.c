@@ -3,6 +3,9 @@
 #include "math.h"
 #include "revolution/types.h"
 
+int __msl_strnicmp(const char* pStr1, const char* pStr2, int n);
+char* __msl_itoa(int value, char* str, int base);
+
 double scalbn(double x, int n) {
     double value;
     int exp;
@@ -33,6 +36,6 @@ int stricmp(char* param_1, char* param_2) {
     return 0;
 }
 
-void strnicmp(void) { fn_80158300(); }
+int strnicmp(const char* pStr1, const char* pStr2, int n) { return __msl_strnicmp(pStr1, pStr2, n); }
 
-void itoa(void) { fn_801583C0(); }
+char* itoa(int value, char* str, int base) { return __msl_itoa(value, str, base); }
