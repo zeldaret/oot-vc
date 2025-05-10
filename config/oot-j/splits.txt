@@ -921,6 +921,10 @@ libc/printf.c:
 	extab       start:0x80006858 end:0x800068C8
 	extabindex  start:0x80006E14 end:0x80006EBC
 	.text       start:0x80158D40 end:0x8015B294
+	.rodata     start:0x8016EAB0 end:0x8016EAE0
+	.data       start:0x801A0628 end:0x801A0878
+	.sdata      start:0x8025CFA0 end:0x8025CFB0
+	.sdata2     start:0x8025E9B8 end:0x8025E9C0
 
 libc/qsort.c:
 	extab       start:0x800068C8 end:0x800068D0
@@ -953,11 +957,14 @@ libc/strtold.c:
 	extab       start:0x80006908 end:0x80006910
 	extabindex  start:0x80006F1C end:0x80006F28
 	.text       start:0x8015CFF4 end:0x8015E3E8
+	.rodata     start:0x8016EB08 end:0x8016EB18
+	.sdata2     start:0x8025E9C0 end:0x8025E9E0
 
 libc/strtoul.c:
 	extab       start:0x80006910 end:0x80006940
 	extabindex  start:0x80006F28 end:0x80006F70
 	.text       start:0x8015E3E8 end:0x8015EFF8
+	.data       start:0x801A0998 end:0x801A0A20
 
 libc/time.c:
 	extab       start:0x80006940 end:0x80006988

@@ -1,3 +1,4 @@
+#define USE_CURRENT_LOCALE
 #include "strtoul.h"
 #include "ctype.h"
 #include "errno.h"
@@ -150,14 +151,14 @@ unsigned long __strtoul(int base, int max_width, int (*ReadProc)(void*, int, int
     return value;
 }
 
-unsigned long long __strtoull(int base, int max_width, int (*ReadProc)(void*, int, int), void* ReadProcArg,
-                              int* chars_scanned, int* negative, int* overflow) {
+unsigned long long __strtoull(int base, int max_width, int (*ReadProc)(void*, int, int), void* ReadProcArg, int* chars_scanned,
+               int* negative, int* overflow) {
     int scan_state = start;
     int count = 0;
     int spaces = 0;
     unsigned long long value = 0;
     unsigned long long value_max = 0;
-    unsigned long long ullmax = ULONG_MAX;
+    unsigned long long ullmax = ULLONG_MAX;
     int c;
 
     *negative = *overflow = 0;
@@ -169,7 +170,7 @@ unsigned long long __strtoull(int base, int max_width, int (*ReadProc)(void*, in
     }
 
     if (base != 0) {
-        value_max = ULONG_MAX / base;
+        value_max = ullmax / base;
     }
 
     while (count <= max_width && c != -1 && !final_state(scan_state)) {

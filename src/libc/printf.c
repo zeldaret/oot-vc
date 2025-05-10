@@ -1,3 +1,4 @@
+#define USE_CURRENT_LOCALE
 #include "ansi_fp.h"
 #include "ctype.h"
 #include "locale.h"
@@ -325,7 +326,7 @@ static char* long2str(long num, char* buff, print_format format) {
             base = 10;
 
             if (num < 0) {
-                if (num != 0x8000000000000000L) {
+                if (num != 0x80000000) {
                     unsigned_num = -num;
                 }
 
@@ -667,13 +668,9 @@ static char* double2hex(long double num, char* buff, print_format format) {
         if (format.precision || format.alternate_form) {
             *--p = radix_marker;
         }
-
-        if (fabsl(ld) != 0.0) {
-            *--p = '1';
-        } else {
-            *--p = '0';
-        }
     }
+
+    *--p = '1';
 
     if (format.conversion_char == 'a') {
         *--p = 'x';
@@ -978,7 +975,7 @@ static char* float2str(long double num, char* buff, print_format format) {
 }
 
 static int __pformatter(void* (*WriteProc)(void*, const char*, size_t), void* WriteProcArg, const char* format_str,
-                        va_list arg, int is_secure) {
+                        va_list arg) {
     int num_chars, chars_written, field_width;
     const char* format_ptr;
     const char* curr_format;
@@ -1131,10 +1128,7 @@ static int __pformatter(void* (*WriteProc)(void*, const char*, size_t), void* Wr
                 if (format.argument_options == wchar_argument) {
                     wchar_t* wcs_ptr = va_arg(arg, wchar_t*);
 
-                    if (is_secure && wcs_ptr == NULL) {
-                        __msl_runtime_constraint_violation_s(0, 0, -1);
-                        return -1;
-                    }
+
 
                     if (wcs_ptr == NULL) {
                         wcs_ptr = L"";
@@ -1149,10 +1143,6 @@ static int __pformatter(void* (*WriteProc)(void*, const char*, size_t), void* Wr
                     buff_ptr = va_arg(arg, char*);
                 }
 
-                if (is_secure && buff_ptr == NULL) {
-                    __msl_runtime_constraint_violation_s(0, 0, -1);
-                    return -1;
-                }
 
                 if (buff_ptr == NULL) {
                     buff_ptr = "";
@@ -1179,10 +1169,6 @@ static int __pformatter(void* (*WriteProc)(void*, const char*, size_t), void* Wr
             case 'n':
                 buff_ptr = va_arg(arg, char*);
 
-                if (is_secure) {
-                    __msl_runtime_constraint_violation_s(0, 0, -1);
-                    return -1;
-                }
 
                 switch (format.argument_options) {
                     case normal_argument:
@@ -1250,17 +1236,7 @@ static int __pformatter(void* (*WriteProc)(void*, const char*, size_t), void* Wr
                 num_chars--;
             }
 
-            if ((format.justification_options == zero_fill) &&
-                ((format.conversion_char == 'a') || (format.conversion_char == 'A'))) {
-                if (num_chars < 2) {
-                    return (-1);
-                }
-                if ((*WriteProc)(WriteProcArg, buff_ptr, 2) == 0) {
-                    return (-1);
-                }
-                num_chars -= 2;
-                buff_ptr += 2;
-            }
+
 
             while (field_width < format.field_width) {
                 if ((*WriteProc)(WriteProcArg, &fill_char, 1) == 0) {
@@ -1309,11 +1285,7 @@ static void* __StringWrite(void* pCtrl, const char* pBuffer, size_t char_num) {
     return (void*)1;
 }
 
-// unused
 void printf() {}
-
-// unused
-void printf_s() {}
 
 int fprintf(FILE* file, const char* format, ...) {
     int res;
@@ -1325,13 +1297,10 @@ int fprintf(FILE* file, const char* format, ...) {
     {
         va_list args;
         va_start(args, format);
-        res = __pformatter(&__FileWrite, (void*)file, format, args, false);
+        res = __pformatter(&__FileWrite, (void*)file, format, args);
         return res;
     }
 }
-
-// unused
-void fprintf_s() {}
 
 int vprintf(const char* pFormat, va_list arg) {
     int ret;
@@ -1340,18 +1309,9 @@ int vprintf(const char* pFormat, va_list arg) {
         return -1;
     }
 
-    ret = __pformatter(&__FileWrite, (void*)stdout, pFormat, arg, false);
+    ret = __pformatter(&__FileWrite, (void*)stdout, pFormat, arg);
     return ret;
 }
-
-// unused
-void vprintf_s() {}
-
-// unused
-void vfprintf() {}
-
-// unused
-void vfprintf_s() {}
 
 int vsnprintf(char* s, size_t n, const char* format, va_list arg) {
     int end;
@@ -1360,7 +1320,7 @@ int vsnprintf(char* s, size_t n, const char* format, va_list arg) {
     osc.MaxCharCount = n;
     osc.CharsWritten = 0;
 
-    end = __pformatter(&__StringWrite, &osc, format, arg, false);
+    end = __pformatter(__StringWrite, &osc, format, arg);
 
     if (s) {
         if (end < n) {
@@ -1375,13 +1335,7 @@ int vsnprintf(char* s, size_t n, const char* format, va_list arg) {
     return end;
 }
 
-// unused
-void vsnprintf_s() {}
-
 int vsprintf(char* s, const char* format, va_list arg) { return vsnprintf(s, 0xFFFFFFFF, format, arg); }
-
-// unused
-void vsprintf_s() {}
 
 int snprintf(char* s, size_t n, const char* format, ...) {
     va_list args;
@@ -1389,14 +1343,9 @@ int snprintf(char* s, size_t n, const char* format, ...) {
     return vsnprintf(s, n, format, args);
 }
 
-// unused
-void snprintf_s() {}
-
-int sprintf(char* s, const char* format, ...) {
-    va_list args;
-    va_start(args, format);
-    return vsnprintf(s, 0xFFFFFFFF, format, args);
+int sprintf(char* s, const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	return vsnprintf(s, 0xFFFFFFFF, format, args);
 }
-
-// unused
-void sprintf_s() {}

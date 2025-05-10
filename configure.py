@@ -663,7 +663,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "libc/signal.c"),
             Object(LinkedFor("oot-j"), "libc/string.c"),
             Object(NotLinked, "libc/strtold.c"),
-            Object(NotLinked, "libc/strtoul.c"),
+            Object(LinkedFor("oot-j"), "libc/strtoul.c"),
             Object(NotLinked, "libc/time.c"),
             Object(LinkedFor("oot-j"), "libc/wstring.c"),
             Object(LinkedFor("oot-j"), "libc/wchar_io.c"),
