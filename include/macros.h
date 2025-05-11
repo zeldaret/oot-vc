@@ -195,8 +195,7 @@ inline void padStack(void) { int pad = 0; }
     NW4HBM_PANIC4((u32)var & 0x1, file, line, \
                   "NW4HBM:Alignment Error(0x%x)\n" #var " must be aligned to 2 bytes boundary.", var)
 
-#define NW4HBM_ASSERT_PTR_NULL(ptr, line) \
-    NW4HBM_PANIC(ptr == NULL, line, "NW4HBM:Pointer must not be NULL (" #ptr ")", ptr)
+#define NW4HBM_ASSERT_PTR_NULL(ptr, line) NW4HBM_PANIC(ptr == NULL, line, "NW4HBM:Pointer must not be NULL (" #ptr ")")
 
 #define FONT_TYPE_NNGCTEXTURE 1
 #define GLYPH_INDEX_NOT_FOUND 0xFFFF

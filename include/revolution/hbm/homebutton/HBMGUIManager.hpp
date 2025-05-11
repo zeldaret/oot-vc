@@ -7,7 +7,7 @@
 
 #include "macros.h"
 #include "revolution/hbm/nw4hbm/lyt/lyt_pane.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_list.hpp"
+#include "revolution/hbm/nw4hbm/ut/list.h"
 #include "revolution/kpad/KPAD.h"
 #include "revolution/mem/mem_allocator.h"
 #include "revolution/mtx/mtx.h"
@@ -177,12 +177,12 @@ class Manager : public Interface {
     virtual void delComponent(Component* pComponent);
     virtual Component* getComponent(u32 uID);
     virtual bool update(int, const KPADStatus*, f32, f32, void*) { return false; }
-    virtual bool update(int i, f32 x, f32 y, u32 uTrigFlag, u32 uHoldFlag, u32 uReleaseFlag, void* pData);
     virtual void onEvent(u32 uID, u32 uEvent, void* pData) {
         if (mpEventHandler) {
             mpEventHandler->onEvent(uID, uEvent, pData);
         }
     }
+    virtual bool update(int i, f32 x, f32 y, u32 uTrigFlag, u32 uHoldFlag, u32 uReleaseFlag, void* pData);
 
     virtual void setAllComponentTriggerTarget(bool b);
     virtual void setEventHandler(EventHandler* pEventHandler) {
@@ -236,13 +236,13 @@ class PaneManager : public Manager {
 
     // vtable PaneManager
     virtual void createLayoutScene(const nw4hbm::lyt::Layout& rLayout);
-    virtual void addLayoutScene(const nw4hbm::lyt::Layout& rLayout);
+    virtual const nw4hbm::lyt::DrawInfo* getDrawInfo() { return mpDrawInfo; }
     virtual void delLayoutScene(const nw4hbm::lyt::Layout& rLayout);
     virtual PaneComponent* getPaneComponentByPane(nw4hbm::lyt::Pane* pPane);
-    virtual const nw4hbm::lyt::DrawInfo* getDrawInfo() { return mpDrawInfo; }
+    virtual void walkInChildren(nw4hbm::lyt::Pane::LinkList& rPaneList);
+    virtual void addLayoutScene(const nw4hbm::lyt::Layout& rLayout);
     virtual void setDrawInfo(const nw4hbm::lyt::DrawInfo* pDrawInfo) { mpDrawInfo = pDrawInfo; }
     virtual void setAllBoundingBoxComponentTriggerTarget(bool b);
-    virtual void walkInChildren(nw4hbm::lyt::Pane::LinkList& rPaneList);
     virtual void walkInChildrenDel(nw4hbm::lyt::Pane::LinkList& rPaneList);
 
     // members

@@ -13,6 +13,7 @@
 #include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_window.hpp"
 
+#include "revolution/hbm/nw4hbm/ut/list.h"
 #include "revolution/hbm/nw4hbm/ut/ut_CharStrmReader.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_CharWriter.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_Color.hpp"
@@ -26,6 +27,5 @@
 #include "revolution/hbm/nw4hbm/ut/ut_TextWriterBase.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_list.hpp"
 
 #endif

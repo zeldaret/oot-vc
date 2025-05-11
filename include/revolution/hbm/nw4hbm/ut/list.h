@@ -5,7 +5,12 @@
  * headers
  */
 
+#include "macros.h"
 #include "revolution/types.h"
+
+//! TODO: remove once matched
+extern "C" void fn_8010CB20(char*, int, ...);
+extern "C" void fn_8010CBAC(char*, int, ...);
 
 /*******************************************************************************
  * classes and functions
@@ -35,7 +40,10 @@ void* List_GetNth(const List* list, u16 index);
 
 inline void* List_GetFirst(const List* list) { return List_GetNext(list, nullptr); }
 
-inline u16 List_GetSize(const List* list) { return list->numObjects; }
+inline u16 List_GetSize(const List* list) {
+    NW4HBM_ASSERT_PTR_NULL(list, 207);
+    return list->numObjects;
+}
 
 inline const void* List_GetNthConst(const List* list, const u16 index) { return List_GetNth(list, index); }
 } // namespace ut

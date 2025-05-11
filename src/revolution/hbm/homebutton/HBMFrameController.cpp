@@ -10,10 +10,6 @@
 namespace homebutton {
 
 void FrameController::init(int anm_type, f32 max_frame, f32 min_frame, f32 delta) {
-    // OSAssert_Line(21, eAnmType_Forward <= anm_type && anm_type < eAnmType_Max);
-    // OSAssert_Line(22, max_frame > min_frame && min_frame >= 0.0f);
-    // OSAssert_Line(23, delta > 0.0f);
-
     mAnmType = anm_type;
     mMaxFrame = max_frame;
     mMinFrame = min_frame;
@@ -25,11 +21,7 @@ void FrameController::init(int anm_type, f32 max_frame, f32 min_frame, f32 delta
     initFrame();
 }
 
-void FrameController::initFrame() {
-    // OSAssert_Line(40, mMinFrame <= mMaxFrame);
-
-    mCurFrame = mAnmType == eAnmType_Backward ? mMaxFrame : mMinFrame;
-}
+void FrameController::initFrame() { mCurFrame = mAnmType == eAnmType_Backward ? mMaxFrame : mMinFrame; }
 
 void FrameController::calc() {
     if (mState != eState_Playing) {

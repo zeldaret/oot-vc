@@ -634,7 +634,8 @@ config.libs = [
         "hbm",
         [
             Object(NotLinked, "revolution/hbm/homebutton/HBMFrameController.cpp"),
-            Object(NotLinked, "revolution/hbm/code_80109CB8.cpp"),
+            Object(NotLinked, "revolution/hbm/homebutton/HBMGUIManager.cpp"),
+            Object(NotLinked, "revolution/hbm/code_80109E58.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_ResFont.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_ResFontBase.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_TagProcessorBase.cpp"),

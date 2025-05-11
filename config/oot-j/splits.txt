@@ -798,10 +798,18 @@ revolution/tpl/TPL.c:
 
 revolution/hbm/homebutton/HBMFrameController.cpp:
 	.text       start:0x80109CB8 end:0x80109E58
+	.data       start:0x801949E0 end:0x801949F0
 	.sdata2     start:0x8025E5F8 end:0x8025E600
 
+revolution/hbm/homebutton/HBMGUIManager.cpp:
+	.text       start:0x80109E58 end:0x8010B4DC
+	.data       start:0x801949F0 end:0x80194BD0
+	.sdata      start:0x8025CE20 end:0x8025CE28
+	.sbss       start:0x8025DBA8 end:0x8025DBB0
+	.sdata2     start:0x8025E600 end:0x8025E610
+
 revolution/hbm/code_80109E58.cpp:
-	.text       start:0x80109E58 end:0x80143E14
+	.text       start:0x8010B4DC end:0x80143E14
 	.ctors      start:0x8016A6E8 end:0x8016A730
 
 revolution/hbm/nw4hbm/ut/ut_ResFont.cpp:
