@@ -5,6 +5,9 @@
 extern "C" {
 #endif
 
+#include "stddef.h"
+#include "stdint.h"
+
 typedef signed char s8;
 typedef unsigned char u8;
 typedef signed short int s16;
@@ -40,21 +43,18 @@ typedef int bool;
 
 #define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
 
-#ifndef NULL
-#define NULL (void*)0
-#endif
-
-// some conditions don't match if it's using `(void*)0`
-#ifndef null
-#define null 0
-#endif
-
 typedef int UNKWORD;
 typedef void UNKTYPE;
 typedef void (*funcptr_t)(void);
 
 #ifdef __cplusplus
 }
+#endif
+
+#if !defined(__cplusplus) && __STDC_VERSION__ >= 199901L
+#define RESTRICT restrict
+#else
+#define RESTRICT
 #endif
 
 #endif

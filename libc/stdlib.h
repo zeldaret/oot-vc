@@ -1,18 +1,30 @@
-#ifndef _STDLIB_H_
-#define _STDLIB_H_
+#ifndef _STDLIB_H
+#define _STDLIB_H
 
-#include "stddef.h"
-#include "wchar.h"
+#include "revolution/types.h"
 
-#define RAND_MAX 32767
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void srand(unsigned int seed);
-int rand(void);
-// void exit(int status);
-size_t wcstombs(char* dest, const wchar_t* src, size_t max);
-int atoi(const char* str);
+#include "alloc.h"
+#include "arith.h"
+#include "mbstring.h"
+#include "rand.h"
+#include "strtold.h"
+#include "strtoul.h"
 
 typedef int (*_compare_function)(const void*, const void*);
 void qsort(void*, size_t, size_t, _compare_function);
+
+// For functions that return 0 on a success and -1 on failure
+#ifndef EXIT_SUCCESS
+#define EXIT_SUCCESS 0
+#define EXIT_FAILURE -1
+#endif
+
+#ifdef __cplusplus
+};
+#endif
 
 #endif

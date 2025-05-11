@@ -3,7 +3,6 @@
 
 #include "macros.h"
 #include "revolution/types.h"
-#include "stddef.h"
 
 #ifdef __cplusplus
 extern "C" {

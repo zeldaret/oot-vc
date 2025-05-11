@@ -1,6 +1,6 @@
 #include "revolution/arc.h"
 #include "ctype.h"
-#include "revolution/os/oserror.h"
+#include "revolution/os/OSError.h"
 
 /**
  * Modified from decompilation by riidefi in WiiCore

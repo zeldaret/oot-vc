@@ -1,17 +1,18 @@
-#ifndef _BUFFER_IO
-#define _BUFFER_IO
+#ifndef _BUFFER_IO_H
+#define _BUFFER_IO_H
 
+#include "revolution/types.h"
 #include "stdio.h"
 
-enum {
-    __align_buffer,
-    __dont_align_buffer
-};
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void __convert_from_newlines(unsigned char* p, size_t* n);
-void __convert_to_newlines(unsigned char* p, size_t* n);
-void __prep_buffer(FILE*);
-int __load_buffer(FILE*, size_t* bytes_loaded, int alignment);
-int __flush_buffer(FILE*, size_t* bytes_flushed);
+int __flush_buffer(FILE* file, size_t* length);
+void __prep_buffer(FILE* file);
 
-#endif // _BUFFER_IO
+#ifdef __cplusplus
+}
+#endif
+
+#endif

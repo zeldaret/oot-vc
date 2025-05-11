@@ -4,7 +4,6 @@
 #include "metrotrk/UART.h"
 #include "revolution/os/OSInterrupt.h"
 #include "revolution/types.h"
-#include "stddef.h"
 
 #ifdef __cplusplus
 extern "C" {

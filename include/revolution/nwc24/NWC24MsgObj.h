@@ -4,7 +4,6 @@
 #include "revolution/nwc24/NWC24Types.h"
 #include "revolution/nwc24/NWC24Utils.h"
 #include "revolution/types.h"
-#include "stddef.h"
 
 #ifdef __cplusplus
 extern "C" {

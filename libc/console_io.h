@@ -1,9 +1,19 @@
-#ifndef _CONSOLE_IO
-#define _CONSOLE_IO
+#ifndef _CONSOLE_IO_H
+#define _CONSOLE_IO_H
 
-#include "file_struc.h"
-#include "stddef.h"
+#include "revolution/types.h"
+#include "stdio.h"
 
-int __write_console(__file_handle handle, unsigned char* buffer, size_t* count, __idle_proc idle_proc);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif // _CONSOLE_IO
+int __read_console(__file_handle handle, u8* buffer, size_t* count, __ref_con ref_con);
+int __write_console(__file_handle handle, u8* buffer, size_t* count, __ref_con ref_con);
+int __close_console(__file_handle handle);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

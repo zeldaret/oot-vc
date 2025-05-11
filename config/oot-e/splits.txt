@@ -695,8 +695,13 @@ revolution/sc/scapi_prdinfo.c:
 	.data       start:0x8018ACC0 end:0x8018AD08
 	.sdata      start:0x8025CE30 end:0x8025CE38
 
+revolution/wenc/wenc.c:
+	.text       start:0x800B7444 end:0x800B771C
+	.rodata     start:0x8016BE90 end:0x8016BED0
+	.sdata2     start:0x8025E710 end:0x8025E718
+
 revolution/arc/arc.c:
-	.text       start:0x800B7444 end:0x800B80BC
+	.text       start:0x800B771C end:0x800B80BC
 	.data       start:0x8018AD08 end:0x8018AD78
 	.sdata      start:0x8025CE38 end:0x8025CE40
 
@@ -856,11 +861,16 @@ libc/ansi_files.c:
 	extab       start:0x800067A8 end:0x800067B8
 	extabindex  start:0x80006D0C end:0x80006D24
 	.text       start:0x80155F84 end:0x80156094
+	.data       start:0x801A0408 end:0x801A0548
+	.bss        start:0x8025A0D0 end:0x8025A3D0
 
 libc/ansi_fp.c:
 	extab       start:0x800067B8 end:0x800067F0
 	extabindex  start:0x80006D24 end:0x80006D78
 	.text       start:0x80156094 end:0x80157A04
+	.rodata     start:0x8016E4E8 end:0x8016E5C8
+	.data       start:0x801A0548 end:0x801A06B0
+	.sdata2     start:0x8025EBE8 end:0x8025EC20
 
 libc/arith.c:
 	extab       start:0x800067F0 end:0x80006800
@@ -903,9 +913,12 @@ libc/mem.c:
 	.text       start:0x80158888 end:0x801589F8
 
 libc/mem_funcs.c:
+	.text       start:0x801589F8 end:0x80158CC8
+
+libc/math_api.c:
 	extab       start:0x80006848 end:0x80006858
 	extabindex  start:0x80006DFC end:0x80006E14
-	.text       start:0x801589F8 end:0x80158D60
+	.text       start:0x80158CC8 end:0x80158D60
 
 libc/misc_io.c:
 	.text       start:0x80158D60 end:0x80158D70
@@ -922,16 +935,20 @@ libc/qsort.c:
 
 libc/rand.c:
 	.text       start:0x8015B434 end:0x8015B45C
+	.sdata      start:0x8025D230 end:0x8025D238
 
 libc/scanf.c:
 	extab       start:0x800068D0 end:0x800068E8
 	extabindex  start:0x80006EC8 end:0x80006EEC
 	.text       start:0x8015B45C end:0x8015C9C8
+	.rodata     start:0x8016EB00 end:0x8016EB28
+	.data       start:0x801A0AF8 end:0x801A0C18
 
 libc/signal.c:
 	extab       start:0x800068E8 end:0x800068F0
 	extabindex  start:0x80006EEC end:0x80006EF8
 	.text       start:0x8015C9C8 end:0x8015CA78
+	.bss        start:0x8025A3D0 end:0x8025A3F0
 
 libc/string.c:
 	extab       start:0x800068F0 end:0x80006908
@@ -947,6 +964,7 @@ libc/strtoul.c:
 	extab       start:0x80006910 end:0x80006940
 	extabindex  start:0x80006F28 end:0x80006F70
 	.text       start:0x8015E418 end:0x8015F028
+	.data       start:0x801A0C18 end:0x801A0CA0
 
 libc/time.c:
 	extab       start:0x80006940 end:0x80006988
@@ -966,114 +984,146 @@ libc/uart_console_io.c:
 	extab       start:0x80006988 end:0x80006990
 	extabindex  start:0x80006FDC end:0x80006FE8
 	.text       start:0x80160A44 end:0x80160B1C
+	.sbss       start:0x8025DF78 end:0x8025DF80
 
 libc/abort_exit_ppc_eabi.c:
 	extab       start:0x80006990 end:0x80006998
 	extabindex  start:0x80006FE8 end:0x80006FF4
 	.text       start:0x80160B1C end:0x80160B50
+	.sbss       start:0x8025DF80 end:0x8025DF88
 
 libc/extras.c:
 	extab       start:0x80006998 end:0x800069A0
 	extabindex  start:0x80006FF4 end:0x80007000
 	.text       start:0x80160B50 end:0x80160C40
 
-libc/e_acos.c:
+libc/math/e_acos.c:
 	.text       start:0x80160C40 end:0x80160F04
+	.sdata2     start:0x8025EC80 end:0x8025ED08
 
-libc/e_asin.c:
+libc/math/e_asin.c:
 	.text       start:0x80160F04 end:0x8016119C
+	.sdata2     start:0x8025ED08 end:0x8025ED90
 
-libc/e_atan2.c:
+libc/math/e_atan2.c:
 	.text       start:0x8016119C end:0x8016140C
+	.sdata2     start:0x8025ED90 end:0x8025EDE8
 
-libc/e_exp.c:
+libc/math/e_exp.c:
 	.text       start:0x8016140C end:0x80161640
+	.rodata     start:0x8016F260 end:0x8016F290
+	.sdata2     start:0x8025EDE8 end:0x8025EE60
 
-libc/e_fmod.c:
+libc/math/e_fmod.c:
 	.text       start:0x80161640 end:0x80161970
+	.rodata     start:0x8016F290 end:0x8016F2A0
 
-libc/e_log.c:
+libc/math/e_log.c:
 	.text       start:0x80161970 end:0x80161C24
+	.sbss       start:0x8025DF88 end:0x8025DF90
+	.sdata2     start:0x8025EE60 end:0x8025EEE0
 
-libc/e_log10.c:
+libc/math/e_log10.c:
 	.text       start:0x80161C24 end:0x80161D38
+	.sbss       start:0x8025DF90 end:0x8025DF98
+	.sdata2     start:0x8025EEE0 end:0x8025EF10
 
-libc/e_pow.c:
+libc/math/e_pow.c:
 	.text       start:0x80161D38 end:0x80162580
+	.rodata     start:0x8016F2A0 end:0x8016F2D0
+	.sdata2     start:0x8025EF10 end:0x8025F020
 
-libc/e_rem_pio2.c:
+libc/math/e_rem_pio2.c:
 	.text       start:0x80162580 end:0x80162918
+	.rodata     start:0x8016F2D0 end:0x8016F458
+	.sdata2     start:0x8025F020 end:0x8025F078
 
-libc/k_cos.c:
+libc/math/k_cos.c:
 	.text       start:0x80162918 end:0x80162A28
+	.sdata2     start:0x8025F078 end:0x8025F0C0
 
-libc/k_rem_pio2.c:
+libc/math/k_rem_pio2.c:
 	.text       start:0x80162A28 end:0x80164134
+	.rodata     start:0x8016F458 end:0x8016F4A8
+	.sdata2     start:0x8025F0C0 end:0x8025F100
 
-libc/k_sin.c:
+libc/math/k_sin.c:
 	.text       start:0x80164134 end:0x801641F4
+	.sdata2     start:0x8025F100 end:0x8025F138
 
-libc/k_tan.c:
+libc/math/k_tan.c:
 	.text       start:0x801641F4 end:0x8016444C
+	.rodata     start:0x8016F4A8 end:0x8016F510
+	.sdata2     start:0x8025F138 end:0x8025F170
 
-libc/s_atan.c:
+libc/math/s_atan.c:
 	.text       start:0x8016444C end:0x8016468C
+	.rodata     start:0x8016F510 end:0x8016F5A8
+	.sdata2     start:0x8025F170 end:0x8025F198
 
-libc/s_ceil.c:
+libc/math/s_ceil.c:
 	.text       start:0x8016468C end:0x801647CC
+	.sdata2     start:0x8025F198 end:0x8025F1A8
 
-libc/s_copysign.c:
+libc/math/s_copysign.c:
 	.text       start:0x801647CC end:0x801647F8
 
-libc/s_cos.c:
+libc/math/s_cos.c:
 	.text       start:0x801647F8 end:0x801648CC
+	.sdata2     start:0x8025F1A8 end:0x8025F1B0
 
-libc/s_floor.c:
+libc/math/s_floor.c:
 	.text       start:0x801648CC end:0x80164A10
+	.sdata2     start:0x8025F1B0 end:0x8025F1C0
 
-libc/s_frexp.c:
+libc/math/s_frexp.c:
 	.text       start:0x80164A10 end:0x80164A98
+	.sdata2     start:0x8025F1C0 end:0x8025F1C8
 
-libc/s_ldexp.c:
+libc/math/s_ldexp.c:
 	.text       start:0x80164A98 end:0x80164C04
+	.sdata2     start:0x8025F1C8 end:0x8025F1F0
 
-libc/s_sin.c:
+libc/math/s_sin.c:
 	.text       start:0x80164C04 end:0x80164CDC
+	.sdata2     start:0x8025F1F0 end:0x8025F1F8
 
-libc/s_tan.c:
+libc/math/s_tan.c:
 	.text       start:0x80164CDC end:0x80164D54
+	.sdata2     start:0x8025F1F8 end:0x8025F200
 
-libc/w_acos.c:
+libc/math/w_acos.c:
 	.text       start:0x80164D54 end:0x80164D58
 
-libc/w_asin.c:
+libc/math/w_asin.c:
 	.text       start:0x80164D58 end:0x80164D5C
 
-libc/w_atan2.c:
+libc/math/w_atan2.c:
 	.text       start:0x80164D5C end:0x80164D60
 
-libc/w_exp.c:
+libc/math/w_exp.c:
 	.text       start:0x80164D60 end:0x80164D64
 
-libc/w_fmod.c:
+libc/math/w_fmod.c:
 	.text       start:0x80164D64 end:0x80164D68
 
-libc/w_log.c:
+libc/math/w_log.c:
 	.text       start:0x80164D68 end:0x80164D6C
 
-libc/w_log10f.c:
+libc/math/w_log10f.c:
 	.text       start:0x80164D6C end:0x80164D70
 
-libc/w_pow.c:
+libc/math/w_pow.c:
 	.text       start:0x80164D70 end:0x80164D74
 
-libc/e_sqrt.c:
+libc/math/e_sqrt.c:
 	.text       start:0x80164D74 end:0x80164FBC
+	.sdata2     start:0x8025F200 end:0x8025F208
 
-libc/math_ppc.c:
+libc/math/math_ppc.c:
 	.text       start:0x80164FBC end:0x80164FC0
 
-libc/w_sqrt.c:
+libc/math/w_sqrt.c:
 	.text       start:0x80164FC0 end:0x80164FC4
 
 metrotrk/mainloop.c:
