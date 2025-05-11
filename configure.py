@@ -197,9 +197,12 @@ cflags_base = [
     "-nodefaults",
     "-msgstyle gcc",
     "-sym on",
+    "-DREVOLUTION",  # BTE changes
+    "-DHBM_APP_TYPE=HBM_APP_TYPE_NAND",
     "-i include",
     "-i libc",
     "-i src",
+    "-ir include/revolution/bte",  # thanks broadcom...
 ]
 
 if config.non_matching:

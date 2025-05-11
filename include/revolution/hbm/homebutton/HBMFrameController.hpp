@@ -5,8 +5,8 @@
  * headers
  */
 
-#include "revolution/types.h"
 #include "revolution/hbm/nw4hbm/ut/ut_LinkList.hpp"
+#include "revolution/types.h"
 
 /*******************************************************************************
  * classes and functions
