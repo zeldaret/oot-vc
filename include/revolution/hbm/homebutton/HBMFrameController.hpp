@@ -13,6 +13,7 @@
  */
 
 namespace homebutton {
+
 class FrameController {
     // enums
   public:
@@ -71,9 +72,15 @@ class FrameController {
     int mState; // size 0x04, offset 0x14
     int mAnmType; // size 0x04, offset 0x18
     bool mAltFlag; // size 0x01, offset 0x1c
-    // void* mUnk_20;
+
+  public:
+    NW4R_UT_LINKLIST_NODE_DECL();
+
     /* 3 bytes padding */
 }; // size 0x24
+
+NW4R_UT_LINKLIST_TYPEDEF_DECL(FrameController);
+
 } // namespace homebutton
 
 #endif // RVL_SDK_HBM_HOMEBUTTON_FRAME_CONTROLLER_HPP

@@ -1,6 +1,7 @@
 /*******************************************************************************
  * headers
  */
+#include "revolution/hbm/homebutton/HBMFrameController.hpp"
 #include "revolution.h"
 
 /*******************************************************************************
@@ -9,10 +10,7 @@
 
 namespace homebutton {
 
-FrameController::FrameController() {
-    // this->mUnk_20 = nullptr;
-    // this->mUnk_24 = 0;
-}
+FrameController::FrameController() {}
 
 void FrameController::fn_80109BF4() {
     int var_r27;

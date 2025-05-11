@@ -193,15 +193,14 @@ template <typename T, int I> class LinkList : private detail::LinkListImpl {
 /**
  * Declare typedef for linked-list specialization.
  */
-#define NW4R_UT_LINKLIST_TYPEDEF_DECL(T)                                       \
-    typedef nw4hbm::ut::LinkList<T, offsetof(T, node)> T##List;
+#define NW4R_UT_LINKLIST_TYPEDEF_DECL(T) typedef nw4hbm::ut::LinkList<T, offsetof(T, node)> T##List;
 
 /**
  * Declare typedef for linked-list specialization.
  *
  * Use the specified link node (name suffix) for classes with multiple nodes.
  */
-#define NW4R_UT_LINKLIST_TYPEDEF_DECL_EX(T, SUFFIX)                            \
+#define NW4R_UT_LINKLIST_TYPEDEF_DECL_EX(T, SUFFIX) \
     typedef nw4hbm::ut::LinkList<T, offsetof(T, node##SUFFIX)> T##SUFFIX##List;
 
 /**
@@ -214,16 +213,14 @@ template <typename T, int I> class LinkList : private detail::LinkListImpl {
  *
  * Use the specified link node (name suffix) for classes with multiple nodes.
  */
-#define NW4R_UT_LINKLIST_NODE_DECL_EX(SUFFIX)                                  \
-    nw4hbm::ut::LinkListNode node##SUFFIX
+#define NW4R_UT_LINKLIST_NODE_DECL_EX(SUFFIX) nw4hbm::ut::LinkListNode node##SUFFIX
 
 /**
  * Explicitly instantiate a linked list specialization.
  * (RESERVED FOR MATCHING DECOMP HACKS)
  */
 #ifndef __DECOMP_NON_MATCHING
-#define NW4R_UT_LINKLIST_TYPEDEF_FORCE(T)                                      \
-    template struct nw4hbm::ut::LinkList<T, offsetof(T, node)>
+#define NW4R_UT_LINKLIST_TYPEDEF_FORCE(T) template struct nw4hbm::ut::LinkList<T, offsetof(T, node)>
 #else
 #define NW4R_UT_LINKLIST_TYPEDEF_FORCE(T)
 #endif
@@ -234,16 +231,15 @@ template <typename T, int I> class LinkList : private detail::LinkListImpl {
  * @param NAME Element name
  * @param LIST Reference to list
  * @param ... Statement(s) to execute
+        NW4HBM_ASSERT_PTR_NULL(NAME, 573);                                     \
  */
-#define NW4R_UT_LINKLIST_FOREACH(NAME, LIST, ...)                              \
-    {                                                                          \
-        typedef DECLTYPE((LIST).GetBeginIter()) IterType;                      \
-                                                                               \
-        for (IterType NAME = (LIST).GetBeginIter();                            \
-             NAME != (LIST).GetEndIter(); ++NAME) {                            \
-                                                                               \
-            __VA_ARGS__;                                                       \
-        }                                                                      \
+#define NW4R_UT_LINKLIST_FOREACH(NAME, LIST, ...)                                          \
+    {                                                                                      \
+        typedef DECLTYPE((LIST).GetBeginIter()) IterType;                                  \
+        for (IterType NAME = (LIST).GetBeginIter(); NAME != (LIST).GetEndIter(); ++NAME) { \
+                                                                                           \
+            __VA_ARGS__;                                                                   \
+        }                                                                                  \
     }
 
 /**
@@ -253,16 +249,15 @@ template <typename T, int I> class LinkList : private detail::LinkListImpl {
  * @param LIST Reference to list
  * @param ... Statement(s) to execute
  */
-#define NW4R_UT_LINKLIST_FOREACH_SAFE(NAME, LIST, ...)                         \
-    {                                                                          \
-        typedef DECLTYPE((LIST).GetBeginIter()) IterType;                      \
-                                                                               \
-        for (IterType __impl__ = (LIST).GetBeginIter();                        \
-             __impl__ != (LIST).GetEndIter();) {                               \
-                                                                               \
-            IterType NAME = __impl__++;                                        \
-            __VA_ARGS__;                                                       \
-        }                                                                      \
+#define NW4R_UT_LINKLIST_FOREACH_SAFE(NAME, LIST, ...)                                      \
+    {                                                                                       \
+        typedef DECLTYPE((LIST).GetBeginIter()) IterType;                                   \
+                                                                                            \
+        for (IterType __impl__ = (LIST).GetBeginIter(); __impl__ != (LIST).GetEndIter();) { \
+                                                                                            \
+            IterType NAME = __impl__++;                                                     \
+            __VA_ARGS__;                                                                    \
+        }                                                                                   \
     }
 
 #endif // RVL_SDK_HBM_NW4HBM_UT_LINK_LIST_HPP
