@@ -4,7 +4,7 @@
 #include "revolution/os.h"
 #include "stdio.h"
 #include "string.h"
-#include "wchar.h"
+#include "wchar_io.h"
 
 #define NAND_BANNER_MAGIC 'WIBN'
 

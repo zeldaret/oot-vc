@@ -761,7 +761,6 @@ static bool osInvalICache(Cpu* pCPU) {
 static bool __osDisableInt(Cpu* pCPU) {
     u32 nStatus;
     u64 nData64;
-    s32 pad[2];
 
     if (!cpuGetRegisterCP0(pCPU, 12, (s64*)&nData64)) {
         return false;
@@ -894,6 +893,10 @@ void guOrthoF(Cpu* pCPU) {
     scale = data.f32;
 
     data0.f32 = 0.0f;
+
+    // float ordering fix
+    (void)65536.0f;
+
     data1.f32 = 1.0f;
 
     for (i = 0; i < 4; i++) {
@@ -949,7 +952,6 @@ void guOrtho(Cpu* pCPU) {
     f32 n;
     f32 f;
     f32 scale;
-    s32 pad[2];
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
     cpuGetAddressBuffer(pCPU, (void**)&sp, pCPU->aGPR[29].u32);
@@ -1105,7 +1107,6 @@ void guPerspective(Cpu* pCPU) {
     u32* sp;
     s32* ai;
     s32* af;
-    s32 pad[2];
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
     cpuGetAddressBuffer(pCPU, (void**)&sp, pCPU->aGPR[29].u32);
@@ -1234,7 +1235,6 @@ void guScale(Cpu* pCPU) {
     CpuFpr data;
     s32* ai;
     s32* af;
-    s32 pad[2];
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
 
@@ -1312,7 +1312,6 @@ void guTranslate(Cpu* pCPU) {
     f32 mf[4][4];
     s32* ai;
     s32* af;
-    s32 pad[2];
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
 
@@ -1471,7 +1470,6 @@ void guRotate(Cpu* pCPU) {
     f32 magnitude;
     s32* ai;
     s32* af;
-    s32 pad[2];
     static f32 dtor = (f32)M_PI / 180;
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
@@ -1694,7 +1692,6 @@ void guLookAt(Cpu* pCPU) {
     f32 xUp;
     f32 yUp;
     f32 zUp;
-    s32 pad[2];
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
     cpuGetAddressBuffer(pCPU, (void**)&sp, pCPU->aGPR[29].u32);
@@ -2084,7 +2081,6 @@ void guLookAtHilite(Cpu* pCPU) {
     f32 zl2;
     s32 twidth;
     s32 theight;
-    s32 pad[2];
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
     cpuGetAddressBuffer(pCPU, (void**)&l, pCPU->aGPR[5].u32);
@@ -2441,7 +2437,6 @@ void guLookAtReflect(Cpu* pCPU) {
     f32 xRight;
     f32 yRight;
     f32 zRight;
-    s32 pad[2];
 
     cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
     cpuGetAddressBuffer(pCPU, (void**)&l, pCPU->aGPR[5].u32);
@@ -2643,7 +2638,6 @@ bool __osEepStatus(Cpu* pCPU) {
 }
 
 bool osEepromRead(Cpu* pCPU) {
-    s32 pad[2];
     s32 address;
     u8* buffer;
 
@@ -2657,7 +2651,6 @@ bool osEepromRead(Cpu* pCPU) {
 }
 
 bool osEepromWrite(Cpu* pCPU) {
-    s32 pad[2];
     s32 address;
     u8* buffer;
 
@@ -2691,7 +2684,7 @@ bool osEepromLongRead(Cpu* pCPU) {
         }
 
         length -= 8;
-        address += 1;
+        address++;
         buffer += 8;
     }
 
@@ -2720,7 +2713,7 @@ bool osEepromLongWrite(Cpu* pCPU) {
         }
 
         length -= 8;
-        address += 1;
+        address++;
         buffer += 8;
     }
 
@@ -2782,7 +2775,7 @@ bool starfoxCopy(Cpu* pCPU) {
         if (A2 == 0) {
             A2 = 0x20;
             T0 = *A0;
-            A0 += 1;
+            A0++;
         }
 
         if (T0 < 0) {
@@ -2794,8 +2787,8 @@ bool starfoxCopy(Cpu* pCPU) {
         if (T2) {
             cpuGetAddressBuffer(pCPU, (void**)&source, T9);
             cpuGetAddressBuffer(pCPU, (void**)&target, A1);
-            T9 += 1;
-            A1 += 1;
+            T9++;
+            A1++;
             *target = *source;
         } else {
             cpuGetAddressBuffer(pCPU, (void**)&pData16, A3);
@@ -2806,15 +2799,15 @@ bool starfoxCopy(Cpu* pCPU) {
             do {
                 cpuGetAddressBuffer(pCPU, (void**)&source, T1 - 1);
                 cpuGetAddressBuffer(pCPU, (void**)&target, A1);
-                T3 -= 1;
-                T1 += 1;
-                A1 += 1;
+                T3--;
+                T1++;
+                A1++;
                 *target = *source;
             } while (T3 != 0);
         }
 
         T0 *= 2;
-        A2 -= 1;
+        A2--;
     } while (A1 != T8);
 
     return true;
@@ -2860,313 +2853,313 @@ bool osViSwapBuffer_Entry(Cpu* pCPU) {
 
 LibraryFunc gaFunction[62] = {
     {
-        "",
+        NULL,
         (LibraryFuncImpl)send_mesg,
         {0},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)__osEnqueueAndYield,
         {0},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)__osEnqueueThread,
         {0},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)__osPopThread,
         {0},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)__osDispatchThread,
         {0},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)osGetMemSize,
         {0x00000045, 0xE82F9DC4},
     },
     {
-        "",
+        NULL,
         NULL,
         {0x0000002C, 0x384D2C37, 0x0000002B, 0x3954FA00},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)osInvalICache,
         {0x0000001D, 0x376979EF, 0x0000001D, 0x3769A92F},
     },
     {
-        "",
+        NULL,
         NULL,
         {0x0000001D, 0x376979EF},
     },
     {
-        "",
+        NULL,
         NULL,
         {0x0000000A, 0x0F38926F},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)__osDisableInt,
         {0x00000020, 0x3F5B05D4, 0x00000022, 0x3F5B35D1, 0x00000008, 0x10310240, 0x0000000C, 0x10310300},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)__osRestoreInt,
         {0x00000007, 0x10000400},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)__osSpSetStatus,
         {0x00000003, 0x0000F02B, 0x00000004, 0x003CD02B, 0x0000000B, 0x5604E8E1},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)__cosf,
         {0x0000007E, 0x0EA800A6, 0x0000005A, 0xA7BF8A16, 0x0000008E, 0x417938C2, 0x000002B5, 0x82283827},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)__sinf,
         {0x0000007D, 0x9DDC3AD1, 0x00000070, 0x972CC1AA, 0x000000AB, 0x537273BE, 0x00000090, 0xA23718AB},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)_bzero,
         {0x00000028, 0x6A68DD7D, 0x00000027, 0x6A68E5DB},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)_bcopy,
         {0x000000CE, 0xFF1D6C61, 0x000000F0, 0x082F2020, 0x000000C7, 0xB1771900, 0x000000C7, 0xC732F943},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)_memcpy,
         {0x00000026, 0xC912B3A8},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)osVirtualToPhysical,
         {0x00000037, 0x5F70CFD6, 0x00000015, 0x17E44014},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)osPhysicalToVirtual,
         {0x0000000D, 0x2B8FBACB, 0x00000003, 0x0000F000},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guOrthoF,
         {0x00000055, 0x7F37D860, 0x00000080, 0x7C65E2F4},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guOrtho,
         {0x0000001A, 0xB0EC9807, 0x00000053, 0xA76A660F},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guPerspectiveF,
         {0x0000008C, 0x9EC5FEAB, 0x0000006C, 0xD2EF2D00},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guPerspective,
         {0x00000072, 0x2B0214E7, 0x00000016, 0x99A85378, 0x0000001B, 0x8CC9B39E},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guScaleF,
         {0x00000015, 0xCA91FB16, 0x00000018, 0x8497864D, 0x00000020, 0xBC8FF165},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guScale,
         {0x0000001F, 0xA2C19EFB, 0x00000012, 0x3E48EAE5},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guRotateF,
         {0x00000065, 0xD5CF8FAE, 0x00000057, 0xFA3518F4, 0x00000093, 0x9AA6B979},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guRotate,
         {0x0000005E, 0x06A7BCE6, 0x00000014, 0x698E4905, 0x00000017, 0x36AEAFA5},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guTranslateF,
         {0x0000001B, 0xC211F512},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guTranslate,
         {0x0000001C, 0x80FA01A4, 0x00000015, 0x71F205A8},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guLookAtF,
         {0x00000107, 0xB11E3841},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guLookAt,
         {0x000000E1, 0xE544558C},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guLookAtHiliteF,
         {0x000002E9, 0xCA0CCB5F},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guLookAtHilite,
         {0x00000035, 0xC2E98EC2, 0x00000035, 0x6B82DCD5},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guLookAtReflectF,
         {0x0000015E, 0x55ACFC31, 0x000001BF, 0xBFD63279},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)guLookAtReflect,
         {0x0000001B, 0xD6F88212, 0x00000023, 0xD70B815D},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)osAiSetFrequency,
         {0x00000046, 0x88F8FC90, 0x00000058, 0xA177D03D, 0x00000051, 0xD3B85DEF},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)osAiSetNextBuffer,
         {0x00000025, 0x5ACF0804, 0x0000002A, 0x978F50F1, 0x0000001D, 0x47200DC9},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)__osEepStatus,
         {0x000000A8, 0x8FBCE3BC, 0x00000067, 0x9870CAC4, 0x00000089, 0x807A196A},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)osEepromRead,
         {0x00000066, 0x380B07CA, 0x000000A5, 0x947050BF, 0x0000007C, 0x66EC38E8},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)osEepromWrite,
         {0x0000005A, 0x5FCCA978, 0x00000080, 0xF6971795, 0x0000006C, 0x07B6DF06},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)osEepromLongRead,
         {0x0000001C, 0x63BA7FE0, 0x0000002E, 0xF25B283A, 0x0000004F, 0x5B919EF9},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)osEepromLongWrite,
         {0x00000039, 0xED7A2E0B, 0x00000044, 0xF6B9E6BD, 0x0000004F, 0x5B919EF9},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B52C,
         {0x00000035, 0xF3081756, 0x00000035, 0xD4FE07ED, 0x00000050, 0xD8994154},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B53C,
         {0x000000C8, 0x4C772348, 0x000000BC, 0xEA1B798E, 0x000000CA, 0xEECDE8D5, 0x000000A2, 0xB804EF53, 0x00000043,
          0xE317736D},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B54C,
         {0x00000083, 0x7F8667AA, 0x0000006E, 0x6CF1440E},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B554,
         {0x0000009C, 0x3AC7018A, 0x00000089, 0x46FC22CC, 0x00000072, 0xBBF953DC},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)starfoxCopy,
         {0x00000026, 0x158C0203},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B6C0,
         {0x00000039, 0xEC894F9D},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B6C8,
         {0x00000030, 0xE88BF13B},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B6D0,
         {0x00000005, 0x09A69029},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B6D8,
         {0x0000007A, 0x78CA30D4},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B6E0,
         {0x00000066, 0x217F834C},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B6E8,
         {0x00000042, 0x082895D5, 0x0000001D, 0x7730CD62},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B6F0,
         {0x00000114, 0x42D3943A},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B6F8,
         {0x000000BE, 0x20689644},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B700,
         {0x00000A3B, 0xAC09CF16, 0x00000A0E, 0x0A2781CF},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)GenPerspective_1080,
         {0x0000002F, 0x3879CA27},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B708,
         {0x00000029, 0x44495C76},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B710,
         {0x00000057, 0x426B0B1F, 0x00000067, 0x325CC939},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B710,
         {0x0000008B, 0x9804924C},
     },
     {
-        "",
+        NULL,
         (LibraryFuncImpl)fn_8005B710,
         {0x00000022, 0x5D447143, 0x00000033, 0xBFD9B964, 0x00000082, 0x110CA1BB},
     },
@@ -3445,7 +3438,8 @@ static bool libraryFindFunctions(Library* pLibrary) {
     for (iFunction = 0;
          iFunction < ARRAY_COUNTU(gaFunction) && gaFunction[iFunction].pfLibrary != (LibraryFuncImpl)__osPopThread;
          iFunction++) {}
-    // bug: Tests if nAddressEnqueueThread + 8 != -1 instead of nAddressEnqueueThread != -1
+
+    //! @bug: Tests if nAddressEnqueueThread + 8 != -1 instead of nAddressEnqueueThread != -1
     if (iFunction < ARRAY_COUNTU(gaFunction) && (nAddress = nAddressEnqueueThread + 8) != -1) {
         do {
             CPU_DEVICE_GET32(apDevice, aiDevice, nAddress, &nOpcode);
@@ -3488,6 +3482,9 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
     u32 nChecksum;
     u32 nOpcode;
     u32 nAddress;
+    Frame* pFrame;
+
+    pFrame = SYSTEM_FRAME(gpSystem);
 
     if (!cpuGetFunctionChecksum(SYSTEM_CPU(gpSystem), &nChecksum, pFunction)) {
         return false;
@@ -3513,22 +3510,20 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
             bFlag = MIPS_OP(nOpcode) == 0x1F ? false : true;
             if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)osEepromLongRead && nChecksum == 0x5B919EF9) {
                 nAddress = (pFunction->nAddress0 & 0xF0000000) | (MIPS_TARGET(pnCode[17]) << 2);
-                if (!cpuGetAddressBuffer(SYSTEM_CPU(gpSystem), (void**)&pnCodeTemp, nAddress)) {
-                    return false;
-                }
-                if (pnCodeTemp[10] != 0xAFA00030) {
-                    bDone = true;
-                    iFunction += 1;
+                if (cpuGetAddressBuffer(SYSTEM_CPU(gpSystem), (void**)&pnCodeTemp, nAddress)) {
+                    if (pnCodeTemp[10] != 0xAFA00030) {
+                        bDone = true;
+                        iFunction++;
+                    }
                 }
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)osEepromLongWrite &&
                        nChecksum == 0x5B919EF9) {
                 nAddress = (pFunction->nAddress0 & 0xF0000000) | (MIPS_TARGET(pnCode[17]) << 2);
-                if (!cpuGetAddressBuffer(SYSTEM_CPU(gpSystem), (void**)&pnCodeTemp, nAddress)) {
-                    return false;
-                }
-                if (pnCodeTemp[10] == 0xAFA00030) {
-                    bDone = true;
-                    iFunction -= 1;
+                if (cpuGetAddressBuffer(SYSTEM_CPU(gpSystem), (void**)&pnCodeTemp, nAddress)) {
+                    if (pnCodeTemp[10] == 0xAFA00030) {
+                        bDone = true;
+                        iFunction--;
+                    }
                 }
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)__osSpSetStatus) {
                 nChecksum = 0;
@@ -3541,12 +3536,12 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)osInvalICache) {
                 if (MIPS_IMM_U16(pnCode[2]) == 0x2000) {
                     bDone = true;
-                    iFunction += 1;
+                    iFunction++;
                 }
             } else if (gaFunction[iFunction].pfLibrary == NULL && nChecksum == 0x376979EF) {
                 if (MIPS_IMM_U16(pnCode[2]) == 0x4000) {
                     bDone = true;
-                    iFunction -= 1;
+                    iFunction--;
                 }
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)__osDisableInt) {
                 if (pnCode[2] == 0 && pnCode[3] == 0) {
@@ -3555,6 +3550,10 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                         pnCode++;
                     }
                     bFlag = MIPS_OP(pnCode[0]) == 0x1F ? 0 : 1;
+                }
+            } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B50C) {
+                if (MIPS_RD(pnCode[0]) != 9) {
+                    bFlag = false;
                 }
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)osViSwapBuffer_Entry) {
                 if (bFlag) {
@@ -3565,9 +3564,120 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                         pLibrary->nAddStackSwap = MIPS_IMM_S16(nOpcode);
                     }
                 }
-            } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)GenPerspective_1080) {
-                if (((System*)gpSystem)->eTypeROM != NTEA) {
+            } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B708) {
+                if (gpSystem->eTypeROM == NSMP) {
+                    bDone = true;
                     bFlag = false;
+                    pFrame->bUsingLens++;
+                }
+            } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B710) {
+                if (gpSystem->eTypeROM == NSMJ || gpSystem->eTypeROM == NSME || gpSystem->eTypeROM == NSMP) {
+                    bDone = true;
+                    bFlag = false;
+                    pFrame->cBlurAlpha++;
+                    treeCleanUpCheck(SYSTEM_CPU(gpSystem), NULL);
+                } else if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
+                    bDone = true;
+                    bFlag = false;
+
+                    if (pFrame->cBlurAlpha == 0) {
+                        pFrame->cBlurAlpha = 1;
+                        pFrame->bSnapShot = 0;
+                        pFrame->nFrameCounter = 0;
+                        pFrame->bCameFromBomberNotes = 0;
+                        pFrame->bInBomberNotes = 0;
+                        pFrame->bShrinking = 0;
+                        treeCleanUpCheck(SYSTEM_CPU(gpSystem), NULL);
+                    }
+                } else if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
+                    if (pFrame->bCameFromBomberNotes == 0 && pFrame->bInBomberNotes == 0 && nChecksum == 0x5D447143) {
+                        pFrame->bCameFromBomberNotes = 1;
+                        pFrame->bInBomberNotes = 0x3C;
+                    } else if (pFrame->bCameFromBomberNotes == 1 && pFrame->bInBomberNotes != 0 &&
+                               nChecksum == 0xBFD9B964) {
+                        pFrame->bCameFromBomberNotes = 2;
+                        pFrame->bInBomberNotes = 0x3C;
+                    } else if (pFrame->bCameFromBomberNotes == 2 && pFrame->bInBomberNotes != 0 &&
+                               nChecksum == 0x110CA1BB) {
+                        pFrame->cBlurAlpha++;
+                        treeCleanUpCheck(SYSTEM_CPU(gpSystem), NULL);
+                    }
+
+                    bDone = true;
+                    bFlag = false;
+                }
+            } else {
+                if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
+                    if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6C0) {
+                        pFrame->bPauseThisFrame = 1;
+                        bDone = true;
+                        bFlag = false;
+                    } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6C8) {
+                        pFrame->nFrameCounter = 1;
+                        pFrame->bCameFromBomberNotes = 0;
+                        bDone = true;
+                        bFlag = false;
+                        pFrame->bInBomberNotes = 0;
+                        pFrame->bShrinking = 0;
+                    } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6D0) {
+                        pFrame->nFrameCounter = 0;
+                        bDone = true;
+                        bFlag = false;
+
+                        //! TODO: fake match
+                        ((volatile Frame*)pFrame)->bCameFromBomberNotes = 1;
+
+                        pFrame->bInBomberNotes = 0;
+                        pFrame->bShrinking = 0;
+                    } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6D8) {
+                        pFrame->nFrameCounter = 0;
+                        bDone = true;
+                        bFlag = false;
+                        pFrame->bCameFromBomberNotes = 0;
+
+                        //! TODO: fake match
+                        ((volatile Frame*)pFrame)->bInBomberNotes = 1;
+
+                        pFrame->bShrinking = 0;
+                    } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6E0) {
+                        pFrame->nFrameCounter = 0;
+                        bDone = true;
+                        bFlag = false;
+                        pFrame->bCameFromBomberNotes = 0;
+                        pFrame->bInBomberNotes = 0;
+
+                        //! TODO: fake match
+                        ((volatile Frame*)pFrame)->bShrinking = 1;
+                    } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6E8) {
+                        pFrame->nFrameCounter = 0;
+                        bDone = true;
+                        bFlag = false;
+                        pFrame->bCameFromBomberNotes = 0;
+                        pFrame->bInBomberNotes = 0;
+                        pFrame->bShrinking = 0;
+                    }
+                } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6F0) {
+                    if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
+                        pFrame->nFrameCounter = 1;
+                        bDone = true;
+                        bFlag = false;
+                    }
+                } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6F8) {
+                    if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
+                        pFrame->nFrameCounter = 0;
+                        bDone = true;
+                        bFlag = false;
+                    }
+                } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B700) {
+                    if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
+                        pFrame->bBlurOn = 1;
+                        bDone = true;
+                        bFlag = false;
+                    }
+                } else if (gpSystem->eTypeROM != NTEJ && gpSystem->eTypeROM != NTEA && gpSystem->eTypeROM != NTEP) {
+                    if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)GenPerspective_1080) {
+                        bFlag = false;
+                    }
                 }
             }
 
@@ -3591,11 +3701,19 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
 }
 
 static bool librarySearch(Library* pLibrary, CpuFunction* pFunction) {
-    if (pFunction->left != NULL && !librarySearch(pLibrary, pFunction->left)) {
-        return false;
-    } else if (pFunction->right != NULL && !librarySearch(pLibrary, pFunction->right)) {
-        return false;
-    } else if (!libraryTestFunction(pLibrary, pFunction)) {
+    if (pFunction->left != NULL) {
+        if (!librarySearch(pLibrary, pFunction->left)) {
+            return false;
+        }
+    }
+
+    if (pFunction->right != NULL) {
+        if (!librarySearch(pLibrary, pFunction->right)) {
+            return false;
+        }
+    }
+
+    if (!libraryTestFunction(pLibrary, pFunction)) {
         return false;
     }
 
@@ -3612,10 +3730,16 @@ static inline bool libraryUpdate(Library* pLibrary) {
     }
 
     if (pCPU->gTree != NULL) {
-        if (pCPU->gTree->left != NULL && !librarySearch(pLibrary, pCPU->gTree->left)) {
-            return false;
-        } else if (pCPU->gTree->right != NULL && !librarySearch(pLibrary, pCPU->gTree->right)) {
-            return false;
+        if (pCPU->gTree->left != NULL) {
+            if (!librarySearch(pLibrary, pCPU->gTree->left)) {
+                return false;
+            }
+        }
+
+        if (pCPU->gTree->right != NULL) {
+            if (!librarySearch(pLibrary, pCPU->gTree->right)) {
+                return false;
+            }
         }
     }
 

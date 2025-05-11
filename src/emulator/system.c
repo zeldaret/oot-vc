@@ -352,29 +352,9 @@ bool systemCreateStorageDevice(System* pSystem, void* pArgument) {
     void** ppObject;
     s32 iDevice;
 
-    pSystem->apObject[SOT_CPU] = NULL;
-    pSystem->apObject[SOT_PIF] = NULL;
-    pSystem->apObject[SOT_RAM] = NULL;
-    pSystem->apObject[SOT_ROM] = NULL;
-    pSystem->apObject[SOT_RSP] = NULL;
-    pSystem->apObject[SOT_RDP] = NULL;
-    pSystem->apObject[SOT_MI] = NULL;
-    pSystem->apObject[SOT_DISK] = NULL;
-    pSystem->apObject[SOT_AI] = NULL;
-    pSystem->apObject[SOT_VI] = NULL;
-    pSystem->apObject[SOT_SI] = NULL;
-    pSystem->apObject[SOT_PI] = NULL;
-    pSystem->apObject[SOT_RDB] = NULL;
-    pSystem->apObject[SOT_PAK] = NULL;
-    pSystem->apObject[SOT_SRAM] = NULL;
-    pSystem->apObject[SOT_FLASH] = NULL;
-    pSystem->apObject[SOT_CODE] = NULL;
-    pSystem->apObject[SOT_HELP] = NULL;
-    pSystem->apObject[SOT_LIBRARY] = NULL;
-    pSystem->apObject[SOT_FRAME] = NULL;
-    pSystem->apObject[SOT_AUDIO] = NULL;
-    pSystem->apObject[SOT_VIDEO] = NULL;
-    pSystem->apObject[SOT_CONTROLLER] = NULL;
+    for (i = 0; i < ARRAY_COUNT(pSystem->apObject); i++) {
+        pSystem->apObject[i] = NULL;
+    }
 
     iDevice = 0;
 
@@ -1249,7 +1229,7 @@ static bool systemSetupGameALL(System* pSystem) {
 }
 
 static bool systemGetException(System* pSystem, SystemInterruptType eType, SystemException* pException) {
-    pException->nMask = 0;
+    pException->nMask = 0x00;
     pException->szType = "";
     pException->eType = eType;
     pException->eCode = CEC_NONE;
@@ -1257,17 +1237,17 @@ static bool systemGetException(System* pSystem, SystemInterruptType eType, Syste
 
     switch (eType) {
         case SIT_SW0:
-            pException->nMask = 5;
+            pException->nMask = 0x05;
             pException->szType = "SW0";
             pException->eCode = CEC_INTERRUPT;
             break;
         case SIT_SW1:
-            pException->nMask = 6;
+            pException->nMask = 0x06;
             pException->szType = "SW1";
             pException->eCode = CEC_INTERRUPT;
             break;
         case SIT_CART:
-            pException->nMask = 0xC;
+            pException->nMask = 0x0C;
             pException->szType = "CART";
             pException->eCode = CEC_INTERRUPT;
             break;
@@ -1282,37 +1262,37 @@ static bool systemGetException(System* pSystem, SystemInterruptType eType, Syste
             pException->eCode = CEC_INTERRUPT;
             break;
         case SIT_SP:
-            pException->nMask = 4;
+            pException->nMask = 0x04;
             pException->szType = "SP";
             pException->eTypeMips = MIT_SP;
             pException->eCode = CEC_INTERRUPT;
             break;
         case SIT_SI:
-            pException->nMask = 4;
+            pException->nMask = 0x04;
             pException->szType = "SI";
             pException->eTypeMips = MIT_SI;
             pException->eCode = CEC_INTERRUPT;
             break;
         case SIT_AI:
-            pException->nMask = 4;
+            pException->nMask = 0x04;
             pException->szType = "AI";
             pException->eTypeMips = MIT_AI;
             pException->eCode = CEC_INTERRUPT;
             break;
         case SIT_VI:
-            pException->nMask = 4;
+            pException->nMask = 0x04;
             pException->szType = "VI";
             pException->eTypeMips = MIT_VI;
             pException->eCode = CEC_INTERRUPT;
             break;
         case SIT_PI:
-            pException->nMask = 4;
+            pException->nMask = 0x04;
             pException->szType = "PI";
             pException->eTypeMips = MIT_PI;
             pException->eCode = CEC_INTERRUPT;
             break;
         case SIT_DP:
-            pException->nMask = 4;
+            pException->nMask = 0x04;
             pException->szType = "DP";
             pException->eTypeMips = MIT_DP;
             pException->eCode = CEC_INTERRUPT;
@@ -1322,7 +1302,7 @@ static bool systemGetException(System* pSystem, SystemInterruptType eType, Syste
             pException->eCode = CEC_BREAK;
             break;
         case SIT_SP_BREAK:
-            pException->nMask = 4;
+            pException->nMask = 0x04;
             pException->szType = "BREAK (SP)";
             pException->eCode = CEC_INTERRUPT;
             break;

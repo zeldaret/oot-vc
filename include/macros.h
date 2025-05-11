@@ -12,11 +12,14 @@ extern "C" {
 
 #define ALIGN_PREV(X, N) ((X) & ~((N) - 1))
 #define ALIGN_NEXT(X, N) ALIGN_PREV(((X) + (N) - 1), N)
+#define ALIGN(X, N) ((X + N) & ~N)
 
 #define ARRAY_COUNT(arr) (s32)(sizeof(arr) / sizeof(arr[0]))
 #define ARRAY_COUNTU(arr) (u32)(sizeof(arr) / sizeof(arr[0]))
 
 #define OFFSETOF(p, field) ((u8*)&(p)->field - (u8*)(p))
+
+#define MB(x) (x * 1024 * 1024)
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) < (b) ? (b) : (a))

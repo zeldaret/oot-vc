@@ -213,6 +213,8 @@ s32 DVDConvertPathToEntrynum(const char* path) {
     }
 }
 
+bool DVDEntrynumIsDir(s32 entrynum) { return DVDNodeIsFolder(FstStart[entrynum]) ? true : false; }
+
 bool DVDFastOpen(s32 entrynum, DVDFileInfo* info) {
     if (entrynum < 0 || entrynum >= MaxEntryNum || DVDNodeIsFolder(FstStart[entrynum])) {
         return false;
@@ -225,8 +227,6 @@ bool DVDFastOpen(s32 entrynum, DVDFileInfo* info) {
 
     return true;
 }
-
-bool DVDEntrynumIsDir(s32 entrynum) { return DVDNodeIsFolder(FstStart[entrynum]) ? true : false; }
 
 #ifdef NON_MATCHING
 bool DVDOpen(const char* path, DVDFileInfo* info) {

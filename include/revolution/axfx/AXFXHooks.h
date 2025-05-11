@@ -2,7 +2,6 @@
 #define _RVL_SDK_AXFX_HOOKS_H
 
 #include "revolution/types.h"
-#include "stddef.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -10,6 +10,7 @@
 #include "emulator/errordisplay.h"
 #include "emulator/controller.h"
 #include "emulator/frame.h"
+#include "emulator/helpRVL.h"
 #include "emulator/rom.h"
 #include "emulator/system.h"
 #include "emulator/vc64_RVL.h"
@@ -671,7 +672,7 @@ bool errorDisplayShow(ErrorIndex iString) {
         errorDisplayDrawSetup();
         errorDisplayPrint(&string);
         fn_8005F7E4(SYSTEM_HELP(gpSystem));
-        fn_80007020();
+        simulatorDEMODoneRender();
         nResult = fn_80063688(&string, var_r31 & (var_r31 ^ var_r30));
     } while (nResult == 0);
 
