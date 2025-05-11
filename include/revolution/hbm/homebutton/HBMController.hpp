@@ -7,6 +7,7 @@
 
 #include "revolution/hbm/homebutton/HBMCommon.hpp"
 #include "revolution/hbm/homebutton/HBMRemoteSpk.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_SoundHandle.hpp"
 #include "revolution/mtx/mtx.h" // Vec2
 #include "revolution/os/OSAlarm.h"
 #include "revolution/os/OSTime.h"
@@ -52,7 +53,6 @@ class Controller {
     bool getBatteryFlag() const;
 
     void setSpeakerVol(f32 vol);
-    void setEnableRumble(bool flag) { mRumbleFlag = flag; }
     void setRumble() { mHBController.rumble = true; }
     void clrRumble() { mHBController.rumble = false; }
 
@@ -71,7 +71,7 @@ class Controller {
 
     void initSound();
     void updateSound();
-    void playSound(int id);
+    void playSound(int arg1, int id);
 
     void soundOn();
     void soundOff(int msec);
@@ -91,28 +91,27 @@ class Controller {
 
     // members
   private:
-    HBController mHBController; // size 0x20, offset 0x00
-    RemoteSpk* remotespk; // size 0x04, offset 0x20
-    WPADConnectCallback* mOldConnectCallback; // size 0x04, offset 0x24
-    WPADExtensionCallback* mOldExtensionCallback; // size 0x04, offset 0x28
-    /* 4 bytes padding */
-    OSTime mPlaySoundTime; // size 0x08, offset 0x30
-    OSTime mStopSoundTime; // size 0x08, offset 0x38
-    bool mCallbackFlag; // size 0x01, offset 0x40
-    bool mSoundOffFlag; // size 0x01, offset 0x41
-    bool mCheckSoundTimeFlag; // size 0x01, offset 0x42
-    bool mCheckSoundIntervalFlag; // size 0x01, offset 0x43
-    bool mRumbleFlag; // size 0x01, offset 0x44
-    /* 3 bytes padding */
+    /* 0x00 */ HBController mHBController;
+    /* 0x20 */ nw4hbm::snd::SoundHandle mSoundHandle;
+    /* 0x24 */ RemoteSpk* remotespk;
+    /* 0x28 */ WPADConnectCallback* mOldConnectCallback;
+    /* 0x2C */ WPADExtensionCallback* mOldExtensionCallback;
+    /* 0x30 */ OSTime mPlaySoundTime;
+    /* 0x38 */ OSTime mStopSoundTime;
+    /* 0x40 */ bool mCallbackFlag;
+    /* 0x41 */ bool mSoundOffFlag;
+    /* 0x42 */ bool mCheckSoundTimeFlag;
+    /* 0x43 */ bool mCheckSoundIntervalFlag;
 
     // static members
   private:
-    static bool sBatteryFlag[WPAD_MAX_CONTROLLERS];
+    //! TODO: `WPAD_MAX_CONTROLLERS * 2` fake?
+    static bool sBatteryFlag[WPAD_MAX_CONTROLLERS * 2];
     static OSAlarm sAlarm[WPAD_MAX_CONTROLLERS];
     static OSAlarm sAlarmSoundOff[WPAD_MAX_CONTROLLERS];
     static Controller* sThis[WPAD_MAX_CONTROLLERS];
-    static bool sSetInfoAsync[WPAD_MAX_CONTROLLERS];
-}; // size 0x48
+    static bool sSetInfoAsync[WPAD_MAX_CONTROLLERS * 2];
+}; // size 0x44
 } // namespace homebutton
 
 #endif // RVL_SDK_HBM_HOMEBUTTON_CONTROLLER_HPP

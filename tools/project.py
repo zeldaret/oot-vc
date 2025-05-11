@@ -1422,7 +1422,7 @@ def calculate_progress(config: ProjectConfig, version: str) -> None:
 
     for progress in progress_units.values():
         # don't print the progress of the libraries
-        if progress.name in {"All", "Emulator"}:
+        if progress.name in {"All", "Emulator", "NW4HBM Lib"}:
             print_category(progress)
 
     # Generate and write progress.json
