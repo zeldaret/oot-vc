@@ -797,7 +797,7 @@ revolution/tpl/TPL.c:
 	.sdata2     start:0x8025E590 end:0x8025E598
 
 revolution/hbm/homebutton/HBMFrameController.cpp:
-	.text       start:0x80109CB8 end:0x80109E58
+	.text       start:0x80109B98 end:0x80109E58
 	.data       start:0x801949E0 end:0x801949F0
 	.sdata2     start:0x8025E5F8 end:0x8025E600
 
