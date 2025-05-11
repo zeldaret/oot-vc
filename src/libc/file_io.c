@@ -10,7 +10,7 @@ int fclose(FILE* file) {
     int flush_result;
     int close_result;
 
-    if (file == nullptr) {
+    if (file == NULL) {
         return -1;
     }
 
@@ -35,7 +35,7 @@ int fclose(FILE* file) {
 int fflush(FILE* file) {
     int pos;
 
-    if (file == nullptr) {
+    if (file == NULL) {
         return __flush_all();
     }
 

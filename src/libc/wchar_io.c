@@ -4,7 +4,7 @@ int fwide(FILE* stream, int mode) {
     int orientation;
     int result;
 
-    if (stream == nullptr || stream->mode.file_kind == __closed_file) {
+    if (stream == NULL || stream->mode.file_kind == __closed_file) {
         return 0;
     }
 

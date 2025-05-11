@@ -131,7 +131,7 @@ void __close_all() {
         } else {
             plast->mode.file_kind = __unavailable_file;
             if ((p != NULL) && p->is_dynamically_allowed) {
-                plast->next_file_struct = nullptr;
+                plast->next_file_struct = NULL;
             }
         }
     }

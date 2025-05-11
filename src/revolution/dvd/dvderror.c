@@ -11,7 +11,7 @@ static DVDErrorCallback Callback;
 static void cbForNandClose(s32 result, NANDCommandBlock* block) {
 #pragma unused(block)
 
-    if (Callback != nullptr) {
+    if (Callback != 0) {
         Callback(result == NAND_RESULT_OK ? 1 : 2, 0);
     }
 }
@@ -22,7 +22,7 @@ static void cbForNandWrite(s32 result, NANDCommandBlock* block) {
 
     if (NANDCloseAsync(&NandInfo, cbForNandClose, &NandCb) != NAND_RESULT_OK) {
         // Must call callback function manually
-        cbForNandClose(-1, nullptr);
+        cbForNandClose(-1, 0);
     }
 }
 
@@ -32,9 +32,9 @@ static void cbForNandOpen(s32 result, NANDCommandBlock* block) {
     if (result == NAND_RESULT_OK) {
         if (NANDWriteAsync(&NandInfo, &__ErrorInfo, sizeof(DVDErrorInfo), cbForNandWrite, &NandCb) != NAND_RESULT_OK) {
             // Must call callback function manually
-            cbForNandWrite(-1, nullptr);
+            cbForNandWrite(-1, 0);
         }
-    } else if (Callback != nullptr) {
+    } else if (Callback != 0) {
         Callback(2, 0);
     }
 }
@@ -46,9 +46,9 @@ static void cbForNandCreate(s32 result, NANDCommandBlock* block) {
         if (NANDPrivateOpenAsync("/shared2/test/dvderror.dat", &NandInfo, NAND_ACCESS_WRITE, cbForNandOpen, &NandCb) !=
             NAND_RESULT_OK) {
             // Must call callback function manually
-            cbForNandOpen(-1, nullptr);
+            cbForNandOpen(-1, 0);
         }
-    } else if (Callback != nullptr) {
+    } else if (Callback != 0) {
         Callback(2, 0);
     }
 }
@@ -60,9 +60,9 @@ static void cbForNandCreateDir(s32 result, NANDCommandBlock* block) {
         if (NANDPrivateCreateAsync("/shared2/test/dvderror.dat", NAND_PERM_RWALL, 0, cbForNandCreate, &NandCb) !=
             NAND_RESULT_OK) {
             // Must call callback function manually
-            cbForNandCreate(-1, nullptr);
+            cbForNandCreate(-1, 0);
         }
-    } else if (Callback != nullptr) {
+    } else if (Callback != 0) {
         Callback(2, 0);
     }
 }
@@ -74,6 +74,6 @@ void __DVDStoreErrorCode(u32 error, DVDErrorCallback callback) {
 
     if (NANDPrivateCreateDirAsync("/shared2/test", NAND_PERM_RWALL, 0, cbForNandCreateDir, &NandCb) != 0) {
         // Must call callback function manually
-        cbForNandCreateDir(-1, nullptr);
+        cbForNandCreateDir(-1, 0);
     }
 }
