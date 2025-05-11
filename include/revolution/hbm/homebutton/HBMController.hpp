@@ -82,6 +82,9 @@ class Controller {
     void initCallback();
     void clearCallback();
 
+    static RemoteSpk* GetInstance() { return sPInstance; }
+    static RemoteSpk* SetInstance(RemoteSpk* p) { sPInstance = p; }
+
     // static methods
   private:
     static void wpadConnectCallback(WPADChannel chan, WPADResult result);
@@ -105,12 +108,13 @@ class Controller {
 
     // static members
   private:
-    //! TODO: `WPAD_MAX_CONTROLLERS * 2` fake?
-    static bool sBatteryFlag[WPAD_MAX_CONTROLLERS * 2];
+    static bool sBatteryFlag[WPAD_MAX_CONTROLLERS];
     static OSAlarm sAlarm[WPAD_MAX_CONTROLLERS];
     static OSAlarm sAlarmSoundOff[WPAD_MAX_CONTROLLERS];
     static Controller* sThis[WPAD_MAX_CONTROLLERS];
-    static bool sSetInfoAsync[WPAD_MAX_CONTROLLERS * 2];
+    static bool sSetInfoAsync[WPAD_MAX_CONTROLLERS];
+    static RemoteSpk* sPInstance;
+    static s32 lbl_8025DBBC;
 }; // size 0x44
 } // namespace homebutton
 

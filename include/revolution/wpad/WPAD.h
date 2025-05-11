@@ -43,6 +43,7 @@ typedef enum WPADResult {
 #define WPAD_ESUCCESS WPAD_ERR_OK
 #define WPAD_ENODEV WPAD_ERR_NO_CONTROLLER
 #define WPAD_ECOMM WPAD_ERR_COMMUNICATION_ERROR
+#define WPAD_ETRANSFER WPAD_ERR_TRANSFER
 #define WPAD_EINVAL WPAD_ERR_INVALID
 #define WPAD_EBADE WPAD_ERR_CORRUPTED
 
@@ -325,7 +326,7 @@ void WPADRead(s32 chan, WPADStatus* pStatus);
 void WPADSetAutoSamplingBuf(s32 chan, void* pBuffer, u32 len);
 
 bool WPADIsSpeakerEnabled(s32 chan);
-s32 WPADControlSpeaker(s32 chan, u32 command, WPADCallback pCallback);
+WPADResult WPADControlSpeaker(WPADChannel chan, u32 command, WPADCallback pCallback);
 u8 WPADGetSpeakerVolume(void);
 void WPADSetSpeakerVolume(u8 volume);
 

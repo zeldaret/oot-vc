@@ -17,11 +17,13 @@
 
 namespace homebutton {
 // .bss
-bool Controller::sBatteryFlag[WPAD_MAX_CONTROLLERS * 2];
+bool Controller::sBatteryFlag[WPAD_MAX_CONTROLLERS];
 OSAlarm Controller::sAlarm[WPAD_MAX_CONTROLLERS];
 OSAlarm Controller::sAlarmSoundOff[WPAD_MAX_CONTROLLERS];
 Controller* Controller::sThis[WPAD_MAX_CONTROLLERS];
-bool Controller::sSetInfoAsync[WPAD_MAX_CONTROLLERS * 2];
+bool Controller::sSetInfoAsync[WPAD_MAX_CONTROLLERS];
+RemoteSpk* Controller::sPInstance;
+s32 Controller::lbl_8025DBBC;
 } // namespace homebutton
 
 /*******************************************************************************

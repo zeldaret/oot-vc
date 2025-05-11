@@ -77,10 +77,6 @@ class RemoteSpk {
     /* vtable */ // size 0x004, offset 0x1f0
     /* 4 bytes padding */
 
-    // static members
-  private:
-    static RemoteSpk* spInstance;
-
     // late declarations
   public:
     virtual ~RemoteSpk();
