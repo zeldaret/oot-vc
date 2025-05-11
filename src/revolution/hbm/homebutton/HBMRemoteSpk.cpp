@@ -5,8 +5,8 @@
  */
 
 #include "macros.h"
-#include "revolution/hbm/homebutton/HBMController.hpp"
 #include "revolution/arc/arc.h"
+#include "revolution/hbm/homebutton/HBMController.hpp"
 #include "revolution/os/OSAlarm.h"
 #include "revolution/os/OSInterrupt.h"
 #include "revolution/os/OSTime.h"
@@ -147,9 +147,7 @@ void RemoteSpk::Start(void) {
     OSSetPeriodicAlarm(&speakerAlarm, OSGetTime(), OSNanosecondsToTicks(6666667), &UpdateSpeaker);
 }
 
-void RemoteSpk::Stop(void) {
-    OSCancelAlarm(&speakerAlarm);
-}
+void RemoteSpk::Stop(void) { OSCancelAlarm(&speakerAlarm); }
 
 void RemoteSpk::DelaySpeakerOnCallback(OSAlarm* alarm, OSContext*) {
     WPADChannel chan = OSGetAlarmUserDataAny(WPADChannel, alarm);

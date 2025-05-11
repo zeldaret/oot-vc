@@ -111,7 +111,7 @@ ASM void PSMTXConcat(const register Mtx mA, const register Mtx mB, register Mtx 
 #endif // clang-format on
 }
 
-ASM void PSMTXInverse(const Mtx mA, Mtx mB) {
+ASM void PSMTXInverse(const Mtx mA, Mtx mB){
 #ifdef __MWERKS__ // clang-format off
     nofralloc
 	psq_l f0, 0x0(r3), 1, 0

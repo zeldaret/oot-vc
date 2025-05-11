@@ -84,12 +84,12 @@ static void drawLine_(f32 x0, f32 y0, f32 x1, f32 y1, f32 z, u8 uWidth, GXColor&
 
     GXSetLineWidth(uWidth, 0);
 
-	GXBegin(GX_LINES, GX_VTXFMT0, 2);
-		GXPosition3f32(x0, y0, z);
-		GXColor1u32(*reinterpret_cast<u32 *>(&rColor));
-		GXPosition3f32(x1, y1, z);
-		GXColor1u32(*reinterpret_cast<u32 *>(&rColor));
-	GXEnd();
+    GXBegin(GX_LINES, GX_VTXFMT0, 2);
+    GXPosition3f32(x0, y0, z);
+    GXColor1u32(*reinterpret_cast<u32*>(&rColor));
+    GXPosition3f32(x1, y1, z);
+    GXColor1u32(*reinterpret_cast<u32*>(&rColor));
+    GXEnd();
 }
 
 bool Component::update(int i, f32 x, f32 y, u32, u32, u32, void* pData) {

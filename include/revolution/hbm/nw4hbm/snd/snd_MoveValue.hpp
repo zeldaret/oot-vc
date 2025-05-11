@@ -8,12 +8,8 @@ namespace snd {
 namespace detail {
 
 template <typename TValue, typename TTime> class MoveValue {
-public:
-    MoveValue()
-        : mOrigin(TValue()),
-          mTarget(TValue()),
-          mFrame(TTime()),
-          mCounter(TTime()) {}
+  public:
+    MoveValue() : mOrigin(TValue()), mTarget(TValue()), mFrame(TTime()), mCounter(TTime()) {}
 
     void InitValue(TValue t1) {
         mOrigin = t1;
@@ -22,9 +18,7 @@ public:
         mCounter = 0;
     }
 
-    bool IsFinished() const {
-        return mCounter >= mFrame;
-    }
+    bool IsFinished() const { return mCounter >= mFrame; }
 
     TValue GetValue() const {
         if (IsFinished()) {
@@ -47,10 +41,10 @@ public:
         mCounter = 0;
     }
 
-private:
+  private:
     TValue mOrigin; // at 0x0
     TValue mTarget; // at 0x4
-    TTime mFrame;   // at 0x8
+    TTime mFrame; // at 0x8
     TTime mCounter; // at 0xC
 };
 

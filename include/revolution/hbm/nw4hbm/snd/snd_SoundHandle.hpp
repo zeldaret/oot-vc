@@ -1,30 +1,24 @@
 #ifndef NW4R_SND_SOUND_HANDLE_H
 #define NW4R_SND_SOUND_HANDLE_H
 
-#include "revolution/types.h"
-#include "revolution/hbm/ut.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_BasicSound.hpp"
+#include "revolution/hbm/ut.hpp"
+#include "revolution/types.h"
 
 namespace nw4hbm {
 namespace snd {
 
 class SoundHandle : private ut::NonCopyable {
-public:
+  public:
     SoundHandle() : mSound(nullptr) {}
-    ~SoundHandle() {
-        DetachSound();
-    }
+    ~SoundHandle() { DetachSound(); }
 
     void detail_AttachSound(detail::BasicSound* pSound);
     void detail_AttachSoundAsTempHandle(detail::BasicSound* pSound);
 
-    bool IsAttachedSound() const {
-        return mSound != nullptr;
-    }
+    bool IsAttachedSound() const { return mSound != nullptr; }
 
-    detail::BasicSound* detail_GetAttachedSound() {
-        return mSound;
-    }
+    detail::BasicSound* detail_GetAttachedSound() { return mSound; }
 
     void DetachSound();
 
@@ -100,7 +94,7 @@ public:
         }
     }
 
-private:
+  private:
     detail::BasicSound* mSound; // at 0x0
 };
 
