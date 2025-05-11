@@ -85,8 +85,32 @@ inline void padStack(void) { int pad = 0; }
 #define BOOLIFY_TERNARY_TYPE BOOLIFY_TRUE_TERNARY_TYPE
 #define BOOLIFY_TERNARY BOOLIFY_TRUE_TERNARY
 
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+
+#ifndef decltype
+#define decltype __decltype__
+#endif
+
 #define NW4R_VERSION(major_, minor_) ((major_) << 8 | (minor_))
+
+// Sort of like C++11's range for, except now it's a macro for NW4R iterators
+#define NW4R_RANGE_FOR(it_, list_) \
+    for (decltype((list_).GetBeginIter())(it_) = (list_).GetBeginIter(); (it_) != (list_).GetEndIter(); ++(it_))
+
+/* This macro specifically is for the for loops which declare an
+ * Iterator currIt = it++; in the body, so that it does not get incremented
+ * twice.
+ */
+#define NW4R_RANGE_FOR_NO_AUTO_INC(it_, list_) \
+    for (decltype((list_).GetBeginIter())(it_) = (list_).GetBeginIter(); (it_) != (list_).GetEndIter();)
+
 #define NW4HBM_VERSION NW4R_VERSION
+#define NW4HBM_RANGE_FOR NW4R_RANGE_FOR
+#define NW4HBM_RANGE_FOR_NO_AUTO_INC NW4R_RANGE_FOR_NO_AUTO_INC
 
 #define NW4HBM_ASSERT_PTR(ptr, line)                                                                             \
     {                                                                                                            \
@@ -177,8 +201,6 @@ inline void padStack(void) { int pad = 0; }
 #define FONT_TYPE_NNGCTEXTURE 1
 #define GLYPH_INDEX_NOT_FOUND 0xFFFF
 
-#ifdef __cplusplus
-}
 #endif
 
 #endif

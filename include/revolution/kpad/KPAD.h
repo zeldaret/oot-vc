@@ -10,10 +10,6 @@ extern "C" {
 
 #define KPAD_MAX_CONTROLLERS 4
 
-typedef struct Vec2 {
-    f32 x, y;
-} Vec2;
-
 typedef union KPADEXStatus {
     struct {
         /* 0x00 */ Vec2 stick;
