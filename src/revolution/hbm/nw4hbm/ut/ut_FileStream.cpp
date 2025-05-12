@@ -35,24 +35,24 @@ u32 FileStream::FilePosition::Append(s32 offset) {
 
 void FileStream::FilePosition::Seek(s32 offset, u32 origin) {
     switch (origin) {
-    case SEEK_BEG: {
-        mPosition = 0;
-        break;
-    }
+        case SEEK_BEG: {
+            mPosition = 0;
+            break;
+        }
 
-    case SEEK_END: {
-        mPosition = mFileSize;
-        break;
-    }
+        case SEEK_END: {
+            mPosition = mFileSize;
+            break;
+        }
 
-    case SEEK_CUR:
-    default: {
-        break;
-    }
+        case SEEK_CUR:
+        default: {
+            break;
+        }
     }
 
     Skip(offset);
 }
 
 } // namespace ut
-} // namespace nw4r
+} // namespace nw4hbm

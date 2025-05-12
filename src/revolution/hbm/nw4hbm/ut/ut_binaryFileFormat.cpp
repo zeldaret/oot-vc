@@ -22,10 +22,10 @@ bool IsValidBinaryFile(const BinaryFileHeader* header, byte4_t signature, u16 ve
     NW4HBM_ASSERT_PTR(header, 48);
 
     if (header->signature != signature) {
-        fn_8010CBAC(__FILE__, 60, "Signature check failed ('%c%c%c%c') must be'%c%c%c%c').", 
-        (header->signature >> 24) & 0xFF, (header->signature >> 16) & 0xFF, (header->signature >> 8) & 0xFF, (header->signature & 0xFF), 
-        (signature >> 24) & 0xFF, (signature >> 16) & 0xFF, (signature >> 8) & 0xFF, (signature & 0xFF)
-        );
+        fn_8010CBAC(__FILE__, 60, "Signature check failed ('%c%c%c%c') must be'%c%c%c%c').",
+                    (header->signature >> 24) & 0xFF, (header->signature >> 16) & 0xFF, (header->signature >> 8) & 0xFF,
+                    (header->signature & 0xFF), (signature >> 24) & 0xFF, (signature >> 16) & 0xFF,
+                    (signature >> 8) & 0xFF, (signature & 0xFF));
         return false;
     }
 
