@@ -49,6 +49,8 @@ void GXCopyTex(void*, GXBool);
 u16 GXGetNumXfbLines(const u16 efbHeight, f32 yScale);
 u32 GXSetDispCopyYScale(f32 vertScale);
 
+void GXSetDispCopyGamma(GXGamma gamma);
+
 #ifdef __cplusplus
 }
 #endif

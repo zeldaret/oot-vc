@@ -303,7 +303,7 @@ u8 WPADGetSensorBarPosition(void);
 void WPADGetAccGravityUnit(s32 chan, u32 type, WPADAccGravityUnit* pAcc);
 
 void WPADDisconnect(s32 chan);
-s32 WPADProbe(s32 chan, WPADDeviceType* pDevType);
+WPADResult WPADProbe(s32 chan, WPADDeviceType* pDevType);
 
 WPADSamplingCallback WPADSetSamplingCallback(s32 chan, WPADSamplingCallback pCallback);
 WPADConnectCallback* WPADSetConnectCallback(WPADChannel chan, WPADConnectCallback* cb);
