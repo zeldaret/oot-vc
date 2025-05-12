@@ -1,6 +1,6 @@
+#include "revolution/hbm/nw4hbm/db/db_assert.hpp"
 #include "cstdarg.hpp"
 #include "revolution/base.h"
-#include "revolution/hbm/nw4hbm/db/db_assert.hpp"
 #include "revolution/hbm/nw4hbm/db/db_console.hpp"
 #include "revolution/os.h"
 #include "revolution/vi.h"

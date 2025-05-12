@@ -86,6 +86,6 @@ static long Console_SetViewBaseLine(detail::ConsoleHead* console, long line) {
 
 static u16 Console_GetViewHeight(detail::ConsoleHead* console) { return console->viewLines; }
 } // namespace db
-} // namespace nwhbm
+} // namespace nw4hbm
 
 #endif

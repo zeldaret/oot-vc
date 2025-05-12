@@ -2,8 +2,8 @@
 #define NW4R_DB_ASSERT_H
 
 #include "macros.h"
-#include "revolution/types.h"
 #include "revolution/hbm/nw4hbm/db/db_console.hpp"
+#include "revolution/types.h"
 
 namespace nw4hbm {
 namespace db {
