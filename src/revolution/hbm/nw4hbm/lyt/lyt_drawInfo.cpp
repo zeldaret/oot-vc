@@ -12,17 +12,16 @@
  * functions
  */
 
-namespace nw4hbm { namespace lyt {
+namespace nw4hbm {
+namespace lyt {
 
-DrawInfo::DrawInfo():
-	mLocationAdjustScale	(1.0f, 1.0f),
-	mGlobalAlpha			(1.0f)
-{
-	std::memset(&mFlag, 0, sizeof mFlag);
+DrawInfo::DrawInfo() : mLocationAdjustScale(1.0f, 1.0f), mGlobalAlpha(1.0f) {
+    std::memset(&mFlag, 0, sizeof mFlag);
 
-	math::MTX34Identity(&mViewMtx);
+    math::MTX34Identity(&mViewMtx);
 }
 
 DrawInfo::~DrawInfo() {}
 
-}} // namespace nw4hbm::lyt
+} // namespace lyt
+} // namespace nw4hbm

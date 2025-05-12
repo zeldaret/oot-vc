@@ -4,8 +4,8 @@
  * headers
  */
 
-#include "new.hpp"
 #include "cstring.hpp" // std::memcpy
+#include "new.hpp"
 
 #include "macros.h"
 #include "revolution/types.h"
@@ -21,85 +21,70 @@
  * functions
  */
 
-namespace nw4hbm { namespace lyt {
+namespace nw4hbm {
+namespace lyt {
 
 Group::Group() {}
 
-Group::Group(const res::Group *pResGroup, Pane *pRootPane)
-{
-	Init();
-	std::memcpy(mName, pResGroup->name, sizeof mName);
+Group::Group(const res::Group* pResGroup, Pane* pRootPane) {
+    Init();
+    std::memcpy(mName, pResGroup->name, sizeof mName);
 
-	const char *paneName =
-		detail::ConvertOffsToPtr<char>(pResGroup, sizeof *pResGroup);
+    const char* paneName = detail::ConvertOffsToPtr<char>(pResGroup, sizeof *pResGroup);
 
-	for (int i = 0; i < pResGroup->paneNum; i++)
-	{
-		Pane *pFindPane = pRootPane->FindPaneByName(
-			paneName + (int)sizeof pResGroup->name * i, true);
+    for (int i = 0; i < pResGroup->paneNum; i++) {
+        Pane* pFindPane = pRootPane->FindPaneByName(paneName + (int)sizeof pResGroup->name * i, true);
 
-		if (pFindPane)
-			AppendPane(pFindPane);
-	}
+        if (pFindPane) {
+            AppendPane(pFindPane);
+        }
+    }
 }
 
-void Group::Init()
-{
-	mbUserAllocated = false;
+void Group::Init() { mbUserAllocated = false; }
+
+Group::~Group() {
+    NW4HBM_RANGE_FOR_NO_AUTO_INC(it, mPaneLinkList) {
+        DECLTYPE(it) currIt = it++;
+
+        mPaneLinkList.Erase(currIt);
+        Layout::FreeMemory(&(*currIt));
+    }
 }
 
-Group::~Group()
-{
-	NW4HBM_RANGE_FOR_NO_AUTO_INC(it, mPaneLinkList)
-	{
-		DECLTYPE(it) currIt = it++;
+void Group::AppendPane(Pane* pPane) {
+    if (void* pMem = Layout::AllocMemory(sizeof(detail::PaneLink))) {
+        detail::PaneLink* pPaneLink = new (pMem) detail::PaneLink();
 
-		mPaneLinkList.Erase(currIt);
-		Layout::FreeMemory(&(*currIt));
-	}
+        pPaneLink->mTarget = pPane;
+        mPaneLinkList.PushBack(pPaneLink);
+    }
 }
 
-void Group::AppendPane(Pane *pPane)
-{
-	if (void *pMem = Layout::AllocMemory(sizeof(detail::PaneLink)))
-	{
-		detail::PaneLink *pPaneLink = new (pMem) detail::PaneLink();
+GroupContainer::~GroupContainer() {
+    NW4HBM_RANGE_FOR_NO_AUTO_INC(it, mGroupList) {
+        DECLTYPE(it) currIt = it++;
 
-		pPaneLink->mTarget = pPane;
-		mPaneLinkList.PushBack(pPaneLink);
-	}
+        mGroupList.Erase(currIt);
+
+        if (!currIt->IsUserAllocated()) {
+            currIt->~Group();
+            Layout::FreeMemory(&(*currIt));
+        }
+    }
 }
 
-GroupContainer::~GroupContainer()
-{
-	NW4HBM_RANGE_FOR_NO_AUTO_INC(it, mGroupList)
-	{
-		DECLTYPE(it) currIt = it++;
+void GroupContainer::AppendGroup(Group* pGroup) { mGroupList.PushBack(pGroup); }
 
-		mGroupList.Erase(currIt);
+Group* GroupContainer::FindGroupByName(const char* findName) {
+    NW4HBM_RANGE_FOR(it, mGroupList) {
+        if (detail::EqualsPaneName(it->GetName(), findName)) {
+            return &(*it);
+        }
+    }
 
-		if (!currIt->IsUserAllocated())
-		{
-			currIt->~Group();
-			Layout::FreeMemory(&(*currIt));
-		}
-	}
+    return nullptr;
 }
 
-void GroupContainer::AppendGroup(Group *pGroup)
-{
-	mGroupList.PushBack(pGroup);
-}
-
-Group *GroupContainer::FindGroupByName(const char *findName)
-{
-	NW4HBM_RANGE_FOR(it, mGroupList)
-	{
-		if (detail::EqualsPaneName(it->GetName(), findName))
-			return &(*it);
-	}
-
-	return nullptr;
-}
-
-}} // namespace nw4hbm::lyt
+} // namespace lyt
+} // namespace nw4hbm

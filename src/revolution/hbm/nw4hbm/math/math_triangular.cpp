@@ -17,36 +17,40 @@
 // [SGLEA4]/GormitiDebug.elf:.debug_info::0x4a08a4
 typedef struct /* explicitly untagged */
 {
-	f32	sin_val;	// size 0x04, offset 0x00
-	f32	cos_val;	// size 0x04, offset 0x04
-	f32	sin_delta;	// size 0x04, offset 0x08
-	f32	cos_delta;	// size 0x04, offset 0x0c
+    f32 sin_val; // size 0x04, offset 0x00
+    f32 cos_val; // size 0x04, offset 0x04
+    f32 sin_delta; // size 0x04, offset 0x08
+    f32 cos_delta; // size 0x04, offset 0x0c
 } SinCosSample; // size 0x10
 
 // [SGLEA4]/GormitiDebug.elf:.debug_info::0x4a090d
 typedef struct /* explicitly untagged */
 {
-	f32	atan_val;	// size 0x04, offset 0x00
-	f32	atan_delta;	// size 0x04, offset 0x04
+    f32 atan_val; // size 0x04, offset 0x00
+    f32 atan_delta; // size 0x04, offset 0x04
 } ArcTanSample; // size 0x08
 
 /*******************************************************************************
  * local function declarations
  */
 
-namespace nw4hbm { namespace math { namespace
-{
-	f32 AtanFIdx_(f32 x);
-}}} // namespace nw4hbm::math::(unnamed)
+namespace nw4hbm {
+namespace math {
+namespace {
+f32 AtanFIdx_(f32 x);
+}
+} // namespace math
+} // namespace nw4hbm
 
 /*******************************************************************************
  * variables
  */
 
-namespace nw4hbm { namespace math { namespace
-{
-	// .data
-	// clang-format off
+namespace nw4hbm {
+namespace math {
+namespace {
+// .data
+// clang-format off
 	static SinCosSample sSinCosTbl[0x100 + 1] =
 	{
 		{0.0f,       1.0f,       0.024541f,  -3.01e-4f },
@@ -344,90 +348,91 @@ namespace nw4hbm { namespace math { namespace
 		{31.353329f,  0.6466705f },
 		{32.0f,       0.62677616f}
 	};
-	// clang-format on
-}}} // namespace nw4hbm::math::(unnamed)
+// clang-format on
+} // namespace
+} // namespace math
+} // namespace nw4hbm
 
 /*******************************************************************************
  * functions
  */
 
-namespace nw4hbm { namespace math {
+namespace nw4hbm {
+namespace math {
 
 namespace {
 
-f32 AtanFIdx_(f32 x)
-{
-	u16 idx;
-	f32 val;
-	f32 r;
+f32 AtanFIdx_(f32 x) {
+    u16 idx;
+    f32 val;
+    f32 r;
 
-	x *= 32.0f;
+    x *= 32.0f;
 
-	idx = F32ToU16(x);
-	r = x - U16ToF32(idx);
-	val = sArcTanTbl[idx].atan_val + r * sArcTanTbl[idx].atan_delta;
+    idx = F32ToU16(x);
+    r = x - U16ToF32(idx);
+    val = sArcTanTbl[idx].atan_val + r * sArcTanTbl[idx].atan_delta;
 
-	return val;
+    return val;
 }
 
 } // unnamed namespace
 
-f32 SinFIdx(f32 fidx)
-{
-	f32 abs_fidx = FAbs(fidx); // hm
-	f32 val;
-	u16 idx;
-	f32 r;
+f32 SinFIdx(f32 fidx) {
+    f32 abs_fidx = FAbs(fidx); // hm
+    f32 val;
+    u16 idx;
+    f32 r;
 
-	while (abs_fidx >= 65536.0f)
-		abs_fidx -= 65536.0f;
+    while (abs_fidx >= 65536.0f) {
+        abs_fidx -= 65536.0f;
+    }
 
-	idx = F32ToU16(abs_fidx);
-	r = abs_fidx - U16ToF32(idx);
+    idx = F32ToU16(abs_fidx);
+    r = abs_fidx - U16ToF32(idx);
 
-	idx &= 0xff;
-	val = sSinCosTbl[idx].sin_val + r * sSinCosTbl[idx].sin_delta;
+    idx &= 0xff;
+    val = sSinCosTbl[idx].sin_val + r * sSinCosTbl[idx].sin_delta;
 
-	return fidx < 0.0f ? -val : val;
+    return fidx < 0.0f ? -val : val;
 }
 
-f32 CosFIdx(f32 fidx)
-{
-	u16 idx;
-	f32 r;
+f32 CosFIdx(f32 fidx) {
+    u16 idx;
+    f32 r;
 
-	fidx = FAbs(fidx);
-	while (fidx >= 65536.0f)
-		fidx -= 65536.0f;
+    fidx = FAbs(fidx);
+    while (fidx >= 65536.0f) {
+        fidx -= 65536.0f;
+    }
 
-	idx = F32ToU16(fidx);
-	r = fidx - U16ToF32(idx);
+    idx = F32ToU16(fidx);
+    r = fidx - U16ToF32(idx);
 
-	idx &= 0xff;
+    idx &= 0xff;
 
-	return sSinCosTbl[idx].cos_val + r * sSinCosTbl[idx].cos_delta;
+    return sSinCosTbl[idx].cos_val + r * sSinCosTbl[idx].cos_delta;
 }
 
 extern void __deadstrip1();
-extern void __deadstrip1()
-{
-	(void)1.0f;
-	(void)32.0f;
-	(void)64.0f;
-	(void)-1.0f;
+extern void __deadstrip1() {
+    (void)1.0f;
+    (void)32.0f;
+    (void)64.0f;
+    (void)-1.0f;
 }
 
-f32 Atan2FIdx(f32 y, f32 x)
-{
-	f32 a;
-	f32 b;
-	f32 c;
-	bool minus;
+f32 Atan2FIdx(f32 y, f32 x) {
+    f32 a;
+    f32 b;
+    f32 c;
+    bool minus;
 
-	if (x == 0.0f && y == 0.0f)
-		return 0.0f;
+    if (x == 0.0f && y == 0.0f) {
+        return 0.0f;
+    }
 
-	// clang-format off
+    // clang-format off
 	if (x >= 0.0f)
 	{
 		if (y >= 0.0f)
@@ -510,9 +515,10 @@ f32 Atan2FIdx(f32 y, f32 x)
 			}
 		}
 	}
-	// clang-format on
+    // clang-format on
 
-	return minus ? c - AtanFIdx_(b / a) : c + AtanFIdx_(b / a);
+    return minus ? c - AtanFIdx_(b / a) : c + AtanFIdx_(b / a);
 }
 
-}} // namespace nw4hbm::math
+} // namespace math
+} // namespace nw4hbm

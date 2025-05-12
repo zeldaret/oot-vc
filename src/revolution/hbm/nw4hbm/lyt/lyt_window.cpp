@@ -26,52 +26,47 @@
 
 // probably local
 // [SGLEA4]/GormitiDebug.elf:.debug_info::0x49dde9
-struct TextureFlipInfo
-{
-	u8	coords[4][2];	// size 0x08, offset 0x00
-	u8	idx[2];			// size 0x02, offset 0x08
+struct TextureFlipInfo {
+    u8 coords[4][2]; // size 0x08, offset 0x00
+    u8 idx[2]; // size 0x02, offset 0x08
 }; // size 0x0a
 
 /*******************************************************************************
  * local function declarations
  */
 
-namespace
-{
-	// pretend this is nw4hbm::lyt
-	using namespace nw4hbm;
-	using namespace nw4hbm::lyt;
+namespace {
+// pretend this is nw4hbm::lyt
+using namespace nw4hbm;
+using namespace nw4hbm::lyt;
 
-	// NOTE the misspelling of GetTextureFlipInfo
-	TextureFlipInfo &GetTexutreFlipInfo(u8 textureFlip);
+// NOTE the misspelling of GetTextureFlipInfo
+TextureFlipInfo& GetTexutreFlipInfo(u8 textureFlip);
 
-	void GetLTFrameSize(math::VEC2 *pPt, Size *pSize, const math::VEC2 &basePt,
-	                    const Size &winSize, const WindowFrameSize &frameSize);
-	void GetLTTexCoord(math::VEC2 *texCds, const Size &polSize,
-	                   const Size &texSize, u8 textureFlip);
-	void GetRTFrameSize(math::VEC2 *pPt, Size *pSize, const math::VEC2 &basePt,
-	                    const Size &winSize, const WindowFrameSize &frameSize);
-	void GetRTTexCoord(math::VEC2 *texCds, const Size &polSize,
-	                   const Size &texSize, u8 textureFlip);
-	void GetLBFrameSize(math::VEC2 *pPt, Size *pSize, const math::VEC2 &basePt,
-	                    const Size &winSize, const WindowFrameSize &frameSize);
-	void GetLBTexCoord(math::VEC2 *texCds, const Size &polSize,
-	                   const Size &texSize, u8 textureFlip);
-	void GetRBFrameSize(math::VEC2 *pPt, Size *pSize, const math::VEC2 &basePt,
-	                    const Size &winSize, const WindowFrameSize &frameSize);
-	void GetRBTexCoord(math::VEC2 *texCds, const Size &polSize,
-	                   const Size &texSize, u8 textureFlip);
+void GetLTFrameSize(math::VEC2* pPt, Size* pSize, const math::VEC2& basePt, const Size& winSize,
+                    const WindowFrameSize& frameSize);
+void GetLTTexCoord(math::VEC2* texCds, const Size& polSize, const Size& texSize, u8 textureFlip);
+void GetRTFrameSize(math::VEC2* pPt, Size* pSize, const math::VEC2& basePt, const Size& winSize,
+                    const WindowFrameSize& frameSize);
+void GetRTTexCoord(math::VEC2* texCds, const Size& polSize, const Size& texSize, u8 textureFlip);
+void GetLBFrameSize(math::VEC2* pPt, Size* pSize, const math::VEC2& basePt, const Size& winSize,
+                    const WindowFrameSize& frameSize);
+void GetLBTexCoord(math::VEC2* texCds, const Size& polSize, const Size& texSize, u8 textureFlip);
+void GetRBFrameSize(math::VEC2* pPt, Size* pSize, const math::VEC2& basePt, const Size& winSize,
+                    const WindowFrameSize& frameSize);
+void GetRBTexCoord(math::VEC2* texCds, const Size& polSize, const Size& texSize, u8 textureFlip);
 } // unnamed namespace
 
 /*******************************************************************************
  * variables
  */
 
-namespace nw4hbm { namespace lyt
-{
-	// .bss
-	const ut::detail::RuntimeTypeInfo Window::typeInfo(&Pane::typeInfo);
-}} // namespace nw4hbm::lyt
+namespace nw4hbm {
+namespace lyt {
+// .bss
+const ut::detail::RuntimeTypeInfo Window::typeInfo(&Pane::typeInfo);
+} // namespace lyt
+} // namespace nw4hbm
 
 /*******************************************************************************
  * functions
@@ -81,9 +76,8 @@ namespace nw4hbm { namespace lyt
 
 namespace {
 
-TextureFlipInfo &GetTexutreFlipInfo(u8 textureFlip)
-{
-	// clang-format off
+TextureFlipInfo& GetTexutreFlipInfo(u8 textureFlip) {
+    // clang-format off
 	static TextureFlipInfo flipInfos[] =			//	0	1	2	3
 	{									// in order of	LT	RT	LB	RB
 		{{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, {0, 1}},	//	0	1	2	3				no flip
@@ -93,456 +87,381 @@ TextureFlipInfo &GetTexutreFlipInfo(u8 textureFlip)
 		{{{1, 1}, {0, 1}, {1, 0}, {0, 0}}, {0, 1}},	//	3	2	1	0				cw 180 deg
 		{{{1, 0}, {1, 1}, {0, 0}, {0, 1}}, {1, 0}}	//	1	3	0	2, index flip	cw 270 deg (ccw 90 deg)
 	};
-	// clang-format on
+    // clang-format on
 
-	return flipInfos[textureFlip];
+    return flipInfos[textureFlip];
 }
 
-void GetLTFrameSize(math::VEC2 *pPt, Size *pSize, const math::VEC2 &basePt,
-                    const Size &winSize, const WindowFrameSize &frameSize)
-{
-	*pPt = basePt;
+void GetLTFrameSize(math::VEC2* pPt, Size* pSize, const math::VEC2& basePt, const Size& winSize,
+                    const WindowFrameSize& frameSize) {
+    *pPt = basePt;
 
-	pSize->width = winSize.width - frameSize.r;
-	pSize->height = frameSize.t;
+    pSize->width = winSize.width - frameSize.r;
+    pSize->height = frameSize.t;
 }
 
-void GetLTTexCoord(math::VEC2 *texCds, const Size &polSize, const Size &texSize,
-                   u8 textureFlip)
-{
-	TextureFlipInfo &flipInfo = GetTexutreFlipInfo(textureFlip);
-	int ix = flipInfo.idx[0];
-	int iy = flipInfo.idx[1];
-	const math::VEC2 tSz(texSize.width, texSize.height);
+void GetLTTexCoord(math::VEC2* texCds, const Size& polSize, const Size& texSize, u8 textureFlip) {
+    TextureFlipInfo& flipInfo = GetTexutreFlipInfo(textureFlip);
+    int ix = flipInfo.idx[0];
+    int iy = flipInfo.idx[1];
+    const math::VEC2 tSz(texSize.width, texSize.height);
 
-/*
-	// easier to follow versions in these blocks
-	// also TODO: understand lol
+    /*
+            // easier to follow versions in these blocks
+            // also TODO: understand lol
 
-	u8 flipSubX = flipInfo.coords[1][ix] - flipInfo.coords[0][ix];
-	u8 flipSubY = flipInfo.coords[2][iy] - flipInfo.coords[0][iy];
+            u8 flipSubX = flipInfo.coords[1][ix] - flipInfo.coords[0][ix];
+            u8 flipSubY = flipInfo.coords[2][iy] - flipInfo.coords[0][iy];
 
-	f32 flipSubXMultSize = flipSubX * tSz[ix];
-	f32 flipSubYMultSize = flipSubY * tSz[iy];
+            f32 flipSubXMultSize = flipSubX * tSz[ix];
+            f32 flipSubYMultSize = flipSubY * tSz[iy];
 
-	f32 flipSubXMultSizePolDiv = polSize.width  / flipSubXMultSize;
-	f32 flipSubYMultSizePolDiv = polSize.height / flipSubYMultSize;
+            f32 flipSubXMultSizePolDiv = polSize.width  / flipSubXMultSize;
+            f32 flipSubYMultSizePolDiv = polSize.height / flipSubYMultSize;
 
-	texCds[0][ix] = flipInfo.coords[0][ix];
-	texCds[0][iy] = flipInfo.coords[0][iy];
+            texCds[0][ix] = flipInfo.coords[0][ix];
+            texCds[0][iy] = flipInfo.coords[0][iy];
 
-	texCds[1][ix] = flipInfo.coords[0][ix] + flipSubXMultSizePolDiv;
-	texCds[1][iy] = flipInfo.coords[0][iy];
+            texCds[1][ix] = flipInfo.coords[0][ix] + flipSubXMultSizePolDiv;
+            texCds[1][iy] = flipInfo.coords[0][iy];
 
-	texCds[2][ix] = flipInfo.coords[0][ix];
-	texCds[2][iy] = flipInfo.coords[0][iy] + flipSubYMultSizePolDiv;
+            texCds[2][ix] = flipInfo.coords[0][ix];
+            texCds[2][iy] = flipInfo.coords[0][iy] + flipSubYMultSizePolDiv;
 
-	texCds[3][ix] = flipInfo.coords[0][ix] + flipSubXMultSizePolDiv;
-	texCds[3][iy] = flipInfo.coords[0][iy] + flipSubYMultSizePolDiv;
-*/
+            texCds[3][ix] = flipInfo.coords[0][ix] + flipSubXMultSizePolDiv;
+            texCds[3][iy] = flipInfo.coords[0][iy] + flipSubYMultSizePolDiv;
+    */
 
-	texCds[0][ix] = texCds[2][ix] = flipInfo.coords[0][ix];
-	texCds[0][iy] = texCds[1][iy] = flipInfo.coords[0][iy];
+    texCds[0][ix] = texCds[2][ix] = flipInfo.coords[0][ix];
+    texCds[0][iy] = texCds[1][iy] = flipInfo.coords[0][iy];
 
-	texCds[3][ix] = texCds[1][ix] =
-		flipInfo.coords[0][ix]
-		+ polSize.width
-			  / (tSz[ix] * (flipInfo.coords[1][ix] - flipInfo.coords[0][ix]));
+    texCds[3][ix] = texCds[1][ix] =
+        flipInfo.coords[0][ix] + polSize.width / (tSz[ix] * (flipInfo.coords[1][ix] - flipInfo.coords[0][ix]));
 
-	texCds[3][iy] = texCds[2][iy] =
-		flipInfo.coords[0][iy]
-		+ polSize.height
-			  / (tSz[iy] * (flipInfo.coords[2][iy] - flipInfo.coords[0][iy]));
+    texCds[3][iy] = texCds[2][iy] =
+        flipInfo.coords[0][iy] + polSize.height / (tSz[iy] * (flipInfo.coords[2][iy] - flipInfo.coords[0][iy]));
 }
 
-void GetRTFrameSize(math::VEC2 *pPt, Size *pSize, const math::VEC2 &basePt,
-                    const Size &winSize, const WindowFrameSize &frameSize)
-{
-	*pPt = math::VEC2(basePt.x + winSize.width - frameSize.r, basePt.y);
+void GetRTFrameSize(math::VEC2* pPt, Size* pSize, const math::VEC2& basePt, const Size& winSize,
+                    const WindowFrameSize& frameSize) {
+    *pPt = math::VEC2(basePt.x + winSize.width - frameSize.r, basePt.y);
 
-	pSize->width = frameSize.r;
-	pSize->height = winSize.height - frameSize.b;
+    pSize->width = frameSize.r;
+    pSize->height = winSize.height - frameSize.b;
 }
 
-void GetRTTexCoord(math::VEC2 *texCds, const Size &polSize, const Size &texSize,
-                   u8 textureFlip)
-{
-	TextureFlipInfo &flipInfo = GetTexutreFlipInfo(textureFlip);
-	int ix = flipInfo.idx[0];
-	int iy = flipInfo.idx[1];
-	const math::VEC2 tSz(texSize.width, texSize.height);
+void GetRTTexCoord(math::VEC2* texCds, const Size& polSize, const Size& texSize, u8 textureFlip) {
+    TextureFlipInfo& flipInfo = GetTexutreFlipInfo(textureFlip);
+    int ix = flipInfo.idx[0];
+    int iy = flipInfo.idx[1];
+    const math::VEC2 tSz(texSize.width, texSize.height);
 
-/*
-	u8 flipSubX = flipInfo.coords[0][ix] - flipInfo.coords[1][ix];
-	u8 flipSubY = flipInfo.coords[3][iy] - flipInfo.coords[1][iy];
+    /*
+            u8 flipSubX = flipInfo.coords[0][ix] - flipInfo.coords[1][ix];
+            u8 flipSubY = flipInfo.coords[3][iy] - flipInfo.coords[1][iy];
 
-	f32 flipSubXMultSize = flipSubX * tSz[ix];
-	f32 flipSubYMultSize = flipSubY * tSz[iy];
+            f32 flipSubXMultSize = flipSubX * tSz[ix];
+            f32 flipSubYMultSize = flipSubY * tSz[iy];
 
-	f32 flipSubXMultSizePolDiv = polSize.width  / flipSubXMultSize;
-	f32 flipSubYMultSizePolDiv = polSize.height / flipSubYMultSize;
+            f32 flipSubXMultSizePolDiv = polSize.width  / flipSubXMultSize;
+            f32 flipSubYMultSizePolDiv = polSize.height / flipSubYMultSize;
 
-	texCds[0][ix] = flipInfo.coords[1][ix] + flipSubXMultSizePolDiv;
-	texCds[0][iy] = flipInfo.coords[1][iy];
+            texCds[0][ix] = flipInfo.coords[1][ix] + flipSubXMultSizePolDiv;
+            texCds[0][iy] = flipInfo.coords[1][iy];
 
-	texCds[1][ix] = flipInfo.coords[1][ix];
-	texCds[1][iy] = flipInfo.coords[1][iy];
+            texCds[1][ix] = flipInfo.coords[1][ix];
+            texCds[1][iy] = flipInfo.coords[1][iy];
 
-	texCds[2][ix] = flipInfo.coords[1][ix] + flipSubXMultSizePolDiv;
-	texCds[2][iy] = flipInfo.coords[1][iy] + flipSubYMultSizePolDiv;
+            texCds[2][ix] = flipInfo.coords[1][ix] + flipSubXMultSizePolDiv;
+            texCds[2][iy] = flipInfo.coords[1][iy] + flipSubYMultSizePolDiv;
 
-	texCds[3][ix] = flipInfo.coords[1][ix];
-	texCds[3][iy] = flipInfo.coords[1][iy] + flipSubYMultSizePolDiv;
-*/
+            texCds[3][ix] = flipInfo.coords[1][ix];
+            texCds[3][iy] = flipInfo.coords[1][iy] + flipSubYMultSizePolDiv;
+    */
 
-	texCds[1][ix] = texCds[3][ix] = flipInfo.coords[1][ix];
-	texCds[1][iy] = texCds[0][iy] = flipInfo.coords[1][iy];
+    texCds[1][ix] = texCds[3][ix] = flipInfo.coords[1][ix];
+    texCds[1][iy] = texCds[0][iy] = flipInfo.coords[1][iy];
 
-	texCds[2][ix] = texCds[0][ix] =
-		flipInfo.coords[1][ix]
-		+ polSize.width
-			  / (tSz[ix] * (flipInfo.coords[0][ix] - flipInfo.coords[1][ix]));
+    texCds[2][ix] = texCds[0][ix] =
+        flipInfo.coords[1][ix] + polSize.width / (tSz[ix] * (flipInfo.coords[0][ix] - flipInfo.coords[1][ix]));
 
-	texCds[2][iy] = texCds[3][iy] =
-		flipInfo.coords[1][iy]
-		+ polSize.height
-			  / (tSz[iy] * (flipInfo.coords[3][iy] - flipInfo.coords[1][iy]));
+    texCds[2][iy] = texCds[3][iy] =
+        flipInfo.coords[1][iy] + polSize.height / (tSz[iy] * (flipInfo.coords[3][iy] - flipInfo.coords[1][iy]));
 }
 
-void GetLBFrameSize(math::VEC2 *pPt, Size *pSize, const math::VEC2 &basePt,
-                    const Size &winSize, const WindowFrameSize &frameSize)
-{
-	*pPt = math::VEC2(basePt.x, basePt.y + frameSize.t);
+void GetLBFrameSize(math::VEC2* pPt, Size* pSize, const math::VEC2& basePt, const Size& winSize,
+                    const WindowFrameSize& frameSize) {
+    *pPt = math::VEC2(basePt.x, basePt.y + frameSize.t);
 
-	pSize->width = frameSize.l;
-	pSize->height = winSize.height - frameSize.t;
+    pSize->width = frameSize.l;
+    pSize->height = winSize.height - frameSize.t;
 }
 
-void GetLBTexCoord(math::VEC2 *texCds, const Size &polSize, const Size &texSize,
-                   u8 textureFlip)
-{
-	TextureFlipInfo &flipInfo = GetTexutreFlipInfo(textureFlip);
-	int ix = flipInfo.idx[0];
-	int iy = flipInfo.idx[1];
-	const math::VEC2 tSz(texSize.width, texSize.height);
+void GetLBTexCoord(math::VEC2* texCds, const Size& polSize, const Size& texSize, u8 textureFlip) {
+    TextureFlipInfo& flipInfo = GetTexutreFlipInfo(textureFlip);
+    int ix = flipInfo.idx[0];
+    int iy = flipInfo.idx[1];
+    const math::VEC2 tSz(texSize.width, texSize.height);
 
-/*
-	u8 flipSubX = flipInfo.coords[3][ix] - flipInfo.coords[2][ix];
-	u8 flipSubY = flipInfo.coords[0][iy] - flipInfo.coords[2][iy];
+    /*
+            u8 flipSubX = flipInfo.coords[3][ix] - flipInfo.coords[2][ix];
+            u8 flipSubY = flipInfo.coords[0][iy] - flipInfo.coords[2][iy];
 
-	f32 flipSubXMultSize = flipSubX * tSz[ix];
-	f32 flipSubYMultSize = flipSubY * tSz[iy];
+            f32 flipSubXMultSize = flipSubX * tSz[ix];
+            f32 flipSubYMultSize = flipSubY * tSz[iy];
 
-	f32 flipSubXMultSizePolDiv = polSize.width  / flipSubXMultSize;
-	f32 flipSubYMultSizePolDiv = polSize.height / flipSubYMultSize;
+            f32 flipSubXMultSizePolDiv = polSize.width  / flipSubXMultSize;
+            f32 flipSubYMultSizePolDiv = polSize.height / flipSubYMultSize;
 
-	texCds[0][ix] = flipInfo.coords[2][ix];
-	texCds[0][iy] = flipInfo.coords[2][iy] + flipSubYMultSizePolDiv;
+            texCds[0][ix] = flipInfo.coords[2][ix];
+            texCds[0][iy] = flipInfo.coords[2][iy] + flipSubYMultSizePolDiv;
 
-	texCds[1][ix] = flipInfo.coords[2][ix] + flipSubXMultSizePolDiv;
-	texCds[1][iy] = flipInfo.coords[2][iy] + flipSubYMultSizePolDiv;
+            texCds[1][ix] = flipInfo.coords[2][ix] + flipSubXMultSizePolDiv;
+            texCds[1][iy] = flipInfo.coords[2][iy] + flipSubYMultSizePolDiv;
 
-	texCds[2][ix] = flipInfo.coords[2][ix];
-	texCds[2][iy] = flipInfo.coords[2][iy];
+            texCds[2][ix] = flipInfo.coords[2][ix];
+            texCds[2][iy] = flipInfo.coords[2][iy];
 
-	texCds[3][ix] = flipInfo.coords[2][ix] + flipSubXMultSizePolDiv;
-	texCds[3][iy] = flipInfo.coords[2][iy];
-*/
+            texCds[3][ix] = flipInfo.coords[2][ix] + flipSubXMultSizePolDiv;
+            texCds[3][iy] = flipInfo.coords[2][iy];
+    */
 
-	texCds[2][ix] = texCds[0][ix] = flipInfo.coords[2][ix];
-	texCds[2][iy] = texCds[3][iy] = flipInfo.coords[2][iy];
+    texCds[2][ix] = texCds[0][ix] = flipInfo.coords[2][ix];
+    texCds[2][iy] = texCds[3][iy] = flipInfo.coords[2][iy];
 
-	texCds[1][ix] = texCds[3][ix] =
-		flipInfo.coords[2][ix]
-		+ polSize.width
-			  / (tSz[ix] * (flipInfo.coords[3][ix] - flipInfo.coords[2][ix]));
+    texCds[1][ix] = texCds[3][ix] =
+        flipInfo.coords[2][ix] + polSize.width / (tSz[ix] * (flipInfo.coords[3][ix] - flipInfo.coords[2][ix]));
 
-	texCds[1][iy] = texCds[0][iy] =
-		flipInfo.coords[2][iy]
-		+ polSize.height
-			  / (tSz[iy] * (flipInfo.coords[0][iy] - flipInfo.coords[2][iy]));
+    texCds[1][iy] = texCds[0][iy] =
+        flipInfo.coords[2][iy] + polSize.height / (tSz[iy] * (flipInfo.coords[0][iy] - flipInfo.coords[2][iy]));
 }
 
-void GetRBFrameSize(math::VEC2 *pPt, Size *pSize, const math::VEC2 &basePt,
-                    const Size &winSize, const WindowFrameSize &frameSize)
-{
-	*pPt = math::VEC2(basePt.x + frameSize.l,
-	                  basePt.y + winSize.height - frameSize.b);
+void GetRBFrameSize(math::VEC2* pPt, Size* pSize, const math::VEC2& basePt, const Size& winSize,
+                    const WindowFrameSize& frameSize) {
+    *pPt = math::VEC2(basePt.x + frameSize.l, basePt.y + winSize.height - frameSize.b);
 
-	pSize->width = winSize.width - frameSize.l;
-	pSize->height = frameSize.b;
+    pSize->width = winSize.width - frameSize.l;
+    pSize->height = frameSize.b;
 }
 
-void GetRBTexCoord(math::VEC2 *texCds, const Size &polSize, const Size &texSize,
-                   u8 textureFlip)
-{
-	TextureFlipInfo &flipInfo = GetTexutreFlipInfo(textureFlip);
-	int ix = flipInfo.idx[0];
-	int iy = flipInfo.idx[1];
-	const math::VEC2 tSz(texSize.width, texSize.height);
+void GetRBTexCoord(math::VEC2* texCds, const Size& polSize, const Size& texSize, u8 textureFlip) {
+    TextureFlipInfo& flipInfo = GetTexutreFlipInfo(textureFlip);
+    int ix = flipInfo.idx[0];
+    int iy = flipInfo.idx[1];
+    const math::VEC2 tSz(texSize.width, texSize.height);
 
-/*
-	u8 flipSubX = flipInfo.coords[1][ix] - flipInfo.coords[3][ix];
-	u8 flipSubY = flipInfo.coords[2][iy] - flipInfo.coords[3][iy];
+    /*
+            u8 flipSubX = flipInfo.coords[1][ix] - flipInfo.coords[3][ix];
+            u8 flipSubY = flipInfo.coords[2][iy] - flipInfo.coords[3][iy];
 
-	f32 flipSubXMultSize = flipSubX * tSz[ix];
-	f32 flipSubYMultSize = flipSubY * tSz[iy];
+            f32 flipSubXMultSize = flipSubX * tSz[ix];
+            f32 flipSubYMultSize = flipSubY * tSz[iy];
 
-	f32 flipSubXMultSizePolDiv = polSize.width  / flipSubXMultSize;
-	f32 flipSubYMultSizePolDiv = polSize.height / flipSubYMultSize;
+            f32 flipSubXMultSizePolDiv = polSize.width  / flipSubXMultSize;
+            f32 flipSubYMultSizePolDiv = polSize.height / flipSubYMultSize;
 
-	texCds[0][ix] = flipInfo.coords[3][ix] + flipSubXMultSizePolDiv;
-	texCds[0][iy] = flipInfo.coords[3][iy] + flipSubYMultSizePolDiv;
+            texCds[0][ix] = flipInfo.coords[3][ix] + flipSubXMultSizePolDiv;
+            texCds[0][iy] = flipInfo.coords[3][iy] + flipSubYMultSizePolDiv;
 
-	texCds[1][ix] = flipInfo.coords[3][ix];
-	texCds[1][iy] = flipInfo.coords[3][iy] + flipSubYMultSizePolDiv;
+            texCds[1][ix] = flipInfo.coords[3][ix];
+            texCds[1][iy] = flipInfo.coords[3][iy] + flipSubYMultSizePolDiv;
 
-	texCds[2][ix] = flipInfo.coords[3][ix] + flipSubXMultSizePolDiv;
-	texCds[2][iy] = flipInfo.coords[3][iy];
+            texCds[2][ix] = flipInfo.coords[3][ix] + flipSubXMultSizePolDiv;
+            texCds[2][iy] = flipInfo.coords[3][iy];
 
-	texCds[3][ix] = flipInfo.coords[3][ix];
-	texCds[3][iy] = flipInfo.coords[3][iy];
-*/
+            texCds[3][ix] = flipInfo.coords[3][ix];
+            texCds[3][iy] = flipInfo.coords[3][iy];
+    */
 
-	texCds[3][ix] = texCds[1][ix] = flipInfo.coords[3][ix];
-	texCds[3][iy] = texCds[2][iy] = flipInfo.coords[3][iy];
+    texCds[3][ix] = texCds[1][ix] = flipInfo.coords[3][ix];
+    texCds[3][iy] = texCds[2][iy] = flipInfo.coords[3][iy];
 
-	texCds[0][ix] = texCds[2][ix] =
-		flipInfo.coords[3][ix]
-		+ polSize.width
-			  / (tSz[ix] * (flipInfo.coords[2][ix] - flipInfo.coords[3][ix]));
+    texCds[0][ix] = texCds[2][ix] =
+        flipInfo.coords[3][ix] + polSize.width / (tSz[ix] * (flipInfo.coords[2][ix] - flipInfo.coords[3][ix]));
 
-	texCds[0][iy] = texCds[1][iy] =
-		flipInfo.coords[3][iy]
-		+ polSize.height
-			  / (tSz[iy] * (flipInfo.coords[1][iy] - flipInfo.coords[3][iy]));
+    texCds[0][iy] = texCds[1][iy] =
+        flipInfo.coords[3][iy] + polSize.height / (tSz[iy] * (flipInfo.coords[1][iy] - flipInfo.coords[3][iy]));
 }
 
 } // unnamed namespace
 
-namespace nw4hbm { namespace lyt {
+namespace nw4hbm {
+namespace lyt {
 
-Window::Window(const res::Window *pBlock, const ResBlockSet &resBlockSet):
-	Pane(pBlock)
-{
-	mContentInflation = pBlock->inflation;
+Window::Window(const res::Window* pBlock, const ResBlockSet& resBlockSet) : Pane(pBlock) {
+    mContentInflation = pBlock->inflation;
 
-	const u32 *matOffsTbl = detail::ConvertOffsToPtr<u32>(
-		resBlockSet.pMaterialList, sizeof *resBlockSet.pMaterialList);
+    const u32* matOffsTbl = detail::ConvertOffsToPtr<u32>(resBlockSet.pMaterialList, sizeof *resBlockSet.pMaterialList);
 
-	{ // 0x49ee86 wants lexical_block
-		const res::WindowContent *pResContent =
-			detail::ConvertOffsToPtr<res::WindowContent>(pBlock,
-		                                                 pBlock->contentOffset);
+    { // 0x49ee86 wants lexical_block
+        const res::WindowContent* pResContent =
+            detail::ConvertOffsToPtr<res::WindowContent>(pBlock, pBlock->contentOffset);
 
-		for (int i = 0; i < (int)ARRAY_COUNT(mContent.vtxColors); i++)
-			mContent.vtxColors[i] = pResContent->vtxCols[i];
+        for (int i = 0; i < (int)ARRAY_COUNT(mContent.vtxColors); i++) {
+            mContent.vtxColors[i] = pResContent->vtxCols[i];
+        }
 
-		if (pResContent->texCoordNum)
-		{
-			u8 texCoordNum = ut::Min<u8>(pResContent->texCoordNum, 8);
-			mContent.texCoordAry.Reserve(texCoordNum);
+        if (pResContent->texCoordNum) {
+            u8 texCoordNum = ut::Min<u8>(pResContent->texCoordNum, 8);
+            mContent.texCoordAry.Reserve(texCoordNum);
 
-			if (!mContent.texCoordAry.IsEmpty())
-				mContent.texCoordAry.Copy(&pResContent[1], texCoordNum);
-		}
+            if (!mContent.texCoordAry.IsEmpty()) {
+                mContent.texCoordAry.Copy(&pResContent[1], texCoordNum);
+            }
+        }
 
-		if (void *pMemMaterial = Layout::AllocMemory(sizeof(Material)))
-		{
-			const res::Material *pResMaterial =
-				detail::ConvertOffsToPtr<res::Material>(
-					resBlockSet.pMaterialList,
-					matOffsTbl[pResContent->materialIdx]);
+        if (void* pMemMaterial = Layout::AllocMemory(sizeof(Material))) {
+            const res::Material* pResMaterial = detail::ConvertOffsToPtr<res::Material>(
+                resBlockSet.pMaterialList, matOffsTbl[pResContent->materialIdx]);
 
-			mpMaterial = new (pMemMaterial) Material(pResMaterial, resBlockSet);
-		}
-	}
+            mpMaterial = new (pMemMaterial) Material(pResMaterial, resBlockSet);
+        }
+    }
 
-	mFrameNum = 0;
-	mFrames = nullptr;
+    mFrameNum = 0;
+    mFrames = nullptr;
 
-	if (pBlock->frameNum)
-	{
-		if ((mFrames = static_cast<Frame *>(
-				 Layout::AllocMemory(sizeof *mFrames * pBlock->frameNum))))
-		{
-			mFrameNum = pBlock->frameNum;
-			const u32 *frameOffsetTable = detail::ConvertOffsToPtr<u32>(
-				pBlock, pBlock->frameOffsetTableOffset);
+    if (pBlock->frameNum) {
+        if ((mFrames = static_cast<Frame*>(Layout::AllocMemory(sizeof *mFrames * pBlock->frameNum)))) {
+            mFrameNum = pBlock->frameNum;
+            const u32* frameOffsetTable = detail::ConvertOffsToPtr<u32>(pBlock, pBlock->frameOffsetTableOffset);
 
-			for (int i = 0; i < mFrameNum; i++)
-			{
-				const res::WindowFrame *pResWindowFrame =
-					detail::ConvertOffsToPtr<res::WindowFrame>(
-						pBlock, frameOffsetTable[i]);
+            for (int i = 0; i < mFrameNum; i++) {
+                const res::WindowFrame* pResWindowFrame =
+                    detail::ConvertOffsToPtr<res::WindowFrame>(pBlock, frameOffsetTable[i]);
 
-				mFrames[i].textureFlip = pResWindowFrame->textureFlip;
-				mFrames[i].pMaterial = nullptr;
+                mFrames[i].textureFlip = pResWindowFrame->textureFlip;
+                mFrames[i].pMaterial = nullptr;
 
-				if (void *pMemMaterial = Layout::AllocMemory(sizeof(Material)))
-				{
-					const res::Material *pResMaterial =
-						detail::ConvertOffsToPtr<res::Material>(
-							resBlockSet.pMaterialList,
-							matOffsTbl[pResWindowFrame->materialIdx]);
+                if (void* pMemMaterial = Layout::AllocMemory(sizeof(Material))) {
+                    const res::Material* pResMaterial = detail::ConvertOffsToPtr<res::Material>(
+                        resBlockSet.pMaterialList, matOffsTbl[pResWindowFrame->materialIdx]);
 
-					mFrames[i].pMaterial =
-						new (pMemMaterial) Material(pResMaterial, resBlockSet);
-				}
-			}
-		}
-	}
+                    mFrames[i].pMaterial = new (pMemMaterial) Material(pResMaterial, resBlockSet);
+                }
+            }
+        }
+    }
 }
 
-Window::~Window()
-{
-	if (mFrames)
-	{
-		for (int i = 0; i < mFrameNum; i++)
-		{
-			mFrames[i].pMaterial->~Material();
-			Layout::FreeMemory(mFrames[i].pMaterial);
-		}
+Window::~Window() {
+    if (mFrames) {
+        for (int i = 0; i < mFrameNum; i++) {
+            mFrames[i].pMaterial->~Material();
+            Layout::FreeMemory(mFrames[i].pMaterial);
+        }
 
-		Layout::FreeMemory(mFrames);
-	}
+        Layout::FreeMemory(mFrames);
+    }
 
-	if (mpMaterial && !mpMaterial->IsUserAllocated())
-	{
-		mpMaterial->~Material();
-		Layout::FreeMemory(mpMaterial);
-		mpMaterial = nullptr;
-	}
+    if (mpMaterial && !mpMaterial->IsUserAllocated()) {
+        mpMaterial->~Material();
+        Layout::FreeMemory(mpMaterial);
+        mpMaterial = nullptr;
+    }
 
-	mContent.texCoordAry.Free();
+    mContent.texCoordAry.Free();
 }
 
-Material *Window::FindMaterialByName(const char *findName, bool bRecursive)
-{
-	if (mpMaterial
-	    && detail::EqualsMaterialName(mpMaterial->GetName(), findName))
-	{
-		return mpMaterial;
-	}
+Material* Window::FindMaterialByName(const char* findName, bool bRecursive) {
+    if (mpMaterial && detail::EqualsMaterialName(mpMaterial->GetName(), findName)) {
+        return mpMaterial;
+    }
 
-	for (int i = 0; i < mFrameNum; i++)
-	{
-		if (detail::EqualsMaterialName(mFrames[i].pMaterial->GetName(),
-		                               findName))
-			return mFrames[i].pMaterial;
-	}
+    for (int i = 0; i < mFrameNum; i++) {
+        if (detail::EqualsMaterialName(mFrames[i].pMaterial->GetName(), findName)) {
+            return mFrames[i].pMaterial;
+        }
+    }
 
-	if (bRecursive)
-	{
-		NW4HBM_RANGE_FOR(it, mChildList)
-		{
-			if (Material *pMat = it->FindMaterialByName(findName, true))
-				return pMat;
-		}
-	}
+    if (bRecursive) {
+        NW4HBM_RANGE_FOR(it, mChildList) {
+            if (Material* pMat = it->FindMaterialByName(findName, true)) {
+                return pMat;
+            }
+        }
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
-AnimationLink *Window::FindAnimationLink(AnimTransform *pAnimTrans)
-{
-	if (AnimationLink *ret = Pane::FindAnimationLink(pAnimTrans))
-		return ret;
+AnimationLink* Window::FindAnimationLink(AnimTransform* pAnimTrans) {
+    if (AnimationLink* ret = Pane::FindAnimationLink(pAnimTrans)) {
+        return ret;
+    }
 
-	for (int i = 0; i < mFrameNum; i++)
-	{
-		if (AnimationLink *ret =
-		        mFrames[i].pMaterial->FindAnimationLink(pAnimTrans))
-		{
-			return ret;
-		}
-	}
+    for (int i = 0; i < mFrameNum; i++) {
+        if (AnimationLink* ret = mFrames[i].pMaterial->FindAnimationLink(pAnimTrans)) {
+            return ret;
+        }
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
-void Window::SetAnimationEnable(AnimTransform *pAnimTrans, bool bEnable,
-                                bool bRecursive)
-{
-	for (int i = 0; i < mFrameNum; i++)
-		mFrames[i].pMaterial->SetAnimationEnable(pAnimTrans, bEnable);
+void Window::SetAnimationEnable(AnimTransform* pAnimTrans, bool bEnable, bool bRecursive) {
+    for (int i = 0; i < mFrameNum; i++) {
+        mFrames[i].pMaterial->SetAnimationEnable(pAnimTrans, bEnable);
+    }
 
-	Pane::SetAnimationEnable(pAnimTrans, bEnable, bRecursive);
+    Pane::SetAnimationEnable(pAnimTrans, bEnable, bRecursive);
 }
 
-const ut::Color Window::GetVtxColor(u32 idx) const
-{
-	return mContent.vtxColors[idx];
+const ut::Color Window::GetVtxColor(u32 idx) const { return mContent.vtxColors[idx]; }
+
+void Window::SetVtxColor(u32 idx, ut::Color value) { mContent.vtxColors[idx] = value; }
+
+u8 Window::GetVtxColorElement(u32 idx) const { return detail::GetVtxColorElement(mContent.vtxColors, idx); }
+
+void Window::SetVtxColorElement(u32 idx, u8 value) { detail::SetVtxColorElement(mContent.vtxColors, idx, value); }
+
+void Window::DrawSelf(const DrawInfo& drawInfo) {
+    LoadMtx(drawInfo);
+    WindowFrameSize frameSize = GetFrameSize(mFrameNum, mFrames);
+
+    math::VEC2 basePt = GetVtxPos();
+
+    DrawContent(basePt, frameSize, mGlbAlpha);
+
+    switch (mFrameNum) {
+        case 1:
+            DrawFrame(basePt, *mFrames, frameSize, mGlbAlpha);
+            break;
+
+        case 4:
+            DrawFrame4(basePt, mFrames, frameSize, mGlbAlpha);
+            break;
+
+        case 8:
+            DrawFrame8(basePt, mFrames, frameSize, mGlbAlpha);
+            break;
+    }
 }
 
-void Window::SetVtxColor(u32 idx, ut::Color value)
-{
-	mContent.vtxColors[idx] = value;
+void Window::AnimateSelf(u32 option) {
+    Pane::AnimateSelf(option);
+
+    if (detail::TestBit<>(mFlag, 0) || !(option & 1)) {
+        for (int i = 0; i < mFrameNum; i++) {
+            mFrames[i].pMaterial->Animate();
+        }
+    }
 }
 
-u8 Window::GetVtxColorElement(u32 idx) const
-{
-	return detail::GetVtxColorElement(mContent.vtxColors, idx);
+void Window::UnbindAnimationSelf(AnimTransform* pAnimTrans) {
+    for (int i = 0; i < mFrameNum; i++) {
+        mFrames[i].pMaterial->UnbindAnimation(pAnimTrans);
+    }
+
+    Pane::UnbindAnimationSelf(pAnimTrans);
 }
 
-void Window::SetVtxColorElement(u32 idx, u8 value)
-{
-	detail::SetVtxColorElement(mContent.vtxColors, idx, value);
-}
+void Window::DrawContent(const math::VEC2& basePt, const WindowFrameSize& frameSize, u8 alpha) {
+    bool bUseVtxCol = mpMaterial->SetupGX(detail::IsModulateVertexColor(mContent.vtxColors, alpha), alpha);
 
-void Window::DrawSelf(const DrawInfo &drawInfo)
-{
-	LoadMtx(drawInfo);
-	WindowFrameSize frameSize = GetFrameSize(mFrameNum, mFrames);
+    detail::SetVertexFormat(bUseVtxCol, mContent.texCoordAry.GetSize());
 
-	math::VEC2 basePt = GetVtxPos();
-
-	DrawContent(basePt, frameSize, mGlbAlpha);
-
-	switch (mFrameNum)
-	{
-	case 1:
-		DrawFrame(basePt, *mFrames, frameSize, mGlbAlpha);
-		break;
-
-	case 4:
-		DrawFrame4(basePt, mFrames, frameSize, mGlbAlpha);
-		break;
-
-	case 8:
-		DrawFrame8(basePt, mFrames, frameSize, mGlbAlpha);
-		break;
-	}
-}
-
-void Window::AnimateSelf(u32 option)
-{
-	Pane::AnimateSelf(option);
-
-	if (detail::TestBit<>(mFlag, 0) || !(option & 1))
-	{
-		for (int i = 0; i < mFrameNum; i++)
-			mFrames[i].pMaterial->Animate();
-	}
-}
-
-void Window::UnbindAnimationSelf(AnimTransform *pAnimTrans)
-{
-	for (int i = 0; i < mFrameNum; i++)
-		mFrames[i].pMaterial->UnbindAnimation(pAnimTrans);
-
-	Pane::UnbindAnimationSelf(pAnimTrans);
-}
-
-void Window::DrawContent(const math::VEC2 &basePt,
-                         const WindowFrameSize &frameSize, u8 alpha)
-{
-	bool bUseVtxCol = mpMaterial->SetupGX(
-		detail::IsModulateVertexColor(mContent.vtxColors, alpha), alpha);
-
-	detail::SetVertexFormat(bUseVtxCol, mContent.texCoordAry.GetSize());
-
-	// clang-format off
+    // clang-format off
 	detail::DrawQuad(
 		math::VEC2(basePt.x + frameSize.l - mContentInflation.l,
 		           basePt.y + frameSize.t - mContentInflation.t),
@@ -555,7 +474,7 @@ void Window::DrawContent(const math::VEC2 &basePt,
 		bUseVtxCol ? mContent.vtxColors : nullptr,
 		alpha
 	);
-	// clang-format on
+    // clang-format on
 }
 
 // clang-format off
@@ -694,51 +613,43 @@ void Window::DrawFrame8(const math::VEC2 &basePt, const Frame *frames,
 }
 // clang-format on
 
-WindowFrameSize Window::GetFrameSize(u8 frameNum, const Frame *frames)
-{
-	WindowFrameSize ret = {};
+WindowFrameSize Window::GetFrameSize(u8 frameNum, const Frame* frames) {
+    WindowFrameSize ret = {};
 
-	switch (frameNum)
-	{
-	case 1:
-	{
-		Size texSize = detail::GetTextureSize(frames->pMaterial, 0);
-		ret.l = texSize.width;
-		ret.t = texSize.height;
+    switch (frameNum) {
+        case 1: {
+            Size texSize = detail::GetTextureSize(frames->pMaterial, 0);
+            ret.l = texSize.width;
+            ret.t = texSize.height;
 
-		ret.r = texSize.width;
-		ret.b = texSize.height;
-	}
-		break;
+            ret.r = texSize.width;
+            ret.b = texSize.height;
+        } break;
 
-	case 4:
-	case 8:
-	{
-		Size texSize = detail::GetTextureSize(frames[0].pMaterial, 0);
-		ret.l = texSize.width;
-		ret.t = texSize.height;
+        case 4:
+        case 8: {
+            Size texSize = detail::GetTextureSize(frames[0].pMaterial, 0);
+            ret.l = texSize.width;
+            ret.t = texSize.height;
 
-		texSize = detail::GetTextureSize(frames[3].pMaterial, 0);
-		ret.r = texSize.width;
-		ret.b = texSize.height;
-	}
-		break;
-	}
+            texSize = detail::GetTextureSize(frames[3].pMaterial, 0);
+            ret.r = texSize.width;
+            ret.b = texSize.height;
+        } break;
+    }
 
-	return ret;
+    return ret;
 }
 
-Material *Window::GetFrameMaterial(u32 frameIdx) const
-{
-	if (frameIdx >= mFrameNum)
-		return nullptr;
+Material* Window::GetFrameMaterial(u32 frameIdx) const {
+    if (frameIdx >= mFrameNum) {
+        return nullptr;
+    }
 
-	return mFrames[frameIdx].pMaterial;
+    return mFrames[frameIdx].pMaterial;
 }
 
-Material *Window::GetContentMaterial() const
-{
-	return GetMaterial();
-}
+Material* Window::GetContentMaterial() const { return GetMaterial(); }
 
-}} // namespace nw4hbm::lyt
+} // namespace lyt
+} // namespace nw4hbm

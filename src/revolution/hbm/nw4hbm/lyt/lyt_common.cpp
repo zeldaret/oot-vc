@@ -15,81 +15,65 @@
 #include "revolution/hbm/nw4hbm/ut/ut_Color.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
 
-#include "revolution/tpl/TPL.h"
 #include "revolution/gx.h"
+#include "revolution/tpl/TPL.h"
 
 /*******************************************************************************
  * functions
  */
 
-namespace nw4hbm { namespace lyt { namespace detail {
+namespace nw4hbm {
+namespace lyt {
+namespace detail {
 
 // sizeof(Pane::mName) == 16
-bool EqualsPaneName(const char *name1, const char *name2)
-{
-	return std::strncmp(name1, name2, 16) == 0;
-}
+bool EqualsPaneName(const char* name1, const char* name2) { return std::strncmp(name1, name2, 16) == 0; }
 
 // sizeof(Material::mName) == 20
-bool EqualsMaterialName(const char *name1, const char *name2)
-{
-	return std::strncmp(name1, name2, 20) == 0;
-}
+bool EqualsMaterialName(const char* name1, const char* name2) { return std::strncmp(name1, name2, 20) == 0; }
 
 // U+FEFF * BYTE ORDER MARK
-bool TestFileHeader(const res::BinaryFileHeader &fileHeader)
-{
-	return fileHeader.byteOrder == 0xFEFF && fileHeader.version == 8;
+bool TestFileHeader(const res::BinaryFileHeader& fileHeader) {
+    return fileHeader.byteOrder == 0xFEFF && fileHeader.version == 8;
 }
 
-bool TestFileHeader(const res::BinaryFileHeader &fileHeader, byte4_t testSig)
-{
-	return static_cast<byte4_t>(GetSignatureInt(fileHeader.signature))
-	        == testSig
-	    && TestFileHeader(fileHeader);
+bool TestFileHeader(const res::BinaryFileHeader& fileHeader, byte4_t testSig) {
+    return static_cast<byte4_t>(GetSignatureInt(fileHeader.signature)) == testSig && TestFileHeader(fileHeader);
 }
 
-TexCoordAry::TexCoordAry():
-	mCap	(0),
-	mNum	(0),
-	mpData	(nullptr)
-{
+TexCoordAry::TexCoordAry() : mCap(0), mNum(0), mpData(nullptr) {}
+
+void TexCoordAry::Free() {
+    if (mpData) {
+        Layout::FreeMemory(mpData);
+        mpData = nullptr;
+
+        mCap = 0;
+        mNum = 0;
+    }
 }
 
-void TexCoordAry::Free()
-{
-	if (mpData)
-	{
-		Layout::FreeMemory(mpData);
-		mpData = nullptr;
+void TexCoordAry::Reserve(u8 num) {
+    if (mCap < num) {
+        Free();
+        mpData = static_cast<TexCoords*>(Layout::AllocMemory(sizeof *mpData * num));
 
-		mCap = 0;
-		mNum = 0;
-	}
+        if (mpData) {
+            mCap = num;
+        }
+    }
 }
 
-void TexCoordAry::Reserve(u8 num)
-{
-	if (mCap < num)
-	{
-		Free();
-		mpData =
-			static_cast<TexCoords *>(Layout::AllocMemory(sizeof *mpData * num));
+void TexCoordAry::SetSize(u8 num) {
+    if (!mpData) {
+        return;
+    }
 
-		if (mpData)
-			mCap = num;
-	}
-}
+    if (num > mCap) {
+        return;
+    }
 
-void TexCoordAry::SetSize(u8 num)
-{
-	if (!mpData)
-		return;
-
-	if (num > mCap)
-		return;
-
-	// clang-format off
+    // clang-format off
 	static TexCoords texCoords =
 	{
 		math::VEC2(0.0f, 0.0f),
@@ -97,99 +81,94 @@ void TexCoordAry::SetSize(u8 num)
 		math::VEC2(0.0f, 1.0f),
 		math::VEC2(1.0f, 1.0f)
 	};
-	// clang-format on
+    // clang-format on
 
-	for (int j = mNum; j < num; j++)
-	{
-		for (int i = 0; i < (int)ARRAY_COUNT(mpData[j]); i++)
-			mpData[j][i] = texCoords[i];
-	}
+    for (int j = mNum; j < num; j++) {
+        for (int i = 0; i < (int)ARRAY_COUNT(mpData[j]); i++) {
+            mpData[j][i] = texCoords[i];
+        }
+    }
 
-	mNum = num;
+    mNum = num;
 }
 
-void TexCoordAry::Copy(const void *pResTexCoord, u8 texCoordNum)
-{
-	mNum = ut::Max(mNum, texCoordNum);
-	const TexCoords *src = static_cast<const TexCoords *>(pResTexCoord);
+void TexCoordAry::Copy(const void* pResTexCoord, u8 texCoordNum) {
+    mNum = ut::Max(mNum, texCoordNum);
+    const TexCoords* src = static_cast<const TexCoords*>(pResTexCoord);
 
-	for (int j = 0; j < texCoordNum; j++)
-	{
-		for (int i = 0; i < (int)ARRAY_COUNT(mpData[j]); i++)
-			mpData[j][i] = src[j][i];
-	}
+    for (int j = 0; j < texCoordNum; j++) {
+        for (int i = 0; i < (int)ARRAY_COUNT(mpData[j]); i++) {
+            mpData[j][i] = src[j][i];
+        }
+    }
 }
 
-bool IsModulateVertexColor(ut::Color *vtxColors, u8 glbAlpha)
-{
-	if (glbAlpha != 0xff)
-		return true;
+bool IsModulateVertexColor(ut::Color* vtxColors, u8 glbAlpha) {
+    if (glbAlpha != 0xff) {
+        return true;
+    }
 
-	if (vtxColors)
-	{
-		if (vtxColors[0] != 0xffffffff || vtxColors[1] != 0xffffffff
-		    || vtxColors[2] != 0xffffffff || vtxColors[3] != 0xffffffff)
-		{
-			return true;
-		}
-	}
+    if (vtxColors) {
+        if (vtxColors[0] != 0xffffffff || vtxColors[1] != 0xffffffff || vtxColors[2] != 0xffffffff ||
+            vtxColors[3] != 0xffffffff) {
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
 
-ut::Color MultipleAlpha(const ut::Color col, u8 alpha)
-{
-	ut::Color ret = col;
+ut::Color MultipleAlpha(const ut::Color col, u8 alpha) {
+    ut::Color ret = col;
 
-	if (alpha != 0xff)
-		ret.a = col.a * alpha / 255;
+    if (alpha != 0xff) {
+        ret.a = col.a * alpha / 255;
+    }
 
-	return ret;
+    return ret;
 }
 
-void MultipleAlpha(ut::Color *dst, const ut::Color *src, u8 alpha)
-{
-	for (int i = 0; i < 4; i++)
-		dst[i] = MultipleAlpha(src[i], alpha);
+void MultipleAlpha(ut::Color* dst, const ut::Color* src, u8 alpha) {
+    for (int i = 0; i < 4; i++) {
+        dst[i] = MultipleAlpha(src[i], alpha);
+    }
 }
 
-void SetVertexFormat(bool bModulate, u8 texCoordNum)
-{
-	GXClearVtxDesc();
+void SetVertexFormat(bool bModulate, u8 texCoordNum) {
+    GXClearVtxDesc();
 
-	GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
 
-	if (bModulate)
-		GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    if (bModulate) {
+        GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    }
 
-	for (int i = 0; i < texCoordNum; i++)
-		GXSetVtxDesc(static_cast<GXAttr>(GX_VA_TEX0 + i), GX_DIRECT);
+    for (int i = 0; i < texCoordNum; i++) {
+        GXSetVtxDesc(static_cast<GXAttr>(GX_VA_TEX0 + i), GX_DIRECT);
+    }
 
-	GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_CLR_RGB, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_CLR_RGB, GX_F32, 0);
 
-	if (bModulate)
-		GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    if (bModulate) {
+        GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+    }
 
-	for (int i = 0; i < texCoordNum; i++)
-	{
-		GXSetVtxAttrFmt(GX_VTXFMT0, static_cast<GXAttr>(GX_VA_TEX0 + i),
-		                GX_CLR_RGBA, GX_F32, 0);
-	}
+    for (int i = 0; i < texCoordNum; i++) {
+        GXSetVtxAttrFmt(GX_VTXFMT0, static_cast<GXAttr>(GX_VA_TEX0 + i), GX_CLR_RGBA, GX_F32, 0);
+    }
 }
 
 static void __deadstrip1();
-static void __deadstrip1()
-{
-	// Force instantiation of GXEnd here on debug build
-	GXEnd();
+static void __deadstrip1() {
+    // Force instantiation of GXEnd here on debug build
+    GXEnd();
 }
 
-void DrawQuad(const math::VEC2 &basePt, const Size &size, u8 texCoordNum,
-              const TexCoords *texCoords, const ut::Color *vtxColors)
-{
-	// start at top left, go clockwise
+void DrawQuad(const math::VEC2& basePt, const Size& size, u8 texCoordNum, const TexCoords* texCoords,
+              const ut::Color* vtxColors) {
+    // start at top left, go clockwise
 
-	// clang-format off
+    // clang-format off
 	GXBegin(GX_QUADS, GX_VTXFMT0, 4);
 
 		GXPosition2f32(basePt.x, basePt.y);
@@ -217,53 +196,49 @@ void DrawQuad(const math::VEC2 &basePt, const Size &size, u8 texCoordNum,
 			GXTexCoord2f32(texCoords[i][2].x, texCoords[i][2].y);
 
 	GXEnd();
-	// clang-format on
+    // clang-format on
 }
 
-void DrawQuad(const math::VEC2 &basePt, const Size &size, u8 texCoordNum,
-              const TexCoords *texCoords, const ut::Color *vtxColors, u8 alpha)
-{
-	ut::Color wkVtxColors[4];
+void DrawQuad(const math::VEC2& basePt, const Size& size, u8 texCoordNum, const TexCoords* texCoords,
+              const ut::Color* vtxColors, u8 alpha) {
+    ut::Color wkVtxColors[4];
 
-	if (vtxColors)
-		MultipleAlpha(wkVtxColors, vtxColors, alpha);
+    if (vtxColors) {
+        MultipleAlpha(wkVtxColors, vtxColors, alpha);
+    }
 
-	DrawQuad(basePt, size, texCoordNum, texCoords,
-	         vtxColors ? wkVtxColors : nullptr);
+    DrawQuad(basePt, size, texCoordNum, texCoords, vtxColors ? wkVtxColors : nullptr);
 }
 
-void DrawLine(const math::VEC2 &pos, const Size &size, ut::Color color)
-{
-	GXClearVtxDesc();
+void DrawLine(const math::VEC2& pos, const Size& size, ut::Color color) {
+    GXClearVtxDesc();
 
-	GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
-	GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XY, GX_F32, 0);
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XY, GX_F32, 0);
 
-	GXSetNumChans(1);
-	GXSetChanCtrl(GX_COLOR0A0, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL,
-	              GX_DF_NONE, GX_AF_NONE);
+    GXSetNumChans(1);
+    GXSetChanCtrl(GX_COLOR0A0, false, GX_SRC_REG, GX_SRC_REG, GX_LIGHT_NULL, GX_DF_NONE, GX_AF_NONE);
 
-	GXSetChanMatColor(GX_COLOR0A0, color);
-	GXSetNumTexGens(0);
-	GXSetNumTevStages(1);
-	GXSetNumIndStages(0);
+    GXSetChanMatColor(GX_COLOR0A0, color);
+    GXSetNumTexGens(0);
+    GXSetNumTevStages(1);
+    GXSetNumIndStages(0);
 
-	GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
-	GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
-	GXSetTevDirect(GX_TEVSTAGE0);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXSetTevDirect(GX_TEVSTAGE0);
 
-	GXSetTevSwapMode(GX_TEVSTAGE0, GX_TEV_SWAP0, GX_TEV_SWAP0);
-	GXSetTevSwapModeTable(GX_TEV_SWAP0, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE,
-	                      GX_CH_ALPHA);
+    GXSetTevSwapMode(GX_TEVSTAGE0, GX_TEV_SWAP0, GX_TEV_SWAP0);
+    GXSetTevSwapModeTable(GX_TEV_SWAP0, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_ALPHA);
 
-	GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
-	GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_SET);
+    GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_SET);
 
-	GXSetLineWidth(6, 0);
+    GXSetLineWidth(6, 0);
 
-	// start at top left, go clockwise
+    // start at top left, go clockwise
 
-	// clang-format off
+    // clang-format off
 	GXBegin(GX_LINESTRIP, GX_VTXFMT0, 5);
 		GXPosition2f32(pos.x             , pos.y              );
 		GXPosition2f32(pos.x + size.width, pos.y              );
@@ -271,45 +246,37 @@ void DrawLine(const math::VEC2 &pos, const Size &size, ut::Color color)
 		GXPosition2f32(pos.x             , pos.y + size.height);
 		GXPosition2f32(pos.x             , pos.y              );
 	GXEnd();
-	// clang-format on
+    // clang-format on
 }
 
-void InitGXTexObjFromTPL(GXTexObj *to, TPLPalette *pal, u32 id)
-{
-	// Is there some sort of macro for this
-	if (pal->descriptors < (TPLDescriptor *)0x80000000) // ?
-		TPLBind(pal);
+void InitGXTexObjFromTPL(GXTexObj* to, TPLPalette* pal, u32 id) {
+    // Is there some sort of macro for this
+    if (pal->descriptors < (TPLDescriptor*)0x80000000) { // ?
+        TPLBind(pal);
+    }
 
-	TPLDescriptor *tdp = TPLGet(pal, id);
+    TPLDescriptor* tdp = TPLGet(pal, id);
 
-	GXBool mipMap = BOOLIFY_TERNARY_TYPE(GXBool, tdp->texHeader->minLod
-	                                != tdp->texHeader->maxLod);
+    GXBool mipMap = BOOLIFY_TERNARY_TYPE(GXBool, tdp->texHeader->minLod != tdp->texHeader->maxLod);
 
-	if (tdp->clutHeader)
-	{
-		// NOTE: explicit recast of mipMap necessary for debug
-		GXInitTexObjCI(to, tdp->texHeader->data, tdp->texHeader->width,
-		               tdp->texHeader->height,
-		               static_cast<GXCITexFmt>(tdp->texHeader->format),
-		               tdp->texHeader->wrapS, tdp->texHeader->wrapT,
-		               static_cast<GXBool>(mipMap), 0);
+    if (tdp->clutHeader) {
+        // NOTE: explicit recast of mipMap necessary for debug
+        GXInitTexObjCI(to, tdp->texHeader->data, tdp->texHeader->width, tdp->texHeader->height,
+                       static_cast<GXCITexFmt>(tdp->texHeader->format), tdp->texHeader->wrapS, tdp->texHeader->wrapT,
+                       static_cast<GXBool>(mipMap), 0);
 
-		GXInitTexObjUserData(to, tdp->clutHeader);
-	}
-	else
-	{
-		// NOTE: explicit recast of mipMap necessary for debug
-		GXInitTexObj(to, tdp->texHeader->data, tdp->texHeader->width,
-		             tdp->texHeader->height,
-		             static_cast<GXTexFmt>(tdp->texHeader->format),
-		             tdp->texHeader->wrapS, tdp->texHeader->wrapT,
-		             static_cast<GXBool>(mipMap));
-	}
+        GXInitTexObjUserData(to, tdp->clutHeader);
+    } else {
+        // NOTE: explicit recast of mipMap necessary for debug
+        GXInitTexObj(to, tdp->texHeader->data, tdp->texHeader->width, tdp->texHeader->height,
+                     static_cast<GXTexFmt>(tdp->texHeader->format), tdp->texHeader->wrapS, tdp->texHeader->wrapT,
+                     static_cast<GXBool>(mipMap));
+    }
 
-	GXInitTexObjLOD(to, tdp->texHeader->minFilt,
-	                tdp->texHeader->magFilt, tdp->texHeader->minLod,
-	                tdp->texHeader->maxLod, tdp->texHeader->lodBias,
-	                false, tdp->texHeader->edgeLodEnable, GX_ANISO_1);
+    GXInitTexObjLOD(to, tdp->texHeader->minFilt, tdp->texHeader->magFilt, tdp->texHeader->minLod,
+                    tdp->texHeader->maxLod, tdp->texHeader->lodBias, false, tdp->texHeader->edgeLodEnable, GX_ANISO_1);
 }
 
-}}} // namespace nw4hbm::lyt::detail
+} // namespace detail
+} // namespace lyt
+} // namespace nw4hbm
