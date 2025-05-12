@@ -821,9 +821,53 @@ revolution/hbm/homebutton/HBMRemoteSpk.cpp:
 	.text       start:0x8010BFF8 end:0x8010C7D4
 	.data       start:0x80194BD0 end:0x80194BE0
 
-revolution/hbm/code_80109E58.cpp:
-	.text       start:0x8010C7D4 end:0x8013CD64
-	.ctors      start:0x8016A6E8 end:0x8016A720
+revolution/hbm/nw4hbm/db/code_8010C7D4.cpp:
+	.text       start:0x8010C7D4 end:0x8010EA48
+
+revolution/hbm/nw4hbm/lyt/lyt_animation.cpp:
+	.text       start:0x8010EA48 end:0x8010F9B8
+
+revolution/hbm/nw4hbm/lyt/lyt_arcResourceAccessor.cpp:
+	.text       start:0x8010F9B8 end:0x801100BC
+
+revolution/hbm/nw4hbm/lyt/code_801100BC.cpp:
+	.text       start:0x801100BC end:0x801101D4
+	.ctors      start:0x8016A6E8 end:0x8016A6EC
+
+revolution/hbm/nw4hbm/lyt/lyt_common.cpp:
+	.text       start:0x801101D4 end:0x80111054
+
+revolution/hbm/nw4hbm/lyt/code_80111054.cpp:
+	.text       start:0x80111054 end:0x801115B0
+
+revolution/hbm/nw4hbm/lyt/lyt_layout.cpp:
+	.text       start:0x801115B0 end:0x80112564
+
+revolution/hbm/nw4hbm/lyt/code_80112564.cpp:
+	.text       start:0x80112564 end:0x80115CA8
+
+revolution/hbm/nw4hbm/lyt/lyt_pane.cpp:
+	.text       start:0x80115CA8 end:0x80117000
+	.ctors      start:0x8016A6EC end:0x8016A6F0
+
+revolution/hbm/nw4hbm/lyt/lyt_picture.cpp:
+	.text       start:0x80117000 end:0x80117720
+	.ctors      start:0x8016A6F0 end:0x8016A6F4
+
+revolution/hbm/nw4hbm/lyt/lyt_textBox.cpp:
+	.text       start:0x80117720 end:0x8011A5C0
+	.ctors      start:0x8016A6F4 end:0x8016A6F8
+
+revolution/hbm/nw4hbm/lyt/lyt_window.cpp:
+	.text       start:0x8011A5C0 end:0x8011CE94
+	.ctors      start:0x8016A6F8 end:0x8016A6FC
+
+revolution/hbm/nw4hbm/math/math_triangular.cpp:
+	.text       start:0x8011CE94 end:0x8011D104
+
+revolution/hbm/nw4hbm/snd/code_8011D104.cpp:
+	.text       start:0x8011D104 end:0x8013CD64
+	.ctors      start:0x8016A6FC end:0x8016A720
 
 revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp:
 	.text       start:0x8013CD64 end:0x8013CFBC
