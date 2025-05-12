@@ -4,6 +4,7 @@
 #include "macros.h"
 #include "revolution/os/OSContext.h"
 #include "revolution/types.h"
+#include "stdarg.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,6 +51,11 @@ void __OSUnhandledException(u8 error, struct OSContext* ctx, u32 dsisr, u32 dar)
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifndef __cplusplus
+// va_list oddities
+void OSVReport(const char* msg, va_list list);
 #endif
 
 #endif
