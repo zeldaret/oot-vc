@@ -819,8 +819,32 @@ revolution/hbm/homebutton/HBMRemoteSpk.cpp:
 	.data       start:0x80194BD0 end:0x80194BE0
 
 revolution/hbm/code_80109E58.cpp:
-	.text       start:0x8010C7D4 end:0x80142A80
-	.ctors      start:0x8016A6E8 end:0x8016A72C
+	.text       start:0x8010C7D4 end:0x8013CD64
+	.ctors      start:0x8016A6E8 end:0x8016A720
+
+revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp:
+	.text       start:0x8013CD64 end:0x8013CFBC
+
+revolution/hbm/nw4hbm/ut/ut_CharStrmReader.cpp:
+	.text       start:0x8013CFBC end:0x8013D91C
+
+revolution/hbm/nw4hbm/ut/ut_CharWriter.cpp:
+	.text       start:0x8013D91C end:0x80141E78
+
+revolution/hbm/nw4hbm/ut/ut_FileStream.cpp:
+	.text       start:0x80141E78 end:0x80142114
+	.ctors      start:0x8016A720 end:0x8016A728
+
+revolution/hbm/nw4hbm/ut/ut_Font.cpp:
+	.text       start:0x80142114 end:0x801422D8
+	.data       start:0x8019E8C8 end:0x8019E940
+
+revolution/hbm/nw4hbm/ut/ut_IOStream.cpp:
+	.text       start:0x801422D8 end:0x80142514
+	.ctors      start:0x8016A728 end:0x8016A72C
+
+revolution/hbm/nw4hbm/ut/ut_LinkList.cpp:
+	.text       start:0x80142514 end:0x80142A80
 
 revolution/hbm/nw4hbm/ut/ut_list.cpp:
 	.text       start:0x80142A80 end:0x80142E28

@@ -49,6 +49,12 @@ class CharStrmReader {
         return (this->*mReadFunc)();
     }
 
+    template <typename charT> charT GetChar() const {
+        const charT* const charStrm = static_cast<const charT* const>(mCharStrm);
+
+        return charStrm[0];
+    }
+
     template <typename charT> charT GetChar(int offset) const {
         const charT* const charStrm = static_cast<const charT* const>(mCharStrm);
 

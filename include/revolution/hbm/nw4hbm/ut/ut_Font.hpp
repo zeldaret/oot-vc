@@ -98,7 +98,8 @@ class Font {
     // enums
   public:
     enum Type {
-        TYPE_NULL,
+        INVALID_CHARACTER_CODE = 0xFFFF,
+        TYPE_NULL = 0,
 
         TYPE_ROM,
         TYPE_RESOURCE,

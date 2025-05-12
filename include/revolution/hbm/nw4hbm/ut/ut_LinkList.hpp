@@ -95,6 +95,9 @@ class LinkListImpl : private NonCopyable {
     Iterator Erase(Iterator itFirst, Iterator itLast);
 
     void Clear();
+    bool IsEmpty() { return mSize != 0; };
+    void SetPrev(LinkListNode* p, LinkListNode *pPrev);
+    void SetNext(LinkListNode* p, LinkListNode *pNext);
 
   private:
     void Initialize_() {
