@@ -641,6 +641,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/homebutton/HBMController.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/homebutton/HBMRemoteSpk.cpp"),
             Object(NotLinked, "revolution/hbm/code_80109E58.cpp"),
+            Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_NandFileStream.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/ut/ut_list.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_ResFont.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_ResFontBase.cpp"),

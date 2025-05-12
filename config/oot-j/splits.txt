@@ -811,7 +811,7 @@ revolution/hbm/homebutton/HBMGUIManager.cpp:
 revolution/hbm/homebutton/HBMController.cpp:
 	.text       start:0x8010B4DC end:0x8010BFF8
 	.bss        start:0x80243EF8 end:0x80244088
-	.sbss       start:0x8025DBB0 end:0x8025DBC0 align:32
+	.sbss       start:0x8025DBB0 end:0x8025DBC0
 	.sdata2     start:0x8025E610 end:0x8025E620
 
 revolution/hbm/homebutton/HBMRemoteSpk.cpp:
@@ -826,9 +826,10 @@ revolution/hbm/nw4hbm/ut/ut_list.cpp:
 	.text       start:0x80142A80 end:0x80142E28
 	.data       start:0x8019EBB0 end:0x8019EC10
 
-revolution/hbm/nw4hbm/ut/code_80142E28.cpp:
+revolution/hbm/nw4hbm/ut/ut_NandFileStream.cpp:
 	.text       start:0x80142E28 end:0x80143E14
 	.ctors      start:0x8016A72C end:0x8016A730
+	.data       start:0x8019EC10 end:0x8019EDC0
 
 revolution/hbm/nw4hbm/ut/ut_ResFont.cpp:
 	.text       start:0x80143E14 end:0x80144E2C
