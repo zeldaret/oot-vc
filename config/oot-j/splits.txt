@@ -830,15 +830,18 @@ revolution/hbm/nw4hbm/lyt/lyt_animation.cpp:
 revolution/hbm/nw4hbm/lyt/lyt_arcResourceAccessor.cpp:
 	.text       start:0x8010F9B8 end:0x801100BC
 
-revolution/hbm/nw4hbm/lyt/code_801100BC.cpp:
+revolution/hbm/nw4hbm/lyt/lyt_bounding.cpp:
 	.text       start:0x801100BC end:0x801101D4
 	.ctors      start:0x8016A6E8 end:0x8016A6EC
 
 revolution/hbm/nw4hbm/lyt/lyt_common.cpp:
 	.text       start:0x801101D4 end:0x80111054
 
-revolution/hbm/nw4hbm/lyt/code_80111054.cpp:
-	.text       start:0x80111054 end:0x801115B0
+revolution/hbm/nw4hbm/lyt/lyt_drawInfo.cpp:
+	.text       start:0x80111054 end:0x80111108
+
+revolution/hbm/nw4hbm/lyt/lyt_group.cpp:
+	.text       start:0x80111108 end:0x801115B0
 
 revolution/hbm/nw4hbm/lyt/lyt_layout.cpp:
 	.text       start:0x801115B0 end:0x80112564
