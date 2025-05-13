@@ -1,10 +1,10 @@
 #include "revolution/hbm/nw4hbm/db/db_console.hpp"
 
+#include "cstdio.hpp"
 #include "macros.h"
 #include "revolution/hbm/nw4hbm/db/db_directPrint.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_TextWriterBase.hpp"
 #include "revolution/os.h" // IWYU pragma: export
-#include "cstdio.hpp"
 
 namespace nw4hbm {
 namespace db {
@@ -69,7 +69,7 @@ end:
     OSUnlockMutex(&sMutex);
 }
 
-static bool TryLockMutex_(OSMutex *mutex) {
+static bool TryLockMutex_(OSMutex* mutex) {
     if (OSGetCurrentThread() != nullptr) {
         OSLockMutex(&sMutex);
         return true;
@@ -82,19 +82,19 @@ static bool TryLockMutex_(OSMutex *mutex) {
     return false;
 }
 
-static void UnlockMutex_(OSMutex *mutex) {
+static void UnlockMutex_(OSMutex* mutex) {
     if (OSGetCurrentThread() != nullptr) {
         OSUnlockMutex(&sMutex);
     }
 }
 
-ConsoleHandle Console_Create(void *arg, u16 width, u16 height, u16 viewLines, u16 priority, u16 attr) {
+ConsoleHandle Console_Create(void* arg, u16 width, u16 height, u16 viewLines, u16 priority, u16 attr) {
     ConsoleHandle console = (ConsoleHandle)arg;
     if (!sInited) {
         OSInitMutex(&sMutex);
         sInited = true;
     }
-    console->textBuf = (u8 *)(console + 1);
+    console->textBuf = (u8*)(console + 1);
     console->width = width;
     console->height = height;
     console->priority = priority;
@@ -130,7 +130,7 @@ ConsoleHandle Console_Destroy(ConsoleHandle console) {
     return console;
 }
 
-static u8 *GetTextPtr_(ConsoleHandle console, u16 line, u16 xPos) {
+static u8* GetTextPtr_(ConsoleHandle console, u16 line, u16 xPos) {
     return &console->textBuf[(console->width + 1) * line + xPos];
 }
 
@@ -151,7 +151,8 @@ static u16 GetActiveLines_(ConsoleHandle console) {
     return lines;
 }
 
-static void DoDrawString_(ConsoleHandle console, u32 printLine, const u8 *str, nw4hbm::ut::TextWriterBase<char> *writer) {
+static void DoDrawString_(ConsoleHandle console, u32 printLine, const u8* str,
+                          nw4hbm::ut::TextWriterBase<char>* writer) {
     if (writer != nullptr) {
         writer->Printf("%s\n", str);
     } else {
@@ -160,7 +161,7 @@ static void DoDrawString_(ConsoleHandle console, u32 printLine, const u8 *str, n
     }
 }
 
-static void DoDrawConsole_(ConsoleHandle console, nw4hbm::ut::TextWriterBase<char> *writer) {
+static void DoDrawConsole_(ConsoleHandle console, nw4hbm::ut::TextWriterBase<char>* writer) {
     // I guess we don't care if locking the mutex fails??
     TryLockMutex_(&sMutex);
 
@@ -206,9 +207,8 @@ err:
 
 void Console_DrawDirect(ConsoleHandle console) {
     if (DirectPrint_IsActive() && console->isVisible) {
-        DirectPrint_EraseXfb(
-            console->viewPosX - 6, console->viewPosY - 3, console->width * 6 + 12, console->viewLines * 10 + 4
-        );
+        DirectPrint_EraseXfb(console->viewPosX - 6, console->viewPosY - 3, console->width * 6 + 12,
+                             console->viewLines * 10 + 4);
         DoDrawConsole_(console, nullptr);
         DirectPrint_StoreCache();
     }
@@ -223,11 +223,9 @@ static u32 GetTabSize_(ConsoleHandle console) {
     return 2 << tab;
 }
 
-static u32 CodeWidth_(const u8 *p) {
-    return (*p >= 0x81) ? 2 : 1;
-}
+static u32 CodeWidth_(const u8* p) { return (*p >= 0x81) ? 2 : 1; }
 
-static u32 PutChar_(ConsoleHandle console, const u8 *str, u8 *dstPtr) {
+static u32 PutChar_(ConsoleHandle console, const u8* str, u8* dstPtr) {
     u32 codeWidth;
     u32 count;
 
@@ -243,7 +241,7 @@ static u32 PutChar_(ConsoleHandle console, const u8 *str, u8 *dstPtr) {
     }
 }
 
-static u8 *PutTab_(ConsoleHandle console, u8 *dstPtr) {
+static u8* PutTab_(ConsoleHandle console, u8* dstPtr) {
     u32 tabWidth = GetTabSize_(console);
     do {
         *dstPtr++ = ' ';
@@ -255,14 +253,14 @@ static u8 *PutTab_(ConsoleHandle console, u8 *dstPtr) {
     return dstPtr;
 }
 
-static u8 *SearchEndOfLine_(const u8 *str) {
+static u8* SearchEndOfLine_(const u8* str) {
     while (*str != '\n' && *str != '\0') {
         str++;
     }
-    return (u8 *)str;
+    return (u8*)str;
 }
 
-static u8 *NextLine_(ConsoleHandle console) {
+static u8* NextLine_(ConsoleHandle console) {
     *GetTextPtr_(console, console->printTop, console->printXPos) = '\0';
     console->printXPos = 0;
     console->printTop++;
@@ -280,9 +278,9 @@ static u8 *NextLine_(ConsoleHandle console) {
     return GetTextPtr_(console, console->printTop, 0);
 }
 
-static void PrintToBuffer_(ConsoleHandle console, const u8 *str) {
+static void PrintToBuffer_(ConsoleHandle console, const u8* str) {
     bool enabled = OSDisableInterrupts();
-    u8 *storePtr = GetTextPtr_(console, console->printTop, console->printXPos);
+    u8* storePtr = GetTextPtr_(console, console->printTop, console->printXPos);
 
     while (*str != '\0') {
         if ((console->attr & 2) && console->printTop == console->height) {
@@ -333,7 +331,7 @@ static void PrintToBuffer_(ConsoleHandle console, const u8 *str) {
     OSRestoreInterrupts(enabled);
 }
 
-static void Console_PrintString_(ConsoleOutputType type, ConsoleHandle console, const u8 *str) {
+static void Console_PrintString_(ConsoleOutputType type, ConsoleHandle console, const u8* str) {
     if ((type & CONSOLE_OUTPUT_TERMINAL) != 0) {
         OSReport("%s", str);
     }
@@ -342,21 +340,21 @@ static void Console_PrintString_(ConsoleOutputType type, ConsoleHandle console, 
     }
 }
 
-void Console_VFPrintf(ConsoleOutputType type, ConsoleHandle console, const char *format, va_list vlist) {
+void Console_VFPrintf(ConsoleOutputType type, ConsoleHandle console, const char* format, va_list vlist) {
     if (TryLockMutex_(&sMutex)) {
-        std::vsnprintf((char *)sStrBuf, sizeof(sStrBuf), format, vlist);
+        std::vsnprintf((char*)sStrBuf, sizeof(sStrBuf), format, vlist);
         Console_PrintString_(type, console, sStrBuf);
 
         UnlockMutex_(&sMutex);
     }
 }
 
-void Console_Printf(ConsoleHandle console, const char *format, ...) {
+void Console_Printf(ConsoleHandle console, const char* format, ...) {
     va_list args;
     va_start(args, format);
 
     if (TryLockMutex_(&sMutex)) {
-        std::vsnprintf((char *)sStrBuf, sizeof(sStrBuf), format, args);
+        std::vsnprintf((char*)sStrBuf, sizeof(sStrBuf), format, args);
         OSReport("%s", sStrBuf);
         PrintToBuffer_(console, sStrBuf);
 
@@ -376,4 +374,4 @@ s32 Console_GetTotalLines(ConsoleHandle console) {
 }
 
 } // namespace db
-} // namespace nw4r
+} // namespace nw4hbm

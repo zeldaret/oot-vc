@@ -6,7 +6,6 @@
 #include "stdio.h"
 #include "string.h"
 
-
 /*
 
 NOTE: This file does not match fully yet, Inlining + function ordering needs to still be addressed
@@ -70,17 +69,11 @@ void DirectPrint_Init() {
     }
 }
 
-bool DirectPrint_IsActive() {
-    return (sInitialized && sFrameBufferInfo.frameMemory);
-}
+bool DirectPrint_IsActive() { return (sInitialized && sFrameBufferInfo.frameMemory); }
 
-int GetDotWidth_() {
-    return sFrameBufferInfo.frameWidth < 400 ? 1 : 2;
-}
+int GetDotWidth_() { return sFrameBufferInfo.frameWidth < 400 ? 1 : 2; }
 
-int GetDotHeight_() {
-    return sFrameBufferInfo.frameHeight < 300 ? 1 : 2;
-}
+int GetDotHeight_() { return sFrameBufferInfo.frameHeight < 300 ? 1 : 2; }
 
 void DirectPrint_EraseXfb(int posh, int posv, int sizeh, int sizev) {
     if (!sFrameBufferInfo.frameMemory) {
@@ -106,7 +99,7 @@ void DirectPrint_EraseXfb(int posh, int posv, int sizeh, int sizev) {
     endPosV = (endPosV <= sFrameBufferInfo.frameHeight ? endPosV : sFrameBufferInfo.frameHeight);
     sizev = endPosV - posv;
 
-    u16 *pixel = ((u16 *)sFrameBufferInfo.frameMemory) + sFrameBufferInfo.frameRow * posv + posh;
+    u16* pixel = ((u16*)sFrameBufferInfo.frameMemory) + sFrameBufferInfo.frameRow * posv + posh;
 
     for (int i = 0; i < sizev; i++) {
         for (int j = 0; j < sizeh; j++) {
@@ -117,12 +110,10 @@ void DirectPrint_EraseXfb(int posh, int posv, int sizeh, int sizev) {
     }
 }
 
-void DirectPrint_ChangeXfb(void *framBuf) {
-    sFrameBufferInfo.frameMemory = (u8 *)framBuf;
-}
+void DirectPrint_ChangeXfb(void* framBuf) { sFrameBufferInfo.frameMemory = (u8*)framBuf; }
 
-void DirectPrint_ChangeXfb(void *framBuf, u16 width, u16 height) {
-    sFrameBufferInfo.frameMemory = reinterpret_cast<u8 *>(framBuf);
+void DirectPrint_ChangeXfb(void* framBuf, u16 width, u16 height) {
+    sFrameBufferInfo.frameMemory = reinterpret_cast<u8*>(framBuf);
     sFrameBufferInfo.frameWidth = width;
     sFrameBufferInfo.frameHeight = height;
     sFrameBufferInfo.frameRow = ROUND_UP(width, 16);
@@ -146,11 +137,9 @@ void DirectPrint_SetColor(u8 r, u8 g, u8 b) {
     sFrameBufferColor.colorV4 = v >> 2;
 }
 
-void DirectPrint_StoreCache() {
-    DCStoreRange(sFrameBufferInfo.frameMemory, sFrameBufferInfo.frameSize);
-}
+void DirectPrint_StoreCache() { DCStoreRange(sFrameBufferInfo.frameMemory, sFrameBufferInfo.frameSize); }
 
-void DirectPrint_Printf(int posh, int posv, const char *format, ...) {
+void DirectPrint_Printf(int posh, int posv, const char* format, ...) {
     if (!sFrameBufferInfo.frameMemory) {
         return;
     }
@@ -161,14 +150,14 @@ void DirectPrint_Printf(int posh, int posv, const char *format, ...) {
 }
 
 // I dont know how else this couldve been written? keeping the args as variable doesnt work
-void DirectPrint_printfsub(int posh, int posv, const char *format, __va_list_struct *args) {
+void DirectPrint_printfsub(int posh, int posv, const char* format, __va_list_struct* args) {
     if (!sFrameBufferInfo.frameMemory) {
         return;
     }
     detail::DirectPrint_DrawStringToXfb(posh, posv, format, args, true, true);
 }
 
-void DirectPrint_DrawString(int posh, int posv, bool turnOver, const char *format, ...) {
+void DirectPrint_DrawString(int posh, int posv, bool turnOver, const char* format, ...) {
     if (!sFrameBufferInfo.frameMemory) {
         return;
     }
@@ -179,7 +168,7 @@ void DirectPrint_DrawString(int posh, int posv, bool turnOver, const char *forma
     va_end(list);
 }
 
-static int StrLineWidth_(const char *str) {
+static int StrLineWidth_(const char* str) {
     int len = 0;
     do {
         int c = *str++;
@@ -198,10 +187,10 @@ static int StrLineWidth_(const char *str) {
 }
 
 static void DrawCharToXfb_(int posh, int posv, int code);
-static void DrawStringToXfb_(int posh, int posv, const char *str, bool turnOver, bool backErase);
-static const char *DrawStringLineToXfb_(int posh, int posv, const char *str, int width);
+static void DrawStringToXfb_(int posh, int posv, const char* str, bool turnOver, bool backErase);
+static const char* DrawStringLineToXfb_(int posh, int posv, const char* str, int width);
 
-static void DrawStringToXfb_(int posh, int posv, const char *str, bool turnOver, bool backErase) {
+static void DrawStringToXfb_(int posh, int posv, const char* str, bool turnOver, bool backErase) {
     int basePosH = posh;
     int frameWidth = sFrameBufferInfo.frameWidth;
     int width = frameWidth / GetDotWidth_();
@@ -233,7 +222,7 @@ static void DrawStringToXfb_(int posh, int posv, const char *str, bool turnOver,
     }
 }
 
-static const char *DrawStringLineToXfb_(int posh, int posv, const char *str, int width) {
+static const char* DrawStringLineToXfb_(int posh, int posv, const char* str, int width) {
     // Vars from DWARF info
     char c;
     int code, cnt, tab_size;
@@ -269,13 +258,13 @@ static void DrawCharToXfb_(int posh, int posv, int code) {
     int fontv = (ncode % 5) * 6;
     int fonth = (ncode / 5) * 7;
 
-    const u32 *fontLine = (100 > code) ? sFontData + fonth : sFontData2 + fonth;
+    const u32* fontLine = (100 > code) ? sFontData + fonth : sFontData2 + fonth;
 
     int wH = GetDotWidth_();
     int wV = GetDotHeight_();
 
-    u16 *pixel =
-        reinterpret_cast<u16 *>(sFrameBufferInfo.frameMemory) + sFrameBufferInfo.frameRow * posv * wV + posh * wH;
+    u16* pixel =
+        reinterpret_cast<u16*>(sFrameBufferInfo.frameMemory) + sFrameBufferInfo.frameRow * posv * wV + posh * wH;
 
     if (posv < 0 || posh < 0) {
         return;
@@ -290,7 +279,7 @@ static void DrawCharToXfb_(int posh, int posv, int code) {
         } else {
             fontBits = (twiceBit[fontBits >> 26 & 0x3] << 0 | twiceBit[fontBits >> 28 & 0x3] << 4 |
                         twiceBit[fontBits >> 30 & 0x3] << 8)
-                    << 19;
+                       << 19;
         }
         for (int cnth = 0; cnth < 6 * wH; cnth += 2) {
             u16 pixColor;
@@ -317,9 +306,8 @@ static void DrawCharToXfb_(int posh, int posv, int code) {
     }
 }
 
-void detail::DirectPrint_DrawStringToXfb(
-    int posh, int posv, const char *format, __va_list_struct *args, bool turnOver, bool backErase
-) {
+void detail::DirectPrint_DrawStringToXfb(int posh, int posv, const char* format, __va_list_struct* args, bool turnOver,
+                                         bool backErase) {
     // Vars from dwarf info
     char string[0x100];
     int length = vsnprintf(string, 0x100, format, args);
@@ -339,34 +327,43 @@ void detail::WaitVIRetrace_() {
     OSRestoreInterrupts(enabled);
 }
 
-void *detail::CreateFB_(const _GXRenderModeObj *rmode) {
+void* detail::CreateFB_(const _GXRenderModeObj* rmode) {
     // Vars from dwarf info
     u32 arenaHi, memSize, frameBuf;
     arenaHi = (u32)OSGetArenaHi();
     memSize = (rmode->fbWidth + 15 & 0xFFF0) * rmode->xfbHeight * 2;
     frameBuf = (arenaHi - memSize) & 0xFFFFFFE0;
     VIConfigure(rmode);
-    return (void *)frameBuf;
+    return (void*)frameBuf;
 }
 
-void *detail::DirectPrint_SetupFB(const _GXRenderModeObj *rmode) {
+void* detail::DirectPrint_SetupFB(const _GXRenderModeObj* rmode) {
     // Vars from dwarf info
-    void *frameMemory;
+    void* frameMemory;
 
     DirectPrint_Init();
     frameMemory = VIGetCurrentFrameBuffer();
     if (!frameMemory) {
         if (!rmode) {
             switch ((u32)VIGetTvFormat()) {
-                case 0:  rmode = &GXNtsc480IntDf; break;
-                case 1:  rmode = &GXPal528IntDf; break;
-                case 5:  rmode = &GXEurgb60Hz480IntDf; break;
-                case 2:  rmode = &GXMpal480IntDf; break;
-                default: break;
+                case 0:
+                    rmode = &GXNtsc480IntDf;
+                    break;
+                case 1:
+                    rmode = &GXPal528IntDf;
+                    break;
+                case 5:
+                    rmode = &GXEurgb60Hz480IntDf;
+                    break;
+                case 2:
+                    rmode = &GXMpal480IntDf;
+                    break;
+                default:
+                    break;
             }
         }
         frameMemory = CreateFB_(rmode);
-        VISetNextFrameBuffer((void *)frameMemory);
+        VISetNextFrameBuffer((void*)frameMemory);
     }
     VISetBlack(false);
     VIFlush();

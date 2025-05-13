@@ -1,25 +1,24 @@
 #include "revolution/hbm/nw4hbm/db/db_mapFile.hpp"
 
 #include "revolution/dvd.h" // IWYU pragma: export
-#include "revolution/os.h"  // IWYU pragma: export
+#include "revolution/os.h" // IWYU pragma: export
 #include "stdio.h"
-
 
 namespace nw4hbm {
 namespace db {
 
 static u32 sFileLength;
-static MapFile *sMapFileList = nullptr;
-static u8 (*GetCharPtr_)(const u8 *) = nullptr;
+static MapFile* sMapFileList = nullptr;
+static u8 (*GetCharPtr_)(const u8*) = nullptr;
 
 static u8 sMapBuf[512] ATTRIBUTE_ALIGN(32);
 static DVDFileInfo sFileInfo;
 
 static s32 sMapBufMaxSize = 0x200;
-static u8 *sDvdBuf = sMapBuf;
+static u8* sDvdBuf = sMapBuf;
 static s32 sMapBufOffset = -1;
 
-static void MapFile_Append_(MapFile *file) {
+static void MapFile_Append_(MapFile* file) {
     if (sMapFileList == nullptr) {
         sMapFileList = file;
         return;
@@ -35,8 +34,8 @@ static void MapFile_Append_(MapFile *file) {
 }
 
 /** 80436a50 */
-MapFileHandle MapFile_RegistOnDvd(void *buf, const char *path, const OSModuleInfo *info) {
-    MapFile *file = (MapFile *)buf;
+MapFileHandle MapFile_RegistOnDvd(void* buf, const char* path, const OSModuleInfo* info) {
+    MapFile* file = (MapFile*)buf;
     file->mapBuf = nullptr;
     file->moduleInfo = info;
     file->fileEntry = DVDConvertPathToEntrynum(path);
@@ -53,7 +52,7 @@ void MapFile_Unregist(MapFileHandle file) {
         return;
     }
 
-    MapFile *cursor = sMapFileList;
+    MapFile* cursor = sMapFileList;
     for (; cursor != nullptr; cursor = cursor->next) {
         if (cursor->next == file) {
             cursor->next = file->next;
@@ -63,17 +62,13 @@ void MapFile_Unregist(MapFileHandle file) {
 }
 
 /** 80436b30 */
-void MapFile_UnregistAll() {
-    sMapFileList = nullptr;
-}
+void MapFile_UnregistAll() { sMapFileList = nullptr; }
 
 /** 80436b40 */
-static u8 GetCharOnMem_(const u8 *arg) {
-    return *arg;
-}
+static u8 GetCharOnMem_(const u8* arg) { return *arg; }
 
 /** 80436b50 */
-static u8 GetCharOnDvd_(const u8 *buf) {
+static u8 GetCharOnDvd_(const u8* buf) {
     s32 address = (u32)buf & 0x7fffffff;
     s32 offset = address - sMapBufOffset;
     if (address >= sFileLength) {
@@ -99,7 +94,7 @@ static u8 GetCharOnDvd_(const u8 *buf) {
     return *(sDvdBuf + offset);
 }
 
-static u8 *SearchNextLine_(u8 *buf, s32 lines) {
+static u8* SearchNextLine_(u8* buf, s32 lines) {
     u8 c;
 
     if (buf == nullptr) {
@@ -118,7 +113,7 @@ static u8 *SearchNextLine_(u8 *buf, s32 lines) {
     return nullptr;
 }
 
-static u8 *SearchNextSection_(u8 *buf) {
+static u8* SearchNextSection_(u8* buf) {
     do {
         buf = SearchNextLine_(buf, 1);
         if (buf == nullptr) {
@@ -128,9 +123,9 @@ static u8 *SearchNextSection_(u8 *buf) {
     return buf;
 }
 
-static u8 *SearchParam_(u8 *lineTop, u32 argNum, u8 splitter) {
+static u8* SearchParam_(u8* lineTop, u32 argNum, u8 splitter) {
     bool inArg = false;
-    u8 *buf = lineTop;
+    u8* buf = lineTop;
 
     if (buf == nullptr) {
         return nullptr;
@@ -154,7 +149,7 @@ static u8 *SearchParam_(u8 *lineTop, u32 argNum, u8 splitter) {
     }
 }
 
-static u32 XStrToU32_(const u8 *str) {
+static u32 XStrToU32_(const u8* str) {
     u32 val = 0;
 
     while (true) {
@@ -178,7 +173,7 @@ static u32 XStrToU32_(const u8 *str) {
     }
 }
 
-static u32 CopySymbol_(const u8 *buf, u8 *str, u32 strLenMax, u8 splitter) NO_INLINE {
+static u32 CopySymbol_(const u8* buf, u8* str, u32 strLenMax, u8 splitter) NO_INLINE {
     u32 cnt = 0;
 
     while (true) {
@@ -195,8 +190,8 @@ static u32 CopySymbol_(const u8 *buf, u8 *str, u32 strLenMax, u8 splitter) NO_IN
     }
 }
 
-bool QuerySymbolToMapFile_(u8 *buf, const OSModuleInfo *moduleInfo, u32 address, u8 *strBuf, u32 strBufSize) {
-    OSSectionInfo *sectionInfo = nullptr;
+bool QuerySymbolToMapFile_(u8* buf, const OSModuleInfo* moduleInfo, u32 address, u8* strBuf, u32 strBufSize) {
+    OSSectionInfo* sectionInfo = nullptr;
     u32 sectionCnt;
 
     if (moduleInfo != nullptr) {
@@ -216,7 +211,7 @@ bool QuerySymbolToMapFile_(u8 *buf, const OSModuleInfo *moduleInfo, u32 address,
         }
 
         while (true) {
-            u8 *param;
+            u8* param;
             u32 startAddr;
             u32 size;
             buf = SearchNextLine_(buf, 1);
@@ -265,21 +260,21 @@ bool QuerySymbolToMapFile_(u8 *buf, const OSModuleInfo *moduleInfo, u32 address,
 
 // No idea, doesn't appear in the DWARF
 /** 804370d0 */
-bool UnkFunction_(const OSModuleInfo *moduleInfo, u32 address, u8 *strBuf, u32 strBufSize) {
+bool UnkFunction_(const OSModuleInfo* moduleInfo, u32 address, u8* strBuf, u32 strBufSize) {
     if (moduleInfo == nullptr) {
         if (address < (u32)_stack_end) {
-            snprintf((char *)strBuf, strBufSize, "[%p]", address);
+            snprintf((char*)strBuf, strBufSize, "[%p]", address);
             return true;
         } else {
             return false;
         }
     } else {
         u32 sectionIdx = 0;
-        OSSectionInfo *sectionInfo = OSGetSectionInfo(moduleInfo);
+        OSSectionInfo* sectionInfo = OSGetSectionInfo(moduleInfo);
         for (u32 sectionCnt = 0; sectionCnt < moduleInfo->numSections; sectionCnt++) {
             u32 offset = ROUND_DOWN(sectionInfo->offset, 2);
             if (offset <= address && address < offset + sectionInfo->size) {
-                snprintf((char *)strBuf, strBufSize, "[%d:%d:%06x]", moduleInfo->id, sectionIdx, address - offset);
+                snprintf((char*)strBuf, strBufSize, "[%d:%d:%06x]", moduleInfo->id, sectionIdx, address - offset);
                 return true;
             }
             sectionInfo++;
@@ -289,12 +284,12 @@ bool UnkFunction_(const OSModuleInfo *moduleInfo, u32 address, u8 *strBuf, u32 s
     }
 }
 
-bool QuerySymbolToSingleMapFile_(MapFileHandle pMapFile, u32 address, u8 *strBuf, u32 strBufSize) {
+bool QuerySymbolToSingleMapFile_(MapFileHandle pMapFile, u32 address, u8* strBuf, u32 strBufSize) {
     if (pMapFile->mapBuf != nullptr) {
         GetCharPtr_ = GetCharOnMem_;
         return QuerySymbolToMapFile_(pMapFile->mapBuf, pMapFile->moduleInfo, address, strBuf, strBufSize);
     } else if (pMapFile->fileEntry >= 0) {
-        u8 *buf = (u8 *)0x80000000;
+        u8* buf = (u8*)0x80000000;
         bool ret;
         if (!DVDFastOpen(pMapFile->fileEntry, &sFileInfo)) {
             goto err;
@@ -314,14 +309,14 @@ err:
     return false;
 }
 
-bool MapFile_QuerySymbol(u32 address, u8 *strBuf, u32 strBufSize) {
-        for (MapFile *pMap = sMapFileList; pMap != nullptr; pMap = pMap->next) {
-            if (QuerySymbolToSingleMapFile_(pMap, address, strBuf, strBufSize)) {
-                return true;
-            }
+bool MapFile_QuerySymbol(u32 address, u8* strBuf, u32 strBufSize) {
+    for (MapFile* pMap = sMapFileList; pMap != nullptr; pMap = pMap->next) {
+        if (QuerySymbolToSingleMapFile_(pMap, address, strBuf, strBufSize)) {
+            return true;
         }
+    }
 
-        return false;
+    return false;
 }
 
 } // namespace db

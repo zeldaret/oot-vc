@@ -59,5 +59,4 @@ void __OSUnhandledException(u8 error, struct OSContext* ctx, u32 dsisr, u32 dar)
 }
 #endif
 
-
 #endif

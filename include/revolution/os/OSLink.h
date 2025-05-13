@@ -13,18 +13,18 @@ typedef struct OSModuleInfo OSModuleInfo;
 typedef struct OSSectionInfo OSSectionInfo;
 
 struct OSModuleLink {
-    OSModuleInfo *next;
-    OSModuleInfo *prev;
+    OSModuleInfo* next;
+    OSModuleInfo* prev;
 };
 
 struct OSModuleInfo {
-    OSModuleID id;         // unique identifier for the module
-    OSModuleLink link;     // doubly linked list of modules
-    u32 numSections;       // # of sections
+    OSModuleID id; // unique identifier for the module
+    OSModuleLink link; // doubly linked list of modules
+    u32 numSections; // # of sections
     u32 sectionInfoOffset; // offset to section info table
-    u32 nameOffset;        // offset to module name
-    u32 nameSize;          // size of module name
-    u32 version;           // version number
+    u32 nameOffset; // offset to module name
+    u32 nameSize; // size of module name
+    u32 version; // version number
 };
 
 struct OSSectionInfo {
@@ -32,14 +32,14 @@ struct OSSectionInfo {
     u32 size;
 };
 
-#define OSGetSectionInfo(module) ((OSSectionInfo *)(((OSModuleInfo *)(module))->sectionInfoOffset))
+#define OSGetSectionInfo(module) ((OSSectionInfo*)(((OSModuleInfo*)(module))->sectionInfoOffset))
 
-bool OSLink(OSModuleInfo *newModule, void *bss);
-bool OSLinkFixed(OSModuleInfo *newModule, void *bss);
-bool OSUnlink(OSModuleInfo *module);
-void OSSetStringTable(void *string_table);
+bool OSLink(OSModuleInfo* newModule, void* bss);
+bool OSLinkFixed(OSModuleInfo* newModule, void* bss);
+bool OSUnlink(OSModuleInfo* module);
+void OSSetStringTable(void* string_table);
 void __OSModuleInit(void);
-OSModuleInfo *OSSearchModule(void *ptr, u32 *section, u32 *offset);
+OSModuleInfo* OSSearchModule(void* ptr, u32* section, u32* offset);
 
 #ifdef __cplusplus
 }

@@ -9,7 +9,7 @@ namespace db {
 
 namespace detail {
 typedef struct ConsoleHead {
-    u8 *textBuf;
+    u8* textBuf;
     u16 width;
     u16 height;
     u16 priority;
@@ -23,13 +23,13 @@ typedef struct ConsoleHead {
     s16 viewPosY;
     u16 viewLines;
     bool isVisible;
-    nw4hbm::ut::TextWriterBase<char> *writer;
-    ConsoleHead *next;
+    nw4hbm::ut::TextWriterBase<char>* writer;
+    ConsoleHead* next;
 } ConsoleHead;
 
 } // namespace detail
 
-typedef detail::ConsoleHead *ConsoleHandle;
+typedef detail::ConsoleHead* ConsoleHandle;
 
 enum ConsoleOutputType {
     CONSOLE_OUTPUT_NONE = 0,
@@ -38,13 +38,9 @@ enum ConsoleOutputType {
     CONSOLE_OUTPUT_ALL = CONSOLE_OUTPUT_DISPLAY | CONSOLE_OUTPUT_TERMINAL,
 };
 
-inline s16 Console_GetPositionX(ConsoleHandle console) {
-    return console->viewPosX;
-}
+inline s16 Console_GetPositionX(ConsoleHandle console) { return console->viewPosX; }
 
-inline s16 Console_GetPositionY(ConsoleHandle console) {
-    return console->viewPosY;
-}
+inline s16 Console_GetPositionY(ConsoleHandle console) { return console->viewPosY; }
 
 inline bool Console_SetVisible(ConsoleHandle handle, bool bVisible) {
     bool old = handle->isVisible;
@@ -57,9 +53,7 @@ inline void Console_SetPosition(ConsoleHandle handle, s32 x, s32 y) {
     handle->viewPosY = y;
 }
 
-inline s32 Console_GetViewBaseLine(ConsoleHandle console) {
-    return console->viewTopLine;
-}
+inline s32 Console_GetViewBaseLine(ConsoleHandle console) { return console->viewTopLine; }
 
 inline s32 Console_SetViewBaseLine(ConsoleHandle console, s32 line) {
     s32 old = console->viewTopLine;
@@ -67,15 +61,13 @@ inline s32 Console_SetViewBaseLine(ConsoleHandle console, s32 line) {
     return old;
 }
 
-inline s32 Console_GetBufferHeadLine(ConsoleHandle console) {
-    return console->ringTopLineCnt;
-}
+inline s32 Console_GetBufferHeadLine(ConsoleHandle console) { return console->ringTopLineCnt; }
 
-ConsoleHandle Console_Create(void *arg, u16, u16, u16, u16, u16);
+ConsoleHandle Console_Create(void* arg, u16, u16, u16, u16, u16);
 ConsoleHandle Console_Destroy(ConsoleHandle console);
 void Console_DrawDirect(ConsoleHandle console);
-void Console_VFPrintf(ConsoleOutputType type, ConsoleHandle console, const char *format, va_list vlist);
-void Console_Printf(ConsoleHandle console, const char *format, ...);
+void Console_VFPrintf(ConsoleOutputType type, ConsoleHandle console, const char* format, va_list vlist);
+void Console_Printf(ConsoleHandle console, const char* format, ...);
 s32 Console_GetTotalLines(ConsoleHandle console);
 
 } // namespace db
