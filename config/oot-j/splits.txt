@@ -895,9 +895,13 @@ revolution/hbm/nw4hbm/snd/snd_BankFile.cpp:
 revolution/hbm/nw4hbm/snd/snd_BasicSound.cpp:
 	.text       start:0x80123298 end:0x8012454C
 
+revolution/hbm/nw4hbm/snd/snd_Channel.cpp:
+	.text       start:0x8012454C end:0x80125680
+	.ctors      start:0x8016A6FC end:0x8016A700
+
 revolution/hbm/nw4hbm/snd/code_8011D104.cpp:
-	.text       start:0x8012454C end:0x8013CD64
-	.ctors      start:0x8016A6FC end:0x8016A720
+	.text       start:0x80125680 end:0x8013CD64
+	.ctors      start:0x8016A700 end:0x8016A720
 
 revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp:
 	.text       start:0x8013CD64 end:0x8013CFBC

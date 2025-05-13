@@ -664,7 +664,6 @@ config.libs = [
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_Voice.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_Bank.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_BankFile.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_BasicPlayer.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_BasicSound.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_Channel.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_EnvGenerator.cpp"),
