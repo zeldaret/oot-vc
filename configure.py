@@ -263,7 +263,7 @@ def RuntimeLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/3.0a3",
-        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-rostr", "-use_lmw_stmw on", "-enc SJIS"],
+        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-rostr", "-use_lmw_stmw on", "-enc SJIS", "-i libcpp"],
         "progress_category": "runtime",
         "objects": objects,
     }
@@ -641,6 +641,7 @@ config.libs = [
             Object(NotLinked, "revolution/hbm/homebutton/HBMGUIManager.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/homebutton/HBMController.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/homebutton/HBMRemoteSpk.cpp"),
+            Object(NotLinked, "revolution/hbm/nw4hbm/db/db_assert.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/db/db_console.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/db/db_directPrint.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/db/db_mapFile.cpp"),

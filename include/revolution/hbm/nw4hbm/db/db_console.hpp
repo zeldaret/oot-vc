@@ -1,90 +1,83 @@
-#ifndef NW4R_DB_CONSOLE_H
-#define NW4R_DB_CONSOLE_H
+#ifndef NW4hbm_DB_CONSOLE_H
+#define NW4hbm_DB_CONSOLE_H
 
-#include "revolution/hbm/nw4hbm/ut/ut_CharWriter.hpp"
+#include "macros.h"
 #include "revolution/hbm/nw4hbm/ut/ut_TextWriterBase.hpp"
-#include "revolution/types.h"
 
 namespace nw4hbm {
 namespace db {
+
 namespace detail {
-struct ConsoleHead {
-    u8* textBuf; // at 0x0
-    u16 width; // at 0x4
-    u16 height; // at 0x6
-    u16 priority; // at 0x8
-    u16 attr; // at 0xA
-    u16 printTop; // at 0xC
-    u16 printXPos; // at 0xE
-    u16 ringTop; // at 0x10
-    long ringTopLineCnt; // at 0x14
-    long viewTopLine; // at 0x18
-    s16 viewPosX; // at 0x1C
-    s16 viewPosY; // at 0x1E
-    u16 viewLines; // at 0x20
-    bool isVisible; // at 0x22
-    u8 padding_[1]; // at 0x23
-    ut::TextWriterBase<char>* writer; // at 0x24
-    ConsoleHead* next; // at 0x28
-};
+typedef struct ConsoleHead {
+    u8 *textBuf;
+    u16 width;
+    u16 height;
+    u16 priority;
+    u16 attr;
+    u16 printTop;
+    u16 printXPos;
+    u16 ringTop;
+    s32 ringTopLineCnt;
+    s32 viewTopLine;
+    s16 viewPosX;
+    s16 viewPosY;
+    u16 viewLines;
+    bool isVisible;
+    nw4hbm::ut::TextWriterBase<char> *writer;
+    ConsoleHead *next;
+} ConsoleHead;
+
 } // namespace detail
 
+typedef detail::ConsoleHead *ConsoleHandle;
+
 enum ConsoleOutputType {
-    CONSOLE_OUTPUT_NONE,
-    CONSOLE_OUTPUT_DISPLAY,
-    CONSOLE_OUTPUT_TERMINAL,
-    CONSOLE_OUTPUT_ALL,
+    CONSOLE_OUTPUT_NONE = 0,
+    CONSOLE_OUTPUT_DISPLAY = 1,
+    CONSOLE_OUTPUT_TERMINAL = 2,
+    CONSOLE_OUTPUT_ALL = CONSOLE_OUTPUT_DISPLAY | CONSOLE_OUTPUT_TERMINAL,
 };
 
-typedef void (*VisitStringCallback)(detail::ConsoleHead* console, u8* r4, long r5, u32 r6);
-
-detail::ConsoleHead* Console_Create(void* buffer, u16 width, u16 height, u16 viewHeight, u16 priority, u16 attr);
-void Console_Destroy(detail::ConsoleHead* console);
-void Console_Clear(detail::ConsoleHead* console);
-void Console_Draw(detail::ConsoleHead* console, ut::TextWriterBase<char>& writer);
-void Console_DrawDirect(detail::ConsoleHead* console);
-void Console_DrawAll();
-void Console_DrawDirectAll();
-void Console_VFPrintf(ConsoleOutputType type, detail::ConsoleHead* console, const char* format, std::va_list vlist);
-void Console_FPrintf(ConsoleOutputType type, detail::ConsoleHead* console, const char* format);
-void Console_Printf(detail::ConsoleHead* console, const char* format, ...);
-void Console_PrintfD(detail::ConsoleHead* console, const char* format, ...);
-void Console_PrintfT(detail::ConsoleHead* console, const char* format, ...);
-u16 Console_ChangePriority(detail::ConsoleHead* console, u16 r4);
-void Console_VisitString(detail::ConsoleHead* console, VisitStringCallback visitor);
-long Console_GetTotalLines(detail::ConsoleHead* console);
-
-static long Console_SetViewBaseLine(detail::ConsoleHead* console, long line);
-static u16 Console_GetViewHeight(detail::ConsoleHead* console);
-
-// Stubbed in final
-static void Console_VPrintf(detail::ConsoleHead* console, const char* format, std::va_list vlist) {}
-
-static bool Console_SetVisible(detail::ConsoleHead* console, bool isVisible) {
-    bool before = console->isVisible;
-    console->isVisible = isVisible;
-    return before;
+inline s16 Console_GetPositionX(ConsoleHandle console) {
+    return console->viewPosX;
 }
 
-static long Console_ShowLatestLine(detail::ConsoleHead* console) {
-    long baseLine = Console_GetTotalLines(console) - Console_GetViewHeight(console);
-
-    if (baseLine < 0) {
-        baseLine = 0;
-    }
-
-    Console_SetViewBaseLine(console, baseLine);
-
-    return baseLine;
+inline s16 Console_GetPositionY(ConsoleHandle console) {
+    return console->viewPosY;
 }
 
-static long Console_SetViewBaseLine(detail::ConsoleHead* console, long line) {
-    long before = console->viewTopLine;
+inline bool Console_SetVisible(ConsoleHandle handle, bool bVisible) {
+    bool old = handle->isVisible;
+    handle->isVisible = bVisible;
+    return old;
+}
+
+inline void Console_SetPosition(ConsoleHandle handle, s32 x, s32 y) {
+    handle->viewPosX = x;
+    handle->viewPosY = y;
+}
+
+inline s32 Console_GetViewBaseLine(ConsoleHandle console) {
+    return console->viewTopLine;
+}
+
+inline s32 Console_SetViewBaseLine(ConsoleHandle console, s32 line) {
+    s32 old = console->viewTopLine;
     console->viewTopLine = line;
-    return before;
+    return old;
 }
 
-static u16 Console_GetViewHeight(detail::ConsoleHead* console) { return console->viewLines; }
+inline s32 Console_GetBufferHeadLine(ConsoleHandle console) {
+    return console->ringTopLineCnt;
+}
+
+ConsoleHandle Console_Create(void *arg, u16, u16, u16, u16, u16);
+ConsoleHandle Console_Destroy(ConsoleHandle console);
+void Console_DrawDirect(ConsoleHandle console);
+void Console_VFPrintf(ConsoleOutputType type, ConsoleHandle console, const char *format, va_list vlist);
+void Console_Printf(ConsoleHandle console, const char *format, ...);
+s32 Console_GetTotalLines(ConsoleHandle console);
+
 } // namespace db
 } // namespace nw4hbm
 

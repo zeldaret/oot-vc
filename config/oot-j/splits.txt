@@ -821,8 +821,17 @@ revolution/hbm/homebutton/HBMRemoteSpk.cpp:
 	.text       start:0x8010BFF8 end:0x8010C7D4
 	.data       start:0x80194BD0 end:0x80194BE0
 
-revolution/hbm/nw4hbm/db/code_8010C7D4.cpp:
-	.text       start:0x8010C7D4 end:0x8010EA48
+revolution/hbm/nw4hbm/db/db_assert.cpp:
+	.text       start:0x8010C7D4 end:0x8010CBAC
+
+revolution/hbm/nw4hbm/db/db_console.cpp:
+	.text       start:0x8010CBAC end:0x8010D6E4
+
+revolution/hbm/nw4hbm/db/db_directPrint.cpp:
+	.text       start:0x8010D6E4 end:0x8010E134
+
+revolution/hbm/nw4hbm/db/db_mapFile.cpp:
+	.text       start:0x8010E134 end:0x8010EA48
 
 revolution/hbm/nw4hbm/lyt/lyt_animation.cpp:
 	.text       start:0x8010EA48 end:0x8010F9B8

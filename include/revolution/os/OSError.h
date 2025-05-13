@@ -4,7 +4,12 @@
 #include "macros.h"
 #include "revolution/os/OSContext.h"
 #include "revolution/types.h"
+
+#ifdef __cplusplus
+#include "cstdarg.hpp"
+#else
 #include "stdarg.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,6 +49,7 @@ extern OSErrorHandler __OSErrorTable[OS_ERR_MAX];
 extern u32 __OSFpscrEnableBits;
 
 WEAK void OSReport(const char* msg, ...);
+void OSVReport(const char* msg, va_list list);
 WEAK void OSPanic(const char* file, int line, const char* msg, ...);
 
 OSErrorHandler OSSetErrorHandler(u16 error, OSErrorHandler handler);
@@ -53,9 +59,5 @@ void __OSUnhandledException(u8 error, struct OSContext* ctx, u32 dsisr, u32 dar)
 }
 #endif
 
-#ifndef __cplusplus
-// va_list oddities
-void OSVReport(const char* msg, va_list list);
-#endif
 
 #endif

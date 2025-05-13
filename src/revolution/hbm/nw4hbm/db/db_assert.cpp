@@ -18,7 +18,7 @@ static void Assertion_Printf_(const char* fmt, ...) {
     va_start(vlist, fmt);
 
     if (sAssertionConsole != nullptr) {
-        Console_VPrintf(sAssertionConsole, fmt, vlist);
+        // Console_VPrintf(sAssertionConsole, fmt, vlist);
     } else {
         OSVReport(fmt, vlist);
     }
@@ -71,9 +71,9 @@ void VPanic(const char* file, int line, const char* fmt, std::va_list vlist) {
 
     if (sAssertionConsole != nullptr) {
         Console_Printf(sAssertionConsole, "%s:%d Panic:", file, line);
-        Console_VPrintf(sAssertionConsole, fmt, vlist);
+        // Console_VPrintf(sAssertionConsole, fmt, vlist);
         Console_Printf(sAssertionConsole, "\n");
-        Console_ShowLatestLine(sAssertionConsole);
+        // Console_ShowLatestLine(sAssertionConsole);
         Console_SetVisible(sAssertionConsole, true);
     } else {
         OSReport("%s:%d Panic:", file, line);
@@ -93,9 +93,9 @@ void Panic(const char* file, int line, const char* fmt, ...) {
 void VWarning(const char* file, int line, const char* fmt, std::va_list vlist) {
     if (sAssertionConsole != nullptr) {
         Console_Printf(sAssertionConsole, "%s:%d Warning:", file, line);
-        Console_VPrintf(sAssertionConsole, fmt, vlist);
+        // Console_VPrintf(sAssertionConsole, fmt, vlist);
         Console_Printf(sAssertionConsole, "\n");
-        Console_ShowLatestLine(sAssertionConsole);
+        // Console_ShowLatestLine(sAssertionConsole);
         if (sDispWarningAuto) {
             Assertion_ShowConsole(sWarningTime);
         }

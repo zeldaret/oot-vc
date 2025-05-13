@@ -7,11 +7,11 @@
 
 namespace nw4hbm {
 namespace db {
-#define NW4R_WARNING(...) nw4r::db::Warning(__FILE__, __LINE__, __VA_ARGS__)
-#define NW4R_PANIC(...) nw4r::db::Panic(__FILE__, __LINE__, __VA_ARGS__)
+#define NW4R_WARNING(...) nw4hbm::db::Warning(__FILE__, __LINE__, __VA_ARGS__)
+#define NW4R_PANIC(...) nw4hbm::db::Panic(__FILE__, __LINE__, __VA_ARGS__)
 #define NW4R_DB_ASSERT(exp, ...) \
     if (!(exp))                  \
-    nw4r::db::Panic(__FILE__, __LINE__, __VA_ARGS__)
+    nw4hbm::db::Panic(__FILE__, __LINE__, __VA_ARGS__)
 
 WEAK void VPanic(const char* file, int line, const char* fmt, std::va_list vlist);
 WEAK void Panic(const char* file, int line, const char* fmt, ...);
