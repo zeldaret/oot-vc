@@ -346,7 +346,7 @@ config.libs = [
     RevolutionLib(
         "os",
         [
-            Object(NotLinked, "revolution/os/OS.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OS.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSAlarm.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSAlloc.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSArena.c"),
