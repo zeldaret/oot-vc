@@ -5,6 +5,7 @@
  * headers
  */
 
+#include "macros.h"
 #include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp" // NonCopyable
 #include "revolution/types.h"
 
@@ -28,6 +29,7 @@ class LinkListNode : private NonCopyable {
 
     // methods
     LinkListNode* GetNext() const { return mNext; }
+    LinkListNode* GetPrev() const { return mPrev; }
 
     // members
   private:
@@ -50,6 +52,8 @@ class Iterator {}; // what does this base do?
 class LinkListImpl : private NonCopyable {
     // nested types
   public:
+    class ConstIterator;
+
     // [SGLEA4]/GormitiDebug.elf:.debug_info::0x476169
     class Iterator : public dummy::Iterator {
         // methods
@@ -66,6 +70,11 @@ class LinkListImpl : private NonCopyable {
             return *this;
         }
 
+        Iterator& operator--() {
+            mPointer = mPointer->GetPrev();
+            return *this;
+        }
+
         LinkListNode* operator->() const { return mPointer; }
 
         // members
@@ -76,7 +85,34 @@ class LinkListImpl : private NonCopyable {
         // friends
       private:
         friend class LinkListImpl;
+        friend class ConstIterator;
     }; // size 0x04
+
+    class ConstIterator {
+        friend class LinkListImpl;
+
+      public:
+        explicit ConstIterator(Iterator it) : mNode(it.mPointer) {}
+
+        ConstIterator& operator++() {
+            mNode = mNode->GetNext();
+            return *this;
+        }
+
+        ConstIterator& operator--() {
+            mNode = mNode->GetPrev();
+            return *this;
+        }
+
+        const LinkListNode* operator->() const { return mNode; }
+
+        friend bool operator==(LinkListImpl::ConstIterator lhs, LinkListImpl::ConstIterator rhs) {
+            return lhs.mNode == rhs.mNode;
+        }
+
+      private:
+        LinkListNode* mNode; // at 0x0
+    };
 
     // methods
   public:
@@ -98,6 +134,7 @@ class LinkListImpl : private NonCopyable {
     bool IsEmpty() { return mSize != 0; };
     void SetPrev(LinkListNode* p, LinkListNode* pPrev);
     void SetNext(LinkListNode* p, LinkListNode* pNext);
+    u32 GetSize() const { return mSize; }
 
   private:
     void Initialize_() {
@@ -119,9 +156,11 @@ template <typename, int> class Iterator {}; // same thing here idk
 } // namespace dummy
 
 // [SGLEA4]/GormitiDebug.elf:.debug_info::0x475f72, 0x4763e9...
-template <typename T, int I> class LinkList : private detail::LinkListImpl {
+template <typename T, int I> class LinkList : public detail::LinkListImpl {
     // nested types
   public:
+    class ConstIterator;
+
     // [SGLEA4]/GormitiDebug.elf:.debug_info::0x47612f, 0x477fb4...
     class Iterator : public dummy::Iterator<T, I> {
         // methods
@@ -147,8 +186,14 @@ template <typename T, int I> class LinkList : private detail::LinkListImpl {
             return it;
         }
 
+        Iterator& operator--() {
+            --it_;
+            return *this;
+        }
+
         T& operator*() const {
             T* p = this->operator->();
+            NW4HBM_ASSERT_PTR_NULL(p, 0);
 
             return *p;
         }
@@ -163,7 +208,47 @@ template <typename T, int I> class LinkList : private detail::LinkListImpl {
         // friends
       private:
         friend class LinkList<T, I>;
+        friend class ConstIterator;
     }; // size 0x04
+
+    class ConstIterator {
+        friend class LinkList;
+
+      public:
+        // Element type must be visible to ReverseIterator
+        typedef T TElem;
+
+      public:
+        explicit ConstIterator(LinkListImpl::Iterator it) : mIterator(it) {}
+        explicit ConstIterator(Iterator it) : mIterator(it.it_) {}
+
+        ConstIterator& operator++() {
+            ++mIterator;
+            return *this;
+        }
+
+        ConstIterator& operator--() {
+            --mIterator;
+            return *this;
+        }
+
+        ConstIterator operator++(int) {
+            ConstIterator ret = *this;
+            ++*this;
+            return ret;
+        }
+
+        const T* operator->() const { return GetPointerFromNode(mIterator.operator->()); }
+
+        const T& operator*() const { return *this->operator->(); }
+
+        friend bool operator==(ConstIterator lhs, ConstIterator rhs) { return lhs.mIterator == rhs.mIterator; }
+
+        friend bool operator!=(ConstIterator lhs, ConstIterator rhs) { return !(lhs == rhs); }
+
+      private:
+        LinkListImpl::ConstIterator mIterator; // at 0x0
+    };
 
     // methods
   public:
@@ -172,19 +257,37 @@ template <typename T, int I> class LinkList : private detail::LinkListImpl {
 
     // methods
     Iterator GetBeginIter() { return LinkListImpl::GetBeginIter(); }
+    ConstIterator GetBeginIter() const { return ConstIterator(const_cast<LinkList*>(this)->GetBeginIter()); }
     Iterator GetEndIter() { return LinkListImpl::GetEndIter(); }
+    ConstIterator GetEndIter() const { return ConstIterator(const_cast<LinkList*>(this)->GetEndIter()); }
 
     Iterator Insert(Iterator it, T* p) { return LinkListImpl::Insert(it.it_, GetNodeFromPointer(p)); }
 
+    T& GetFront() { return *GetBeginIter(); }
+    const T& GetFront() const { return *GetBeginIter(); }
+
+    T& GetBack() { return *--GetEndIter(); }
+    const T& GetBack() const { return *--GetEndIter(); }
+
     void PushBack(T* p) { Insert(GetEndIter(), p); }
     Iterator Erase(Iterator it) { return LinkListImpl::Erase(it.it_); }
+    Iterator Erase(T* p) { return LinkListImpl::Erase(GetNodeFromPointer(p)); }
 
     // static methods
-    static LinkListNode* GetNodeFromPointer(T* ptr) {
-        return reinterpret_cast<LinkListNode*>(reinterpret_cast<int>(ptr) + I);
+    static LinkListNode* GetNodeFromPointer(T* p) {
+        NW4HBM_ASSERT_PTR_NULL(p, 563);
+        return reinterpret_cast<LinkListNode*>(reinterpret_cast<int>(p) + I);
     }
 
-    static T* GetPointerFromNode(LinkListNode* ptr) { return reinterpret_cast<T*>(reinterpret_cast<int>(ptr) - I); }
+    static T* GetPointerFromNode(LinkListNode* p) {
+        NW4HBM_ASSERT_PTR_NULL(p, 0);
+        return reinterpret_cast<T*>(reinterpret_cast<int>(p) - I);
+    }
+
+    static const T* GetPointerFromNode(const LinkListNode* p) {
+        NW4HBM_ASSERT_PTR_NULL(p, 0);
+        return reinterpret_cast<const T*>(reinterpret_cast<const char*>(p) - I);
+    }
 
     // members
   private:
@@ -222,11 +325,7 @@ template <typename T, int I> class LinkList : private detail::LinkListImpl {
  * Explicitly instantiate a linked list specialization.
  * (RESERVED FOR MATCHING DECOMP HACKS)
  */
-#ifndef __DECOMP_NON_MATCHING
 #define NW4R_UT_LINKLIST_TYPEDEF_FORCE(T) template struct nw4hbm::ut::LinkList<T, offsetof(T, node)>
-#else
-#define NW4R_UT_LINKLIST_TYPEDEF_FORCE(T)
-#endif
 
 /**
  * Linked-list for-each macro.

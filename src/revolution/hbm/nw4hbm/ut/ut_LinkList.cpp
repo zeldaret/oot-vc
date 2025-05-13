@@ -22,6 +22,7 @@ namespace detail {
 LinkListImpl::~LinkListImpl() { Clear(); }
 
 LinkListImpl::Iterator LinkListImpl::Erase(Iterator it) {
+    NW4HBM_ASSERT(it.mPointer != &mNode, 0);
     Iterator itNext(it);
     ++itNext;
 
@@ -29,12 +30,12 @@ LinkListImpl::Iterator LinkListImpl::Erase(Iterator it) {
 }
 
 LinkListImpl::Iterator LinkListImpl::Erase(LinkListImpl::Iterator itFirst, LinkListImpl::Iterator itLast) {
-    LinkListNode *pIt = itFirst.mPointer, *pItLast = itLast.mPointer, *pNext;
+    LinkListNode *p = itFirst.mPointer, *pItLast = itLast.mPointer, *pNext;
 
-    while (pIt != pItLast) {
-        pNext = pIt->mNext;
-        Erase(pIt);
-        pIt = pNext;
+    while (p != pItLast) {
+        pNext = p->mNext;
+        Erase(p);
+        p = pNext;
     }
 
     return itLast;
@@ -43,10 +44,14 @@ LinkListImpl::Iterator LinkListImpl::Erase(LinkListImpl::Iterator itFirst, LinkL
 void LinkListImpl::Clear() { Erase(GetBeginIter(), GetEndIter()); }
 
 LinkListImpl::Iterator LinkListImpl::Insert(Iterator it, LinkListNode* p) {
+    NW4HBM_ASSERT_PTR_NULL(p, 0);
     LinkListNode* pIt = it.mPointer;
-
+    NW4HBM_ASSERT_PTR_NULL(pIt, 0);
     LinkListNode* pItPrev = pIt->mPrev;
+    NW4HBM_ASSERT_PTR_NULL(pItPrev, 0);
 
+    NW4HBM_PANIC(p->mPrev == nullptr, 0, "");
+    NW4HBM_PANIC(p->mNext == nullptr, 0, "");
     p->mNext = pIt;
     p->mPrev = pItPrev;
 

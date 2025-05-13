@@ -1,0 +1,33 @@
+#ifndef _REVOLUTION_HBM_NW4HBM_SND_HPP
+#define _REVOLUTION_HBM_NW4HBM_SND_HPP
+
+#include "revolution/hbm/nw4hbm/snd/mix.h"
+#include "revolution/hbm/nw4hbm/snd/snd_AxManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_AxVoice.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_AxVoiceManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_Bank.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_BankFile.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_BasicPlayer.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_BasicSound.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_Channel.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_DisposeCallback.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_EnvGenerator.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_ExternalSoundPlayer.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_FrameHeap.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_FxBase.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_Lfo.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_MoveValue.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_NoteOnCallback.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_PlayerHeap.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_SoundHandle.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_SoundHeap.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_SoundMemoryAllocatable.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_SoundPlayer.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_VoiceManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_WaveFile.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_adpcm.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_util.hpp"
+
+#endif

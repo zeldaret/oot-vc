@@ -1,0 +1,43 @@
+#include "revolution/hbm/snd.hpp"
+#include "revolution/hbm/ut.hpp"
+
+namespace nw4hbm {
+namespace snd {
+namespace detail {
+
+bool SeqFileReader::IsValidFileHeader(const void* pSeqBin) {
+    const ut::BinaryFileHeader* pFileHeader = static_cast<const ut::BinaryFileHeader*>(pSeqBin);
+
+    if (pFileHeader->signature != SIGNATURE) {
+        return false;
+    }
+
+    if (Util::ReadBigEndian(pFileHeader->version) < NW4R_VERSION(1, 0)) {
+        return false;
+    }
+
+    if (Util::ReadBigEndian(pFileHeader->version) > VERSION) {
+        return false;
+    }
+
+    return true;
+}
+
+SeqFileReader::SeqFileReader(const void* pSeqBin) : mHeader(nullptr), mDataBlock(nullptr) {
+    if (!IsValidFileHeader(pSeqBin)) {
+        return;
+    }
+
+    mHeader = static_cast<const SeqFile::Header*>(pSeqBin);
+
+    mDataBlock = static_cast<const SeqFile::DataBlock*>(
+        ut::AddOffsetToPtr(mHeader, Util::ReadBigEndian(mHeader->dataBlockOffset)));
+}
+
+const void* SeqFileReader::GetBaseAddress() const {
+    return ut::AddOffsetToPtr(mDataBlock, Util::ReadBigEndian(mDataBlock->baseOffset));
+}
+
+} // namespace detail
+} // namespace snd
+} // namespace nw4hbm

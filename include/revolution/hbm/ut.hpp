@@ -18,5 +18,6 @@
 #include "revolution/hbm/nw4hbm/ut/ut_TextWriterBase.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
+#include "revolution/hbm/nw4hbm/ut/ut_lock.hpp"
 
 #endif

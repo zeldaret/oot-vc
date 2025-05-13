@@ -877,8 +877,26 @@ revolution/hbm/nw4hbm/lyt/lyt_window.cpp:
 revolution/hbm/nw4hbm/math/math_triangular.cpp:
 	.text       start:0x8011CE94 end:0x8011D104
 
+revolution/hbm/nw4hbm/snd/snd_AxManager.cpp:
+	.text       start:0x8011D104 end:0x8011EE24
+
+revolution/hbm/nw4hbm/snd/snd_AxVoice.cpp:
+	.text       start:0x8011EE24 end:0x80121C00
+
+revolution/hbm/nw4hbm/snd/snd_Voice.cpp:
+	.text       start:0x80121C00 end:0x80122A20
+
+revolution/hbm/nw4hbm/snd/snd_Bank.cpp:
+	.text       start:0x80122A20 end:0x80122C48
+
+revolution/hbm/nw4hbm/snd/snd_BankFile.cpp:
+	.text       start:0x80122C48 end:0x80123298
+
+revolution/hbm/nw4hbm/snd/snd_BasicSound.cpp:
+	.text       start:0x80123298 end:0x8012454C
+
 revolution/hbm/nw4hbm/snd/code_8011D104.cpp:
-	.text       start:0x8011D104 end:0x8013CD64
+	.text       start:0x8012454C end:0x8013CD64
 	.ctors      start:0x8016A6FC end:0x8016A720
 
 revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp:
