@@ -300,7 +300,6 @@ void PaneManager::walkInChildren(nw4hbm::lyt::Pane::LinkList& rPaneList) {
         }
 
         addComponent(pPaneComponent);
-        NW4HBM_ASSERT_PTR_NULL(pPaneComponent, 0);
         walkInChildren(it->GetChildList());
     }
 }
