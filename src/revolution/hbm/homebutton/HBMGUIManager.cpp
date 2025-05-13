@@ -25,7 +25,6 @@
 #include "revolution/types.h"
 
 //! TODO: remove once matched
-extern "C" void fn_8010CB20(char*, int, ...);
 extern "C" void fn_8010CBAC(char*, int, ...);
 
 /*******************************************************************************

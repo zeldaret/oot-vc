@@ -8,7 +8,6 @@
 #include "revolution/types.h"
 
 //! TODO: remove once matched
-extern "C" void fn_8010CB20(char*, int, ...);
 extern "C" void fn_8010CBAC(char*, int, ...);
 
 /*******************************************************************************
@@ -22,7 +21,10 @@ namespace detail {
 LinkListImpl::~LinkListImpl() { Clear(); }
 
 LinkListImpl::Iterator LinkListImpl::Erase(Iterator it) {
-    NW4HBM_ASSERT(it.mPointer != &mNode, 0);
+    // clang-format off
+    NW4HBM_ASSERT2(it.mPointer!=&mNode, 31);
+    // clang-format on
+
     Iterator itNext(it);
     ++itNext;
 
@@ -44,14 +46,16 @@ LinkListImpl::Iterator LinkListImpl::Erase(LinkListImpl::Iterator itFirst, LinkL
 void LinkListImpl::Clear() { Erase(GetBeginIter(), GetEndIter()); }
 
 LinkListImpl::Iterator LinkListImpl::Insert(Iterator it, LinkListNode* p) {
-    NW4HBM_ASSERT_PTR_NULL(p, 0);
-    LinkListNode* pIt = it.mPointer;
-    NW4HBM_ASSERT_PTR_NULL(pIt, 0);
-    LinkListNode* pItPrev = pIt->mPrev;
-    NW4HBM_ASSERT_PTR_NULL(pItPrev, 0);
+    NW4HBM_ASSERT_PTR_NULL(p, 74);
 
-    NW4HBM_PANIC(p->mPrev == nullptr, 0, "");
-    NW4HBM_PANIC(p->mNext == nullptr, 0, "");
+    LinkListNode* pIt = it.mPointer;
+    NW4HBM_ASSERT_PTR_NULL(pIt, 76);
+
+    LinkListNode* pItPrev = pIt->mPrev;
+    NW4HBM_ASSERT_PTR_NULL(pItPrev, 79);
+
+    NW4HBM_ASSERT2(p->mNext == NULL, 81);
+    NW4HBM_ASSERT2(p->mPrev == NULL, 82);
     p->mNext = pIt;
     p->mPrev = pItPrev;
 
@@ -63,18 +67,6 @@ LinkListImpl::Iterator LinkListImpl::Insert(Iterator it, LinkListNode* p) {
     return p;
 }
 
-void LinkListImpl::SetPrev(LinkListNode* p, LinkListNode* pPrev) {
-    NW4HBM_ASSERT_PTR_NULL(pPrev, 101);
-    LinkListNode* pNode = p->mPrev;
-    pNode->mPrev = pPrev;
-}
-
-void LinkListImpl::SetNext(LinkListNode* p, LinkListNode* pNext) {
-    NW4HBM_ASSERT_PTR_NULL(pNext, 103);
-    LinkListNode* pNode = p->mNext;
-    pNode->mNext = pNext;
-}
-
 LinkListImpl::Iterator LinkListImpl::Erase(LinkListNode* p) {
     // clang-format off
     NW4HBM_ASSERT(!IsEmpty(), 96);
@@ -82,10 +74,11 @@ LinkListImpl::Iterator LinkListImpl::Erase(LinkListNode* p) {
     NW4HBM_ASSERT2(p!=&mNode, 98);
     // clang-format on
 
-    LinkListNode *pNext = p->mNext, *pPrev = p->mPrev;
+    LinkListNode* pNext = p->mNext;
+    LinkListNode* pPrev = p->mPrev;
 
-    SetNext(p, pNext);
-    SetPrev(p, pPrev);
+    SetPrev(pPrev, pNext);
+    SetNext(pPrev, pNext);
 
     mSize--;
 
@@ -93,6 +86,16 @@ LinkListImpl::Iterator LinkListImpl::Erase(LinkListNode* p) {
     p->mPrev = nullptr;
 
     return pNext;
+}
+
+void LinkListImpl::SetPrev(LinkListNode* pPrev, LinkListNode* pNext) {
+    NW4HBM_ASSERT_PTR_NULL(pNext, 101);
+    pNext->mPrev = pPrev;
+}
+
+void LinkListImpl::SetNext(LinkListNode* pPrev, LinkListNode* pNext) {
+    NW4HBM_ASSERT_PTR_NULL(pPrev, 103);
+    pPrev->mNext = pNext;
 }
 
 } // namespace detail

@@ -30,7 +30,6 @@ struct CMapInfoScan {
  */
 
 //! TODO: remove once matched
-extern "C" void fn_8010CB20(char*, int, ...);
 extern "C" void fn_8010CBAC(char*, int, ...);
 
 namespace nw4hbm {
@@ -229,7 +228,7 @@ u16 ResFontBase::FindGlyphIndex(const FontCodeMap* pMap, char16_t c) const {
         } break;
 
         default:
-            fn_8010CB20(__FILE__, 597, "unknwon MAPMETHOD");
+            nw4hbm::db::Panic(__FILE__, 597, "unknwon MAPMETHOD");
             break;
     }
 

@@ -905,12 +905,18 @@ revolution/hbm/nw4hbm/snd/code_8011D104.cpp:
 
 revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp:
 	.text       start:0x8013CD64 end:0x8013CFBC
+	.data       start:0x8019E268 end:0x8019E3B8
 
 revolution/hbm/nw4hbm/ut/ut_CharStrmReader.cpp:
 	.text       start:0x8013CFBC end:0x8013D91C
+	.data       start:0x8019E3B8 end:0x8019E500
 
 revolution/hbm/nw4hbm/ut/ut_CharWriter.cpp:
 	.text       start:0x8013D91C end:0x80141E78
+	.data       start:0x8019E500 end:0x8019E7E0
+	.bss        start:0x80259DD0 end:0x80259DF0
+	.sbss       start:0x8025DCA0 end:0x8025DCA8
+	.sdata2     start:0x8025E928 end:0x8025E948
 
 revolution/hbm/nw4hbm/ut/ut_FileStream.cpp:
 	.text       start:0x80141E78 end:0x80142114
@@ -926,6 +932,7 @@ revolution/hbm/nw4hbm/ut/ut_IOStream.cpp:
 
 revolution/hbm/nw4hbm/ut/ut_LinkList.cpp:
 	.text       start:0x80142514 end:0x80142A80
+	.data       start:0x8019EA08 end:0x8019EBB0
 
 revolution/hbm/nw4hbm/ut/ut_list.cpp:
 	.text       start:0x80142A80 end:0x80142E28

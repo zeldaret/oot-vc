@@ -28,6 +28,7 @@ struct BinaryBlockHeader {
 }; // size 0x08
 
 bool IsValidBinaryFile(const BinaryFileHeader* header, byte4_t signature, u16 version, u16 minBlocks);
+
 } // namespace ut
 } // namespace nw4hbm
 

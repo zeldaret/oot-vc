@@ -14,10 +14,10 @@ namespace detail {
  *
  ******************************************************************************/
 class PoolImpl {
-public:
+  public:
     PoolImpl() : mNext(nullptr) {}
 
-protected:
+  protected:
     u32 CreateImpl(void* pBuffer, u32 size, u32 stride);
     void DestroyImpl(void* pBuffer, u32 size);
     int CountImpl() const;
@@ -25,7 +25,7 @@ protected:
     void* AllocImpl();
     void FreeImpl(void* pElem);
 
-private:
+  private:
     PoolImpl* mNext; // at 0x0
 };
 
@@ -35,18 +35,12 @@ private:
  *
  ******************************************************************************/
 template <typename T> class InstancePool : private PoolImpl {
-public:
-    u32 Create(void* pBuffer, u32 size) {
-        return CreateImpl(pBuffer, size, sizeof(T));
-    }
+  public:
+    u32 Create(void* pBuffer, u32 size) { return CreateImpl(pBuffer, size, sizeof(T)); }
 
-    void Destroy(void* pPtr, u32 size) {
-        DestroyImpl(pPtr, size);
-    }
+    void Destroy(void* pPtr, u32 size) { DestroyImpl(pPtr, size); }
 
-    int Count() const {
-        return CountImpl();
-    }
+    int Count() const { return CountImpl(); }
 
     T* Alloc() {
         void* pPtr = AllocImpl();
@@ -71,30 +65,20 @@ public:
  *
  ******************************************************************************/
 template <typename T> class MemoryPool : private PoolImpl {
-public:
-    u32 Create(void* pBuffer, u32 size) {
-        return CreateImpl(pBuffer, size, sizeof(T));
-    }
+  public:
+    u32 Create(void* pBuffer, u32 size) { return CreateImpl(pBuffer, size, sizeof(T)); }
 
-    void Destroy(void* pPtr, u32 size) {
-        DestroyImpl(pPtr, size);
-    }
+    void Destroy(void* pPtr, u32 size) { DestroyImpl(pPtr, size); }
 
-    int Count() const {
-        return CountImpl();
-    }
+    int Count() const { return CountImpl(); }
 
-    T* Alloc() {
-        return static_cast<T*>(AllocImpl());
-    }
+    T* Alloc() { return static_cast<T*>(AllocImpl()); }
 
-    void Free(T* pElem) {
-        FreeImpl(pElem);
-    }
+    void Free(T* pElem) { FreeImpl(pElem); }
 };
 
 } // namespace detail
 } // namespace snd
-} // namespace nw4r
+} // namespace nw4hbm
 
 #endif

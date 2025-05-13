@@ -12,6 +12,9 @@
 #include "revolution/hbm/nw4hbm/ut/ut_Color.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_Font.hpp"
 
+//! TODO: remove once matched
+extern "C" void fn_8010CBAC(char*, int, ...);
+
 /*******************************************************************************
  * local function declarations
  */
@@ -83,7 +86,7 @@ const Font* CharWriter::GetFont() const {
 }
 
 void CharWriter::SetupGX() {
-    NW4HBM_ASSERT_PTR(this, 0);
+    NW4HBM_ASSERT_PTR(this, 173);
     ResetTextureCache();
 
     if (mColorMapping.min != 0x00000000 || mColorMapping.max != 0xffffffff) {
@@ -108,6 +111,7 @@ void CharWriter::SetupGX() {
                 break;
 
             default:
+                fn_8010CBAC(__FILE__, 207, "CharWriter::SetupGX: Unknown font sheet format(=%d)", format);
                 SetupGXDefault();
                 break;
         }
@@ -128,24 +132,26 @@ void CharWriter::ResetColorMapping() {
 }
 
 void CharWriter::ResetTextureCache() {
-    NW4HBM_ASSERT_PTR(this, 0);
+    NW4HBM_ASSERT_PTR(this, 300);
     mLoadingTexture.Reset();
 }
 
 void CharWriter::SetGradationMode(GradationMode mode) {
     NW4HBM_ASSERT_PTR(this, 355);
+    NW4HBM_PANIC(mode >= 0 && mode <= 2 ? false : true, 356,
+                 "mode is out of bounds(%d)\n%d <= mode <= %d not satisfied.", mode, 0, 2);
     mTextColor.gradationMode = mode;
     UpdateVertexColor();
 }
 
 void CharWriter::SetTextColor(Color color) {
-    NW4HBM_ASSERT_PTR(this, 0);
+    NW4HBM_ASSERT_PTR(this, 389);
     mTextColor.start = color;
     UpdateVertexColor();
 }
 
 void CharWriter::SetTextColor(Color start, Color end) {
-    NW4HBM_ASSERT_PTR(this, 0);
+    NW4HBM_ASSERT_PTR(this, 410);
     mTextColor.start = start;
     mTextColor.end = end;
     UpdateVertexColor();
@@ -171,9 +177,10 @@ void CharWriter::SetFontSize(f32 width, f32 height) {
     NW4HBM_ASSERT_PTR(this, 559);
     NW4HBM_ASSERT_PTR(mFont, 560);
     NW4HBM_PANIC(mFont->GetWidth() < 1, 561,
-                 "mFont->GetWidth() is out of bounds(%d)\n%d<= mFont->GetWidth() not satisfied.", mFont->GetWidth(), 1);
+                 "mFont->GetWidth() is out of bounds(%d)\n%d <= mFont->GetWidth() not satisfied.", mFont->GetWidth(),
+                 1);
     NW4HBM_PANIC(mFont->GetHeight() < 1, 562,
-                 "mFont->GetHeight() is out of bounds(%d)\n%d<= mFont->GetHeight() not satisfied.", mFont->GetHeight(),
+                 "mFont->GetHeight() is out of bounds(%d)\n%d <= mFont->GetHeight() not satisfied.", mFont->GetHeight(),
                  1);
     SetScale(width / mFont->GetWidth(), height / mFont->GetHeight());
 }
@@ -288,9 +295,9 @@ void CharWriter::PrintGlyph(f32 x, f32 y, f32 z, const Glyph& glyph) {
     NW4HBM_ASSERT_PTR(this, 1127);
     NW4HBM_ASSERT_PTR(& glyph, 1128);
     NW4HBM_PANIC(glyph.texWidth < 1, 1129,
-                 "glyph.texWidth is out of bounds(%d)\n%d<= glyph.texWidth not satisfied.", glyph.texWidth, 1);
+                 "glyph.texWidth is out of bounds(%d)\n%d <= glyph.texWidth not satisfied.", glyph.texWidth, 1);
     NW4HBM_PANIC(glyph.texHeight < 1, 1130,
-                 "glyph.texHeight is out of bounds(%d)\n%d<= glyph.texHeight not satisfied.", glyph.texHeight, 1);
+                 "glyph.texHeight is out of bounds(%d)\n%d <= glyph.texHeight not satisfied.", glyph.texHeight, 1);
     // clang-format on
 
     f32 posLeft = x;

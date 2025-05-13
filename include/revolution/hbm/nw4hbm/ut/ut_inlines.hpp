@@ -1,6 +1,9 @@
 #ifndef RVL_SDK_HBM_NW4HBM_UT_INLINES_HPP
 #define RVL_SDK_HBM_NW4HBM_UT_INLINES_HPP
 
+#include "revolution/hbm/nw4hbm/db/db_assert.hpp"
+#include "revolution/types.h"
+
 /*******************************************************************************
  * classes and functions
  */

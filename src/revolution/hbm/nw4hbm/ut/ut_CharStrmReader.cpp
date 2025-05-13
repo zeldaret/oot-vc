@@ -28,7 +28,7 @@ namespace ut {
 char16_t CharStrmReader::ReadNextCharUTF8() {
     NW4HBM_ASSERT_PTR(this, 76);
     NW4HBM_ASSERT_PTR(mCharStrm, 77);
-    NW4HBM_ASSERT2((GetChar<char8_t>() & 0xC0) != 0x80, 79);
+    NW4HBM_ASSERT2((GetChar<u8>() & 0xC0) != 0x80, 79);
     byte2_t code;
 
     if ((GetChar<char8_t>(0) & 0x80) == 0x00) {
@@ -42,7 +42,7 @@ char16_t CharStrmReader::ReadNextCharUTF8() {
     } else {
         // 3-byte UTF-8 sequence
 
-        NW4HBM_ASSERT2((GetChar<char8_t>() & 0xF0) == 0xE0, 100);
+        NW4HBM_ASSERT2((GetChar<u8>() & 0xF0) == 0xE0, 100);
         /* technical ERRATUM: the mask of GetChar<char8_t>(0) should be 0x0f */
         code = (GetChar<char8_t>(0) & 0x1f) << 12 | (GetChar<char8_t>(1) & 0x3f) << 6 | (GetChar<char8_t>(2) & 0x3f);
         StepStrm<char8_t>(3);
@@ -58,7 +58,7 @@ char16_t CharStrmReader::ReadNextCharUTF8() {
 char16_t CharStrmReader::ReadNextCharUTF16() {
     NW4HBM_ASSERT_PTR(this, 129);
     NW4HBM_ASSERT_PTR(mCharStrm, 130);
-    NW4HBM_ASSERT_ALIGN32(mCharStrm, 131);
+    NW4HBM_ASSERT_ALIGN2(mCharStrm, __FILE__, 131);
     byte2_t code = GetChar<char16_t>(0);
     StepStrm<char16_t>(1);
 

@@ -41,7 +41,6 @@ template <typename T> void ResolveOffset(T*& ptr, void* base) {
  */
 
 //! TODO: remove once matched
-extern "C" void fn_8010CB20(char*, int, ...);
 extern "C" void fn_8010CBAC(char*, int, ...);
 
 namespace nw4hbm {
@@ -208,9 +207,9 @@ FontInformation* ResFont::Rebuild(BinaryFileHeader* fileHeader) {
                 break;
 
             default:
-                fn_8010CB20(__FILE__, 345, "The font has unknown block('%c%c%c%c').", blockHeader->kind >> 24,
-                            (blockHeader->kind >> 16) & 0xFF, (blockHeader->kind >> 8) & 0xFF,
-                            blockHeader->kind & 0xFF);
+                nw4hbm::db::Panic(__FILE__, 345, "The font has unknown block('%c%c%c%c').", blockHeader->kind >> 24,
+                                  (blockHeader->kind >> 16) & 0xFF, (blockHeader->kind >> 8) & 0xFF,
+                                  blockHeader->kind & 0xFF);
                 return nullptr;
         }
 

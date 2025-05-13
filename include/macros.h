@@ -126,7 +126,7 @@ inline void padStack(void) { int pad = 0; }
                      !(((u32)(ptr) & 0xFFFFC000) != 0xE0000000);                                                 \
                                                                                                                  \
         if (!bVar3) {                                                                                            \
-            fn_8010CB20(__FILE__, line, "NW4HBM:Pointer Error\n" #ptr "(=%p) is not valid pointer.", ptr);       \
+            nw4hbm::db::Panic(__FILE__, line, "NW4HBM:Pointer Error\n" #ptr "(=%p) is not valid pointer.", ptr); \
         }                                                                                                        \
     }
 
@@ -138,53 +138,53 @@ inline void padStack(void) { int pad = 0; }
                      !(((u32)(ptr) & 0xFFFFC000) != 0xE0000000);                                                 \
                                                                                                                  \
         if (!bVar3) {                                                                                            \
-            fn_8010CB20(file, line, "NW4HBM:Pointer Error\n" #ptr "(=%p) is not valid pointer.", ptr);           \
+            nw4hbm::db::Panic(file, line, "NW4HBM:Pointer Error\n" #ptr "(=%p) is not valid pointer.", ptr);     \
         }                                                                                                        \
     }
 
-#define NW4HBM_ASSERT_PTR3(ptr, file, line)                                                             \
-    {                                                                                                   \
-        if ((((u32)(ptr) & 0xFF000000) == 0x80000000 || ((u32)(ptr) & 0xFF800000) == 0x81000000) ||     \
-            !(((u32)(ptr) & 0xF8000000) != 0x90000000) || !(((u32)(ptr) & 0xFF000000) != 0xC0000000) || \
-            !(((u32)(ptr) & 0xFF800000) != 0xC1000000) || !(((u32)(ptr) & 0xF8000000) != 0xD0000000) || \
-            !(((u32)(ptr) & 0xFFFFC000) != 0xE0000000)) {                                               \
-                                                                                                        \
-            fn_8010CB20(file, line, "NW4HBM:Pointer Error\n" #ptr "(=%p) is not valid pointer.", ptr);  \
-        }                                                                                               \
+#define NW4HBM_ASSERT_PTR3(ptr, file, line)                                                                  \
+    {                                                                                                        \
+        if ((((u32)(ptr) & 0xFF000000) == 0x80000000 || ((u32)(ptr) & 0xFF800000) == 0x81000000) ||          \
+            !(((u32)(ptr) & 0xF8000000) != 0x90000000) || !(((u32)(ptr) & 0xFF000000) != 0xC0000000) ||      \
+            !(((u32)(ptr) & 0xFF800000) != 0xC1000000) || !(((u32)(ptr) & 0xF8000000) != 0xD0000000) ||      \
+            !(((u32)(ptr) & 0xFFFFC000) != 0xE0000000)) {                                                    \
+                                                                                                             \
+            nw4hbm::db::Panic(file, line, "NW4HBM:Pointer Error\n" #ptr "(=%p) is not valid pointer.", ptr); \
+        }                                                                                                    \
     }
 
-#define NW4HBM_PANIC(cond, line, ...)                 \
-    {                                                 \
-        if ((cond)) {                                 \
-            fn_8010CB20(__FILE__, line, __VA_ARGS__); \
-        }                                             \
+#define NW4HBM_PANIC(cond, line, ...)                       \
+    {                                                       \
+        if ((cond)) {                                       \
+            nw4hbm::db::Panic(__FILE__, line, __VA_ARGS__); \
+        }                                                   \
     }
 
-#define NW4HBM_PANIC2(cond, line, ...)                \
-    {                                                 \
-        if (!(cond)) {                                \
-            fn_8010CB20(__FILE__, line, __VA_ARGS__); \
-        }                                             \
+#define NW4HBM_PANIC2(cond, line, ...)                      \
+    {                                                       \
+        if (!(cond)) {                                      \
+            nw4hbm::db::Panic(__FILE__, line, __VA_ARGS__); \
+        }                                                   \
     }
 
-#define NW4HBM_PANIC3(cond, line, ...)                \
-    {                                                 \
-        bool b = false;                               \
-                                                      \
-        if ((cond)) {                                 \
-            b = true;                                 \
-        }                                             \
-                                                      \
-        if (!b) {                                     \
-            fn_8010CB20(__FILE__, line, __VA_ARGS__); \
-        }                                             \
+#define NW4HBM_PANIC3(cond, line, ...)                      \
+    {                                                       \
+        bool b = false;                                     \
+                                                            \
+        if ((cond)) {                                       \
+            b = true;                                       \
+        }                                                   \
+                                                            \
+        if (!b) {                                           \
+            nw4hbm::db::Panic(__FILE__, line, __VA_ARGS__); \
+        }                                                   \
     }
 
-#define NW4HBM_PANIC4(cond, file, line, ...)      \
-    {                                             \
-        if ((cond)) {                             \
-            fn_8010CB20(file, line, __VA_ARGS__); \
-        }                                         \
+#define NW4HBM_PANIC4(cond, file, line, ...)            \
+    {                                                   \
+        if ((cond)) {                                   \
+            nw4hbm::db::Panic(file, line, __VA_ARGS__); \
+        }                                               \
     }
 
 #define NW4HBM_ASSERT(cond, line) NW4HBM_PANIC(cond, line, "NW4HBM:Failed assertion " #cond)

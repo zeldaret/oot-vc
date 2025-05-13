@@ -5,6 +5,7 @@
  */
 
 #include "macros.h"
+#include "revolution/hbm/nw4hbm/db/db_assert.hpp"
 #include "revolution/types.h"
 
 /*******************************************************************************
@@ -12,7 +13,6 @@
  */
 
 //! TODO: remove once matched
-extern "C" void fn_8010CB20(char*, int, ...);
 extern "C" void fn_8010CBAC(char*, int, ...);
 
 namespace nw4hbm {
@@ -22,10 +22,18 @@ bool IsValidBinaryFile(const BinaryFileHeader* header, byte4_t signature, u16 ve
     NW4HBM_ASSERT_PTR(header, 48);
 
     if (header->signature != signature) {
-        fn_8010CBAC(__FILE__, 60, "Signature check failed ('%c%c%c%c') must be'%c%c%c%c').",
-                    (header->signature >> 24) & 0xFF, (header->signature >> 16) & 0xFF, (header->signature >> 8) & 0xFF,
-                    (header->signature & 0xFF), (signature >> 24) & 0xFF, (signature >> 16) & 0xFF,
-                    (signature >> 8) & 0xFF, (signature & 0xFF));
+        s8 signature1 = (header->signature >> 24) & 0xFF;
+        s8 signature2 = (header->signature >> 16) & 0xFF;
+        s8 signature3 = (header->signature >> 8) & 0xFF;
+        s8 signature4 = (header->signature & 0xFF);
+
+        s8 signature5 = (signature >> 24) & 0xFF;
+        s8 signature6 = (signature >> 16) & 0xFF;
+        s8 signature7 = (signature >> 8) & 0xFF;
+        s8 signature8 = (signature & 0xFF);
+
+        fn_8010CBAC(__FILE__, 60, "Signature check failed ('%c%c%c%c' must be '%c%c%c%c').", signature1, signature2,
+                    signature3, signature4, signature5, signature6, signature7, signature8);
         return false;
     }
 
@@ -53,6 +61,9 @@ bool IsValidBinaryFile(const BinaryFileHeader* header, byte4_t signature, u16 ve
 
     return true;
 }
+
+// required to match .data
+void dummy(const BinaryFileHeader* fileHeader) { NW4HBM_ASSERT_PTR(fileHeader, 0); }
 
 } // namespace ut
 } // namespace nw4hbm
