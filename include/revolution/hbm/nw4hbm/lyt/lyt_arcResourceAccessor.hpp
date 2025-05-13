@@ -7,7 +7,7 @@
 
 #include "revolution/arc/arc.h" // ARCHandle
 #include "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_LinkList.hpp"
+#include "revolution/hbm/nw4hbm/ut/LinkList.h"
 #include "revolution/types.h" // u32
 
 /*******************************************************************************

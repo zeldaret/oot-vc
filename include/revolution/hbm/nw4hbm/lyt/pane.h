@@ -10,7 +10,7 @@
 #include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp"
 #include "revolution/hbm/nw4hbm/math/math_types.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_Color.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_LinkList.hpp"
+#include "revolution/hbm/nw4hbm/ut/LinkList.h"
 #include "revolution/types.h"
 
 /*******************************************************************************
@@ -136,8 +136,9 @@ class Pane : public detail::PaneBase {
     void SetRotate(const math::VEC3& value) { mRotate = value; }
     void SetScale(const math::VEC2& value) { mScale = value; }
     void SetSRTElement(u32 idx, f32 value) {
-        f32* srtAry = reinterpret_cast<f32*>(&mTranslate);
+        NW4HBM_ASSERT2(idx < ANIMTARGET_PANE_MAX, 250);
 
+        f32* srtAry = reinterpret_cast<f32*>(&mTranslate);
         srtAry[idx] = value;
     }
 

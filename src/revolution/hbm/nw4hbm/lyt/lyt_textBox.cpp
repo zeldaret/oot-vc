@@ -13,8 +13,8 @@
 
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_material.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_pane.hpp"
+#include "revolution/hbm/nw4hbm/lyt/material.h"
+#include "revolution/hbm/nw4hbm/lyt/pane.h"
 #include "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp" // detail::ConvertOffsToPointer
 

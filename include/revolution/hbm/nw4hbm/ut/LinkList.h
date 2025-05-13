@@ -193,7 +193,7 @@ template <typename T, int I> class LinkList : public detail::LinkListImpl {
 
         T& operator*() const {
             T* p = this->operator->();
-            NW4HBM_ASSERT_PTR_NULL(p, 0);
+            NW4HBM_ASSERT_PTR_NULL(p, 403);
 
             return *p;
         }
@@ -280,7 +280,7 @@ template <typename T, int I> class LinkList : public detail::LinkListImpl {
     }
 
     static T* GetPointerFromNode(LinkListNode* p) {
-        NW4HBM_ASSERT_PTR_NULL(p, 0);
+        NW4HBM_ASSERT_PTR_NULL(p, 573);
         return reinterpret_cast<T*>(reinterpret_cast<int>(p) - I);
     }
 

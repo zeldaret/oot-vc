@@ -6,7 +6,7 @@
  */
 
 #include "macros.h"
-#include "revolution/hbm/nw4hbm/lyt/lyt_pane.hpp"
+#include "revolution/hbm/nw4hbm/lyt/pane.h"
 #include "revolution/hbm/nw4hbm/ut/list.h"
 #include "revolution/kpad/KPAD.h"
 #include "revolution/mem/mem_allocator.h"

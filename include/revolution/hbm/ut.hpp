@@ -8,7 +8,7 @@
 #include "revolution/hbm/nw4hbm/ut/ut_FileStream.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_Font.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_IOStream.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_LinkList.hpp"
+#include "revolution/hbm/nw4hbm/ut/LinkList.h"
 #include "revolution/hbm/nw4hbm/ut/ut_NandFileStream.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_Rect.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_ResFont.hpp"

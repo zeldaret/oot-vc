@@ -12,12 +12,12 @@
 
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_material.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_pane.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp"
+#include "revolution/hbm/nw4hbm/lyt/material.h"
+#include "revolution/hbm/nw4hbm/lyt/pane.h"
 
-#include "revolution/hbm/nw4hbm/ut/ut_LinkList.hpp" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
+#include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
 #include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
 
 #include "revolution/os/OSFastCast.h"
@@ -149,6 +149,9 @@ void AnimatePainSRT(Pane* pPane, const res::AnimationInfo* pAnimInfo, const u32*
         const res::AnimationTarget* pAnimTarget =
             detail::ConvertOffsToPtr<res::AnimationTarget>(pAnimInfo, animTargetOffsets[i]);
 
+        NW4HBM_ASSERT2(pAnimTarget->target < ANIMTARGET_PANE_MAX, 197);
+        NW4HBM_ASSERT2(pAnimTarget->curveType == ANIMCURVE_HERMITE, 198);
+
         const res::HermiteKey* keys = detail::ConvertOffsToPtr<res::HermiteKey>(pAnimTarget, pAnimTarget->keysOffset);
 
         pPane->SetSRTElement(pAnimTarget->target, GetHermiteCurveValue(frame, keys, pAnimTarget->keyNum));
@@ -160,6 +163,9 @@ void AnimateVisibility(Pane* pPane, const res::AnimationInfo* pAnimInfo, const u
         const res::AnimationTarget* pAnimTarget =
             detail::ConvertOffsToPtr<res::AnimationTarget>(pAnimInfo, animTargetOffsets[i]);
 
+        NW4HBM_ASSERT2(pAnimTarget->target < ANIMTARGET_PANE_MAX, 217);
+        NW4HBM_ASSERT2(pAnimTarget->curveType == ANIMCURVE_STEP, 218);
+
         const res::StepKey* keys = detail::ConvertOffsToPtr<res::StepKey>(pAnimTarget, pAnimTarget->keysOffset);
 
         pPane->SetVisible(GetStepCurveValue(frame, keys, pAnimTarget->keyNum) != 0);
@@ -170,6 +176,9 @@ void AnimateVertexColor(Pane* pPane, const res::AnimationInfo* pAnimInfo, const 
     for (int i = 0; i < pAnimInfo->num; i++) {
         const res::AnimationTarget* pAnimTarget =
             detail::ConvertOffsToPtr<res::AnimationTarget>(pAnimInfo, animTargetOffsets[i]);
+
+        NW4HBM_ASSERT2(pAnimTarget->target < ANIMTARGET_PANE_COLOR_MAX, 237);
+        NW4HBM_ASSERT2(pAnimTarget->curveType == ANIMCURVE_HERMITE, 238);
 
         const res::HermiteKey* keys = detail::ConvertOffsToPtr<res::HermiteKey>(pAnimTarget, pAnimTarget->keysOffset);
 
@@ -184,11 +193,14 @@ void AnimateVertexColor(Pane* pPane, const res::AnimationInfo* pAnimInfo, const 
     }
 }
 
-void AnimateMaterialColor(Material* pMaterial, const res::AnimationInfo* pAnimInfo, const u32* animTargetOffsets,
-                          f32 frame) {
+inline void AnimateMaterialColor(Material* pMaterial, const res::AnimationInfo* pAnimInfo, const u32* animTargetOffsets,
+                                 f32 frame) {
     for (int i = 0; i < pAnimInfo->num; i++) {
         const res::AnimationTarget* pAnimTarget =
             detail::ConvertOffsToPtr<res::AnimationTarget>(pAnimInfo, animTargetOffsets[i]);
+
+        NW4HBM_ASSERT2(pAnimTarget->target < ANIMTARGET_MATCOLOR_MAX, 262);
+        NW4HBM_ASSERT2(pAnimTarget->curveType == ANIMCURVE_HERMITE, 263);
 
         const res::HermiteKey* keys = detail::ConvertOffsToPtr<res::HermiteKey>(pAnimTarget, pAnimTarget->keysOffset);
 
@@ -209,10 +221,14 @@ void AnimateTextureSRT(Material* pMaterial, const res::AnimationInfo* pAnimInfo,
         const res::AnimationTarget* pAnimTarget =
             detail::ConvertOffsToPtr<res::AnimationTarget>(pAnimInfo, animTargetOffsets[i]);
 
+        NW4HBM_ASSERT2(pAnimTarget->id < TexMtxMax, 287);
+
         if (pAnimTarget->id < pMaterial->GetTexSRTCap()) {
+            NW4HBM_ASSERT2(pAnimTarget->target < ANIMTARGET_TEXSRT_MAX, 290);
+            NW4HBM_ASSERT2(pAnimTarget->curveType == ANIMCURVE_HERMITE, 291);
+
             const res::HermiteKey* keys =
                 detail::ConvertOffsToPtr<res::HermiteKey>(pAnimTarget, pAnimTarget->keysOffset);
-
             pMaterial->SetTexSRTElement(pAnimTarget->id, pAnimTarget->target,
                                         GetHermiteCurveValue(frame, keys, pAnimTarget->keyNum));
         }
@@ -221,17 +237,20 @@ void AnimateTextureSRT(Material* pMaterial, const res::AnimationInfo* pAnimInfo,
 
 void AnimateTexturePattern(Material* pMaterial, const res::AnimationInfo* pAnimInfo, const u32* animTargetOffsets,
                            f32 frame, void** tpls) {
-    for (int j = 0; j < pAnimInfo->num; j++) // not i?
-    {
+    for (int j = 0; j < pAnimInfo->num; j++) {
         const res::AnimationTarget* pAnimTarget =
             detail::ConvertOffsToPtr<res::AnimationTarget>(pAnimInfo, animTargetOffsets[j]);
 
-        if (pAnimTarget->id < pMaterial->GetTextureNum() && !pAnimTarget->target) {
-            const res::StepKey* keys = detail::ConvertOffsToPtr<res::StepKey>(pAnimTarget, pAnimTarget->keysOffset);
+        NW4HBM_ASSERT2(pAnimTarget->id < GX_MAX_TEXMAP, 311);
 
-            u16 fileIdx = GetStepCurveValue(frame, keys, pAnimTarget->keyNum);
+        if (pAnimTarget->id < pMaterial->GetTextureNum()) {
+            NW4HBM_ASSERT2(pAnimTarget->curveType == ANIMCURVE_STEP, 314);
 
-            pMaterial->SetTextureNoWrap(pAnimTarget->id, static_cast<TPLPalette*>(tpls[fileIdx]));
+            if (!pAnimTarget->target) {
+                const res::StepKey* keys = detail::ConvertOffsToPtr<res::StepKey>(pAnimTarget, pAnimTarget->keysOffset);
+                u16 fileIdx = GetStepCurveValue(frame, keys, pAnimTarget->keyNum);
+                pMaterial->SetTextureNoWrap(pAnimTarget->id, static_cast<TPLPalette*>(tpls[fileIdx]));
+            }
         }
     }
 }
@@ -242,10 +261,14 @@ void AnimateIndTexSRT(Material* pMaterial, const res::AnimationInfo* pAnimInfo, 
         const res::AnimationTarget* pAnimTarget =
             detail::ConvertOffsToPtr<res::AnimationTarget>(pAnimInfo, animTargetOffsets[i]);
 
+        NW4HBM_ASSERT2(pAnimTarget->id < IndTexMtxMax, 337);
+
         if (pAnimTarget->id < pMaterial->GetIndTexSRTCap()) {
+            NW4HBM_ASSERT2(pAnimTarget->target < ANIMTARGET_TEXSRT_MAX, 340);
+            NW4HBM_ASSERT2(pAnimTarget->curveType == ANIMCURVE_HERMITE, 341);
+
             const res::HermiteKey* keys =
                 detail::ConvertOffsToPtr<res::HermiteKey>(pAnimTarget, pAnimTarget->keysOffset);
-
             pMaterial->SetIndTexSRTElement(pAnimTarget->id, pAnimTarget->target,
                                            GetHermiteCurveValue(frame, keys, pAnimTarget->keyNum));
         }
@@ -276,6 +299,9 @@ AnimTransformBasic::~AnimTransformBasic() {
 }
 
 void AnimTransformBasic::SetResource(const res::AnimationBlock* pRes, ResourceAccessor* pResAccessor) {
+    NW4HBM_ASSERT2(mpFileResAry == 0, 422);
+    NW4HBM_ASSERT2(mAnimLinkAry == 0, 423);
+
     mpRes = pRes;
     mpFileResAry = nullptr;
 
@@ -412,6 +438,8 @@ void AnimTransformBasic::Animate(u32 idx, Material* pMaterial) {
 }
 
 AnimationLink* detail::FindAnimationLink(AnimationLink::LinkList* pAnimList, AnimTransform* pAnimTrans) {
+    NW4HBM_ASSERT_PTR_NULL(pAnimList, 559);
+    NW4HBM_ASSERT_PTR_NULL(pAnimTrans, 560);
     NW4HBM_RANGE_FOR(it, *pAnimList) {
         if (pAnimTrans == it->GetAnimTransform()) {
             return &(*it);

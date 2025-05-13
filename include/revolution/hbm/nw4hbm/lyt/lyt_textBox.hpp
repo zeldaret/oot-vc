@@ -6,7 +6,7 @@
  */
 
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_pane.hpp"
+#include "revolution/hbm/nw4hbm/lyt/pane.h"
 #include "revolution/hbm/nw4hbm/ut/ut_Color.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_Rect.hpp"
 #include "revolution/types.h"
@@ -126,7 +126,7 @@ class TextBox : public Pane {
     u8 mTextPosition; // size 0x01, offset 0xfc
 
     // [SGLEA4]/GormitiDebug.elf:.debug_info::0x481010
-    struct /* explicitly untagged */
+    struct
     {
         u8 allocFont : 1; // offset be0 / le7
         /* 7 bits padding */

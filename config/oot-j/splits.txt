@@ -835,6 +835,9 @@ revolution/hbm/nw4hbm/db/db_mapFile.cpp:
 
 revolution/hbm/nw4hbm/lyt/lyt_animation.cpp:
 	.text       start:0x8010EA48 end:0x8010F9B8
+	.data       start:0x80195068 end:0x801954D8
+	.sdata      start:0x8025CE40 end:0x8025CE48
+	.sdata2     start:0x8025E620 end:0x8025E640
 
 revolution/hbm/nw4hbm/lyt/lyt_arcResourceAccessor.cpp:
 	.text       start:0x8010F9B8 end:0x801100BC
@@ -876,6 +879,8 @@ revolution/hbm/nw4hbm/lyt/lyt_window.cpp:
 
 revolution/hbm/nw4hbm/math/math_triangular.cpp:
 	.text       start:0x8011CE94 end:0x8011D104
+	.data       start:0x80197048 end:0x80198160
+	.sdata2     start:0x8025E6D8 end:0x8025E6F8
 
 revolution/hbm/nw4hbm/snd/snd_AxManager.cpp:
 	.text       start:0x8011D104 end:0x8011EE24

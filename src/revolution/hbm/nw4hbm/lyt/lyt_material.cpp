@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/lyt/lyt_material.hpp"
+#include "revolution/hbm/nw4hbm/lyt/material.h"
 
 /*******************************************************************************
  * headers
@@ -17,7 +17,7 @@
 #include "revolution/hbm/nw4hbm/math/math_triangular.hpp"
 #include "revolution/hbm/nw4hbm/math/math_types.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_Color.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_LinkList.hpp" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
+#include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
 #include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
 
 #include "revolution/gx.h"

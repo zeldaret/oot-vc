@@ -17,13 +17,13 @@
 #include "revolution/hbm/nw4hbm/lyt/lyt_bounding.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_group.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_pane.hpp"
+#include "revolution/hbm/nw4hbm/lyt/pane.h"
 #include "revolution/hbm/nw4hbm/lyt/lyt_picture.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_textBox.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp" // detail::ConvertOffsToPtr
 #include "revolution/hbm/nw4hbm/lyt/lyt_window.hpp"
 
-#include "revolution/hbm/nw4hbm/ut/ut_LinkList.hpp" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
+#include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
 #include "revolution/hbm/nw4hbm/ut/ut_Rect.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp"
 

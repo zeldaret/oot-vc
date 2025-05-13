@@ -5,7 +5,7 @@
  * headers
  */
 
-#include "revolution/hbm/nw4hbm/lyt/lyt_pane.hpp"
+#include "revolution/hbm/nw4hbm/lyt/pane.h"
 
 /*******************************************************************************
  * classes and functions

@@ -657,7 +657,7 @@ config.libs = [
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_picture.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_textBox.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_window.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/math/math_triangular.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/math/math_triangular.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/code_8011D104.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_AxManager.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_AxVoice.cpp"),

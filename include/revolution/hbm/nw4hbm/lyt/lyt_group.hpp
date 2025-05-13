@@ -6,8 +6,8 @@
  */
 
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp" // res::DataBlockHeader
-#include "revolution/hbm/nw4hbm/lyt/lyt_pane.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_LinkList.hpp"
+#include "revolution/hbm/nw4hbm/lyt/pane.h"
+#include "revolution/hbm/nw4hbm/ut/LinkList.h"
 #include "revolution/types.h"
 
 /*******************************************************************************

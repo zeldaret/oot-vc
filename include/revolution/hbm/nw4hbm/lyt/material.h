@@ -574,11 +574,13 @@ class Material {
     void SetTexCoordGen(u32 idx, TexCoordGen value) { GetTexCoordGenAry()[idx] = value; }
 
     void SetTexSRTElement(u32 texSRTIdx, u32 eleIdx, f32 value) {
+        NW4HBM_ASSERT2(texSRTIdx < mGXMemNum.texSRT, 293);
         f32* srtAry = reinterpret_cast<f32*>(&GetTexSRTAry()[texSRTIdx]);
         srtAry[eleIdx] = value;
     }
 
     void SetIndTexSRTElement(u32 texSRTIdx, u32 eleIdx, f32 value) {
+        NW4HBM_ASSERT2(texSRTIdx < mGXMemNum.indSRT, 309);
         f32* srtAry = reinterpret_cast<f32*>(&GetIndTexSRTAry()[texSRTIdx]);
         srtAry[eleIdx] = value;
     }

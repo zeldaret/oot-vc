@@ -6,12 +6,21 @@
  */
 
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_LinkList.hpp"
+#include "revolution/hbm/nw4hbm/ut/LinkList.h"
 #include "revolution/types.h"
 
 /*******************************************************************************
  * classes and functions
  */
+
+#define ANIMTARGET_PANE_COLOR_MAX 17
+#define ANIMTARGET_MATCOLOR_MAX 32
+#define ANIMTARGET_TEXSRT_MAX 5
+#define ANIMTARGET_PANE_MAX 10
+#define ANIMCURVE_HERMITE 2
+#define ANIMCURVE_STEP 1
+#define TexMtxMax 10
+#define IndTexMtxMax 3
 
 namespace nw4hbm {
 namespace lyt {
