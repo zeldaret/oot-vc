@@ -32,6 +32,9 @@
 
 #include "revolution/gx/GXTypes.h"
 
+//! TODO: remove once matched
+extern "C" void fn_8010CBAC(char*, int, ...);
+
 /*******************************************************************************
  * local function declarations
  */
@@ -91,6 +94,11 @@ ut::Color GetColor(const GXColorS10& src) {
 }
 
 u8 ClampColor(s16 colVal) { return CLAMP(colVal, 0, 0xff); }
+inline void TextBoxAssert(ut::TextWriterBase<wchar_t>* pTextWriter, const wchar_t* str, int length) {
+    NW4HBM_ASSERT_PTR3(pTextWriter, __FILE__, 71);
+    NW4HBM_ASSERT_PTR(str, 73);
+    NW4HBM_ASSERT(length < 0, 74);
+}
 
 template <typename charT>
 int CalcLineStrNum(f32* pWidth, ut::TextWriterBase<charT>* pTextWriter, const charT* str, int length, f32 maxWidth,
@@ -197,8 +205,12 @@ end_draw:
 }
 
 template <typename charT>
-void CalcStringRect(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, const charT* str, int length,
-                    f32 maxWidth) {
+inline void CalcStringRect(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, const charT* str, int length,
+                           f32 maxWidth) {
+    NW4HBM_ASSERT_PTR(pTextWriter, 0);
+    NW4HBM_ASSERT_PTR(pRect, 0);
+    NW4HBM_ASSERT_PTR(str, 0);
+    NW4HBM_ASSERT(length < 0, 74);
     ut::TextWriterBase<charT> myCopy = *pTextWriter;
 
     CalcStringRectImpl(pRect, &myCopy, str, length, maxWidth);
@@ -207,6 +219,10 @@ void CalcStringRect(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, con
 template <typename charT>
 void CalcStringRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, const charT* str, int length,
                         f32 maxWidth) {
+    NW4HBM_ASSERT_PTR(pTextWriter, 0);
+    NW4HBM_ASSERT_PTR(pRect, 0);
+    NW4HBM_ASSERT_PTR(str, 0);
+    NW4HBM_ASSERT(length < 0, 74);
     int remain = length;
     const charT* pos = str;
 
@@ -324,15 +340,30 @@ TextBox::~TextBox() {
     FreeStringBuffer();
 }
 
-const ut::Color TextBox::GetVtxColor(u32 idx) const { return GetTextColor(idx / 2); }
+const ut::Color TextBox::GetVtxColor(u32 idx) const {
+    NW4HBM_ASSERT2(idx < VERTEXCOLOR_MAX, 467);
+    return GetTextColor(idx / 2);
+}
 
-void TextBox::SetVtxColor(u32 idx, ut::Color value) { SetTextColor(idx / 2, value); }
+void TextBox::SetVtxColor(u32 idx, ut::Color value) {
+    NW4HBM_ASSERT2(idx < VERTEXCOLOR_MAX, 478);
+    SetTextColor(idx / 2, value);
+}
 
-void TextBox::SetTextColor(u32 type, ut::Color value) { mTextColors[type] = value; }
+void TextBox::SetTextColor(u32 type, ut::Color value) {
+    NW4HBM_ASSERT3(type < TEXTCOLOR_MAX, "textBox.h", 96);
+    mTextColors[type] = value;
+}
 
-u8 TextBox::GetVtxColorElement(u32 idx) const { return reinterpret_cast<const u8*>(mTextColors + idx / 8)[idx % 4]; }
+u8 TextBox::GetVtxColorElement(u32 idx) const {
+    NW4HBM_ASSERT2(idx < VERTEXCOLOR_MAX, 478);
+    return reinterpret_cast<const u8*>(mTextColors + idx / 8)[idx % 4];
+}
 
-void TextBox::SetVtxColorElement(u32 idx, u8 value) { reinterpret_cast<u8*>(mTextColors + idx / 8)[idx % 4] = value; }
+void TextBox::SetVtxColorElement(u32 idx, u8 value) {
+    NW4HBM_ASSERT2(idx < VERTEXCOLOR_MAX, 478);
+    reinterpret_cast<u8*>(mTextColors + idx / 8)[idx % 4] = value;
+}
 
 void TextBox::DrawSelf(const DrawInfo& drawInfo) {
     if (!mTextBuf || !mpFont || !mpMaterial) {
@@ -372,6 +403,7 @@ void TextBox::DrawSelf(const DrawInfo& drawInfo) {
     writer.SetCursor(textRect.left, textRect.top);
 
     for (int remain = mTextLen; remain > 0;) {
+        TextBoxAssert(&writer, strPos, mTextLen);
         f32 lineWidth;
         bool bOver;
         int lineStrNum = CalcLineStrNum(&lineWidth, &writer, strPos, remain, mSize.width, &bOver);
@@ -390,6 +422,8 @@ void TextBox::DrawSelf(const DrawInfo& drawInfo) {
 }
 
 u16 TextBox::GetStringBufferLength() const {
+    NW4HBM_ASSERT(mTextBufBytes >= sizeof(wchar_t), 0);
+
     if (mTextBufBytes == 0) {
         return 0;
     }
@@ -427,15 +461,22 @@ u16 TextBox::SetString(const wchar_t* str, u16 dstIdx) { return SetString(str, d
 
 u16 TextBox::SetString(const wchar_t* str, u16 dstIdx, u16 strLen) {
     if (!mTextBuf) {
+        fn_8010CBAC(__FILE__, 0, "mTextBuf is NULL.\n");
         return 0;
     }
 
     u16 bufLen = GetStringBufferLength();
     if (dstIdx >= bufLen) {
+        fn_8010CBAC(__FILE__, 0, "dstIdx is out of range.\n");
         return 0;
     }
 
     const u16 cpLen = ut::Min<u16>(strLen, bufLen - dstIdx);
+
+    if (cpLen < strLen) {
+        fn_8010CBAC(__FILE__, 0, "%d character(s) droped.\n", strLen - cpLen);
+    }
+
     std::memcpy(&mTextBuf[dstIdx], str, sizeof(wchar_t) * cpLen);
 
     mTextLen = dstIdx + cpLen;
@@ -446,6 +487,7 @@ u16 TextBox::SetString(const wchar_t* str, u16 dstIdx, u16 strLen) {
 
 void TextBox::SetFont(const ut::Font* pFont) {
     if (mTextBoxFlag.allocFont) {
+        NW4HBM_ASSERT_PTR_NULL(mpFont, 775);
         mpFont->~Font();
         Layout::FreeMemory(const_cast<ut::Font*>(mpFont));
         mTextBoxFlag.allocFont = false;

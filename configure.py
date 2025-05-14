@@ -656,6 +656,7 @@ config.libs = [
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_material.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_pane.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_picture.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_textBox.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_window.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/math/math_triangular.cpp"),

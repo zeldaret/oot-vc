@@ -11,6 +11,9 @@
 #include "revolution/hbm/nw4hbm/ut/ut_Rect.hpp"
 #include "revolution/types.h"
 
+#define TEXTCOLOR_MAX 2
+#define VERTEXCOLOR_MAX 4
+
 /*******************************************************************************
  * classes and functions
  */
@@ -91,7 +94,10 @@ class TextBox : public Pane {
     virtual u16 SetString(const wchar_t* str, u16 dstIdx, u16 strLen);
 
     // methods
-    const ut::Color GetTextColor(u32 type) const { return mTextColors[type]; }
+    const ut::Color GetTextColor(u32 type) const {
+        NW4HBM_ASSERT3(type < TEXTCOLOR_MAX, "textBox.h", 95);
+        return mTextColors[type];
+    }
     const Size GetFontSize() const { return mFontSize; }
 
     void SetFontSize(const Size& fontSize) { mFontSize = fontSize; }
