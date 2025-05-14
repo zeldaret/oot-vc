@@ -10,24 +10,6 @@
 
 namespace homebutton {
 
-FrameController::FrameController() {}
-
-void FrameController::fn_80109BF4() {
-    int var_r27;
-
-    if (this->isPlaying()) {
-        this->calc();
-        var_r27 = 1;
-    } else {
-        var_r27 = 0;
-    }
-
-    // do {
-    //     NW4HBM_ASSERT_PTR_NULL(this->mUnk_20, 0x23D);
-
-    // } while (this->mFrameDelta != this->mUnk_20->mFrameDelta);
-}
-
 void FrameController::init(int anm_type, f32 max_frame, f32 min_frame, f32 delta) {
     mAnmType = anm_type;
     mMaxFrame = max_frame;

@@ -11,8 +11,8 @@
 
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
-#include "revolution/hbm/nw4hbm/lyt/material.h"
 #include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp" // detail::ConvertOffsToPtr
+#include "revolution/hbm/nw4hbm/lyt/material.h"
 
 #include "revolution/hbm/nw4hbm/ut/ut_Color.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp"

@@ -13,10 +13,10 @@
 
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
-#include "revolution/hbm/nw4hbm/lyt/material.h"
-#include "revolution/hbm/nw4hbm/lyt/pane.h"
 #include "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp" // detail::ConvertOffsToPointer
+#include "revolution/hbm/nw4hbm/lyt/material.h"
+#include "revolution/hbm/nw4hbm/lyt/pane.h"
 
 #include "revolution/hbm/nw4hbm/math/math_types.hpp" // math::VEC2
 #include "revolution/hbm/nw4hbm/ut/ut_CharStrmReader.hpp"

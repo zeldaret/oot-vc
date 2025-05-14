@@ -126,8 +126,7 @@ class TextBox : public Pane {
     u8 mTextPosition; // size 0x01, offset 0xfc
 
     // [SGLEA4]/GormitiDebug.elf:.debug_info::0x481010
-    struct
-    {
+    struct {
         u8 allocFont : 1; // offset be0 / le7
         /* 7 bits padding */
     } mTextBoxFlag; // size 0x01, offset 0xfd

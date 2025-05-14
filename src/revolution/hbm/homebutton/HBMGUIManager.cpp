@@ -10,12 +10,12 @@
 #include "revolution/hbm/nw4hbm/lyt/lyt_bounding.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp" // nw4hbm::lyt::Size
 #include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
-#include "revolution/hbm/nw4hbm/lyt/pane.h"
 #include "revolution/hbm/nw4hbm/lyt/lyt_picture.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_window.hpp"
+#include "revolution/hbm/nw4hbm/lyt/pane.h"
 #include "revolution/hbm/nw4hbm/math/math_types.hpp"
-#include "revolution/hbm/nw4hbm/ut/list.h"
 #include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
+#include "revolution/hbm/nw4hbm/ut/list.h"
 #include "revolution/hbm/nw4hbm/ut/ut_Rect.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp" // nw4hbm::ut::DynamicCast
 #include "revolution/mem/mem_allocator.h"

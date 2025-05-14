@@ -34,7 +34,7 @@ class FrameController {
     // methods
   public:
     // cdtors
-    FrameController();
+    FrameController() {}
     virtual ~FrameController() {}
 
     // virtual function ordering
@@ -60,8 +60,6 @@ class FrameController {
     void restart() { mState = eState_Playing; }
     void stop() { mState = eState_Stopped; }
 
-    void fn_80109BF4();
-
     // members
   protected: // GroupAnmController::doCalc
     /* vtable */ // size 0x04, offset 0x00
@@ -72,14 +70,8 @@ class FrameController {
     int mState; // size 0x04, offset 0x14
     int mAnmType; // size 0x04, offset 0x18
     bool mAltFlag; // size 0x01, offset 0x1c
-
-  public:
-    NW4R_UT_LINKLIST_NODE_DECL();
-
     /* 3 bytes padding */
 }; // size 0x24
-
-NW4R_UT_LINKLIST_TYPEDEF_DECL(FrameController);
 
 } // namespace homebutton
 

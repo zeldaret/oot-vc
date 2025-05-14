@@ -8,12 +8,12 @@
 #include "revolution/hbm/nw4hbm/lyt/lyt_drawInfo.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_group.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
-#include "revolution/hbm/nw4hbm/lyt/material.h"
-#include "revolution/hbm/nw4hbm/lyt/pane.h"
 #include "revolution/hbm/nw4hbm/lyt/lyt_picture.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_textBox.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_window.hpp"
+#include "revolution/hbm/nw4hbm/lyt/material.h"
+#include "revolution/hbm/nw4hbm/lyt/pane.h"
 
 #endif

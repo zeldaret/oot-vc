@@ -30,10 +30,8 @@ struct _VEC3 {
 }; // size 0x0c
 
 struct _MTX34 {
-    union
-    {
-        struct
-        {
+    union {
+        struct {
             f32 _00; // size 0x04, offset 0x00
             f32 _01; // size 0x04, offset 0x04
             f32 _02; // size 0x04, offset 0x08

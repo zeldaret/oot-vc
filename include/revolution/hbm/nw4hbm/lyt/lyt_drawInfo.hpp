@@ -52,8 +52,7 @@ class DrawInfo {
     f32 mGlobalAlpha; // size 0x04, offset 0x4c
 
     // [SGLEA4]/GormitiDebug.elf:.debug_info::0x477d31
-    struct
-    {
+    struct {
         u8 mulViewDraw : 1; // offset be0 / le7
         u8 influencedAlpha : 1; // offset be1 / le6
         u8 locationAdjust : 1; // offset be2 / le5
