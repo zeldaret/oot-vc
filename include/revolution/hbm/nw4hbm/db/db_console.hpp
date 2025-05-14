@@ -38,6 +38,9 @@ enum ConsoleOutputType {
     CONSOLE_OUTPUT_ALL = CONSOLE_OUTPUT_DISPLAY | CONSOLE_OUTPUT_TERMINAL,
 };
 
+void Console_ShowLatestLine(detail::ConsoleHead*);
+void Console_VPrintf(detail::ConsoleHead*, const char* format, va_list vlist);
+
 inline s16 Console_GetPositionX(ConsoleHandle console) { return console->viewPosX; }
 
 inline s16 Console_GetPositionY(ConsoleHandle console) { return console->viewPosY; }
