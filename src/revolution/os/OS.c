@@ -351,16 +351,15 @@ inline u32 test(u32 t) { return t & 0x0FFFFFFF; }
 static void ReportOSInfo(void) {
     OSConsoleType type;
     OSIOSRev rev;
-    u32 category;
-    u32 tdev;
+    u32 sysMemSize;
 
     OSReport("\nRevolution OS\n");
     OSReport("Kernel built : %s %s\n", "Sep 21 2006", "14:32:13");
 
     OSReport("Console Type : ");
     type = OSGetConsoleType();
-    category = type & OS_CONSOLE_MASK;
-    switch (category) {
+
+    switch (type & OS_CONSOLE_MASK) {
         case OS_CONSOLE_MASK_RVL:
             switch (type) {
                 case OS_CONSOLE_RVL_PP_1:
@@ -403,9 +402,7 @@ static void ReportOSInfo(void) {
             }
             break;
         case OS_CONSOLE_MASK_TDEV:
-            // tdev = type & 0x0FFFFFFF;
-            tdev = category & 0x0FFFFFFF;
-            OSReport("TDEV-based emulation HW%d\n", tdev - 3);
+            OSReport("TDEV-based emulation HW%d\n", (type & ~OS_CONSOLE_MASK) - 3);
             break;
         default:
             OSReport("%08x\n", type);
@@ -415,7 +412,9 @@ static void ReportOSInfo(void) {
     __OSGetIOSRev(&rev);
     OSReport("Firmware     : %d.%d.%d ", rev.idLo, rev.verMajor, rev.verMinor);
     OSReport("(%d/%d/%d)\n", rev.buildMon, rev.buildDay, rev.buildYear);
-    OSReport("Memory %d MB\n", OS_MEM_B_TO_MB(OSGetConsoleSimulatedMem1Size() + OSGetConsoleSimulatedMem2Size()));
+
+    sysMemSize = OSGetConsoleSimulatedMem1Size() + OSGetConsoleSimulatedMem2Size();
+    OSReport("Memory %d MB\n", sysMemSize / (1024 * 1024));
     OSReport("MEM1 Arena : 0x%x - 0x%x\n", OSGetMEM1ArenaLo(), OSGetMEM1ArenaHi());
     OSReport("MEM2 Arena : 0x%x - 0x%x\n", OSGetMEM2ArenaLo(), OSGetMEM2ArenaHi());
 }
