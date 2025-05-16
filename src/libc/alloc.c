@@ -361,7 +361,6 @@ void __pool_realloc() {}
 // unused
 void __pool_alloc_clear() {}
 
-// unused
 void malloc() {}
 
 void free(void* ptr) { __pool_free(get_malloc_pool(), ptr); }
