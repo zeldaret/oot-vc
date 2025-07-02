@@ -74,19 +74,19 @@ CharWriter::~CharWriter() {}
 
 void CharWriter::SetFont(const Font& font) {
     // clang-format off
-    NW4HBM_ASSERT_PTR(this, 133);
-    NW4HBM_ASSERT_PTR(& font, 134);
+    NW4HBMAssertPointerValid_Line(this, 133);
+    NW4HBMAssertPointerValid_Line(& font, 134);
     mFont = &font;
     // clang-format on
 }
 
 const Font* CharWriter::GetFont() const {
-    NW4HBM_ASSERT_PTR(this, 151);
+    NW4HBMAssertPointerValid_Line(this, 151);
     return mFont;
 }
 
 void CharWriter::SetupGX() {
-    NW4HBM_ASSERT_PTR(this, 173);
+    NW4HBMAssertPointerValid_Line(this, 173);
     ResetTextureCache();
 
     if (mColorMapping.min != 0x00000000 || mColorMapping.max != 0xffffffff) {
@@ -121,108 +121,103 @@ void CharWriter::SetupGX() {
 }
 
 void CharWriter::SetColorMapping(Color min, Color max) {
-    NW4HBM_ASSERT_PTR(this, 235);
+    NW4HBMAssertPointerValid_Line(this, 235);
     mColorMapping.min = min;
     mColorMapping.max = max;
 }
 
 void CharWriter::ResetColorMapping() {
-    NW4HBM_ASSERT_PTR(this, 284);
+    NW4HBMAssertPointerValid_Line(this, 284);
     SetColorMapping(0x00000000, 0xffffffff);
 }
 
 void CharWriter::ResetTextureCache() {
-    NW4HBM_ASSERT_PTR(this, 300);
+    NW4HBMAssertPointerValid_Line(this, 300);
     mLoadingTexture.Reset();
 }
 
 void CharWriter::SetGradationMode(GradationMode mode) {
-    NW4HBM_ASSERT_PTR(this, 355);
-    NW4HBM_PANIC(mode >= 0 && mode <= 2 ? false : true, 356,
-                 "mode is out of bounds(%d)\n%d <= mode <= %d not satisfied.", mode, 0, 2);
+    NW4HBMAssertPointerValid_Line(this, 355);
+    NW4HBMAssertHeaderRange_Line(mode, 0, 2, 356);
     mTextColor.gradationMode = mode;
     UpdateVertexColor();
 }
 
 void CharWriter::SetTextColor(Color color) {
-    NW4HBM_ASSERT_PTR(this, 389);
+    NW4HBMAssertPointerValid_Line(this, 389);
     mTextColor.start = color;
     UpdateVertexColor();
 }
 
 void CharWriter::SetTextColor(Color start, Color end) {
-    NW4HBM_ASSERT_PTR(this, 410);
+    NW4HBMAssertPointerValid_Line(this, 410);
     mTextColor.start = start;
     mTextColor.end = end;
     UpdateVertexColor();
 }
 
 void CharWriter::SetScale(f32 hScale, f32 vScale) {
-    NW4HBM_ASSERT_PTR(this, 487);
+    NW4HBMAssertPointerValid_Line(this, 487);
     mScale.x = hScale;
     mScale.y = vScale;
 }
 
 f32 CharWriter::GetScaleH() const {
-    NW4HBM_ASSERT_PTR(this, 522);
+    NW4HBMAssertPointerValid_Line(this, 522);
     return mScale.x;
 }
 
 f32 CharWriter::GetScaleV() const {
-    NW4HBM_ASSERT_PTR(this, 538);
+    NW4HBMAssertPointerValid_Line(this, 538);
     return mScale.y;
 }
 
 void CharWriter::SetFontSize(f32 width, f32 height) {
-    NW4HBM_ASSERT_PTR(this, 559);
-    NW4HBM_ASSERT_PTR(mFont, 560);
-    NW4HBM_PANIC(mFont->GetWidth() < 1, 561,
-                 "mFont->GetWidth() is out of bounds(%d)\n%d <= mFont->GetWidth() not satisfied.", mFont->GetWidth(),
-                 1);
-    NW4HBM_PANIC(mFont->GetHeight() < 1, 562,
-                 "mFont->GetHeight() is out of bounds(%d)\n%d <= mFont->GetHeight() not satisfied.", mFont->GetHeight(),
-                 1);
+    NW4HBMAssertPointerValid_Line(this, 559);
+    NW4HBMAssertPointerValid_Line(mFont, 560);
+    NW4HBMAssertHeaderMinimumValue_Line(mFont->GetWidth(), 1, 561);
+    NW4HBMAssertHeaderMinimumValue_Line(mFont->GetHeight(), 1, 562);
     SetScale(width / mFont->GetWidth(), height / mFont->GetHeight());
 }
 
 f32 CharWriter::GetFontWidth() const {
-    NW4HBM_ASSERT_PTR(this, 601);
-    NW4HBM_ASSERT_PTR(mFont, 602);
+    NW4HBMAssertPointerValid_Line(this, 601);
+    NW4HBMAssertPointerValid_Line(mFont, 602);
     return mFont->GetWidth() * mScale.x;
 }
 
 f32 CharWriter::GetFontHeight() const {
-    NW4HBM_ASSERT_PTR(this, 618);
-    NW4HBM_ASSERT_PTR(mFont, 619);
+    NW4HBMAssertPointerValid_Line(this, 618);
+    NW4HBMAssertPointerValid_Line(mFont, 619);
     return mFont->GetHeight() * mScale.y;
 }
 
 f32 CharWriter::GetFontAscent() const {
-    NW4HBM_ASSERT_PTR(this, 635);
-    NW4HBM_ASSERT_PTR(mFont, 636);
+    NW4HBMAssertPointerValid_Line(this, 635);
+    NW4HBMAssertPointerValid_Line(mFont, 636);
     return mFont->GetAscent() * mScale.y;
 }
 
 void CharWriter::EnableLinearFilter(bool atSmall, bool atLarge) {
-    NW4HBM_ASSERT_PTR(this, 681);
+    NW4HBMAssertPointerValid_Line(this, 681);
     mFilter.atSmall = atSmall ? GX_LINEAR : GX_NEAR;
     mFilter.atLarge = atLarge ? GX_LINEAR : GX_NEAR;
 }
 
 bool CharWriter::IsWidthFixed() const {
-    NW4HBM_ASSERT_PTR(this, 738);
+    NW4HBMAssertPointerValid_Line(this, 738);
     return mIsWidthFixed;
 }
 
 f32 CharWriter::GetFixedWidth() const {
-    NW4HBM_ASSERT_PTR(this, 769);
+    NW4HBMAssertPointerValid_Line(this, 769);
     return mFixedWidth;
 }
 
 f32 CharWriter::Print(char16_t code) {
-    NW4HBM_ASSERT_PTR(this, 808);
-    NW4HBM_ASSERT_PTR(mFont, 809);
-    NW4HBM_ASSERT2(code != Font::INVALID_CHARACTER_CODE, 810);
+    NW4HBMAssertPointerValid_Line(this, 808);
+    NW4HBMAssertPointerValid_Line(mFont, 809);
+    NW4HBMAssert_Line(code != Font::INVALID_CHARACTER_CODE, 810);
     Glyph glyph;
     f32 width;
     f32 left;
@@ -248,56 +243,54 @@ f32 CharWriter::Print(char16_t code) {
 }
 
 void CharWriter::SetCursor(f32 x, f32 y) {
-    NW4HBM_ASSERT_PTR(this, 879);
+    NW4HBMAssertPointerValid_Line(this, 879);
     mCursorPos.x = x;
     mCursorPos.y = y;
 }
 
 void CharWriter::SetCursor(f32 x, f32 y, f32 z) {
-    NW4HBM_ASSERT_PTR(this, 902);
+    NW4HBMAssertPointerValid_Line(this, 902);
     mCursorPos.x = x;
     mCursorPos.y = y;
     mCursorPos.z = z;
 }
 
 void CharWriter::SetCursorX(f32 x) {
-    NW4HBM_ASSERT_PTR(this, 965);
+    NW4HBMAssertPointerValid_Line(this, 965);
     mCursorPos.x = x;
 }
 
 void CharWriter::SetCursorY(f32 y) {
-    NW4HBM_ASSERT_PTR(this, 981);
+    NW4HBMAssertPointerValid_Line(this, 981);
     mCursorPos.y = y;
 }
 
 void CharWriter::MoveCursorX(f32 dx) {
-    NW4HBM_ASSERT_PTR(this, 1013);
+    NW4HBMAssertPointerValid_Line(this, 1013);
     mCursorPos.x += dx;
 }
 
 void CharWriter::MoveCursorY(f32 dy) {
-    NW4HBM_ASSERT_PTR(this, 1029);
+    NW4HBMAssertPointerValid_Line(this, 1029);
     mCursorPos.y += dy;
 }
 
 f32 CharWriter::GetCursorX() const {
-    NW4HBM_ASSERT_PTR(this, 1061);
+    NW4HBMAssertPointerValid_Line(this, 1061);
     return mCursorPos.x;
 }
 
 f32 CharWriter::GetCursorY() const {
-    NW4HBM_ASSERT_PTR(this, 1077);
+    NW4HBMAssertPointerValid_Line(this, 1077);
     return mCursorPos.y;
 }
 
 void CharWriter::PrintGlyph(f32 x, f32 y, f32 z, const Glyph& glyph) {
     // clang-format off
-    NW4HBM_ASSERT_PTR(this, 1127);
-    NW4HBM_ASSERT_PTR(& glyph, 1128);
-    NW4HBM_PANIC(glyph.texWidth < 1, 1129,
-                 "glyph.texWidth is out of bounds(%d)\n%d <= glyph.texWidth not satisfied.", glyph.texWidth, 1);
-    NW4HBM_PANIC(glyph.texHeight < 1, 1130,
-                 "glyph.texHeight is out of bounds(%d)\n%d <= glyph.texHeight not satisfied.", glyph.texHeight, 1);
+    NW4HBMAssertPointerValid_Line(this, 1127);
+    NW4HBMAssertPointerValid_Line(& glyph, 1128);
+    NW4HBMAssertHeaderMinimumValue_Line(glyph.texWidth, 1, 1129);
+    NW4HBMAssertHeaderMinimumValue_Line(glyph.texHeight, 1, 1130);
     // clang-format on
 
     f32 posLeft = x;
@@ -333,8 +326,8 @@ void CharWriter::PrintGlyph(f32 x, f32 y, f32 z, const Glyph& glyph) {
 
 void CharWriter::LoadTexture(const Glyph& glyph, GXTexMapID slot) {
     // clang-format off
-    NW4HBM_ASSERT_PTR(this, 1192);
-    NW4HBM_ASSERT_PTR(& glyph, 1193);
+    NW4HBMAssertPointerValid_Line(this, 1192);
+    NW4HBMAssertPointerValid_Line(& glyph, 1193);
     // clang-format on
 
     LoadingTexture loadInfo;
@@ -354,7 +347,7 @@ void CharWriter::LoadTexture(const Glyph& glyph, GXTexMapID slot) {
 }
 
 void CharWriter::UpdateVertexColor() {
-    NW4HBM_ASSERT_PTR(this, 1242);
+    NW4HBMAssertPointerValid_Line(this, 1242);
 
     mVertexColor.lu = mTextColor.start;
     mVertexColor.ru = mTextColor.gradationMode != GRADMODE_H ? mTextColor.start : mTextColor.end;

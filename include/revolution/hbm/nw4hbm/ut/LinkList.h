@@ -193,7 +193,7 @@ template <typename T, int I> class LinkList : public detail::LinkListImpl {
 
         T& operator*() const {
             T* p = this->operator->();
-            NW4HBM_ASSERT_PTR_NULL(p, 403);
+            NW4HBMAssertPointerNonnull_Line(p, 403);
 
             return *p;
         }
@@ -275,17 +275,17 @@ template <typename T, int I> class LinkList : public detail::LinkListImpl {
 
     // static methods
     static LinkListNode* GetNodeFromPointer(T* p) {
-        NW4HBM_ASSERT_PTR_NULL(p, 563);
+        NW4HBMAssertPointerNonnull_Line(p, 563);
         return reinterpret_cast<LinkListNode*>(reinterpret_cast<int>(p) + I);
     }
 
     static T* GetPointerFromNode(LinkListNode* p) {
-        NW4HBM_ASSERT_PTR_NULL(p, 573);
+        NW4HBMAssertPointerNonnull_Line(p, 573);
         return reinterpret_cast<T*>(reinterpret_cast<int>(p) - I);
     }
 
     static const T* GetPointerFromNode(const LinkListNode* p) {
-        NW4HBM_ASSERT_PTR_NULL(p, 0);
+        NW4HBMAssertPointerNonnull_Line(p, 0);
         return reinterpret_cast<const T*>(reinterpret_cast<const char*>(p) - I);
     }
 
@@ -333,7 +333,7 @@ template <typename T, int I> class LinkList : public detail::LinkListImpl {
  * @param NAME Element name
  * @param LIST Reference to list
  * @param ... Statement(s) to execute
-        NW4HBM_ASSERT_PTR_NULL(NAME, 573);                                     \
+        NW4HBMAssertPointerNonnull_Line(NAME, 573);                                     \
  */
 #define NW4R_UT_LINKLIST_FOREACH(NAME, LIST, ...)                                          \
     {                                                                                      \

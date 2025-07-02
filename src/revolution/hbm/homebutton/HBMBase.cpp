@@ -700,7 +700,7 @@ void HomeButton::create() {
         mpResAccessor = new (pMem) nw4hbm::lyt::ArcResourceAccessor();
     }
 
-    NW4HBM_ASSERT_PTR_NULL(mpResAccessor, 623);
+    NW4HBMAssertPointerNonnull_Line(mpResAccessor, 623);
     mpResAccessor->Attach(mpHBInfo->layoutBuf, "arc");
 
     if (!mpHBInfo->cursor) {
@@ -709,7 +709,7 @@ void HomeButton::create() {
                 mpCursorLayout[i] = new (pMem) nw4hbm::lyt::Layout();
             }
 
-            NW4HBM_ASSERT_PTR_NULL(mpCursorLayout[i], 635);
+            NW4HBMAssertPointerNonnull_Line(mpCursorLayout[i], 635);
 
             void* lytRes = mpResAccessor->GetResource(0, scCursorLytName[i], nullptr);
 
@@ -733,13 +733,13 @@ void HomeButton::create() {
         std::strcat(anmNameBuf, scAnimName[scAnmTable[i].anm]);
 
         void* lpaRes = mpResAccessor->GetResource(0, anmNameBuf, nullptr);
-        NW4HBM_ASSERT_PTR_NULL(lpaRes, 665);
+        NW4HBMAssertPointerNonnull_Line(lpaRes, 665);
 
         if (void* pMem = HBMAllocMem(sizeof *mpAnmController[i])) {
             mpAnmController[i] = new (pMem) GroupAnmController();
         }
 
-        NW4HBM_ASSERT_PTR_NULL(mpAnmController[i], 671);
+        NW4HBMAssertPointerNonnull_Line(mpAnmController[i], 671);
 
         mpAnmController[i]->mpAnimGroup = mpLayout->CreateAnimTransform(lpaRes, mpResAccessor);
 
@@ -760,13 +760,13 @@ void HomeButton::create() {
 
         void* lpaRes = mpResAccessor->GetResource(0, anmNameBuf, nullptr);
 
-        NW4HBM_ASSERT_PTR_NULL(lpaRes, 697);
+        NW4HBMAssertPointerNonnull_Line(lpaRes, 697);
 
         if (void* pMem = HBMAllocMem(sizeof *mpGroupAnmController[i])) {
             mpGroupAnmController[i] = new (pMem) GroupAnmController();
         }
 
-        NW4HBM_ASSERT_PTR_NULL(mpGroupAnmController[i], 703);
+        NW4HBMAssertPointerNonnull_Line(mpGroupAnmController[i], 703);
 
         mpGroupAnmController[i]->mpAnimGroup = mpLayout->CreateAnimTransform(lpaRes, mpResAccessor);
 
@@ -787,13 +787,13 @@ void HomeButton::create() {
 
         void* lpaRes = mpResAccessor->GetResource(0, anmNameBuf, nullptr);
 
-        NW4HBM_ASSERT_PTR_NULL(lpaRes, 729);
+        NW4HBMAssertPointerNonnull_Line(lpaRes, 729);
 
         if (void* pMem = HBMAllocMem(sizeof *mpPairGroupAnmController[i])) {
             mpPairGroupAnmController[i] = new (pMem) GroupAnmController();
         }
 
-        NW4HBM_ASSERT_PTR_NULL(mpPairGroupAnmController[i], 735);
+        NW4HBMAssertPointerNonnull_Line(mpPairGroupAnmController[i], 735);
 
         mpPairGroupAnmController[i]->mpAnimGroup = mpLayout->CreateAnimTransform(lpaRes, mpResAccessor);
 
@@ -812,13 +812,13 @@ void HomeButton::create() {
         mpHomeButtonEventHandler = new (pMem) HomeButtonEventHandler(this);
     }
 
-    NW4HBM_ASSERT_PTR_NULL(mpHomeButtonEventHandler, 758);
+    NW4HBMAssertPointerNonnull_Line(mpHomeButtonEventHandler, 758);
 
     if (void* pMem = HBMAllocMem(sizeof *mpPaneManager)) {
         mpPaneManager = new (pMem) gui::PaneManager(mpHomeButtonEventHandler, nullptr, spAllocator);
     }
 
-    NW4HBM_ASSERT_PTR_NULL(mpPaneManager, 765);
+    NW4HBMAssertPointerNonnull_Line(mpPaneManager, 765);
 
     mpPaneManager->createLayoutScene(*mpLayout);
 
@@ -866,7 +866,7 @@ void HomeButton::set_config() {
 
     mpLayoutName = static_cast<char*>(HBMAllocMem(len + 1));
 
-    NW4HBM_ASSERT_PTR_NULL(mpLayoutName, 827);
+    NW4HBMAssertPointerNonnull_Line(mpLayoutName, 827);
 
     std::strncpy(mpLayoutName, pConfig, len);
     mpLayoutName[len] = '\0';
@@ -876,7 +876,7 @@ void HomeButton::set_config() {
     len = get_comma_length(pConfig);
     mpAnmName = static_cast<char*>(HBMAllocMem(len + 1));
 
-    NW4HBM_ASSERT_PTR_NULL(mpAnmName, 837);
+    NW4HBMAssertPointerNonnull_Line(mpAnmName, 837);
 
     std::strncpy(mpAnmName, pConfig, len);
     mpAnmName[len] = '\0';

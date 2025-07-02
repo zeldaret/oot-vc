@@ -149,8 +149,8 @@ void AnimatePainSRT(Pane* pPane, const res::AnimationInfo* pAnimInfo, const u32*
         const res::AnimationTarget* pAnimTarget =
             detail::ConvertOffsToPtr<res::AnimationTarget>(pAnimInfo, animTargetOffsets[i]);
 
-        NW4HBM_ASSERT2(pAnimTarget->target < ANIMTARGET_PANE_MAX, 197);
-        NW4HBM_ASSERT2(pAnimTarget->curveType == ANIMCURVE_HERMITE, 198);
+        NW4HBMAssert_Line(pAnimTarget->target < ANIMTARGET_PANE_MAX, 197);
+        NW4HBMAssert_Line(pAnimTarget->curveType == ANIMCURVE_HERMITE, 198);
 
         const res::HermiteKey* keys = detail::ConvertOffsToPtr<res::HermiteKey>(pAnimTarget, pAnimTarget->keysOffset);
 
@@ -163,8 +163,8 @@ void AnimateVisibility(Pane* pPane, const res::AnimationInfo* pAnimInfo, const u
         const res::AnimationTarget* pAnimTarget =
             detail::ConvertOffsToPtr<res::AnimationTarget>(pAnimInfo, animTargetOffsets[i]);
 
-        NW4HBM_ASSERT2(pAnimTarget->target < ANIMTARGET_PANE_MAX, 217);
-        NW4HBM_ASSERT2(pAnimTarget->curveType == ANIMCURVE_STEP, 218);
+        NW4HBMAssert_Line(pAnimTarget->target < ANIMTARGET_PANE_MAX, 217);
+        NW4HBMAssert_Line(pAnimTarget->curveType == ANIMCURVE_STEP, 218);
 
         const res::StepKey* keys = detail::ConvertOffsToPtr<res::StepKey>(pAnimTarget, pAnimTarget->keysOffset);
 
@@ -177,8 +177,8 @@ void AnimateVertexColor(Pane* pPane, const res::AnimationInfo* pAnimInfo, const 
         const res::AnimationTarget* pAnimTarget =
             detail::ConvertOffsToPtr<res::AnimationTarget>(pAnimInfo, animTargetOffsets[i]);
 
-        NW4HBM_ASSERT2(pAnimTarget->target < ANIMTARGET_PANE_COLOR_MAX, 237);
-        NW4HBM_ASSERT2(pAnimTarget->curveType == ANIMCURVE_HERMITE, 238);
+        NW4HBMAssert_Line(pAnimTarget->target < ANIMTARGET_PANE_COLOR_MAX, 237);
+        NW4HBMAssert_Line(pAnimTarget->curveType == ANIMCURVE_HERMITE, 238);
 
         const res::HermiteKey* keys = detail::ConvertOffsToPtr<res::HermiteKey>(pAnimTarget, pAnimTarget->keysOffset);
 
@@ -199,8 +199,8 @@ inline void AnimateMaterialColor(Material* pMaterial, const res::AnimationInfo* 
         const res::AnimationTarget* pAnimTarget =
             detail::ConvertOffsToPtr<res::AnimationTarget>(pAnimInfo, animTargetOffsets[i]);
 
-        NW4HBM_ASSERT2(pAnimTarget->target < ANIMTARGET_MATCOLOR_MAX, 262);
-        NW4HBM_ASSERT2(pAnimTarget->curveType == ANIMCURVE_HERMITE, 263);
+        NW4HBMAssert_Line(pAnimTarget->target < ANIMTARGET_MATCOLOR_MAX, 262);
+        NW4HBMAssert_Line(pAnimTarget->curveType == ANIMCURVE_HERMITE, 263);
 
         const res::HermiteKey* keys = detail::ConvertOffsToPtr<res::HermiteKey>(pAnimTarget, pAnimTarget->keysOffset);
 
@@ -221,11 +221,11 @@ void AnimateTextureSRT(Material* pMaterial, const res::AnimationInfo* pAnimInfo,
         const res::AnimationTarget* pAnimTarget =
             detail::ConvertOffsToPtr<res::AnimationTarget>(pAnimInfo, animTargetOffsets[i]);
 
-        NW4HBM_ASSERT2(pAnimTarget->id < TexMtxMax, 287);
+        NW4HBMAssert_Line(pAnimTarget->id < TexMtxMax, 287);
 
         if (pAnimTarget->id < pMaterial->GetTexSRTCap()) {
-            NW4HBM_ASSERT2(pAnimTarget->target < ANIMTARGET_TEXSRT_MAX, 290);
-            NW4HBM_ASSERT2(pAnimTarget->curveType == ANIMCURVE_HERMITE, 291);
+            NW4HBMAssert_Line(pAnimTarget->target < ANIMTARGET_TEXSRT_MAX, 290);
+            NW4HBMAssert_Line(pAnimTarget->curveType == ANIMCURVE_HERMITE, 291);
 
             const res::HermiteKey* keys =
                 detail::ConvertOffsToPtr<res::HermiteKey>(pAnimTarget, pAnimTarget->keysOffset);
@@ -241,10 +241,10 @@ void AnimateTexturePattern(Material* pMaterial, const res::AnimationInfo* pAnimI
         const res::AnimationTarget* pAnimTarget =
             detail::ConvertOffsToPtr<res::AnimationTarget>(pAnimInfo, animTargetOffsets[j]);
 
-        NW4HBM_ASSERT2(pAnimTarget->id < GX_MAX_TEXMAP, 311);
+        NW4HBMAssert_Line(pAnimTarget->id < GX_MAX_TEXMAP, 311);
 
         if (pAnimTarget->id < pMaterial->GetTextureNum()) {
-            NW4HBM_ASSERT2(pAnimTarget->curveType == ANIMCURVE_STEP, 314);
+            NW4HBMAssert_Line(pAnimTarget->curveType == ANIMCURVE_STEP, 314);
 
             if (!pAnimTarget->target) {
                 const res::StepKey* keys = detail::ConvertOffsToPtr<res::StepKey>(pAnimTarget, pAnimTarget->keysOffset);
@@ -261,11 +261,11 @@ void AnimateIndTexSRT(Material* pMaterial, const res::AnimationInfo* pAnimInfo, 
         const res::AnimationTarget* pAnimTarget =
             detail::ConvertOffsToPtr<res::AnimationTarget>(pAnimInfo, animTargetOffsets[i]);
 
-        NW4HBM_ASSERT2(pAnimTarget->id < IndTexMtxMax, 337);
+        NW4HBMAssert_Line(pAnimTarget->id < IndTexMtxMax, 337);
 
         if (pAnimTarget->id < pMaterial->GetIndTexSRTCap()) {
-            NW4HBM_ASSERT2(pAnimTarget->target < ANIMTARGET_TEXSRT_MAX, 340);
-            NW4HBM_ASSERT2(pAnimTarget->curveType == ANIMCURVE_HERMITE, 341);
+            NW4HBMAssert_Line(pAnimTarget->target < ANIMTARGET_TEXSRT_MAX, 340);
+            NW4HBMAssert_Line(pAnimTarget->curveType == ANIMCURVE_HERMITE, 341);
 
             const res::HermiteKey* keys =
                 detail::ConvertOffsToPtr<res::HermiteKey>(pAnimTarget, pAnimTarget->keysOffset);
@@ -299,8 +299,8 @@ AnimTransformBasic::~AnimTransformBasic() {
 }
 
 void AnimTransformBasic::SetResource(const res::AnimationBlock* pRes, ResourceAccessor* pResAccessor) {
-    NW4HBM_ASSERT2(mpFileResAry == 0, 422);
-    NW4HBM_ASSERT2(mAnimLinkAry == 0, 423);
+    NW4HBMAssert_Line(mpFileResAry == 0, 422);
+    NW4HBMAssert_Line(mAnimLinkAry == 0, 423);
 
     mpRes = pRes;
     mpFileResAry = nullptr;
@@ -438,8 +438,8 @@ void AnimTransformBasic::Animate(u32 idx, Material* pMaterial) {
 }
 
 AnimationLink* detail::FindAnimationLink(AnimationLink::LinkList* pAnimList, AnimTransform* pAnimTrans) {
-    NW4HBM_ASSERT_PTR_NULL(pAnimList, 559);
-    NW4HBM_ASSERT_PTR_NULL(pAnimTrans, 560);
+    NW4HBMAssertPointerNonnull_Line(pAnimList, 559);
+    NW4HBMAssertPointerNonnull_Line(pAnimTrans, 560);
     NW4HBM_RANGE_FOR(it, *pAnimList) {
         if (pAnimTrans == it->GetAnimTransform()) {
             return &(*it);

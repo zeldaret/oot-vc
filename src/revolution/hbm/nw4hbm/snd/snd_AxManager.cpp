@@ -43,7 +43,7 @@ void AxManager::Init() {
         return;
     }
 
-    NW4HBM_PANIC(!AICheckInit(), 110, "not initialized AI \n");
+    NW4HBMAssertMessage_Line(AICheckInit(), 110, "not initialized AI \n");
 
     for (i = 0; i < ARRAY_COUNT(this->unk_14); i++) {
         this->unk_10.PushBack(&this->unk_14[i]);

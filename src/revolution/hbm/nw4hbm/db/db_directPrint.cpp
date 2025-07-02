@@ -65,7 +65,7 @@ static inline int StrLineWidth_(char const* str) {
     int len = 0;
     char c;
 
-    NW4HBMAssertPointerNonnull_Line(304, str);
+    NW4HBMAssertPointerNonnull_Line(str, 304);
 
     while (true) {
         c = *str++;
@@ -319,7 +319,7 @@ static char const* DrawStringLineToXfb_(int posh, int posv, char const* str, int
     int code;
     int cnt = 0;
 
-    NW4HBMAssertPointerNonnull_Line(743, str);
+    NW4HBMAssertPointerNonnull_Line(str, 743);
     NW4HBMAssert_Line(744, width > 0);
 
     for (; (c = *str) != '\0'; str++) {

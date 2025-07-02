@@ -41,7 +41,7 @@ void* List_GetNth(const List* list, u16 index);
 inline void* List_GetFirst(const List* list) { return List_GetNext(list, nullptr); }
 
 inline u16 List_GetSize(const List* list) {
-    NW4HBM_ASSERT_PTR_NULL(list, 207);
+    NW4HBMAssertPointerNonnull_Line(list, 207);
     return list->numObjects;
 }
 

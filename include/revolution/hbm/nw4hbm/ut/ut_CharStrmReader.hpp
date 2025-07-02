@@ -6,6 +6,7 @@
  */
 
 #include "macros.h"
+#include "revolution/hbm/HBMAssert.hpp"
 #include "revolution/hbm/nw4hbm/db/assert.hpp"
 #include "revolution/types.h"
 
@@ -29,9 +30,9 @@ class CharStrmReader {
     const void* GetCurrentPos() const { return mCharStrm; }
 
     void Set(const char* stream) {
-        NW4HBM_ASSERT_PTR3(this, "CharStrmReader.h", 59);
-        NW4HBM_ASSERT_ALIGN2(stream, "CharStrmReader.h", 60);
-        NW4HBM_ASSERT_PTR2(stream, "CharStrmReader.h", 61);
+        NW4HBMAssertPointerValid_FileLine(this, "CharStrmReader.h", 59);
+        NW4HBMAlign2_FileLine(stream, "CharStrmReader.h", 60);
+        NW4HBMAssertPointerValid_FileLine(stream, "CharStrmReader.h", 61);
         mCharStrm = stream;
     }
     void Set(const wchar_t* stream) { mCharStrm = stream; }
@@ -42,7 +43,7 @@ class CharStrmReader {
     char16_t ReadNextCharSJIS();
 
     char16_t Next() {
-        NW4HBM_ASSERT3(mReadFunc == ReadNextCharUTF16, "CharStrmReader.h", 62);
+        NW4HBMAssert_FileLine(mReadFunc == ReadNextCharUTF16, "CharStrmReader.h", 62);
         return (this->*mReadFunc)();
     }
 

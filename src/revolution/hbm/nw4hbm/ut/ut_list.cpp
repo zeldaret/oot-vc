@@ -31,7 +31,7 @@ namespace nw4hbm {
 namespace ut {
 
 void List_Init(List* list, u16 offset) {
-    NW4HBM_ASSERT_PTR_NULL(list, 41);
+    NW4HBMAssertPointerNonnull_Line(list, 41);
     list->headObject = nullptr;
     list->tailObject = nullptr;
     list->numObjects = 0;
@@ -39,8 +39,8 @@ void List_Init(List* list, u16 offset) {
 }
 
 static void SetFirstObject(List* list, void* object) {
-    NW4HBM_ASSERT_PTR_NULL(list, 64);
-    NW4HBM_ASSERT_PTR_NULL(object, 65);
+    NW4HBMAssertPointerNonnull_Line(list, 64);
+    NW4HBMAssertPointerNonnull_Line(object, 65);
 
     Link* link = OBJ_TO_NODE(list, object);
 
@@ -52,8 +52,8 @@ static void SetFirstObject(List* list, void* object) {
 }
 
 void List_Append(List* list, void* object) {
-    NW4HBM_ASSERT_PTR_NULL(list, 89);
-    NW4HBM_ASSERT_PTR_NULL(object, 90);
+    NW4HBMAssertPointerNonnull_Line(list, 89);
+    NW4HBMAssertPointerNonnull_Line(object, 90);
 
     if (list->headObject == nullptr) {
         SetFirstObject(list, object);
@@ -72,8 +72,8 @@ void List_Append(List* list, void* object) {
 }
 
 void List_Remove(List* list, void* object) {
-    NW4HBM_ASSERT_PTR_NULL(list, 203);
-    NW4HBM_ASSERT_PTR_NULL(object, 204);
+    NW4HBMAssertPointerNonnull_Line(list, 203);
+    NW4HBMAssertPointerNonnull_Line(object, 204);
 
     Link* link = OBJ_TO_NODE(list, object);
 
@@ -96,7 +96,7 @@ void List_Remove(List* list, void* object) {
 }
 
 void* List_GetNext(const List* list, const void* object) {
-    NW4HBM_ASSERT_PTR_NULL(list, 245);
+    NW4HBMAssertPointerNonnull_Line(list, 245);
 
     if (object == nullptr) {
         return list->headObject;
@@ -109,7 +109,7 @@ void* List_GetNth(const List* list, u16 index) {
     int count = 0;
     Link* object = nullptr;
 
-    NW4HBM_ASSERT_PTR_NULL(list, 297);
+    NW4HBMAssertPointerNonnull_Line(list, 297);
 
     for (; (object = static_cast<Link*>(List_GetNext(list, object))); count++) {
         if (index == count) {

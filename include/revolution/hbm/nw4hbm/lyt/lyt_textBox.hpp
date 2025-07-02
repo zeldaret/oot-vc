@@ -5,6 +5,7 @@
  * headers
  */
 
+#include "revolution/hbm/HBMAssert.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
 #include "revolution/hbm/nw4hbm/ut/Color.hpp"
@@ -95,7 +96,7 @@ class TextBox : public Pane {
 
     // methods
     const ut::Color GetTextColor(u32 type) const {
-        NW4HBM_ASSERT3(type < TEXTCOLOR_MAX, "textBox.h", 95);
+        NW4HBMAssert_FileLine(type < TEXTCOLOR_MAX, "textBox.h", 95);
         return mTextColors[type];
     }
     const Size GetFontSize() const { return mFontSize; }

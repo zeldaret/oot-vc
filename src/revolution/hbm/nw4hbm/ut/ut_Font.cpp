@@ -15,7 +15,7 @@ namespace nw4hbm {
 namespace ut {
 
 void Font::InitReaderFunc(FontEncoding encoding) {
-    NW4HBM_ASSERT_PTR(this, 43);
+    NW4HBMAssertPointerValid_Line(this, 43);
 
     switch (encoding) {
         case FONT_ENCODING_UTF8:

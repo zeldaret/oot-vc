@@ -41,94 +41,94 @@ ResFontBase::ResFontBase() : mResource(nullptr), mFontInfo(nullptr) {}
 ResFontBase::~ResFontBase() {}
 
 void ResFontBase::SetResourceBuffer(void* pUserBuffer, FontInformation* pFontInfo) {
-    NW4HBM_ASSERT_PTR(pUserBuffer, 79);
-    NW4HBM_ASSERT_PTR(pFontInfo, 80);
-    NW4HBM_ASSERT2(mResource == NULL, 81);
-    NW4HBM_ASSERT2(mFontInfo == NULL, 82);
+    NW4HBMAssertPointerValid_Line(pUserBuffer, 79);
+    NW4HBMAssertPointerValid_Line(pFontInfo, 80);
+    NW4HBMAssert_Line(mResource == NULL, 81);
+    NW4HBMAssert_Line(mFontInfo == NULL, 82);
     mResource = pUserBuffer;
     mFontInfo = pFontInfo;
 }
 
 int ResFontBase::GetWidth() const {
-    NW4HBM_ASSERT_PTR(this, 128);
-    NW4HBM_ASSERT_PTR(mFontInfo, 129);
+    NW4HBMAssertPointerValid_Line(this, 128);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 129);
     return mFontInfo->width;
 }
 
 int ResFontBase::GetHeight() const {
-    NW4HBM_ASSERT_PTR(this, 145);
-    NW4HBM_ASSERT_PTR(mFontInfo, 146);
+    NW4HBMAssertPointerValid_Line(this, 145);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 146);
     return mFontInfo->height;
 }
 
 int ResFontBase::GetAscent() const {
-    NW4HBM_ASSERT_PTR(this, 162);
-    NW4HBM_ASSERT_PTR(mFontInfo, 163);
+    NW4HBMAssertPointerValid_Line(this, 162);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 163);
     return mFontInfo->ascent;
 }
 
 int ResFontBase::GetDescent() const {
-    NW4HBM_ASSERT_PTR(this, 179);
-    NW4HBM_ASSERT_PTR(mFontInfo, 180);
+    NW4HBMAssertPointerValid_Line(this, 179);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 180);
     return mFontInfo->height - mFontInfo->ascent;
 }
 
 int ResFontBase::GetBaselinePos() const {
-    NW4HBM_ASSERT_PTR(this, 196);
-    NW4HBM_ASSERT_PTR(mFontInfo, 197);
+    NW4HBMAssertPointerValid_Line(this, 196);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 197);
     return mFontInfo->pGlyph->baselinePos;
 }
 
 int ResFontBase::GetCellHeight() const {
-    NW4HBM_ASSERT_PTR(this, 213);
-    NW4HBM_ASSERT_PTR(mFontInfo, 214);
+    NW4HBMAssertPointerValid_Line(this, 213);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 214);
     return mFontInfo->pGlyph->cellHeight;
 }
 
 int ResFontBase::GetCellWidth() const {
-    NW4HBM_ASSERT_PTR(this, 230);
-    NW4HBM_ASSERT_PTR(mFontInfo, 231);
+    NW4HBMAssertPointerValid_Line(this, 230);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 231);
     return mFontInfo->pGlyph->cellWidth;
 }
 
 int ResFontBase::GetMaxCharWidth() const {
-    NW4HBM_ASSERT_PTR(this, 247);
-    NW4HBM_ASSERT_PTR(mFontInfo, 248);
+    NW4HBMAssertPointerValid_Line(this, 247);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 248);
     return mFontInfo->pGlyph->maxCharWidth;
 }
 
 Font::Type ResFontBase::GetType() const { return TYPE_RESOURCE; }
 
 GXTexFmt ResFontBase::GetTextureFormat() const {
-    NW4HBM_ASSERT_PTR(this, 279);
-    NW4HBM_ASSERT_PTR(mFontInfo, 280);
+    NW4HBMAssertPointerValid_Line(this, 279);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 280);
     return static_cast<GXTexFmt>(mFontInfo->pGlyph->sheetFormat);
 }
 
 int ResFontBase::GetLineFeed() const {
-    NW4HBM_ASSERT_PTR(this, 296);
-    NW4HBM_ASSERT_PTR(mFontInfo, 297);
+    NW4HBMAssertPointerValid_Line(this, 296);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 297);
     return mFontInfo->linefeed;
 }
 
 CharWidths ResFontBase::GetDefaultCharWidths() const {
-    NW4HBM_ASSERT_PTR(this, 313);
-    NW4HBM_ASSERT_PTR(mFontInfo, 314);
+    NW4HBMAssertPointerValid_Line(this, 313);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 314);
     return mFontInfo->defaultWidth;
 }
 
 void ResFontBase::SetDefaultCharWidths(const CharWidths& widths) {
     // clang-format off
-    NW4HBM_ASSERT_PTR(this, 330);
-    NW4HBM_ASSERT_PTR(mFontInfo, 331);
-    NW4HBM_ASSERT_PTR(& widths, 332);
+    NW4HBMAssertPointerValid_Line(this, 330);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 331);
+    NW4HBMAssertPointerValid_Line(& widths, 332);
     mFontInfo->defaultWidth = widths;
     // clang-format on
 }
 
 bool ResFontBase::SetAlternateChar(char16_t c) {
-    NW4HBM_ASSERT_PTR(this, 350);
-    NW4HBM_ASSERT_PTR(mFontInfo, 351);
+    NW4HBMAssertPointerValid_Line(this, 350);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 351);
     u16 index = FindGlyphIndex(c);
 
     if (index != GLYPH_INDEX_NOT_FOUND) {
@@ -140,11 +140,9 @@ bool ResFontBase::SetAlternateChar(char16_t c) {
 }
 
 void ResFontBase::SetLineFeed(int linefeed) {
-    NW4HBM_ASSERT_PTR(this, 375);
-    NW4HBM_ASSERT_PTR(mFontInfo, 376);
-    NW4HBM_PANIC3(linefeed >= -128 && linefeed <= 127, 377,
-                  "linefeed is out of bounds(%d)\n%d <= linefeed <= %d not satisfied.", linefeed, -128, 127);
-
+    NW4HBMAssertPointerValid_Line(this, 375);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 376);
+    NW4HBMAssertHeaderRange_Line(linefeed, -128, 127, 377);
     mFontInfo->linefeed = linefeed;
 }
 
@@ -163,22 +161,22 @@ void ResFontBase::GetGlyph(Glyph* glyph, char16_t c) const {
 }
 
 FontEncoding ResFontBase::GetEncoding() const {
-    NW4HBM_ASSERT_PTR(this, 456);
-    NW4HBM_ASSERT_PTR(mFontInfo, 457);
+    NW4HBMAssertPointerValid_Line(this, 456);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 457);
     return static_cast<FontEncoding>(mFontInfo->encoding);
 }
 
 u16 ResFontBase::GetGlyphIndex(char16_t c) const {
-    NW4HBM_ASSERT_PTR(this, 482);
-    NW4HBM_ASSERT_PTR(mFontInfo, 483);
+    NW4HBMAssertPointerValid_Line(this, 482);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 483);
     u16 index = FindGlyphIndex(c);
 
     return index != GLYPH_INDEX_NOT_FOUND ? index : mFontInfo->alterCharIndex;
 }
 
 u16 ResFontBase::FindGlyphIndex(char16_t c) const {
-    NW4HBM_ASSERT_PTR(this, 502);
-    NW4HBM_ASSERT_PTR(mFontInfo, 503);
+    NW4HBMAssertPointerValid_Line(this, 502);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 503);
     FontCodeMap* pMap;
     for (pMap = mFontInfo->pMap; pMap; pMap = pMap->pNext) {
         if (pMap->ccodeBegin <= c && c <= pMap->ccodeEnd) {
@@ -190,8 +188,8 @@ u16 ResFontBase::FindGlyphIndex(char16_t c) const {
 }
 
 u16 ResFontBase::FindGlyphIndex(const FontCodeMap* pMap, char16_t c) const {
-    NW4HBM_ASSERT_PTR(this, 539);
-    NW4HBM_ASSERT_PTR(pMap, 540);
+    NW4HBMAssertPointerValid_Line(this, 539);
+    NW4HBMAssertPointerValid_Line(pMap, 540);
     u16 index = GLYPH_INDEX_NOT_FOUND;
 
     switch (pMap->mappingMethod) {
@@ -239,8 +237,8 @@ const CharWidths& ResFontBase::GetCharWidthsFromIndex(u16 index) const {
 
     const FontWidth* pWidth;
 
-    NW4HBM_ASSERT_PTR(this, 615);
-    NW4HBM_ASSERT_PTR(mFontInfo, 616);
+    NW4HBMAssertPointerValid_Line(this, 615);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 616);
     for (pWidth = mFontInfo->pWidth; pWidth; pWidth = pWidth->pNext) {
         if (pWidth->indexBegin <= index && index <= pWidth->indexEnd) {
             return GetCharWidthsFromIndex(pWidth, index);
@@ -251,13 +249,13 @@ const CharWidths& ResFontBase::GetCharWidthsFromIndex(u16 index) const {
 }
 
 const CharWidths& ResFontBase::GetCharWidthsFromIndex(const FontWidth* pWidth, u16 index) const {
-    NW4HBM_ASSERT_PTR(pWidth, 651);
+    NW4HBMAssertPointerValid_Line(pWidth, 651);
     return pWidth->widthTable[index - pWidth->indexBegin];
 }
 
 void ResFontBase::GetGlyphFromIndex(Glyph* glyph, u16 index) const {
-    NW4HBM_ASSERT_PTR(this, 671);
-    NW4HBM_ASSERT_PTR(mFontInfo, 672);
+    NW4HBMAssertPointerValid_Line(this, 671);
+    NW4HBMAssertPointerValid_Line(mFontInfo, 672);
     FontTextureGlyph& tg = *mFontInfo->pGlyph;
 
     u32 cellsInASheet = tg.sheetRow * tg.sheetLine;

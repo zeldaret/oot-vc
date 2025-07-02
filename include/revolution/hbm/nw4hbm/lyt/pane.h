@@ -5,6 +5,7 @@
  * headers
  */
 
+#include "revolution/hbm/HBMAssert.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_animation.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp"
@@ -136,7 +137,7 @@ class Pane : public detail::PaneBase {
     void SetRotate(const math::VEC3& value) { mRotate = value; }
     void SetScale(const math::VEC2& value) { mScale = value; }
     void SetSRTElement(u32 idx, f32 value) {
-        NW4HBM_ASSERT2(idx < ANIMTARGET_PANE_MAX, 250);
+        NW4HBMAssert_Line(idx < ANIMTARGET_PANE_MAX, 250);
 
         f32* srtAry = reinterpret_cast<f32*>(&mTranslate);
         srtAry[idx] = value;

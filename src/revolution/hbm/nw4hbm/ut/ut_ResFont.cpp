@@ -51,9 +51,9 @@ ResFont::ResFont() {}
 ResFont::~ResFont() {}
 
 bool ResFont::SetResource(void* brfnt) {
-    NW4HBM_ASSERT_PTR(this, 97);
-    NW4HBM_ASSERT_PTR(brfnt, 98);
-    NW4HBM_ASSERT_ALIGN32(brfnt, 99);
+    NW4HBMAssertPointerValid_Line(this, 97);
+    NW4HBMAssertPointerValid_Line(brfnt, 98);
+    NW4HBMAlign32_Line(brfnt, 99);
 
     FontInformation* pFontInfo = nullptr;
     BinaryFileHeader* fileHeader = static_cast<BinaryFileHeader*>(brfnt);
@@ -70,7 +70,7 @@ bool ResFont::SetResource(void* brfnt) {
         blockHeader = CONVERT_OFFSET_TO_PTR(BinaryBlockHeader, fileHeader, fileHeader->headerSize);
 
         while (nBlocks < fileHeader->dataBlocks) {
-            NW4HBM_ASSERT_PTR(blockHeader, 124);
+            NW4HBMAssertPointerValid_Line(blockHeader, 124);
             if (blockHeader->kind == MAGIC_FONT_INFO) {
                 pFontInfo = CONVERT_OFFSET_TO_PTR(FontInformation, blockHeader, sizeof *blockHeader);
                 break;
@@ -112,94 +112,77 @@ FontInformation* ResFont::Rebuild(BinaryFileHeader* fileHeader) {
     FontInformation* info = nullptr;
     int nBlocks = 0;
 
-    NW4HBM_ASSERT_PTR(fileHeader, 218);
-    NW4HBM_ASSERT_ALIGN32(fileHeader, 219);
+    NW4HBMAssertPointerValid_Line(fileHeader, 218);
+    NW4HBMAlign2_Line(fileHeader, 219);
 
     while (nBlocks < fileHeader->dataBlocks) {
-        NW4HBM_ASSERT_PTR(blockHeader, 230);
+        NW4HBMAssertPointerValid_Line(blockHeader, 230);
         blockHeader = CONVERT_OFFSET_TO_PTR(BinaryBlockHeader, fileHeader, fileHeader->headerSize);
 
         switch (blockHeader->kind) {
             case MAGIC_FONT_INFO: {
                 info = CONVERT_OFFSET_TO_PTR(FontInformation, blockHeader, sizeof *blockHeader);
 
-                NW4HBM_ASSERT2(info == NULL, 237);
-                NW4HBM_ASSERT2(info->fontType == FONT_TYPE_NNGCTEXTURE, 243);
-                NW4HBM_ASSERT2(info->alterCharIndex != GLYPH_INDEX_NOT_FOUND, 244);
+                NW4HBMAssert_Line(info == NULL, 237);
+                NW4HBMAssert_Line(info->fontType == FONT_TYPE_NNGCTEXTURE, 243);
+                NW4HBMAssert_Line(info->alterCharIndex != GLYPH_INDEX_NOT_FOUND, 244);
 
                 // no check
-                NW4HBM_ASSERT_PTR_NULL(info->pGlyph, 247);
+                NW4HBMAssertPointerNonnull_Line(info->pGlyph, 247);
                 ResolveOffset(info->pGlyph, fileHeader);
-                NW4HBM_ASSERT_PTR(info->pGlyph, 249);
+                NW4HBMAssertPointerValid_Line(info->pGlyph, 249);
 
                 if (info->pWidth) {
                     ResolveOffset(info->pWidth, fileHeader);
-                    NW4HBM_ASSERT_PTR(info->pWidth, 255);
+                    NW4HBMAssertPointerValid_Line(info->pWidth, 255);
                 }
 
                 if (info->pMap) {
                     ResolveOffset(info->pMap, fileHeader);
-                    NW4HBM_ASSERT_PTR(info->pMap, 260);
+                    NW4HBMAssertPointerValid_Line(info->pMap, 260);
                 }
             } break;
 
             case MAGIC_FONT_TEX_GLYPH: {
                 FontTextureGlyph* glyph = CONVERT_OFFSET_TO_PTR(FontTextureGlyph, blockHeader, sizeof *blockHeader);
 
-                NW4HBM_ASSERT_PTR_NULL(glyph->sheetImage, 274);
+                NW4HBMAssertPointerNonnull_Line(glyph->sheetImage, 274);
                 // no check
                 ResolveOffset(glyph->sheetImage, fileHeader);
-                NW4HBM_ASSERT_PTR(glyph->sheetImage, 276);
-
-                NW4HBM_PANIC(glyph->cellWidth < 1, 279,
-                             "glyph->cellWidth is out of bounds(%d)\n%d <= glyph->cellWidth not satisfied.",
-                             glyph->cellWidth, 1);
-                NW4HBM_PANIC(glyph->cellHeight < 1, 280,
-                             "glyph->cellHeight is out of bounds(%d)\n%d <= glyph->cellHeight not satisfied.",
-                             glyph->cellHeight, 1);
-                NW4HBM_PANIC3(glyph->sheetSize >= 0x200 && glyph->sheetSize <= 0x400000, 281,
-                              "glyph->sheetSize is out of bounds(%d)\n%d <= glyph->sheetSize <= %d not satisfied.",
-                              glyph->sheetSize, 0x200, 0x400000);
-                NW4HBM_PANIC(glyph->sheetNum < 1, 282,
-                             "glyph->sheetNum is out of bounds(%d)\n%d <= glyph->sheetNum not satisfied.",
-                             glyph->sheetNum, 1);
-                NW4HBM_PANIC(glyph->sheetRow < 1, 283,
-                             "glyph->sheetRow is out of bounds(%d)\n%d <= glyph->sheetRow not satisfied.",
-                             glyph->sheetRow, 1);
-                NW4HBM_PANIC(glyph->sheetLine < 1, 284,
-                             "glyph->sheetLine is out of bounds(%d)\n%d <= glyph->sheetLine not satisfied.",
-                             glyph->sheetLine, 1);
-                NW4HBM_PANIC3(glyph->sheetWidth >= 0x20 && glyph->sheetWidth <= 0x400, 285,
-                              "glyph->sheetWidth is out of bounds(%d)\n%d <= glyph->sheetWidth <= %d not satisfied.",
-                              glyph->sheetWidth, 0x20, 0x400);
-                NW4HBM_PANIC3(glyph->sheetHeight >= 0x20 && glyph->sheetHeight <= 0x400, 286,
-                              "glyph->sheetHeight is out of bounds(%d)\n%d <= glyph->sheetHeight <= %d not satisfied.",
-                              glyph->sheetHeight, 0x20, 0x400);
+                NW4HBMAssertPointerValid_Line(glyph->sheetImage, 276);
+                NW4HBMAssertHeaderMinimumValue_Line(glyph->cellWidth, 1, 279);
+                NW4HBMAssertHeaderMinimumValue_Line(glyph->cellHeight, 1, 280);
+                NW4HBMAssertHeaderRange_Line(glyph->sheetSize, 0x200, 0x400000, 281);
+                NW4HBMAssertHeaderMinimumValue_Line(glyph->sheetNum, 1, 282);
+                NW4HBMAssertHeaderMinimumValue_Line(glyph->sheetRow, 1, 283);
+                NW4HBMAssertHeaderMinimumValue_Line(glyph->sheetLine, 1, 284);
+                NW4HBMAssertHeaderRange_Line(glyph->sheetWidth, 0x20, 0x400, 285);
+                NW4HBMAssertHeaderRange_Line(glyph->sheetHeight, 0x20, 0x400, 286);
             } break;
 
             case MAGIC_FONT_CHAR_WIDTH: {
                 FontWidth* width = CONVERT_OFFSET_TO_PTR(FontWidth, blockHeader, sizeof *blockHeader);
 
-                NW4HBM_ASSERT2(width->indexBegin <= width->indexEnd, 298);
+                NW4HBMAssert_Line(width->indexBegin <= width->indexEnd, 298);
 
                 if (width->pNext) {
                     ResolveOffset(width->pNext, fileHeader);
-                    NW4HBM_ASSERT_PTR(width->pNext, 303);
+                    NW4HBMAssertPointerValid_Line(width->pNext, 303);
                 }
             } break;
 
             case MAGIC_FONT_CODE_MAP: {
                 FontCodeMap* map = CONVERT_OFFSET_TO_PTR(FontCodeMap, blockHeader, sizeof *blockHeader);
 
-                NW4HBM_ASSERT2(map->ccodeBegin <= map->ccodeEnd, 316);
-                NW4HBM_ASSERT((map->mappingMethod == FONT_MAPMETHOD_DIRECT) ||
-                                  (map->mappingMethod == FONT_MAPMETHOD_TABLE) ||
-                                  (map->mappingMethod == FONT_MAPMETHOD_SCAN),
-                              319);
+                NW4HBMAssert_Line(map->ccodeBegin <= map->ccodeEnd, 316);
+                NW4HBMAssert_Line((map->mappingMethod == FONT_MAPMETHOD_DIRECT) ||
+                                      (map->mappingMethod == FONT_MAPMETHOD_TABLE) ||
+                                      (map->mappingMethod == FONT_MAPMETHOD_SCAN),
+                                  319);
 
                 if (map->pNext) {
                     ResolveOffset(map->pNext, fileHeader);
-                    NW4HBM_ASSERT_PTR(map->pNext, 324);
+                    NW4HBMAssertPointerValid_Line(map->pNext, 324);
                 }
             } break;
 

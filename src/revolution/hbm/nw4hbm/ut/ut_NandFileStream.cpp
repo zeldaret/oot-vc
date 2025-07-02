@@ -1,11 +1,11 @@
 #include "macros.h"
-#include "revolution/hbm/ut.hpp"
+#include "revolution.h"
 
 namespace nw4hbm {
 namespace ut {
 
 void NandFileStream::NandAsyncCallback_(s32 result, NANDCommandBlock* commandBlock) {
-    NW4HBM_ASSERT_PTR_NULL(commandBlock, 44);
+    NW4HBMAssertPointerNonnull_Line(commandBlock, 44);
     NandFileStream* p = reinterpret_cast<NandFileStreamInfo*>(commandBlock)->stream;
 
     p->mIsBusy = false;
@@ -34,7 +34,7 @@ void NandFileStream::Initialize_() {
 }
 
 NandFileStream::NandFileStream(const char* path, u32 mode) {
-    NW4HBM_ASSERT_PTR_NULL(path, 113);
+    NW4HBMAssertPointerNonnull_Line(path, 113);
     Initialize_();
     Open(path, mode);
 }
@@ -51,7 +51,7 @@ NandFileStream::~NandFileStream() {
 }
 
 bool NandFileStream::Open(const char* path, u32 mode) {
-    NW4HBM_ASSERT_PTR_NULL(path, 173);
+    NW4HBMAssertPointerNonnull_Line(path, 173);
 
     if (mCloseOnDestroyFlg) {
         Close();
@@ -115,15 +115,16 @@ bool NandFileStream::Open(const NANDFileInfo* pInfo, u32 mode, bool enableClose)
 
 void NandFileStream::Close() {
     if (mCloseEnableFlg && mAvailable) {
-        NW4HBM_PANIC(NANDClose(&mFileInfo.nandInfo), 264, "Can't Close NAND File. It still has been used\n");
+        NW4HBMAssertMessage_Line(NANDClose(&mFileInfo.nandInfo) == NAND_RESULT_OK, 264,
+                                 "Can't Close NAND File. It still has been used\n");
         mAvailable = false;
     }
 }
 
 s32 NandFileStream::Read(void* buf, u32 length) {
-    NW4HBM_ASSERT_ALIGN32(buf, 284);
-    NW4HBM_ASSERT_ALIGN32(length, 285);
-    NW4HBM_PANIC(this->IsAvailable() == 0, 286, "NandFileStream is not opened");
+    NW4HBMAlign32_Line(buf, 284);
+    NW4HBMAlign32_Line(length, 285);
+    NW4HBMAssertMessage_Line(this->IsAvailable() != 0, 286, "NandFileStream is not opened");
     NANDSeek(&mFileInfo.nandInfo, mFilePosition.Tell(), NAND_SEEK_BEG);
 
     s32 result = NANDRead(&mFileInfo.nandInfo, buf, length);
@@ -133,9 +134,9 @@ s32 NandFileStream::Read(void* buf, u32 length) {
 }
 
 bool NandFileStream::ReadAsync(void* buf, u32 length, StreamCallback pCallback, void* pCallbackArg) {
-    NW4HBM_ASSERT_ALIGN32(buf, 313);
-    NW4HBM_ASSERT_ALIGN32(length, 314);
-    NW4HBM_PANIC(this->IsAvailable() == 0, 315, "NandFileStream is not opened");
+    NW4HBMAlign32_Line(buf, 313);
+    NW4HBMAlign32_Line(length, 314);
+    NW4HBMAssertMessage_Line(this->IsAvailable() != 0, 315, "NandFileStream is not opened");
 
     return ReadAsyncImpl(buf, length, pCallback, pCallbackArg);
 }
@@ -149,9 +150,9 @@ void NandFileStream::ReadAsyncSetArgs(StreamCallback pCallback, void* pCallbackA
 
 // fake? ReadAsync requires inlines
 bool NandFileStream::ReadAsyncImpl(void* buf, u32 length, StreamCallback pCallback, void* pCallbackArg) {
-    NW4HBM_ASSERT_ALIGN32(buf, 370);
-    NW4HBM_ASSERT_ALIGN32(length, 371);
-    NW4HBM_PANIC(this->IsAvailable() == 0, 372, "NandFileStream is not opened");
+    NW4HBMAlign32_Line(buf, 370);
+    NW4HBMAlign32_Line(length, 371);
+    NW4HBMAssertMessage_Line(this->IsAvailable() != 0, 372, "NandFileStream is not opened");
 
     ReadAsyncSetArgs(pCallback, pCallbackArg);
 
@@ -170,9 +171,9 @@ bool NandFileStream::ReadAsyncImpl(void* buf, u32 length, StreamCallback pCallba
 }
 
 void NandFileStream::Write(const void* buf, u32 length) {
-    NW4HBM_ASSERT_ALIGN32(buf, 396);
-    NW4HBM_ASSERT_ALIGN32(length, 397);
-    NW4HBM_PANIC(this->IsAvailable() == 0, 398, "NandFileStream is not opened");
+    NW4HBMAlign32_Line(buf, 396);
+    NW4HBMAlign32_Line(length, 397);
+    NW4HBMAssertMessage_Line(this->IsAvailable() != 0, 398, "NandFileStream is not opened");
 
     NANDSeek(&mFileInfo.nandInfo, mFilePosition.Tell(), NAND_SEEK_BEG);
     s32 result = NANDWrite(&mFileInfo.nandInfo, buf, length);
@@ -182,9 +183,9 @@ void NandFileStream::Write(const void* buf, u32 length) {
 }
 
 bool NandFileStream::WriteAsync(const void* buf, u32 length, StreamCallback pCallback, void* pCallbackArg) {
-    NW4HBM_ASSERT_ALIGN32(buf, 423);
-    NW4HBM_ASSERT_ALIGN32(length, 424);
-    NW4HBM_PANIC(this->IsAvailable() == 0, 425, "NandFileStream is not opened");
+    NW4HBMAlign32_Line(buf, 423);
+    NW4HBMAlign32_Line(length, 424);
+    NW4HBMAssertMessage_Line(this->IsAvailable() != 0, 425, "NandFileStream is not opened");
 
     mCallback = pCallback;
     mArg = pCallbackArg;
@@ -204,7 +205,7 @@ bool NandFileStream::WriteAsync(const void* buf, u32 length, StreamCallback pCal
 }
 
 void NandFileStream::Seek(s32 offset, u32 origin) {
-    NW4HBM_PANIC(this->IsAvailable() == 0, 462, "NandFileStream is not opened");
+    NW4HBMAssertMessage_Line(this->IsAvailable() != 0, 462, "NandFileStream is not opened");
     mFilePosition.Seek(offset, origin);
 }
 

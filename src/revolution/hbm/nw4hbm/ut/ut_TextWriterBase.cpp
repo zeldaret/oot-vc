@@ -46,7 +46,7 @@ template <typename charT> void TextWriterBase<charT>::SetLineHeight(f32 lineHeig
 }
 
 template <typename charT> f32 TextWriterBase<charT>::GetLineHeight() const {
-    NW4HBM_ASSERT_PTR(this, 241);
+    NW4HBMAssertPointerValid_Line(this, 241);
     const Font* font = GetFont();
     int linefeed = font ? font->GetLineFeed() : 0;
 
@@ -64,7 +64,7 @@ template <typename charT> f32 TextWriterBase<charT>::GetCharSpace() const { retu
 template <typename charT> void TextWriterBase<charT>::SetTabWidth(int tabWidth) { mTabWidth = tabWidth; }
 
 template <typename charT> int TextWriterBase<charT>::GetTabWidth() const {
-    NW4HBM_ASSERT_PTR(this, 346);
+    NW4HBMAssertPointerValid_Line(this, 346);
     return mTabWidth;
 }
 
@@ -73,8 +73,8 @@ template <typename charT> void TextWriterBase<charT>::SetDrawFlag(u32 flags) { m
 template <typename charT> u32 TextWriterBase<charT>::GetDrawFlag() const { return mDrawFlag; }
 
 template <typename charT> void TextWriterBase<charT>::SetTagProcessor(TagProcessorBase<charT>* tagProcessor) {
-    NW4HBM_ASSERT_PTR(this, 114);
-    NW4HBM_ASSERT_PTR(tagProcessor, 115);
+    NW4HBMAssertPointerValid_Line(this, 114);
+    NW4HBMAssertPointerValid_Line(tagProcessor, 115);
     mTagProcessor = tagProcessor;
 }
 
@@ -190,7 +190,7 @@ template <typename charT> f32 TextWriterBase<charT>::PrintImpl(const charT* str,
             Operation operation = mTagProcessor->Process(code, &context);
 
             if (operation == OPERATION_NEXT_LINE) {
-                NW4HBM_ASSERT_PTR(context.str, 1137);
+                NW4HBMAssertPointerValid_Line(context.str, 1137);
 
                 if (IsDrawFlagSet(0x3, 0x1)) {
                     int remain = length - (context.str - str);
@@ -375,9 +375,9 @@ template <typename charT> charT* TextWriterBase<charT>::SetBuffer(charT* buffer,
 template <typename charT> f32 TextWriterBase<charT>::Print(const charT* str) { return Print(str, StrLen(str)); }
 
 template <typename charT> f32 TextWriterBase<charT>::Print(const charT* str, int length) {
-    NW4HBM_ASSERT_PTR(this, 705);
-    NW4HBM_ASSERT_PTR(str, 706);
-    NW4HBM_PANIC(length < 0, 707, "length is out of bounds(%d)\n%d <= length not satisfied.", length, 0);
+    NW4HBMAssertPointerValid_Line(this, 705);
+    NW4HBMAssertPointerValid_Line(str, 706);
+    NW4HBMAssertHeaderMinimumValue_Line(length, 0, 707);
     TextWriterBase<charT> myCopy(*this);
 
     f32 width = myCopy.PrintImpl(str, length);
@@ -439,9 +439,9 @@ template <typename charT> f32 TextWriterBase<charT>::CalcStringWidth(const charT
 
 template <typename charT>
 void TextWriterBase<charT>::CalcVStringRect(Rect* pRect, const charT* format, std::va_list args) const {
-    NW4HBM_ASSERT_PTR(this, 0);
-    NW4HBM_ASSERT_PTR(format, 0);
-    NW4HBM_ASSERT_PTR(pRect, 0);
+    NW4HBMAssertPointerValid_Line(this, 0);
+    NW4HBMAssertPointerValid_Line(format, 0);
+    NW4HBMAssertPointerValid_Line(pRect, 0);
     charT* buffer = mFormatBuffer ? mFormatBuffer : static_cast<charT*>(__alloca(mFormatBufferSize));
 
     int length = VSNPrintf(buffer, mFormatBufferSize, format, args);

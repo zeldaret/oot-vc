@@ -126,7 +126,7 @@ static u8 GetCharOnDvd_(u8 const* buf) {
 static u8* SearchNextLine_(u8* buf, s32 lines) {
     u8 c;
 
-    NW4HBMAssertPointerNonnull_Line(363, GetCharPtr_);
+    NW4HBMAssertPointerNonnull_Line(GetCharPtr_, 363);
 
     ensure(buf, nullptr);
 
@@ -142,7 +142,7 @@ static u8* SearchNextLine_(u8* buf, s32 lines) {
 }
 
 static u8* SearchNextSection_(u8* buf) {
-    NW4HBMAssertPointerNonnull_Line(399, GetCharPtr_);
+    NW4HBMAssertPointerNonnull_Line(GetCharPtr_, 399);
 
     do {
         buf = SearchNextLine_(buf, 1);
@@ -159,7 +159,7 @@ static u8* SearchParam_(u8* lineTop, u32 argNum, u8 splitter) {
     int inArg = 0;
     u8* buf = lineTop;
 
-    NW4HBMAssertPointerNonnull_Line(434, GetCharPtr_);
+    NW4HBMAssertPointerNonnull_Line(GetCharPtr_, 434);
 
     ensure(buf, nullptr);
 
@@ -191,8 +191,8 @@ static u8* SearchParam_(u8* lineTop, u32 argNum, u8 splitter) {
 static u32 XStrToU32_(u8 const* str) {
     u32 val = 0;
 
-    NW4HBMAssertPointerNonnull_Line(488, str);
-    NW4HBMAssertPointerNonnull_Line(489, GetCharPtr_);
+    NW4HBMAssertPointerNonnull_Line(str, 488);
+    NW4HBMAssertPointerNonnull_Line(GetCharPtr_, 489);
 
     while (true) {
         u32 num;
@@ -228,9 +228,9 @@ inline
     CopySymbol_(const u8* buf, u8* str, u32 strLenMax, u8 splitter) {
     u32 cnt = 0;
 
-    NW4HBMAssertPointerNonnull_Line(546, buf);
-    NW4HBMAssertPointerNonnull_Line(547, str);
-    NW4HBMAssertPointerNonnull_Line(548, GetCharPtr_);
+    NW4HBMAssertPointerNonnull_Line(buf, 546);
+    NW4HBMAssertPointerNonnull_Line(str, 547);
+    NW4HBMAssertPointerNonnull_Line(GetCharPtr_, 548);
 
     while (true) {
         u8 c = (*GetCharPtr_)(buf++);
@@ -257,7 +257,7 @@ static bool QuerySymbolToMapFile_(u8* buf, OSModuleInfo const* moduleInfo, u32 a
     OSSectionInfo* sectionInfo = nullptr;
     u32 sectionCnt;
 
-    NW4HBMAssertPointerNonnull_Line(604, strBuf);
+    NW4HBMAssertPointerNonnull_Line(strBuf, 604);
     NW4HBMAssert_Line(605, strBufSize > 0);
 
     if (moduleInfo) {
@@ -342,8 +342,8 @@ static bool QuerySymbolToMapFile_(u8* buf, OSModuleInfo const* moduleInfo, u32 a
 }
 
 static bool QuerySymbolToSingleMapFile_(MapFile* pMapFile, u32 address, u8* strBuf, u32 strBufSize) {
-    NW4HBMAssertPointerNonnull_Line(725, pMapFile);
-    NW4HBMAssertPointerNonnull_Line(726, strBuf);
+    NW4HBMAssertPointerNonnull_Line(pMapFile, 725);
+    NW4HBMAssertPointerNonnull_Line(strBuf, 726);
 
     if (pMapFile->mapBuf) {
         GetCharPtr_ = &GetCharOnMem_;

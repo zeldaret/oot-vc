@@ -20,8 +20,8 @@ template <typename charT> TagProcessorBase<charT>::TagProcessorBase() {}
 template <typename charT> TagProcessorBase<charT>::~TagProcessorBase() {}
 
 template <typename charT> Operation TagProcessorBase<charT>::Process(char16_t code, PrintContext<charT>* context) {
-    NW4HBM_ASSERT2(code < ' ', 85);
-    NW4HBM_ASSERT_PTR(context, 86);
+    NW4HBMAssert_Line(code < ' ', 85);
+    NW4HBMAssertPointerValid_Line(context, 86);
 
     switch (code) {
         case '\n':
@@ -39,9 +39,9 @@ template <typename charT> Operation TagProcessorBase<charT>::Process(char16_t co
 
 template <typename charT>
 Operation TagProcessorBase<charT>::CalcRect(Rect* pRect, char16_t code, PrintContext<charT>* context) {
-    NW4HBM_ASSERT_PTR(pRect, 132);
-    NW4HBM_ASSERT2(code < ' ', 133);
-    NW4HBM_ASSERT_PTR(context, 134);
+    NW4HBMAssertPointerValid_Line(pRect, 132);
+    NW4HBMAssert_Line(code < ' ', 133);
+    NW4HBMAssertPointerValid_Line(context, 134);
 
     switch (code) {
         case '\n': {
@@ -80,7 +80,7 @@ Operation TagProcessorBase<charT>::CalcRect(Rect* pRect, char16_t code, PrintCon
 }
 
 template <typename charT> void TagProcessorBase<charT>::ProcessLinefeed(PrintContext<charT>* context) {
-    NW4HBM_ASSERT_PTR(context, 195);
+    NW4HBMAssertPointerValid_Line(context, 195);
     TextWriterBase<charT>& writer = *context->writer;
 
     f32 x = context->xOrigin;
@@ -90,7 +90,7 @@ template <typename charT> void TagProcessorBase<charT>::ProcessLinefeed(PrintCon
 }
 
 template <typename charT> void TagProcessorBase<charT>::ProcessTab(PrintContext<charT>* context) {
-    NW4HBM_ASSERT_PTR(context, 211);
+    NW4HBMAssertPointerValid_Line(context, 211);
     TextWriterBase<charT>& writer = *context->writer;
     int tabWidth = writer.GetTabWidth();
 

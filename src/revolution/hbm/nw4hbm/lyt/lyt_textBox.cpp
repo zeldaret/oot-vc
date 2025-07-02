@@ -11,6 +11,8 @@
 #include "macros.h"
 #include "revolution/types.h"
 
+#include "revolution/hbm/HBMAssert.hpp"
+
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.hpp"
@@ -95,9 +97,9 @@ ut::Color GetColor(const GXColorS10& src) {
 
 u8 ClampColor(s16 colVal) { return CLAMP(colVal, 0, 0xff); }
 inline void TextBoxAssert(ut::TextWriterBase<wchar_t>* pTextWriter, const wchar_t* str, int length) {
-    NW4HBM_ASSERT_PTR3(pTextWriter, __FILE__, 71);
-    NW4HBM_ASSERT_PTR(str, 73);
-    NW4HBM_ASSERT(length < 0, 74);
+    NW4HBMAssertPointerValid_Line(pTextWriter, 71);
+    NW4HBMAssertPointerValid_Line(str, 73);
+    NW4HBMAssert2_Line(length < 0, 74);
 }
 
 template <typename charT>
@@ -207,10 +209,10 @@ end_draw:
 template <typename charT>
 inline void CalcStringRect(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, const charT* str, int length,
                            f32 maxWidth) {
-    NW4HBM_ASSERT_PTR(pTextWriter, 0);
-    NW4HBM_ASSERT_PTR(pRect, 0);
-    NW4HBM_ASSERT_PTR(str, 0);
-    NW4HBM_ASSERT(length < 0, 74);
+    NW4HBMAssertPointerValid_Line(pTextWriter, 0);
+    NW4HBMAssertPointerValid_Line(pRect, 0);
+    NW4HBMAssertPointerValid_Line(str, 0);
+    NW4HBMAssert2_Line(length < 0, 74);
     ut::TextWriterBase<charT> myCopy = *pTextWriter;
 
     CalcStringRectImpl(pRect, &myCopy, str, length, maxWidth);
@@ -219,10 +221,10 @@ inline void CalcStringRect(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWrit
 template <typename charT>
 void CalcStringRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, const charT* str, int length,
                         f32 maxWidth) {
-    NW4HBM_ASSERT_PTR(pTextWriter, 0);
-    NW4HBM_ASSERT_PTR(pRect, 0);
-    NW4HBM_ASSERT_PTR(str, 0);
-    NW4HBM_ASSERT(length < 0, 74);
+    NW4HBMAssertPointerValid_Line(pTextWriter, 0);
+    NW4HBMAssertPointerValid_Line(pRect, 0);
+    NW4HBMAssertPointerValid_Line(str, 0);
+    NW4HBMAssert2_Line(length < 0, 74);
     int remain = length;
     const charT* pos = str;
 
@@ -341,27 +343,27 @@ TextBox::~TextBox() {
 }
 
 const ut::Color TextBox::GetVtxColor(u32 idx) const {
-    NW4HBM_ASSERT2(idx < VERTEXCOLOR_MAX, 467);
+    NW4HBMAssert_Line(idx < VERTEXCOLOR_MAX, 467);
     return GetTextColor(idx / 2);
 }
 
 void TextBox::SetVtxColor(u32 idx, ut::Color value) {
-    NW4HBM_ASSERT2(idx < VERTEXCOLOR_MAX, 478);
+    NW4HBMAssert_Line(idx < VERTEXCOLOR_MAX, 478);
     SetTextColor(idx / 2, value);
 }
 
 void TextBox::SetTextColor(u32 type, ut::Color value) {
-    NW4HBM_ASSERT3(type < TEXTCOLOR_MAX, "textBox.h", 96);
+    NW4HBMAssert_FileLine(type < TEXTCOLOR_MAX, "textBox.h", 96);
     mTextColors[type] = value;
 }
 
 u8 TextBox::GetVtxColorElement(u32 idx) const {
-    NW4HBM_ASSERT2(idx < VERTEXCOLOR_MAX, 478);
+    NW4HBMAssert_Line(idx < VERTEXCOLOR_MAX, 478);
     return reinterpret_cast<const u8*>(mTextColors + idx / 8)[idx % 4];
 }
 
 void TextBox::SetVtxColorElement(u32 idx, u8 value) {
-    NW4HBM_ASSERT2(idx < VERTEXCOLOR_MAX, 478);
+    NW4HBMAssert_Line(idx < VERTEXCOLOR_MAX, 478);
     reinterpret_cast<u8*>(mTextColors + idx / 8)[idx % 4] = value;
 }
 
@@ -422,7 +424,7 @@ void TextBox::DrawSelf(const DrawInfo& drawInfo) {
 }
 
 u16 TextBox::GetStringBufferLength() const {
-    NW4HBM_ASSERT(mTextBufBytes >= sizeof(wchar_t), 0);
+    NW4HBMAssert2_Line(mTextBufBytes >= sizeof(wchar_t), 0);
 
     if (mTextBufBytes == 0) {
         return 0;
@@ -487,7 +489,7 @@ u16 TextBox::SetString(const wchar_t* str, u16 dstIdx, u16 strLen) {
 
 void TextBox::SetFont(const ut::Font* pFont) {
     if (mTextBoxFlag.allocFont) {
-        NW4HBM_ASSERT_PTR_NULL(mpFont, 775);
+        NW4HBMAssertPointerNonnull_Line(mpFont, 775);
         mpFont->~Font();
         Layout::FreeMemory(const_cast<ut::Font*>(mpFont));
         mTextBoxFlag.allocFont = false;

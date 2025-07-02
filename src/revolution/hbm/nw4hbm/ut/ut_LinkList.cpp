@@ -5,7 +5,7 @@
  */
 
 #include "macros.h"
-#include "revolution/types.h"
+#include "revolution.h"
 
 //! TODO: remove once matched
 extern "C" void fn_8010CBAC(char*, int, ...);
@@ -22,7 +22,7 @@ LinkListImpl::~LinkListImpl() { Clear(); }
 
 LinkListImpl::Iterator LinkListImpl::Erase(Iterator it) {
     // clang-format off
-    NW4HBM_ASSERT2(it.mPointer!=&mNode, 31);
+    NW4HBMAssert_Line(it.mPointer!=&mNode, 31);
     // clang-format on
 
     Iterator itNext(it);
@@ -46,16 +46,16 @@ LinkListImpl::Iterator LinkListImpl::Erase(LinkListImpl::Iterator itFirst, LinkL
 void LinkListImpl::Clear() { Erase(GetBeginIter(), GetEndIter()); }
 
 LinkListImpl::Iterator LinkListImpl::Insert(Iterator it, LinkListNode* p) {
-    NW4HBM_ASSERT_PTR_NULL(p, 74);
+    NW4HBMAssertPointerNonnull_Line(p, 74);
 
     LinkListNode* pIt = it.mPointer;
-    NW4HBM_ASSERT_PTR_NULL(pIt, 76);
+    NW4HBMAssertPointerNonnull_Line(pIt, 76);
 
     LinkListNode* pItPrev = pIt->mPrev;
-    NW4HBM_ASSERT_PTR_NULL(pItPrev, 79);
+    NW4HBMAssertPointerNonnull_Line(pItPrev, 79);
 
-    NW4HBM_ASSERT2(p->mNext == NULL, 81);
-    NW4HBM_ASSERT2(p->mPrev == NULL, 82);
+    NW4HBMAssert_Line(p->mNext == NULL, 81);
+    NW4HBMAssert_Line(p->mPrev == NULL, 82);
     p->mNext = pIt;
     p->mPrev = pItPrev;
 
@@ -69,9 +69,9 @@ LinkListImpl::Iterator LinkListImpl::Insert(Iterator it, LinkListNode* p) {
 
 LinkListImpl::Iterator LinkListImpl::Erase(LinkListNode* p) {
     // clang-format off
-    NW4HBM_ASSERT(!IsEmpty(), 96);
-    NW4HBM_ASSERT_PTR_NULL(p, 97);
-    NW4HBM_ASSERT2(p!=&mNode, 98);
+    NW4HBMAssert2_Line(!IsEmpty(), 96);
+    NW4HBMAssertPointerNonnull_Line(p, 97);
+    NW4HBMAssert_Line(p!=&mNode, 98);
     // clang-format on
 
     LinkListNode* pNext = p->mNext;
@@ -89,12 +89,12 @@ LinkListImpl::Iterator LinkListImpl::Erase(LinkListNode* p) {
 }
 
 void LinkListImpl::SetPrev(LinkListNode* pPrev, LinkListNode* pNext) {
-    NW4HBM_ASSERT_PTR_NULL(pNext, 101);
+    NW4HBMAssertPointerNonnull_Line(pNext, 101);
     pNext->mPrev = pPrev;
 }
 
 void LinkListImpl::SetNext(LinkListNode* pPrev, LinkListNode* pNext) {
-    NW4HBM_ASSERT_PTR_NULL(pPrev, 103);
+    NW4HBMAssertPointerNonnull_Line(pPrev, 103);
     pPrev->mNext = pNext;
 }
 

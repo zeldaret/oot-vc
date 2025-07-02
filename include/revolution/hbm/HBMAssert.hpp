@@ -17,7 +17,12 @@
 #undef NW4HBMCheckMessage_FileLine
 
 #if defined(HBM_ASSERT)
-# define NW4HBMAssertMessage_FileLine(file_, line_, expr_, ...)    ((void)((expr_) || (::nw4hbm::db::Panic  (file_, line_, __VA_ARGS__), 0)))
+# define NW4HBMAssertMessage_FileLine(file_, line_, expr_, ...)    ((void)((expr_) || (::nw4hbm::db::Panic(file_, line_, __VA_ARGS__), 0)))
+# define NW4HBMAssertMessage2_FileLine(file_, line_, expr_, ...) { \
+    if ((expr_)) { \
+        ::nw4hbm::db::Panic(file_, line_, __VA_ARGS__); \
+    } \
+}
 # define NW4HBMCheckMessage_FileLine(file_, line_, expr_, ...)    ((void)((expr_) || (::nw4hbm::db::Warning(file_, line_, __VA_ARGS__), 0)))
 #else
 # define NW4HBMAssertMessage_FileLine(file_, line_, expr_, ...)    ((void)(0))
@@ -31,19 +36,20 @@
 /* Main asserts */
 
 // NW4HBMAssert family
-#define NW4HBMAssertMessage_File(file_, expr_, ...)   NW4HBMAssertMessage_FileLine(  file_ , __LINE__, expr_, __VA_ARGS__)
-#define NW4HBMAssertMessage_Line(line_, expr_, ...)   NW4HBMAssertMessage_FileLine(__FILE__,   line_ , expr_, __VA_ARGS__)
+#define NW4HBMAssertMessage_File(expr_, file_, ...)   NW4HBMAssertMessage_FileLine(  file_ , __LINE__, expr_, __VA_ARGS__)
+#define NW4HBMAssertMessage_Line(expr_, line_, ...)   NW4HBMAssertMessage_FileLine(__FILE__,   line_ , expr_, __VA_ARGS__)
 #define NW4HBMAssertMessage(expr_, ...)               NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, expr_, __VA_ARGS__)
 
-#define NW4HBMAssert_FileLine(file_, line_, expr_)    NW4HBMAssertMessage_FileLine(  file_ ,   line_ , expr_, "NW4HBM:Failed assertion " #expr_)
-#define NW4HBMAssert_File(file_, expr_)               NW4HBMAssertMessage_FileLine(  file_ , __LINE__, expr_, "NW4HBM:Failed assertion " #expr_)
-#define NW4HBMAssert_Line(line_, expr_)               NW4HBMAssertMessage_FileLine(__FILE__,   line_ , expr_, "NW4HBM:Failed assertion " #expr_)
+#define NW4HBMAssert_FileLine(expr_, file_, line_)    NW4HBMAssertMessage_FileLine(  file_ ,   line_ , expr_, "NW4HBM:Failed assertion " #expr_)
+#define NW4HBMAssert_File(expr_, file_)               NW4HBMAssertMessage_FileLine(  file_ , __LINE__, expr_, "NW4HBM:Failed assertion " #expr_)
+#define NW4HBMAssert_Line(expr_, line_)               NW4HBMAssertMessage_FileLine(__FILE__,   line_ , expr_, "NW4HBM:Failed assertion " #expr_)
+#define NW4HBMAssert2_Line(expr_, line_)              NW4HBMAssertMessage_FileLine(__FILE__,   line_ , !expr_, "NW4HBM:Failed assertion " #expr_)
 #define NW4HBMAssert(expr_)                           NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, expr_, "NW4HBM:Failed assertion " #expr_)
 
-#define NW4HBMAssertHeader_FileLine(file_, line_, expr_)  NW4HBMAssertMessage_FileLine(  file_ ,   line_ , expr_,      "Failed assertion " #expr_)
-#define NW4HBMAssertHeader_File(file_, expr_)             NW4HBMAssertMessage_FileLine(  file_ , __LINE__, expr_,      "Failed assertion " #expr_)
-#define NW4HBMAssertHeader_Line(line_, expr_)             NW4HBMAssertMessage_FileLine(__FILE__,   line_ , expr_,      "Failed assertion " #expr_)
-#define NW4HBMAssertHeader(expr_)                         NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, expr_,      "Failed assertion " #expr_)
+#define NW4HBMAssertHeader_FileLine(file_, line_, expr_)  NW4HBMAssertMessage_FileLine(  file_ ,   line_ , expr_, "Failed assertion " #expr_)
+#define NW4HBMAssertHeader_File(file_, expr_)             NW4HBMAssertMessage_FileLine(  file_ , __LINE__, expr_, "Failed assertion " #expr_)
+#define NW4HBMAssertHeader_Line(line_, expr_)             NW4HBMAssertMessage_FileLine(__FILE__,   line_ , expr_, "Failed assertion " #expr_)
+#define NW4HBMAssertHeader(expr_)                         NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, expr_, "Failed assertion " #expr_)
 
 // NW4HBMPanic family
 #define NW4HBMPanicMessage_FileLine(file_, line_, ...)    NW4HBMAssertMessage_FileLine(  file_ ,   line_ , false, __VA_ARGS__)
@@ -66,10 +72,10 @@
 #define NW4HBMCheck_Line(line_, expr_)                    NW4HBMCheckMessage_FileLine(__FILE__,   line_ , expr_, "NW4HBM:Failed check " #expr_)
 #define NW4HBMCheck(expr_)                                NW4HBMCheckMessage_FileLine(__FILE__, __LINE__, expr_, "NW4HBM:Failed check " #expr_)
 
-#define NW4HBMCheckHeader_FileLine(file_, line_, expr_)   NW4HBMCheckMessage_FileLine(  file_ ,   line_ , expr_,      "Failed check " #expr_)
-#define NW4HBMCheckHeader_File(file_, expr_)              NW4HBMCheckMessage_FileLine(  file_ , __LINE__, expr_,      "Failed check " #expr_)
-#define NW4HBMCheckHeader_Line(line_, expr_)              NW4HBMCheckMessage_FileLine(__FILE__,   line_ , expr_,      "Failed check " #expr_)
-#define NW4HBMCheckHeader(expr_)                          NW4HBMCheckMessage_FileLine(__FILE__, __LINE__, expr_,      "Failed check " #expr_)
+#define NW4HBMCheckHeader_FileLine(file_, line_, expr_)   NW4HBMCheckMessage_FileLine(  file_ ,   line_ , expr_, "Failed check " #expr_)
+#define NW4HBMCheckHeader_File(file_, expr_)              NW4HBMCheckMessage_FileLine(  file_ , __LINE__, expr_, "Failed check " #expr_)
+#define NW4HBMCheckHeader_Line(line_, expr_)              NW4HBMCheckMessage_FileLine(__FILE__,   line_ , expr_, "Failed check " #expr_)
+#define NW4HBMCheckHeader(expr_)                          NW4HBMCheckMessage_FileLine(__FILE__, __LINE__, expr_, "Failed check " #expr_)
 
 // NW4HBMWarning family
 #define NW4HBMWarningMessage_FileLine(file_, line_, ...)  NW4HBMCheckMessage_FileLine(  file_ ,   line_ , false, __VA_ARGS__)
@@ -82,38 +88,50 @@
 #define NW4HBMWarning_Line(line_)                         NW4HBMCheck_FileLine(__FILE__,   line_ , false)
 #define NW4HBMWarning()                                   NW4HBMCheck_FileLine(__FILE__, __LINE__, false)
 
+// NW4HBMAlign family
+#define NW4HBMAlign2_FileLine(expr_, file_, line_)   NW4HBMAssertMessage_FileLine(  file_ ,   line_ , !((u32)expr_ & 0x01), "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 2 bytes boundary.", expr_)
+#define NW4HBMAlign2_File(expr_, file_)              NW4HBMAssertMessage_FileLine(  file_ , __LINE__, !((u32)expr_ & 0x01), "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 2 bytes boundary.", expr_)
+#define NW4HBMAlign2_Line(expr_, line_)              NW4HBMAssertMessage_FileLine(__FILE__,   line_ , !((u32)expr_ & 0x01), "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 2 bytes boundary.", expr_)
+#define NW4HBMAlign2(expr_)                          NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, !((u32)expr_ & 0x01), "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 2 bytes boundary.", expr_)
+
+// NW4HBMAlign32 family
+#define NW4HBMAlign32_FileLine(file_, line_, expr_)   NW4HBMAssertMessage_FileLine(  file_ ,   line_ , !((u32)expr_ & 0x1F), "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 32 bytes boundary.", expr_)
+#define NW4HBMAlign32_File(expr_, file_)              NW4HBMAssertMessage_FileLine(  file_ , __LINE__, !((u32)expr_ & 0x1F), "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 32 bytes boundary.", expr_)
+#define NW4HBMAlign32_Line(expr_, line_)              NW4HBMAssertMessage_FileLine(__FILE__,   line_ , !((u32)expr_ & 0x1F), "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 32 bytes boundary.", expr_)
+#define NW4HBMAlign32(expr_)                          NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, !((u32)expr_ & 0x1F), "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 32 bytes boundary.", expr_)
+
 /* Extended asserts */
 
 // PointerNonnull
 #define NW4HBMAssertPointerNonnull_FileLine(file_, line_, ptr_)       NW4HBMAssertMessage_FileLine(  file_ ,   line_ , (ptr_) != 0, "NW4HBM:Pointer must not be NULL (" #ptr_ ")")
-#define NW4HBMAssertPointerNonnull_File(file_, ptr_)                  NW4HBMAssertMessage_FileLine(  file_ , __LINE__, (ptr_) != 0, "NW4HBM:Pointer must not be NULL (" #ptr_ ")")
-#define NW4HBMAssertPointerNonnull_Line(line_, ptr_)                  NW4HBMAssertMessage_FileLine(__FILE__,   line_ , (ptr_) != 0, "NW4HBM:Pointer must not be NULL (" #ptr_ ")")
+#define NW4HBMAssertPointerNonnull_File(ptr_, file_)                  NW4HBMAssertMessage_FileLine(  file_ , __LINE__, (ptr_) != 0, "NW4HBM:Pointer must not be NULL (" #ptr_ ")")
+#define NW4HBMAssertPointerNonnull_Line(ptr_, line_)                  NW4HBMAssertMessage_FileLine(__FILE__,   line_ , (ptr_) != 0, "NW4HBM:Pointer must not be NULL (" #ptr_ ")")
 #define NW4HBMAssertPointerNonnull(ptr_)                              NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, (ptr_) != 0, "NW4HBM:Pointer must not be NULL (" #ptr_ ")")
 
-#define NW4HBMAssertHeaderPointerNonnull_FileLine(file_, line_, ptr_) NW4HBMAssertMessage_FileLine(  file_ ,   line_ , (ptr_) != 0,      "Pointer must not be NULL (" #ptr_ ")")
-#define NW4HBMAssertHeaderPointerNonnull_File(file_, ptr_)            NW4HBMAssertMessage_FileLine(  file_ , __LINE__, (ptr_) != 0,      "Pointer must not be NULL (" #ptr_ ")")
-#define NW4HBMAssertHeaderPointerNonnull_Line(line_, ptr_)            NW4HBMAssertMessage_FileLine(__FILE__,   line_ , (ptr_) != 0,      "Pointer must not be NULL (" #ptr_ ")")
-#define NW4HBMAssertHeaderPointerNonnull(ptr_)                        NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, (ptr_) != 0,      "Pointer must not be NULL (" #ptr_ ")")
+#define NW4HBMAssertHeaderPointerNonnull_FileLine(file_, line_, ptr_) NW4HBMAssertMessage_FileLine(  file_ ,   line_ , (ptr_) != 0, "Pointer must not be NULL (" #ptr_ ")")
+#define NW4HBMAssertHeaderPointerNonnull_File(file_, ptr_)            NW4HBMAssertMessage_FileLine(  file_ , __LINE__, (ptr_) != 0, "Pointer must not be NULL (" #ptr_ ")")
+#define NW4HBMAssertHeaderPointerNonnull_Line(line_, ptr_)            NW4HBMAssertMessage_FileLine(__FILE__,   line_ , (ptr_) != 0, "Pointer must not be NULL (" #ptr_ ")")
+#define NW4HBMAssertHeaderPointerNonnull(ptr_)                        NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, (ptr_) != 0, "Pointer must not be NULL (" #ptr_ ")")
 
 #define POINTER_VALID_TEST(ptr_)                            \
-       (((unsigned long)ptr_ & 0xff000000) == 0x80000000    \
-     || ((unsigned long)ptr_ & 0xff800000) == 0x81000000    \
-     || ((unsigned long)ptr_ & 0xf8000000) == 0x90000000    \
-     || ((unsigned long)ptr_ & 0xff000000) == 0xc0000000    \
-     || ((unsigned long)ptr_ & 0xff800000) == 0xc1000000    \
-     || ((unsigned long)ptr_ & 0xf8000000) == 0xd0000000    \
-     || ((unsigned long)ptr_ & 0xffffc000) == 0xe0000000)
+       (((unsigned long)ptr_ & 0xFF000000) == 0x80000000    \
+     || ((unsigned long)ptr_ & 0xFF800000) == 0x81000000    \
+     || ((unsigned long)ptr_ & 0xF8000000) == 0x90000000    \
+     || ((unsigned long)ptr_ & 0xFF000000) == 0xC0000000    \
+     || ((unsigned long)ptr_ & 0xFF800000) == 0xC1000000    \
+     || ((unsigned long)ptr_ & 0xF8000000) == 0xD0000000    \
+     || ((unsigned long)ptr_ & 0xFFFFC000) == 0xE0000000)
 
 // PointerValid
-#define NW4HBMAssertPointerValid_FileLine(file_, line_, ptr_) NW4HBMAssertMessage_FileLine(  file_ ,   line_ , POINTER_VALID_TEST(ptr_), "NW4HBM:Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
-#define NW4HBMAssertPointerValid_File(file_, ptr_)            NW4HBMAssertMessage_FileLine(  file_ , __LINE__, POINTER_VALID_TEST(ptr_), "NW4HBM:Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
-#define NW4HBMAssertPointerValid_Line(line_, ptr_)            NW4HBMAssertMessage_FileLine(__FILE__,   line_ , POINTER_VALID_TEST(ptr_), "NW4HBM:Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
+#define NW4HBMAssertPointerValid_FileLine(ptr_, file_, line_) NW4HBMAssertMessage_FileLine(  file_ ,   line_ , POINTER_VALID_TEST(ptr_), "NW4HBM:Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
+#define NW4HBMAssertPointerValid_File(ptr_, file_)            NW4HBMAssertMessage_FileLine(  file_ , __LINE__, POINTER_VALID_TEST(ptr_), "NW4HBM:Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
+#define NW4HBMAssertPointerValid_Line(ptr_, line_)            NW4HBMAssertMessage_FileLine(__FILE__,   line_ , POINTER_VALID_TEST(ptr_), "NW4HBM:Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
 #define NW4HBMAssertPointerValid(ptr_)                        NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, POINTER_VALID_TEST(ptr_), "NW4HBM:Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
 
-#define NW4HBMAssertHeaderPointerValid_FileLine(file_, line_, ptr_)   NW4HBMAssertMessage_FileLine(  file_ ,   line_ , POINTER_VALID_TEST(ptr_),      "Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
-#define NW4HBMAssertHeaderPointerValid_File(file_, ptr_)              NW4HBMAssertMessage_FileLine(  file_ , __LINE__, POINTER_VALID_TEST(ptr_),      "Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
-#define NW4HBMAssertHeaderPointerValid_Line(line_, ptr_)              NW4HBMAssertMessage_FileLine(__FILE__,   line_ , POINTER_VALID_TEST(ptr_),      "Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
-#define NW4HBMAssertHeaderPointerValid(ptr_)                          NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, POINTER_VALID_TEST(ptr_),      "Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
+#define NW4HBMAssertHeaderPointerValid_FileLine(file_, line_, ptr_)   NW4HBMAssertMessage_FileLine(  file_ ,   line_ , POINTER_VALID_TEST(ptr_), "Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
+#define NW4HBMAssertHeaderPointerValid_File(file_, ptr_)              NW4HBMAssertMessage_FileLine(  file_ , __LINE__, POINTER_VALID_TEST(ptr_), "Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
+#define NW4HBMAssertHeaderPointerValid_Line(line_, ptr_)              NW4HBMAssertMessage_FileLine(__FILE__,   line_ , POINTER_VALID_TEST(ptr_), "Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
+#define NW4HBMAssertHeaderPointerValid(ptr_)                          NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, POINTER_VALID_TEST(ptr_), "Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
 
 // MinimumValue
 #define NW4HBMAssertMinimumValue_FileLine(file_, line_, var_, minValue_)  NW4HBMAssertMessage_FileLine(  file_ ,   line_ , minValue_ <= var_, "NW4HBM:" #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)minValue_)
@@ -121,10 +139,16 @@
 #define NW4HBMAssertMinimumValue_Line(line_, var_, minValue_)             NW4HBMAssertMessage_FileLine(__FILE__,   line_ , minValue_ <= var_, "NW4HBM:" #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)minValue_)
 #define NW4HBMAssertMinimumValue(var_, minValue_)                         NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, minValue_ <= var_, "NW4HBM:" #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)minValue_)
 
-#define NW4HBMAssertHeaderMinimumValue_FileLine(file_, line_, var_, minValue_)    NW4HBMAssertMessage_FileLine(  file_ ,   line_ , minValue_ <= var_,         #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)(minValue_))
-#define NW4HBMAssertHeaderMinimumValue_File(file_, var_, minValue_)               NW4HBMAssertMessage_FileLine(  file_ , __LINE__, minValue_ <= var_,         #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)(minValue_))
-#define NW4HBMAssertHeaderMinimumValue_Line(line_, var_, minValue_)               NW4HBMAssertMessage_FileLine(__FILE__,   line_ , minValue_ <= var_,         #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)(minValue_))
-#define NW4HBMAssertHeaderMinimumValue(var_, minValue_)                           NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, minValue_ <= var_,         #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)(minValue_))
+#define NW4HBMAssertHeaderMinimumValue_FileLine(file_, line_, var_, minValue_)    NW4HBMAssertMessage_FileLine(  file_ ,   line_ , minValue_ <= var_, #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)(minValue_))
+#define NW4HBMAssertHeaderMinimumValue_File(var_, minValue_, file_)               NW4HBMAssertMessage_FileLine(  file_ , __LINE__, minValue_ <= var_, #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)(minValue_))
+#define NW4HBMAssertHeaderMinimumValue_Line(var_, minValue_, line_)               NW4HBMAssertMessage_FileLine(__FILE__,   line_ , minValue_ <= var_, #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)(minValue_))
+#define NW4HBMAssertHeaderMinimumValue(var_, minValue_)                           NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, minValue_ <= var_, #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)(minValue_))
+
+// Range
+#define NW4HBMAssertHeaderRange_FileLine(file_, line_, var_, minValue_, maxValue_)    NW4HBMAssertMessage_FileLine(  file_ ,   line_ , var_ >= minValue_ && var_ <= maxValue_, #var_ " is out of bounds(%d)\n%d <= " #var_ "<= %d not satisfied.", (int)(var_), (int)(minValue_), (int)(maxValue_))
+#define NW4HBMAssertHeaderRange_File(var_, minValue_, maxValue_, file_)               NW4HBMAssertMessage_FileLine(  file_ , __LINE__, var_ >= minValue_ && var_ <= maxValue_, #var_ " is out of bounds(%d)\n%d <= " #var_ "<= %d not satisfied.", (int)(var_), (int)(minValue_), (int)(maxValue_))
+#define NW4HBMAssertHeaderRange_Line(var_, minValue_, maxValue_, line_)               NW4HBMAssertMessage_FileLine(__FILE__,   line_ , var_ >= minValue_ && var_ <= maxValue_, #var_ " is out of bounds(%d)\n%d <= " #var_ "<= %d not satisfied.", (int)(var_), (int)(minValue_), (int)(maxValue_))
+#define NW4HBMAssertHeaderRange(var_, minValue_, maxValue_)                           NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, var_ >= minValue_ && var_ <= maxValue_, #var_ " is out of bounds(%d)\n%d <= " #var_ "<= %d not satisfied.", (int)(var_), (int)(minValue_), (int)(maxValue_))
 
 /*******************************************************************************
  * Strings, for deadstripping

@@ -19,7 +19,7 @@ namespace nw4hbm {
 namespace ut {
 
 bool IsValidBinaryFile(const BinaryFileHeader* header, byte4_t signature, u16 version, u16 minBlocks) {
-    NW4HBM_ASSERT_PTR(header, 48);
+    NW4HBMAssertPointerValid_Line(header, 48);
 
     if (header->signature != signature) {
         s8 signature1 = (header->signature >> 24) & 0xFF;
@@ -63,7 +63,7 @@ bool IsValidBinaryFile(const BinaryFileHeader* header, byte4_t signature, u16 ve
 }
 
 // required to match .data
-void dummy(const BinaryFileHeader* fileHeader) { NW4HBM_ASSERT_PTR(fileHeader, 0); }
+void dummy(const BinaryFileHeader* fileHeader) { NW4HBMAssertPointerValid_Line(fileHeader, 0); }
 
 } // namespace ut
 } // namespace nw4hbm
