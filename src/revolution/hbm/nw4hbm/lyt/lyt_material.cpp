@@ -16,8 +16,8 @@
 #include "revolution/hbm/nw4hbm/math/math_arithmetic.hpp" // math::FAbs
 #include "revolution/hbm/nw4hbm/math/math_triangular.hpp"
 #include "revolution/hbm/nw4hbm/math/math_types.hpp"
-#include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
 #include "revolution/hbm/nw4hbm/ut/Color.hpp"
+#include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
 #include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
 
 #include "revolution/gx.h"
@@ -89,27 +89,27 @@ void CalcTextureMtx(math::MTX34* pMtx, const TexSRT& texSRT) {
     f32 sinR = math::SinDeg(texSRT.rotate);
 
     // clang-format off
-	f32 a0 = cosR * texSRT.scale.x, a1 = -sinR * texSRT.scale.y;
-	pMtx->mtx[0][0] = a0;
-	pMtx->mtx[0][1] = a1;
-	pMtx->mtx[0][2] = 0.0f;
-	pMtx->mtx[0][3] = texSRT.translate.x +  center.x
+    f32 a0 = cosR * texSRT.scale.x, a1 = -sinR * texSRT.scale.y;
+    pMtx->mtx[0][0] = a0;
+    pMtx->mtx[0][1] = a1;
+    pMtx->mtx[0][2] = 0.0f;
+    pMtx->mtx[0][3] = texSRT.translate.x +  center.x
 	                                + a0 * -center.x
 	                                + a1 * -center.y;
 
-	a0 = sinR * texSRT.scale.x;
-	a1 = cosR * texSRT.scale.y;
-	pMtx->mtx[1][0] = a0;
-	pMtx->mtx[1][1] = a1;
-	pMtx->mtx[1][2] = 0.0f;
-	pMtx->mtx[1][3] = texSRT.translate.y +  center.y
+    a0 = sinR * texSRT.scale.x;
+    a1 = cosR * texSRT.scale.y;
+    pMtx->mtx[1][0] = a0;
+    pMtx->mtx[1][1] = a1;
+    pMtx->mtx[1][2] = 0.0f;
+    pMtx->mtx[1][3] = texSRT.translate.y +  center.y
 	                                + a0 * -center.x
 	                                + a1 * -center.y;
 
-	pMtx->mtx[2][0] = 0.0f;
-	pMtx->mtx[2][1] = 0.0f;
-	pMtx->mtx[2][2] = 1.0f;
-	pMtx->mtx[2][3] = 0.0f;
+    pMtx->mtx[2][0] = 0.0f;
+    pMtx->mtx[2][1] = 0.0f;
+    pMtx->mtx[2][2] = 1.0f;
+    pMtx->mtx[2][3] = 0.0f;
     // clang-format on
 }
 
@@ -158,65 +158,65 @@ void SetIndTexMtx(GXIndTexMtxID id, const Mtx23 mtx) {
 	 * [SGLEA4]/GormitiDebug.elf:.debug_info::0x490fab
 	 * so I just kept the theme going
 	 */
-	f32 m00, m01, m02;
-	f32 m10, m11, m12;
+    f32 m00, m01, m02;
+    f32 m10, m11, m12;
 
-	f32 a00, a01, a02;
-	f32 a10, a11, a12;
+    f32 a00, a01, a02;
+    f32 a10, a11, a12;
 
-	s8 scaleExp = 0;
+    s8 scaleExp = 0;
 
-	m00 = mtx[0][0]; m01 = mtx[0][1]; m02 = mtx[0][2];
-	m10 = mtx[1][0]; m11 = mtx[1][1]; m12 = mtx[1][2];
+    m00 = mtx[0][0]; m01 = mtx[0][1]; m02 = mtx[0][2];
+    m10 = mtx[1][0]; m11 = mtx[1][1]; m12 = mtx[1][2];
 
-	a00 = math::FAbs(m00); a01 = math::FAbs(m01); a02 = math::FAbs(m02);
-	a10 = math::FAbs(m10); a11 = math::FAbs(m11); a12 = math::FAbs(m12);
+    a00 = math::FAbs(m00); a01 = math::FAbs(m01); a02 = math::FAbs(m02);
+    a10 = math::FAbs(m10); a11 = math::FAbs(m11); a12 = math::FAbs(m12);
 
-	if (a00 >= 1.0f || a01 >= 1.0f || a02 >= 1.0f
+    if (a00 >= 1.0f || a01 >= 1.0f || a02 >= 1.0f
 	 || a10 >= 1.0f || a11 >= 1.0f || a12 >= 1.0f)
 	{
-		do
+	    do
 		{
 			// Why is this different
-			if (scaleExp >= 46)
-				break;
+		    if (scaleExp >= 46)
+			    break;
 
-			scaleExp++;
+		    scaleExp++;
 
-			m00 /= 2.0f; m01 /= 2.0f; m02 /= 2.0f;
-			m10 /= 2.0f; m11 /= 2.0f; m12 /= 2.0f;
+		    m00 /= 2.0f; m01 /= 2.0f; m02 /= 2.0f;
+		    m10 /= 2.0f; m11 /= 2.0f; m12 /= 2.0f;
 
-			a00 /= 2.0f; a01 /= 2.0f; a02 /= 2.0f;
-			a10 /= 2.0f; a11 /= 2.0f; a12 /= 2.0f;
+		    a00 /= 2.0f; a01 /= 2.0f; a02 /= 2.0f;
+		    a10 /= 2.0f; a11 /= 2.0f; a12 /= 2.0f;
 
 		}
-		while (a00 >= 1.0f || a01 >= 1.0f || a02 >= 1.0f
+	    while (a00 >= 1.0f || a01 >= 1.0f || a02 >= 1.0f
 		    || a10 >= 1.0f || a11 >= 1.0f || a12 >= 1.0f);
 	}
-	else if (a00 < 0.5f && a01 < 0.5f && a02 < 0.5f
+    else if (a00 < 0.5f && a01 < 0.5f && a02 < 0.5f
 	      && a10 < 0.5f && a11 < 0.5f && a12 < 0.5f)
 	{
-		do
+	    do
 		{
-			scaleExp--;
+		    scaleExp--;
 
-			m00 *= 2.0f; m01 *= 2.0f; m02 *= 2.0f;
-			m10 *= 2.0f; m11 *= 2.0f; m12 *= 2.0f;
+		    m00 *= 2.0f; m01 *= 2.0f; m02 *= 2.0f;
+		    m10 *= 2.0f; m11 *= 2.0f; m12 *= 2.0f;
 
-			a00 *= 2.0f; a01 *= 2.0f; a02 *= 2.0f;
-			a10 *= 2.0f; a11 *= 2.0f; a12 *= 2.0f;
+		    a00 *= 2.0f; a01 *= 2.0f; a02 *= 2.0f;
+		    a10 *= 2.0f; a11 *= 2.0f; a12 *= 2.0f;
 		}
-		while (a00 < 0.5f && a01 < 0.5f && a02 < 0.5f
+	    while (a00 < 0.5f && a01 < 0.5f && a02 < 0.5f
 		    && a10 < 0.5f && a11 < 0.5f && a12 < 0.5f && scaleExp > -17);
 	}
 
-	Mtx23 outMtx =
+    Mtx23 outMtx =
 	{
 		{ m00, m01, m02 },
 		{ m10, m11, m12 }
 	};
 
-	GXSetIndTexMtx(id, outMtx, scaleExp);
+    GXSetIndTexMtx(id, outMtx, scaleExp);
 
     // clang-format on
 }
@@ -766,28 +766,28 @@ void Material::SetColorElement(u32 colorType, s16 value) {
 
 bool Material::SetupGX(bool bModVtxCol, u8 alpha) {
     // clang-format off
-	static GXTevKColorSel kColSels[8] =
+    static GXTevKColorSel kColSels[8] =
 	{
-		GX_TEV_KCSEL_K3_A,
-		GX_TEV_KCSEL_K3_B,
-		GX_TEV_KCSEL_K3_G,
-		GX_TEV_KCSEL_K3_R,
-		GX_TEV_KCSEL_K2_A,
-		GX_TEV_KCSEL_K2_B,
-		GX_TEV_KCSEL_K2_G,
-		GX_TEV_KCSEL_K2_R
+	    GX_TEV_KCSEL_K3_A,
+	    GX_TEV_KCSEL_K3_B,
+	    GX_TEV_KCSEL_K3_G,
+	    GX_TEV_KCSEL_K3_R,
+	    GX_TEV_KCSEL_K2_A,
+	    GX_TEV_KCSEL_K2_B,
+	    GX_TEV_KCSEL_K2_G,
+	    GX_TEV_KCSEL_K2_R
 	};
 
-	static GXTevKAlphaSel kAlpSels[8] =
+    static GXTevKAlphaSel kAlpSels[8] =
 	{
-		GX_TEV_KASEL_K3_A,
-		GX_TEV_KASEL_K3_B,
-		GX_TEV_KASEL_K3_G,
-		GX_TEV_KASEL_K3_R,
-		GX_TEV_KASEL_K2_A,
-		GX_TEV_KASEL_K2_B,
-		GX_TEV_KASEL_K2_G,
-		GX_TEV_KASEL_K2_R
+	    GX_TEV_KASEL_K3_A,
+	    GX_TEV_KASEL_K3_B,
+	    GX_TEV_KASEL_K3_G,
+	    GX_TEV_KASEL_K3_R,
+	    GX_TEV_KASEL_K2_A,
+	    GX_TEV_KASEL_K2_B,
+	    GX_TEV_KASEL_K2_G,
+	    GX_TEV_KASEL_K2_R
 	};
     // clang-format on
 

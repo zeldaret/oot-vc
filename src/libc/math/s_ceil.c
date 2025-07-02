@@ -15,9 +15,9 @@
  * ceil(x)
  * Return x rounded toward -inf to integral value
  * Method:
- *	Bit twiddling.
+ *    Bit twiddling.
  * Exception:
- *	Inexact flag raised if x not equal to ceil(x).
+ *    Inexact flag raised if x not equal to ceil(x).
  */
 
 #include "math.h"

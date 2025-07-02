@@ -69,41 +69,41 @@ static void SimpleSyncCallback(s32 result, s32 num);
 namespace homebutton {
 #if 0 /* data pooling */
 	// .rodata
-	static const AnmControllerTable scAnmTable[12];
-	static const AnmControllerTable scGroupAnmTable[74];
+    static const AnmControllerTable scAnmTable[12];
+    static const AnmControllerTable scGroupAnmTable[74];
 
-	const int HomeButton::scReConnectTime = 3600;
-	const int HomeButton::scReConnectTime2 = 3570;
-	const int HomeButton::scPadDrawWaitTime = 5;
-	const int HomeButton::scGetPadInfoTime = 100;
-	const int HomeButton::scForcusSEWaitTime = 2;
-	const f32 HomeButton::scOnPaneVibTime = 3.0f;
-	const f32 HomeButton::scOnPaneVibWaitTime = 9.0f;
-	const int HomeButton::scWaitStopMotorTime = 30;
-	const int HomeButton::scWaitDisConnectTime = 180;
+    const int HomeButton::scReConnectTime = 3600;
+    const int HomeButton::scReConnectTime2 = 3570;
+    const int HomeButton::scPadDrawWaitTime = 5;
+    const int HomeButton::scGetPadInfoTime = 100;
+    const int HomeButton::scForcusSEWaitTime = 2;
+    const f32 HomeButton::scOnPaneVibTime = 3.0f;
+    const f32 HomeButton::scOnPaneVibWaitTime = 9.0f;
+    const int HomeButton::scWaitStopMotorTime = 30;
+    const int HomeButton::scWaitDisConnectTime = 180;
 
 	// .data
-	const char *HomeButton::scCursorLytName[WPAD_MAX_CONTROLLERS];
-	const char *HomeButton::scCursorPaneName;
-	const char *HomeButton::scCursorRotPaneName;
-	const char *HomeButton::scCursorSRotPaneName;
-	const char *HomeButton::scBtnName[4];
-	const char *HomeButton::scTxtName[4];
-	const char *HomeButton::scGrName[8];
-	const char *HomeButton::scAnimName[3];
-	const char *HomeButton::scPairGroupAnimName[15];
-	const char *HomeButton::scPairGroupName[15];
-	const char *HomeButton::scGroupAnimName[22];
-	const char *HomeButton::scGroupName[35];
-	const char *HomeButton::scFuncPaneName[5];
-	const char *HomeButton::scFuncTouchPaneName[10];
-	const char *HomeButton::scFuncTextPaneName[3];
-	const char *HomeButton::scBatteryPaneName[WPAD_MAX_CONTROLLERS][4];
+    const char *HomeButton::scCursorLytName[WPAD_MAX_CONTROLLERS];
+    const char *HomeButton::scCursorPaneName;
+    const char *HomeButton::scCursorRotPaneName;
+    const char *HomeButton::scCursorSRotPaneName;
+    const char *HomeButton::scBtnName[4];
+    const char *HomeButton::scTxtName[4];
+    const char *HomeButton::scGrName[8];
+    const char *HomeButton::scAnimName[3];
+    const char *HomeButton::scPairGroupAnimName[15];
+    const char *HomeButton::scPairGroupName[15];
+    const char *HomeButton::scGroupAnimName[22];
+    const char *HomeButton::scGroupName[35];
+    const char *HomeButton::scFuncPaneName[5];
+    const char *HomeButton::scFuncTouchPaneName[10];
+    const char *HomeButton::scFuncTextPaneName[3];
+    const char *HomeButton::scBatteryPaneName[WPAD_MAX_CONTROLLERS][4];
 
 #if HBM_APP_TYPE == HBM_APP_TYPE_NAND
-	const char *HomeButton::scBtnWareName[2];
-	const char *HomeButton::scButtonBarMenuName[7];
-	const char *HomeButton::scButtonBarMenuGroupName[7];
+    const char *HomeButton::scBtnWareName[2];
+    const char *HomeButton::scButtonBarMenuName[7];
+    const char *HomeButton::scButtonBarMenuGroupName[7];
 #endif // HBM_APP_TYPE == HBM_APP_TYPE_NAND
 #endif // 0
 
@@ -251,7 +251,7 @@ const char *HomeButton::scBtnName[4] =
 	"B_btnL_00",
 	"B_btnL_01",
 	"B_btnL_10",
-	nullptr
+    nullptr
 };
 
 const char *HomeButton::scTxtName[4] =
@@ -259,7 +259,7 @@ const char *HomeButton::scTxtName[4] =
 	"T_btnL_00",
 	"T_btnL_01",
 	"T_btnL_10",
-	nullptr
+    nullptr
 };
 
 const char *HomeButton::scGrName[8] =
@@ -551,7 +551,7 @@ void HomeButton::BlackFader::draw() {
     initgx();
 
     // clang-format off
-	GXColor clr = flag ? (GXColor){red_, green_, blue_, alpha}
+    GXColor clr = flag ? (GXColor){red_, green_, blue_, alpha}
 	                   : (GXColor){   0,      0,     0, alpha};
     // clang-format on
 

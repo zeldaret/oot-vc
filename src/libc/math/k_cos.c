@@ -18,12 +18,12 @@
  * Input y is the tail of x.
  *
  * Algorithm
- *	1. Since cos(-x) = cos(x), we need only to consider positive x.
- *	2. if x < 2^-27 (hx<0x3e400000 0), return 1 with inexact if x!=0.
- *	3. cos(x) is approximated by a polynomial of degree 14 on
+ *    1. Since cos(-x) = cos(x), we need only to consider positive x.
+ *    2. if x < 2^-27 (hx<0x3e400000 0), return 1 with inexact if x!=0.
+ *    3. cos(x) is approximated by a polynomial of degree 14 on
  *	   [0,pi/4]
  *		  	                 4            14
- *	   	cos(x) ~ 1 - x*x/2 + C1*x + ... + C6*x
+ *	       cos(x) ~ 1 - x*x/2 + C1*x + ... + C6*x
  *	   where the remez error is
  *
  * 	|              2     4     6     8     10    12     14 |     -58
@@ -31,16 +31,16 @@
  * 	|    					               |
  *
  * 	               4     6     8     10    12     14
- *	4. let r = C1*x +C2*x +C3*x +C4*x +C5*x  +C6*x  , then
+ *    4. let r = C1*x +C2*x +C3*x +C4*x +C5*x  +C6*x  , then
  *	       cos(x) = 1 - x*x/2 + r
  *	   since cos(x+y) ~ cos(x) - sin(x)*y
  *			  ~ cos(x) - x*y,
  *	   a correction term is necessary in cos(x) and hence
- *		cos(x+y) = 1 - (x*x/2 - (r - x*y))
+ *	    cos(x+y) = 1 - (x*x/2 - (r - x*y))
  *	   For better accuracy when x > 0.3, let qx = |x|/4 with
  *	   the last 32 bits mask off, and if x > 0.78125, let qx = 0.28125.
  *	   Then
- *		cos(x+y) = (1-qx) - ((x*x/2-qx) - (r-x*y)).
+ *	    cos(x+y) = (1-qx) - ((x*x/2-qx) - (r-x*y)).
  *	   Note that 1-qx and (x*x/2-qx) is EXACT here, and the
  *	   magnitude of the latter is at least a quarter of x*x/2,
  *	   thus, reducing the rounding error in the subtraction.

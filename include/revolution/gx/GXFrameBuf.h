@@ -1,9 +1,9 @@
 #ifndef _RVL_SDK_GX_FRAMEBUF_H
 #define _RVL_SDK_GX_FRAMEBUF_H
 
+#include "revolution/gx/GXTypes.h"
 #include "revolution/types.h"
 #include "revolution/vi/vitypes.h"
-#include "revolution/gx/GXTypes.h"
 
 #ifdef __cplusplus
 extern "C" {

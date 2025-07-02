@@ -5,9 +5,9 @@
 
 namespace std
 {
-	extern "C"
+    extern "C"
 	{
-		extern std::size_t wcslen(const wchar_t *s) __attribute__((nothrow));
+	    extern std::size_t wcslen(const wchar_t *s) __attribute__((nothrow));
 	} // extern "C"
 } // namespace std
 

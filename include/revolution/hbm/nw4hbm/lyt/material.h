@@ -127,12 +127,12 @@ class TevSwapMode {
 
     // members
   private:
-    /*	struct
+    /*    struct
             {
-                    GXTevColorChan	a	: 2;
-                    GXTevColorChan	b	: 2;
-                    GXTevColorChan	g	: 2;
-                    GXTevColorChan	r	: 2;
+                    GXTevColorChan    a	: 2;
+                    GXTevColorChan    b	: 2;
+                    GXTevColorChan    g	: 2;
+                    GXTevColorChan    r	: 2;
             };
     */
     u8 swap; // offset 0x00, size 0x01
@@ -170,33 +170,33 @@ class TevStageInOp {
 
     // members
   private:
-    /*	struct
+    /*    struct
             {
-                    GXTevColorArg	b	: 4; // may also double as GXTevAlphaArg
-                    GXTevColorArg	a	: 4; // may also double as GXTevAlphaArg
+                    GXTevColorArg    b	: 4; // may also double as GXTevAlphaArg
+                    GXTevColorArg    a	: 4; // may also double as GXTevAlphaArg
             };
     */
     u8 ab; // offset 0x00, size 0x01
-    /*	struct
+    /*    struct
             {
-                    GXTevColorArg	d	: 4; // may also double as GXTevAlphaArg
-                    GXTevColorArg	c	: 4; // may also double as GXTevAlphaArg
+                    GXTevColorArg    d	: 4; // may also double as GXTevAlphaArg
+                    GXTevColorArg    c	: 4; // may also double as GXTevAlphaArg
             };
     */
     u8 cd; // offset 0x01, size 0x01
-    /*	struct
+    /*    struct
             {
-                    GXTevScale	scale	: 2;
-                    GXTevBias	bias	: 2;
-                    GXTevOp		op		: 4;
+                    GXTevScale    scale	: 2;
+                    GXTevBias    bias	: 2;
+                    GXTevOp	    op		: 4;
             };
     */
     u8 op; // offset 0x02, size 0x01
-    /*	struct
+    /*    struct
             {
-                    GXTevKColorSel	kSel	: 5; // may also double as GXTevKAlphaSel
-                    GXTevRegID		outReg	: 2;
-                    u8				clamp	: 1;
+                    GXTevKColorSel    kSel	: 5; // may also double as GXTevKAlphaSel
+                    GXTevRegID	    outReg	: 2;
+                    u8			    clamp	: 1;
             };
     */
     u8 cl; // offset 0x03, size 0x01
@@ -221,48 +221,48 @@ class TevStage {
 
     // i do not care and you should not either
     // clang-format off
-		GXTexCoordID GetTexCoordGen() const { return static_cast<GXTexCoordID>(texCoordGen); }
-		GXChannelID GetColorChan() const { return static_cast<GXChannelID>(colChan); }
+	    GXTexCoordID GetTexCoordGen() const { return static_cast<GXTexCoordID>(texCoordGen); }
+	    GXChannelID GetColorChan() const { return static_cast<GXChannelID>(colChan); }
 
 		// shift left is for swapSel.texMapDisable -> GX_TEXMAP_DISABLE
-		GXTexMapID GetTexMap() const { return static_cast<GXTexMapID>((swapSel & 1) << 8 | texMap); }
+	    GXTexMapID GetTexMap() const { return static_cast<GXTexMapID>((swapSel & 1) << 8 | texMap); }
 
-		GXTevSwapSel GetTexSwapSel() const { return static_cast<GXTevSwapSel>((swapSel >> 3) & 0x03); }
-		GXTevSwapSel GetRasSwapSel() const { return static_cast<GXTevSwapSel>((swapSel >> 1) & 0x03); }
+	    GXTevSwapSel GetTexSwapSel() const { return static_cast<GXTevSwapSel>((swapSel >> 3) & 0x03); }
+	    GXTevSwapSel GetRasSwapSel() const { return static_cast<GXTevSwapSel>((swapSel >> 1) & 0x03); }
 
-		GXTevColorArg GetColorInA() const { return static_cast<GXTevColorArg>(colIn.GetA()); }
-		GXTevColorArg GetColorInB() const { return static_cast<GXTevColorArg>(colIn.GetB()); }
-		GXTevColorArg GetColorInC() const { return static_cast<GXTevColorArg>(colIn.GetC()); }
-		GXTevColorArg GetColorInD() const { return static_cast<GXTevColorArg>(colIn.GetD()); }
+	    GXTevColorArg GetColorInA() const { return static_cast<GXTevColorArg>(colIn.GetA()); }
+	    GXTevColorArg GetColorInB() const { return static_cast<GXTevColorArg>(colIn.GetB()); }
+	    GXTevColorArg GetColorInC() const { return static_cast<GXTevColorArg>(colIn.GetC()); }
+	    GXTevColorArg GetColorInD() const { return static_cast<GXTevColorArg>(colIn.GetD()); }
 
-		GXTevOp GetColorOp() const { return static_cast<GXTevOp>(colIn.GetOp()); }
-		GXTevBias GetColorBias() const { return static_cast<GXTevBias>(colIn.GetBias()); }
-		GXTevScale GetColorScale() const { return static_cast<GXTevScale>(colIn.GetScale()); }
-		bool IsColorClamp() const { return colIn.IsClamp(); }
-		GXTevRegID GetColorOutReg() const { return static_cast<GXTevRegID>(colIn.GetOutReg()); }
-		GXTevKColorSel GetKColorSel() const { return static_cast<GXTevKColorSel>(colIn.GetKSel()); }
+	    GXTevOp GetColorOp() const { return static_cast<GXTevOp>(colIn.GetOp()); }
+	    GXTevBias GetColorBias() const { return static_cast<GXTevBias>(colIn.GetBias()); }
+	    GXTevScale GetColorScale() const { return static_cast<GXTevScale>(colIn.GetScale()); }
+	    bool IsColorClamp() const { return colIn.IsClamp(); }
+	    GXTevRegID GetColorOutReg() const { return static_cast<GXTevRegID>(colIn.GetOutReg()); }
+	    GXTevKColorSel GetKColorSel() const { return static_cast<GXTevKColorSel>(colIn.GetKSel()); }
 
-		GXTevAlphaArg GetAlphaInA() const { return static_cast<GXTevAlphaArg>(alpIn.GetA()); }
-		GXTevAlphaArg GetAlphaInB() const { return static_cast<GXTevAlphaArg>(alpIn.GetB()); }
-		GXTevAlphaArg GetAlphaInC() const { return static_cast<GXTevAlphaArg>(alpIn.GetC()); }
-		GXTevAlphaArg GetAlphaInD() const { return static_cast<GXTevAlphaArg>(alpIn.GetD()); }
+	    GXTevAlphaArg GetAlphaInA() const { return static_cast<GXTevAlphaArg>(alpIn.GetA()); }
+	    GXTevAlphaArg GetAlphaInB() const { return static_cast<GXTevAlphaArg>(alpIn.GetB()); }
+	    GXTevAlphaArg GetAlphaInC() const { return static_cast<GXTevAlphaArg>(alpIn.GetC()); }
+	    GXTevAlphaArg GetAlphaInD() const { return static_cast<GXTevAlphaArg>(alpIn.GetD()); }
 
-		GXTevOp GetAlphaOp() const { return static_cast<GXTevOp>(alpIn.GetOp()); }
-		GXTevBias GetAlphaBias() const { return static_cast<GXTevBias>(alpIn.GetBias()); }
-		GXTevScale GetAlphaScale() const { return static_cast<GXTevScale>(alpIn.GetScale()); }
-		bool IsAlphaClamp() const { return alpIn.IsClamp(); }
-		GXTevRegID GetAlphaOutReg() const { return static_cast<GXTevRegID>(alpIn.GetOutReg()); }
-		GXTevKAlphaSel GetKAlphaSel() const { return static_cast<GXTevKAlphaSel>(alpIn.GetKSel()); }
+	    GXTevOp GetAlphaOp() const { return static_cast<GXTevOp>(alpIn.GetOp()); }
+	    GXTevBias GetAlphaBias() const { return static_cast<GXTevBias>(alpIn.GetBias()); }
+	    GXTevScale GetAlphaScale() const { return static_cast<GXTevScale>(alpIn.GetScale()); }
+	    bool IsAlphaClamp() const { return alpIn.IsClamp(); }
+	    GXTevRegID GetAlphaOutReg() const { return static_cast<GXTevRegID>(alpIn.GetOutReg()); }
+	    GXTevKAlphaSel GetKAlphaSel() const { return static_cast<GXTevKAlphaSel>(alpIn.GetKSel()); }
 
-		GXIndTexStageID GetIndStage() const { return static_cast<GXIndTexStageID>(indStage); }
-		GXIndTexMtxID GetIndMtxSel() const { return static_cast<GXIndTexMtxID>((indBiMt >> 3) & 0x0f); }
-		GXIndTexBiasSel GetIndBiasSel() const { return static_cast<GXIndTexBiasSel>(indBiMt & 0x07); }
-		GXIndTexWrap GetIndWrapS() const { return static_cast<GXIndTexWrap>(indWrap & 0x07); }
-		GXIndTexWrap GetIndWrapT() const { return static_cast<GXIndTexWrap>((indWrap >> 3) & 0x07); }
-		GXIndTexAlphaSel GetIndAlphaSel() const { return static_cast<GXIndTexAlphaSel>((indFoAdUtAl >> 4) & 0x03); }
-		bool IsIndUtcLod() const { return static_cast<bool>((indFoAdUtAl >> 3) & 0x01); }
-		bool IsIndAddPrev() const { return static_cast<bool>((indFoAdUtAl >> 2) & 0x01); }
-		GXIndTexFormat GetIndFormat() const { return static_cast<GXIndTexFormat>(indFoAdUtAl & 0x03); }
+	    GXIndTexStageID GetIndStage() const { return static_cast<GXIndTexStageID>(indStage); }
+	    GXIndTexMtxID GetIndMtxSel() const { return static_cast<GXIndTexMtxID>((indBiMt >> 3) & 0x0f); }
+	    GXIndTexBiasSel GetIndBiasSel() const { return static_cast<GXIndTexBiasSel>(indBiMt & 0x07); }
+	    GXIndTexWrap GetIndWrapS() const { return static_cast<GXIndTexWrap>(indWrap & 0x07); }
+	    GXIndTexWrap GetIndWrapT() const { return static_cast<GXIndTexWrap>((indWrap >> 3) & 0x07); }
+	    GXIndTexAlphaSel GetIndAlphaSel() const { return static_cast<GXIndTexAlphaSel>((indFoAdUtAl >> 4) & 0x03); }
+	    bool IsIndUtcLod() const { return static_cast<bool>((indFoAdUtAl >> 3) & 0x01); }
+	    bool IsIndAddPrev() const { return static_cast<bool>((indFoAdUtAl >> 2) & 0x01); }
+	    GXIndTexFormat GetIndFormat() const { return static_cast<GXIndTexFormat>(indFoAdUtAl & 0x03); }
     // clang-format on
 
     void SetOrder(GXTexCoordID aTexCoordGen, GXTexMapID aTexMap, GXChannelID aColChan, GXTevSwapSel rasSel,
@@ -299,41 +299,41 @@ class TevStage {
     u8 texCoordGen; // offset 0x00, size 0x01 // GXTexCoordID
     u8 colChan; // offset 0x01, size 0x01 // GXChannelID
     u8 texMap; // offset 0x02, size 0x01 // GXTexMap
-    /*	struct
+    /*    struct
             {
                     // 3 bits padding
-                    GXTevSwapSel	texSel			: 2;
-                    GXTevSwapSel	rasSel			: 2;
-                    u8				texMapDisable	: 1;
+                    GXTevSwapSel    texSel			: 2;
+                    GXTevSwapSel    rasSel			: 2;
+                    u8			    texMapDisable	: 1;
             };
     */
     u8 swapSel; // offset 0x03, size 0x01
     TevStageInOp colIn; // offset 0x04, size 0x04
     TevStageInOp alpIn; // offset 0x08, size 0x04
     u8 indStage; // offset 0x0c, size 0x01 // GXIndTexStageID
-    /*	struct
+    /*    struct
             {
                     // 1 bit padding
-                    GXIndTexWrap	mtxSel	: 4;
-                    GXIndTexWrap	biasSel	: 3;
+                    GXIndTexWrap    mtxSel	: 4;
+                    GXIndTexWrap    biasSel	: 3;
             };
     */
     u8 indBiMt; // offset 0x0d, size 0x01
-    /*	struct
+    /*    struct
             {
                     // 2 bits padding
-                    u8	wrapT	: 3;
-                    u8	wrapS	: 3;
+                    u8    wrapT	: 3;
+                    u8    wrapS	: 3;
             };
     */
     u8 indWrap; // offset 0x0e, size 0x01
-    /*	struct
+    /*    struct
             {
                     // 2 bits padding
-                    GXIndTexAlphaSel	alphaSel	: 2;
-                    u8					utcLod		: 1;
-                    u8					addPrev		: 1;
-                    GXIndTexFomat		format		: 2;
+                    GXIndTexAlphaSel    alphaSel	: 2;
+                    u8				    utcLod		: 1;
+                    u8				    addPrev		: 1;
+                    GXIndTexFomat	    format		: 2;
             };
             // 2009 Winner of the Goofiest Variable Name
     */
@@ -390,10 +390,10 @@ class AlphaCompare {
     // members
   private:
     u8 comp; // offset 0x00, size 0x01
-    /*	struct
+    /*    struct
             {
-                    GXCompare	comp1	: 4;
-                    GXCompare	comp0	: 4;
+                    GXCompare    comp1	: 4;
+                    GXCompare    comp0	: 4;
             };
     */
     u8 op; // offset 0x01, size 0x01 // GXAlphaOp
@@ -450,20 +450,20 @@ class MaterialResourceNum {
     // members
   private:
     // Why was this not just a detail::BitGXNums
-    /*	struct
+    /*    struct
             {
-                    u8		texMap		: 4;
-                    u8		texSRT		: 4;
-                    u8		texCoordGen	: 4;
-                    u8		tevSwap		: 1;
-                    u8		indSRT		: 2;
-                    u8		indStage	: 3;
-                    u8		tevStage	: 5;
-                    u8		alpComp		: 1;
-                    u8		blendMode	: 1;
-                    u8		chanCtrl	: 1;
+                    u8	    texMap		: 4;
+                    u8	    texSRT		: 4;
+                    u8	    texCoordGen	: 4;
+                    u8	    tevSwap		: 1;
+                    u8	    indSRT		: 2;
+                    u8	    indStage	: 3;
+                    u8	    tevStage	: 5;
+                    u8	    alpComp		: 1;
+                    u8	    blendMode	: 1;
+                    u8	    chanCtrl	: 1;
                     // 1 bit padding
-                    u8		matCol		: 1;
+                    u8	    matCol		: 1;
                     // 5 bits padding
             };
     */

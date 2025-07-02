@@ -78,14 +78,14 @@ namespace {
 
 TextureFlipInfo& GetTexutreFlipInfo(u8 textureFlip) {
     // clang-format off
-	static TextureFlipInfo flipInfos[] =			//	0	1	2	3
-	{									// in order of	LT	RT	LB	RB
-		{{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, {0, 1}},	//	0	1	2	3				no flip
-		{{{1, 0}, {0, 0}, {1, 1}, {0, 1}}, {0, 1}},	//	1	0	3	2				horizontal flip
-		{{{0, 1}, {1, 1}, {0, 0}, {1, 0}}, {0, 1}},	//	2	3	0	1				vertical flip
-		{{{0, 1}, {0, 0}, {1, 1}, {1, 0}}, {1, 0}},	//	2	0	3	1, index flip	cw  90 deg
-		{{{1, 1}, {0, 1}, {1, 0}, {0, 0}}, {0, 1}},	//	3	2	1	0				cw 180 deg
-		{{{1, 0}, {1, 1}, {0, 0}, {0, 1}}, {1, 0}}	//	1	3	0	2, index flip	cw 270 deg (ccw 90 deg)
+    static TextureFlipInfo flipInfos[] =			//    0    1    2    3
+	{									// in order of    LT    RT    LB    RB
+		{{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, {0, 1}},	//    0    1    2    3			    no flip
+		{{{1, 0}, {0, 0}, {1, 1}, {0, 1}}, {0, 1}},	//    1    0    3    2			    horizontal flip
+		{{{0, 1}, {1, 1}, {0, 0}, {1, 0}}, {0, 1}},	//    2    3    0    1			    vertical flip
+		{{{0, 1}, {0, 0}, {1, 1}, {1, 0}}, {1, 0}},	//    2    0    3    1, index flip    cw  90 deg
+		{{{1, 1}, {0, 1}, {1, 0}, {0, 0}}, {0, 1}},	//    3    2    1    0			    cw 180 deg
+		{{{1, 0}, {1, 1}, {0, 0}, {0, 1}}, {1, 0}}	//    1    3    0    2, index flip    cw 270 deg (ccw 90 deg)
 	};
     // clang-format on
 
@@ -462,17 +462,17 @@ void Window::DrawContent(const math::VEC2& basePt, const WindowFrameSize& frameS
     detail::SetVertexFormat(bUseVtxCol, mContent.texCoordAry.GetSize());
 
     // clang-format off
-	detail::DrawQuad(
-		math::VEC2(basePt.x + frameSize.l - mContentInflation.l,
+    detail::DrawQuad(
+	    math::VEC2(basePt.x + frameSize.l - mContentInflation.l,
 		           basePt.y + frameSize.t - mContentInflation.t),
-		Size(mSize.width    - frameSize.l + mContentInflation.l
+	    Size(mSize.width    - frameSize.l + mContentInflation.l
 		                    - frameSize.r + mContentInflation.r,
 		     mSize.height   - frameSize.t + mContentInflation.t
 		                    - frameSize.b + mContentInflation.b),
-		mContent.texCoordAry.GetSize(),
-		mContent.texCoordAry.GetArray(),
-		bUseVtxCol ? mContent.vtxColors : nullptr,
-		alpha
+	    mContent.texCoordAry.GetSize(),
+	    mContent.texCoordAry.GetArray(),
+	    bUseVtxCol ? mContent.vtxColors : nullptr,
+	    alpha
 	);
     // clang-format on
 }
@@ -481,32 +481,32 @@ void Window::DrawContent(const math::VEC2& basePt, const WindowFrameSize& frameS
 void Window::DrawFrame(const math::VEC2 &basePt, const Frame &frame,
                        const WindowFrameSize &frameSize, u8 alpha)
 {
-	bool bUseVtxCol = frame.pMaterial->SetupGX(
-		detail::IsModulateVertexColor(nullptr, alpha), alpha);
-	detail::SetVertexFormat(bUseVtxCol, 1);
+    bool bUseVtxCol = frame.pMaterial->SetupGX(
+	    detail::IsModulateVertexColor(nullptr, alpha), alpha);
+    detail::SetVertexFormat(bUseVtxCol, 1);
 
-	Size texSize = detail::GetTextureSize(frame.pMaterial, 0);
-	ut::Color vtxColors[4];
-	detail::TexCoords texCds[1]; // i imagine this is to get pointer decay semantics on the DrawQuad call
-	math::VEC2 polPt;
-	Size polSize;
+    Size texSize = detail::GetTextureSize(frame.pMaterial, 0);
+    ut::Color vtxColors[4];
+    detail::TexCoords texCds[1]; // i imagine this is to get pointer decay semantics on the DrawQuad call
+    math::VEC2 polPt;
+    Size polSize;
 
 #define DRAW_FRAME_1_QUAD_(corner_, frameIdx_)	\
-	do																	\
+    do																	\
 	{																	\
-		Get ## corner_ ## FrameSize(&polPt, &polSize, basePt, mSize,	\
+	    Get ## corner_ ## FrameSize(&polPt, &polSize, basePt, mSize,	\
 		                            frameSize);							\
-		Get ## corner_ ## TexCoord(*texCds, polSize, texSize,			\
+	    Get ## corner_ ## TexCoord(*texCds, polSize, texSize,			\
 		                           frameIdx_);							\
 																		\
-		detail::DrawQuad(polPt, polSize, 1, texCds,						\
+	    detail::DrawQuad(polPt, polSize, 1, texCds,						\
 		                 bUseVtxCol ? vtxColors : nullptr, alpha);		\
 	} while (0)
 
-	DRAW_FRAME_1_QUAD_(LT, 0);
-	DRAW_FRAME_1_QUAD_(RT, 1);
-	DRAW_FRAME_1_QUAD_(RB, 4);
-	DRAW_FRAME_1_QUAD_(LB, 2);
+    DRAW_FRAME_1_QUAD_(LT, 0);
+    DRAW_FRAME_1_QUAD_(RT, 1);
+    DRAW_FRAME_1_QUAD_(RB, 4);
+    DRAW_FRAME_1_QUAD_(LB, 2);
 
 #undef DRAW_FRAME_1_QUAD_
 }
@@ -514,35 +514,35 @@ void Window::DrawFrame(const math::VEC2 &basePt, const Frame &frame,
 void Window::DrawFrame4(const math::VEC2 &basePt, const Frame *frames,
                         const WindowFrameSize &frameSize, u8 alpha)
 {
-	ut::Color vtxColors[4];
-	detail::TexCoords texCds[1];
-	math::VEC2 polPt;
-	Size polSize;
-	bool bModVtxCol = detail::IsModulateVertexColor(nullptr, alpha);
+    ut::Color vtxColors[4];
+    detail::TexCoords texCds[1];
+    math::VEC2 polPt;
+    Size polSize;
+    bool bModVtxCol = detail::IsModulateVertexColor(nullptr, alpha);
 
 #define DRAW_FRAME_4_QUAD_(corner_, frameIdx_)	\
-	do																	\
+    do																	\
 	{																	\
-		bool bUseVtxCol =												\
-			frames[frameIdx_].pMaterial->SetupGX(bModVtxCol, alpha);	\
+	    bool bUseVtxCol =												\
+		    frames[frameIdx_].pMaterial->SetupGX(bModVtxCol, alpha);	\
 																		\
-		Get ## corner_ ## FrameSize(&polPt, &polSize, basePt, mSize,	\
+	    Get ## corner_ ## FrameSize(&polPt, &polSize, basePt, mSize,	\
 		                            frameSize);							\
-		Get ## corner_ ## TexCoord(										\
+	    Get ## corner_ ## TexCoord(										\
 			*texCds, polSize,											\
-			detail::GetTextureSize(frames[frameIdx_].pMaterial, 0),		\
-			frames[frameIdx_].textureFlip);								\
+		    detail::GetTextureSize(frames[frameIdx_].pMaterial, 0),		\
+		    frames[frameIdx_].textureFlip);								\
 																		\
-		detail::SetVertexFormat(bUseVtxCol, 1);							\
+	    detail::SetVertexFormat(bUseVtxCol, 1);							\
 																		\
-		detail::DrawQuad(polPt, polSize, 1, texCds,						\
+	    detail::DrawQuad(polPt, polSize, 1, texCds,						\
 		                 bUseVtxCol ? vtxColors : nullptr, alpha);		\
 	} while (0)
 
-	DRAW_FRAME_4_QUAD_(LT, 0);
-	DRAW_FRAME_4_QUAD_(RT, 1);
-	DRAW_FRAME_4_QUAD_(RB, 3);
-	DRAW_FRAME_4_QUAD_(LB, 2);
+    DRAW_FRAME_4_QUAD_(LT, 0);
+    DRAW_FRAME_4_QUAD_(RT, 1);
+    DRAW_FRAME_4_QUAD_(RB, 3);
+    DRAW_FRAME_4_QUAD_(LB, 2);
 
 #undef DRAW_FRAME_4_QUAD_
 }
@@ -550,60 +550,60 @@ void Window::DrawFrame4(const math::VEC2 &basePt, const Frame *frames,
 void Window::DrawFrame8(const math::VEC2 &basePt, const Frame *frames,
                         const WindowFrameSize &frameSize, u8 alpha)
 {
-	ut::Color vtxColors[4];
-	detail::TexCoords texCds[1];
-	Size polSize;
-	bool bModVtxCol = detail::IsModulateVertexColor(nullptr, alpha);
+    ut::Color vtxColors[4];
+    detail::TexCoords texCds[1];
+    Size polSize;
+    bool bModVtxCol = detail::IsModulateVertexColor(nullptr, alpha);
 
 #define DRAW_FRAME_8_QUAD_(corner_, frameIdx_, polSizeInit_, basePtInit_)	\
-	do																		\
+    do																		\
 	{																		\
-		bool bUseVtxCol =													\
-			frames[frameIdx_].pMaterial->SetupGX(bModVtxCol, alpha);		\
-		polSize = Size polSizeInit_;										\
+	    bool bUseVtxCol =													\
+		    frames[frameIdx_].pMaterial->SetupGX(bModVtxCol, alpha);		\
+	    polSize = Size polSizeInit_;										\
 																			\
-		Get ## corner_ ## TexCoord(											\
+	    Get ## corner_ ## TexCoord(											\
 			*texCds, polSize,												\
-			detail::GetTextureSize(frames[frameIdx_].pMaterial, 0),			\
-			frames[frameIdx_].textureFlip);									\
+		    detail::GetTextureSize(frames[frameIdx_].pMaterial, 0),			\
+		    frames[frameIdx_].textureFlip);									\
 																			\
-		detail::SetVertexFormat(bUseVtxCol, 1);								\
+	    detail::SetVertexFormat(bUseVtxCol, 1);								\
 																			\
-		detail::DrawQuad(VEC_CTOR_ basePtInit_, polSize, 1, texCds,			\
+	    detail::DrawQuad(VEC_CTOR_ basePtInit_, polSize, 1, texCds,			\
 		                 bUseVtxCol ? vtxColors : nullptr, alpha);			\
 	} while (0)
 
 #define VEC_CTOR_ // avoid copy construction specifically for this first call
-	DRAW_FRAME_8_QUAD_(LT, 0, (frameSize.l, frameSize.t), basePt);
+    DRAW_FRAME_8_QUAD_(LT, 0, (frameSize.l, frameSize.t), basePt);
 #undef VEC_CTOR_
 
 #define VEC_CTOR_ math::VEC2
 
-	DRAW_FRAME_8_QUAD_(LT, 6,
+    DRAW_FRAME_8_QUAD_(LT, 6,
 		(mSize.width - frameSize.l - frameSize.r, frameSize.t),
 		(basePt.x + frameSize.l, basePt.y)
 	);
-	DRAW_FRAME_8_QUAD_(RT, 1,
+    DRAW_FRAME_8_QUAD_(RT, 1,
 		(frameSize.r, frameSize.t),
 		(basePt.x + mSize.width - frameSize.r, basePt.y)
 	);
-	DRAW_FRAME_8_QUAD_(RT, 5,
+    DRAW_FRAME_8_QUAD_(RT, 5,
 		(frameSize.r, mSize.height - frameSize.t - frameSize.b),
 		(basePt.x + mSize.width - frameSize.r, basePt.y + frameSize.t)
 	);
-	DRAW_FRAME_8_QUAD_(RB, 3, (frameSize.r, frameSize.b),
+    DRAW_FRAME_8_QUAD_(RB, 3, (frameSize.r, frameSize.b),
 		(basePt.x + mSize.width - frameSize.r,
 		 basePt.y + mSize.height - frameSize.b)
 	);
-	DRAW_FRAME_8_QUAD_(RB, 7,
+    DRAW_FRAME_8_QUAD_(RB, 7,
 		(mSize.width - frameSize.l - frameSize.r, frameSize.b),
 		(basePt.x + frameSize.l, basePt.y + mSize.height - frameSize.b)
 	);
-	DRAW_FRAME_8_QUAD_(LB, 2,
+    DRAW_FRAME_8_QUAD_(LB, 2,
 		(frameSize.l, frameSize.b),
 		(basePt.x, basePt.y + mSize.height - frameSize.b)
 	);
-	DRAW_FRAME_8_QUAD_(LB, 4,
+    DRAW_FRAME_8_QUAD_(LB, 4,
 		(frameSize.l, mSize.height - frameSize.t - frameSize.b),
 		(basePt.x, basePt.y + frameSize.t)
 	);

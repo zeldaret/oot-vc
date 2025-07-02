@@ -13,8 +13,8 @@
 #include "revolution/hbm/nw4hbm/db/directPrint.hpp"
 
 #include "revolution/os/OSError.h" // OSReport
-#include "revolution/os/OSMutex.h"
 #include "revolution/os/OSInterrupt.h"
+#include "revolution/os/OSMutex.h"
 #include "revolution/os/OSThread.h" // OSGetCurrentThread
 
 #include "revolution/hbm/HBMAssert.hpp"
@@ -23,378 +23,341 @@
  * local function declarations
  */
 
-namespace nw4hbm { namespace db
-{
-	static inline u8 *GetTextPtr_(detail::ConsoleHead *console, u16 line,
-	                                  u16 xPos)
-	{
-		return console->textBuf + xPos + (console->width + 1) * line;
-	}
+namespace nw4hbm {
+namespace db {
+static inline u8* GetTextPtr_(detail::ConsoleHead* console, u16 line, u16 xPos) {
+    return console->textBuf + xPos + (console->width + 1) * line;
+}
 
-	static inline u32 CodeWidth_(u8 const *p)
-	{
-		return *p >= 0x81 ? sizeof(wchar_t) : sizeof(char);
-	}
+static inline u32 CodeWidth_(u8 const* p) { return *p >= 0x81 ? sizeof(wchar_t) : sizeof(char); }
 
-	static inline u32 GetTabSize_(detail::ConsoleHead *console)
-	{
-		s32 tab = (console->attr & /* REGISTER16_BITFIELD(12, 13) */ 1) >> 2;
-		// EXTRACT_BIT_FIELD does not generate srawi
+static inline u32 GetTabSize_(detail::ConsoleHead* console) {
+    s32 tab = (console->attr & /* REGISTER16_BITFIELD(12, 13) */ 1) >> 2;
+    // EXTRACT_BIT_FIELD does not generate srawi
 
-		return static_cast<u32>(2 << tab);
-	}
+    return static_cast<u32>(2 << tab);
+}
 
-	static inline u8 const *SearchEndOfLine_(u8 const *str)
-	{
-		while (*str != '\n' && *str != '\0')
-			str++;
+static inline u8 const* SearchEndOfLine_(u8 const* str) {
+    while (*str != '\n' && *str != '\0') {
+        str++;
+    }
 
-		return str;
-	}
+    return str;
+}
 
-	static inline u16 GetRingUsedLines_(detail::ConsoleHead *console)
-	{
-		NW4RAssertPointerNonnull_Line(108, console);
+static inline u16 GetRingUsedLines_(detail::ConsoleHead* console) {
+    NW4RAssertPointerNonnull_Line(108, console);
 
-		{ // 39ac92 wants lexical_block
-			s32 lines = console->printTop - console->ringTop;
+    { // 39ac92 wants lexical_block
+        s32 lines = console->printTop - console->ringTop;
 
-			if (lines < 0)
-				lines += console->height;
+        if (lines < 0) {
+            lines += console->height;
+        }
 
-			return static_cast<u16>(lines);
-		}
-	}
+        return static_cast<u16>(lines);
+    }
+}
 
-	static inline u16 GetActiveLines_(detail::ConsoleHead *console)
-	{
-		u16 lines = GetRingUsedLines_(console);
+static inline u16 GetActiveLines_(detail::ConsoleHead* console) {
+    u16 lines = GetRingUsedLines_(console);
 
-		if (console->printXPos)
-			lines++;
+    if (console->printXPos) {
+        lines++;
+    }
 
-		return lines;
-	}
+    return lines;
+}
 
-	static void TerminateLine_(detail::ConsoleHead *console);
-	static u8 *NextLine_(detail::ConsoleHead *console);
-	static u8 *PutTab_(detail::ConsoleHead *console, u8 *dstPtr);
-	static u32 GetTabSize_(detail::ConsoleHead *console);
-	static u32 PutChar_(detail::ConsoleHead *console, const u8 *str, u8 *dstPtr);
-	static u32 CodeWidth_(const u8 *p);
+static void TerminateLine_(detail::ConsoleHead* console);
+static u8* NextLine_(detail::ConsoleHead* console);
+static u8* PutTab_(detail::ConsoleHead* console, u8* dstPtr);
+static u32 GetTabSize_(detail::ConsoleHead* console);
+static u32 PutChar_(detail::ConsoleHead* console, const u8* str, u8* dstPtr);
+static u32 CodeWidth_(const u8* p);
 
-	static void UnlockMutex_(OSMutex *mutex);
-	static bool TryLockMutex_(OSMutex *mutex);
+static void UnlockMutex_(OSMutex* mutex);
+static bool TryLockMutex_(OSMutex* mutex);
 
-	static void DoDrawString_(detail::ConsoleHead *console, u32 printLine,
-	                          u8 const *str, ut::TextWriterBase<char> *writer);
-	static void DoDrawConsole_(detail::ConsoleHead *console,
-	                           ut::TextWriterBase<char> *writer);
+static void DoDrawString_(detail::ConsoleHead* console, u32 printLine, u8 const* str, ut::TextWriterBase<char>* writer);
+static void DoDrawConsole_(detail::ConsoleHead* console, ut::TextWriterBase<char>* writer);
 
-	static void PrintToBuffer_(detail::ConsoleHead *console, u8 const *str);
+static void PrintToBuffer_(detail::ConsoleHead* console, u8 const* str);
 
-	static void Console_PrintString_(ConsoleOutputType type,
-	                                 detail::ConsoleHead *console,
-	                                 u8 const *str);
-}} // namespace nw4hbm::db
+static void Console_PrintString_(ConsoleOutputType type, detail::ConsoleHead* console, u8 const* str);
+} // namespace db
+} // namespace nw4hbm
 
 /*******************************************************************************
  * variables
  */
 
-namespace nw4hbm { namespace db
-{
-	static OSMutex sMutex;
-}} // namespace nw4hbm::db
+namespace nw4hbm {
+namespace db {
+static OSMutex sMutex;
+}
+} // namespace nw4hbm
 
 /*******************************************************************************
  * functions
  */
 
-namespace nw4hbm { namespace db {
+namespace nw4hbm {
+namespace db {
 
-static void TerminateLine_(detail::ConsoleHead *console)
-{
-	*GetTextPtr_(console, console->printTop, console->printXPos) = '\0';
+static void TerminateLine_(detail::ConsoleHead* console) {
+    *GetTextPtr_(console, console->printTop, console->printXPos) = '\0';
 }
 
-static u8 *NextLine_(detail::ConsoleHead *console)
-{
-	*GetTextPtr_(console, console->printTop, console->printXPos) = '\0';
-	console->printXPos = 0;
-	console->printTop++;
+static u8* NextLine_(detail::ConsoleHead* console) {
+    *GetTextPtr_(console, console->printTop, console->printXPos) = '\0';
+    console->printXPos = 0;
+    console->printTop++;
 
-	if (console->printTop == console->height
-        && !(console->attr & /* FLAG_BIT(1) */ 1))
-		console->printTop = 0;
+    if (console->printTop == console->height && !(console->attr & /* FLAG_BIT(1) */ 1)) {
+        console->printTop = 0;
+    }
 
-	if (console->printTop == console->ringTop)
-	{
-		console->ringTopLineCnt++;
+    if (console->printTop == console->ringTop) {
+        console->ringTopLineCnt++;
 
-		if (++console->ringTop == console->height)
-			console->ringTop = 0;
-	}
+        if (++console->ringTop == console->height) {
+            console->ringTop = 0;
+        }
+    }
 
-	return GetTextPtr_(console, console->printTop, 0);
+    return GetTextPtr_(console, console->printTop, 0);
 }
 
-static u8 *PutTab_(detail::ConsoleHead *console, u8 *dstPtr)
-{
-	u32 tabWidth = GetTabSize_(console);
+static u8* PutTab_(detail::ConsoleHead* console, u8* dstPtr) {
+    u32 tabWidth = GetTabSize_(console);
 
-	do
-	{
-		*dstPtr++ = ' ';
-		console->printXPos++;
+    do {
+        *dstPtr++ = ' ';
+        console->printXPos++;
 
-		if (console->printXPos >= console->width)
-			break;
-	} while (console->printXPos & (tabWidth - 1));
+        if (console->printXPos >= console->width) {
+            break;
+        }
+    } while (console->printXPos & (tabWidth - 1));
 
-	return dstPtr;
+    return dstPtr;
 }
 
-static u32 PutChar_(detail::ConsoleHead *console, u8 const *str, u8 *dstPtr)
-{
-	u32 codeWidth = CodeWidth_(str);
-	u32 cnt;
+static u32 PutChar_(detail::ConsoleHead* console, u8 const* str, u8* dstPtr) {
+    u32 codeWidth = CodeWidth_(str);
+    u32 cnt;
 
-	ensure(console->printXPos + codeWidth <= console->width, 0);
+    ensure(console->printXPos + codeWidth <= console->width, 0);
 
-	console->printXPos += static_cast<u16>(codeWidth);
+    console->printXPos += static_cast<u16>(codeWidth);
 
-	for (cnt = codeWidth; cnt; cnt--)
-		*dstPtr++ = *str++;
+    for (cnt = codeWidth; cnt; cnt--) {
+        *dstPtr++ = *str++;
+    }
 
-	return codeWidth;
+    return codeWidth;
 }
 
 // dwarf line is 300?
-static void UnlockMutex_(OSMutex *mutex)
-{
-	OSUnlockMutex(mutex);
-}
+static void UnlockMutex_(OSMutex* mutex) { OSUnlockMutex(mutex); }
 
 // dwarf line is 273?
-static bool TryLockMutex_(OSMutex *mutex)
-{
-	OSLockMutex(mutex);
-	return true;
+static bool TryLockMutex_(OSMutex* mutex) {
+    OSLockMutex(mutex);
+    return true;
 }
 
-static void DoDrawString_(detail::ConsoleHead *console, u32 printLine,
-                          u8 const *str, ut::TextWriterBase<char> *writer)
-{
-	if (writer)
-	{
-		writer->Printf("%s\n", str);
-	}
-	else
-	{
-		s32 height = (s32)((u32)console->viewPosY + printLine * 10);
+static void DoDrawString_(detail::ConsoleHead* console, u32 printLine, u8 const* str,
+                          ut::TextWriterBase<char>* writer) {
+    if (writer) {
+        writer->Printf("%s\n", str);
+    } else {
+        s32 height = (s32)((u32)console->viewPosY + printLine * 10);
 
-		DirectPrint_DrawString(console->viewPosX, height, false, "%s\n", str);
-	}
+        DirectPrint_DrawString(console->viewPosX, height, false, "%s\n", str);
+    }
 }
 
-static void DoDrawConsole_(detail::ConsoleHead *console,
-                           ut::TextWriterBase<char> *writer)
-{
-	// was this meant to be an if statement?
-	TryLockMutex_(&sMutex);
-	{ // 39ab35 wants lexical_block
-		s32 viewOffset;
-		u16 line;
-		u16 printLines;
-		u16 topLine;
+static void DoDrawConsole_(detail::ConsoleHead* console, ut::TextWriterBase<char>* writer) {
+    // was this meant to be an if statement?
+    TryLockMutex_(&sMutex);
+    { // 39ab35 wants lexical_block
+        s32 viewOffset;
+        u16 line;
+        u16 printLines;
+        u16 topLine;
 
-		viewOffset = console->viewTopLine - console->ringTopLineCnt;
-		printLines = 0;
+        viewOffset = console->viewTopLine - console->ringTopLineCnt;
+        printLines = 0;
 
-		if (viewOffset < 0)
-			viewOffset = 0;
-		else if (viewOffset > GetActiveLines_(console))
-			goto end;
+        if (viewOffset < 0) {
+            viewOffset = 0;
+        } else if (viewOffset > GetActiveLines_(console)) {
+            goto end;
+        }
 
-		line = static_cast<u16>(console->ringTop + viewOffset);
+        line = static_cast<u16>(console->ringTop + viewOffset);
 
-		if (line >= console->height)
-			line -= console->height;
+        if (line >= console->height) {
+            line -= console->height;
+        }
 
-		topLine =
-			console->printTop + BOOLIFY_TERNARY_TYPE(u16, console->printXPos);
+        topLine = console->printTop + BOOLIFY_TERNARY_TYPE(u16, console->printXPos);
 
-		if (topLine == console->height)
-			topLine = 0;
+        if (topLine == console->height) {
+            topLine = 0;
+        }
 
-		while (line != topLine)
-		{
-			DoDrawString_(console, printLines, GetTextPtr_(console, line, 0),
-			              writer);
+        while (line != topLine) {
+            DoDrawString_(console, printLines, GetTextPtr_(console, line, 0), writer);
 
-			printLines++;
-			line++;
+            printLines++;
+            line++;
 
-			if (line == console->height)
-			{
-				if (console->attr & /* FLAG_BIT(1) */ 1)
-					goto end;
+            if (line == console->height) {
+                if (console->attr & /* FLAG_BIT(1) */ 1) {
+                    goto end;
+                }
 
-				line = 0;
-			}
+                line = 0;
+            }
 
-			if (printLines >= console->viewLines)
-				goto end;
-		}
-	}
+            if (printLines >= console->viewLines) {
+                goto end;
+            }
+        }
+    }
 
-	// maybe not, with this end label?
+    // maybe not, with this end label?
 end:
-	UnlockMutex_(&sMutex);
+    UnlockMutex_(&sMutex);
 }
 
-void Console_DrawDirect(detail::ConsoleHead *console)
-{
-	NW4RAssertPointerNonnull_Line(682, console);
+void Console_DrawDirect(detail::ConsoleHead* console) {
+    NW4RAssertPointerNonnull_Line(682, console);
 
-	if (DirectPrint_IsActive() && console->isVisible)
-	{
-		TryLockMutex_(&sMutex);
-		int width = console->width * 6 + 12,
-			height = console->viewLines * 10 + 4;
+    if (DirectPrint_IsActive() && console->isVisible) {
+        TryLockMutex_(&sMutex);
+        int width = console->width * 6 + 12, height = console->viewLines * 10 + 4;
 
-		DirectPrint_EraseXfb(console->viewPosX - 6, console->viewPosY - 3,
-		                     width, height);
-		DoDrawConsole_(console, nullptr);
-		DirectPrint_StoreCache();
-		UnlockMutex_(&sMutex);
-	}
+        DirectPrint_EraseXfb(console->viewPosX - 6, console->viewPosY - 3, width, height);
+        DoDrawConsole_(console, nullptr);
+        DirectPrint_StoreCache();
+        UnlockMutex_(&sMutex);
+    }
 }
 
-static void PrintToBuffer_(detail::ConsoleHead *console, u8 const *str)
-{
-	u8 *storePtr;
+static void PrintToBuffer_(detail::ConsoleHead* console, u8 const* str) {
+    u8* storePtr;
 
-	NW4RAssertPointerNonnull_Line(806, console);
-	NW4RAssertPointerNonnull_Line(807, str);
+    NW4RAssertPointerNonnull_Line(806, console);
+    NW4RAssertPointerNonnull_Line(807, str);
 
-	storePtr = GetTextPtr_(console, console->printTop, console->printXPos);
+    storePtr = GetTextPtr_(console, console->printTop, console->printXPos);
 
-	while (*str)
-	{
-		if (console->attr & 1 && console->printTop == console->height)
-			break;
+    while (*str) {
+        if (console->attr & 1 && console->printTop == console->height) {
+            break;
+        }
 
-		while (*str) // ? just use continue? am i missing something?
-		{
-			bool newLineFlag = false;
+        while (*str) // ? just use continue? am i missing something?
+        {
+            bool newLineFlag = false;
 
-			if (*str == '\n')
-			{
-				str++;
-				storePtr = NextLine_(console);
-				break;
-			}
+            if (*str == '\n') {
+                str++;
+                storePtr = NextLine_(console);
+                break;
+            }
 
-			if (*str == '\t')
-			{
-				str++;
-				storePtr = PutTab_(console, storePtr);
-			}
-			else
-			{
-				u32 bytes = PutChar_(console, str, storePtr);
+            if (*str == '\t') {
+                str++;
+                storePtr = PutTab_(console, storePtr);
+            } else {
+                u32 bytes = PutChar_(console, str, storePtr);
 
-				if (bytes)
-				{
-					str += bytes;
-					storePtr += bytes;
-				}
-				else
-					{ newLineFlag = true; }
-			}
+                if (bytes) {
+                    str += bytes;
+                    storePtr += bytes;
+                } else {
+                    newLineFlag = true;
+                }
+            }
 
-			if (console->printXPos >= console->width)
-				newLineFlag = true;
+            if (console->printXPos >= console->width) {
+                newLineFlag = true;
+            }
 
-			if (newLineFlag)
-			{
-				if (console->attr & 1)
-				{
-					str = SearchEndOfLine_(str);
-					break;
-				}
+            if (newLineFlag) {
+                if (console->attr & 1) {
+                    str = SearchEndOfLine_(str);
+                    break;
+                }
 
-				if (*str == '\n')
-					str++;
+                if (*str == '\n') {
+                    str++;
+                }
 
-				storePtr = NextLine_(console);
-				break;
-			}
-		}
-	}
+                storePtr = NextLine_(console);
+                break;
+            }
+        }
+    }
 }
 
-static void Console_PrintString_(ConsoleOutputType type,
-                                 detail::ConsoleHead *console, u8 const *str)
-{
-	NW4RAssertPointerNonnull_Line(909, console);
+static void Console_PrintString_(ConsoleOutputType type, detail::ConsoleHead* console, u8 const* str) {
+    NW4RAssertPointerNonnull_Line(909, console);
 
-	if (type & CONSOLE_OUTPUT_DISPLAY)
-		OSReport("%s", str);
+    if (type & CONSOLE_OUTPUT_DISPLAY) {
+        OSReport("%s", str);
+    }
 
-	if (type & CONSOLE_OUTPUT_TERMINAL)
-		PrintToBuffer_(console, str);
+    if (type & CONSOLE_OUTPUT_TERMINAL) {
+        PrintToBuffer_(console, str);
+    }
 }
 
-void Console_VFPrintf(ConsoleOutputType type,
-                      detail::ConsoleHead *console,
-                      char const *format,
-                      std::va_list vlist)
-{
+void Console_VFPrintf(ConsoleOutputType type, detail::ConsoleHead* console, char const* format, std::va_list vlist) {
 #if !defined(NDEBUG)
-	static int dummy; // needed to get the @0 at the end of sStrBuf
-	static u8 sStrBuf[1024];
+    static int dummy; // needed to get the @0 at the end of sStrBuf
+    static u8 sStrBuf[1024];
 
-	NW4RAssertPointerNonnull_Line(941, console);
+    NW4RAssertPointerNonnull_Line(941, console);
 
-	if (TryLockMutex_(&sMutex))
-	{
-		// Cool
-		std::vsnprintf(reinterpret_cast<char *>(sStrBuf), sizeof sStrBuf,
-		               format, vlist);
+    if (TryLockMutex_(&sMutex)) {
+        // Cool
+        std::vsnprintf(reinterpret_cast<char*>(sStrBuf), sizeof sStrBuf, format, vlist);
 
-		Console_PrintString_(type, console, sStrBuf);
+        Console_PrintString_(type, console, sStrBuf);
 
-		UnlockMutex_(&sMutex);
-	}
+        UnlockMutex_(&sMutex);
+    }
 #endif // !defined(NDEBUG)
 }
 
-void Console_Printf(detail::ConsoleHead *console,
-                    char const *format, ...)
-{
-	std::va_list vlist;
+void Console_Printf(detail::ConsoleHead* console, char const* format, ...) {
+    std::va_list vlist;
 
-	va_start(vlist, format);
+    va_start(vlist, format);
 #if NW4R_APP_TYPE == NW4R_APP_TYPE_DVD
-	Console_VFPrintf(CONSOLE_OUTPUT_ALL, console, format, vlist);
+    Console_VFPrintf(CONSOLE_OUTPUT_ALL, console, format, vlist);
 #endif // NW4R_APP_TYPE == NW4R_APP_TYPE_DVD
-	va_end(vlist);
+    va_end(vlist);
 }
 
-s32 Console_GetTotalLines(detail::ConsoleHead *console)
-{
-	s32 count;
+s32 Console_GetTotalLines(detail::ConsoleHead* console) {
+    s32 count;
 
-	NW4RAssertPointerNonnull_Line(1128, console);
+    NW4RAssertPointerNonnull_Line(1128, console);
 
-	TryLockMutex_(&sMutex);
-	count = GetActiveLines_(console) + console->ringTopLineCnt;
-	UnlockMutex_(&sMutex);
+    TryLockMutex_(&sMutex);
+    count = GetActiveLines_(console) + console->ringTopLineCnt;
+    UnlockMutex_(&sMutex);
 
-	return count;
+    return count;
 }
 
-}} // namespace nw4hbm::db
+} // namespace db
+} // namespace nw4hbm

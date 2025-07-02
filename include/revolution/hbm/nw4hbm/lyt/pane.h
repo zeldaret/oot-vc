@@ -9,8 +9,8 @@
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp"
 #include "revolution/hbm/nw4hbm/math/math_types.hpp"
-#include "revolution/hbm/nw4hbm/ut/LinkList.h"
 #include "revolution/hbm/nw4hbm/ut/Color.hpp"
+#include "revolution/hbm/nw4hbm/ut/LinkList.h"
 #include "revolution/types.h"
 
 /*******************************************************************************

@@ -114,69 +114,69 @@ ASM void PSMTXConcat(const register Mtx mA, const register Mtx mB, register Mtx 
 ASM void PSMTXInverse(const Mtx mA, Mtx mB){
 #ifdef __MWERKS__ // clang-format off
     nofralloc
-	psq_l f0, 0x0(r3), 1, 0
-	psq_l f1, 0x4(r3), 0, 0
-	psq_l f2, 0x10(r3), 1, 0
-	ps_merge10 f6, f1, f0
-	psq_l f3, 0x14(r3), 0, 0
-	psq_l f4, 0x20(r3), 1, 0
-	ps_merge10 f7, f3, f2
-	psq_l f5, 0x24(r3), 0, 0
-	ps_mul f11, f3, f6
-	ps_mul f13, f5, f7
-	ps_merge10 f8, f5, f4
-	ps_msub f11, f1, f7, f11
-	ps_mul f12, f1, f8
-	ps_msub f13, f3, f8, f13
-	ps_mul f10, f3, f4
-	ps_msub f12, f5, f6, f12
-	ps_mul f9, f0, f5
-	ps_mul f8, f1, f2
-	ps_sub f6, f6, f6
-	ps_msub f10, f2, f5, f10
-	ps_mul f7, f0, f13
-	ps_msub f9, f1, f4, f9
-	ps_madd f7, f2, f12, f7
-	ps_msub f8, f0, f3, f8
-	ps_madd f7, f4, f11, f7
-	ps_cmpo0 cr0, f7, f6
-	bne L_8009CCC4
-	li r3, 0x0
-	blr
+    psq_l f0, 0x0(r3), 1, 0
+    psq_l f1, 0x4(r3), 0, 0
+    psq_l f2, 0x10(r3), 1, 0
+    ps_merge10 f6, f1, f0
+    psq_l f3, 0x14(r3), 0, 0
+    psq_l f4, 0x20(r3), 1, 0
+    ps_merge10 f7, f3, f2
+    psq_l f5, 0x24(r3), 0, 0
+    ps_mul f11, f3, f6
+    ps_mul f13, f5, f7
+    ps_merge10 f8, f5, f4
+    ps_msub f11, f1, f7, f11
+    ps_mul f12, f1, f8
+    ps_msub f13, f3, f8, f13
+    ps_mul f10, f3, f4
+    ps_msub f12, f5, f6, f12
+    ps_mul f9, f0, f5
+    ps_mul f8, f1, f2
+    ps_sub f6, f6, f6
+    ps_msub f10, f2, f5, f10
+    ps_mul f7, f0, f13
+    ps_msub f9, f1, f4, f9
+    ps_madd f7, f2, f12, f7
+    ps_msub f8, f0, f3, f8
+    ps_madd f7, f4, f11, f7
+    ps_cmpo0 cr0, f7, f6
+    bne L_8009CCC4
+    li r3, 0x0
+    blr
 L_8009CCC4:
-	fres f0, f7
-	ps_add f6, f0, f0
-	ps_mul f5, f0, f0
-	ps_nmsub f0, f7, f5, f6
-	lfs f1, 0xc(r3)
-	ps_muls0 f13, f13, f0
-	lfs f2, 0x1c(r3)
-	ps_muls0 f12, f12, f0
-	lfs f3, 0x2c(r3)
-	ps_muls0 f11, f11, f0
-	ps_merge00 f5, f13, f12
-	ps_muls0 f10, f10, f0
-	ps_merge11 f4, f13, f12
-	ps_muls0 f9, f9, f0
-	psq_st f5, 0x0(r4), 0, 0
-	ps_mul f6, f13, f1
-	psq_st f4, 0x10(r4), 0, 0
-	ps_muls0 f8, f8, f0
-	ps_madd f6, f12, f2, f6
-	psq_st f10, 0x20(r4), 1, 0
-	ps_nmadd f6, f11, f3, f6
-	psq_st f9, 0x24(r4), 1, 0
-	ps_mul f7, f10, f1
-	ps_merge00 f5, f11, f6
-	psq_st f8, 0x28(r4), 1, 0
-	ps_merge11 f4, f11, f6
-	psq_st f5, 0x8(r4), 0, 0
-	ps_madd f7, f9, f2, f7
-	psq_st f4, 0x18(r4), 0, 0
-	ps_nmadd f7, f8, f3, f7
-	li r3, 0x1
-	psq_st f7, 0x2c(r4), 1, 0
-	blr
+    fres f0, f7
+    ps_add f6, f0, f0
+    ps_mul f5, f0, f0
+    ps_nmsub f0, f7, f5, f6
+    lfs f1, 0xc(r3)
+    ps_muls0 f13, f13, f0
+    lfs f2, 0x1c(r3)
+    ps_muls0 f12, f12, f0
+    lfs f3, 0x2c(r3)
+    ps_muls0 f11, f11, f0
+    ps_merge00 f5, f13, f12
+    ps_muls0 f10, f10, f0
+    ps_merge11 f4, f13, f12
+    ps_muls0 f9, f9, f0
+    psq_st f5, 0x0(r4), 0, 0
+    ps_mul f6, f13, f1
+    psq_st f4, 0x10(r4), 0, 0
+    ps_muls0 f8, f8, f0
+    ps_madd f6, f12, f2, f6
+    psq_st f10, 0x20(r4), 1, 0
+    ps_nmadd f6, f11, f3, f6
+    psq_st f9, 0x24(r4), 1, 0
+    ps_mul f7, f10, f1
+    ps_merge00 f5, f11, f6
+    psq_st f8, 0x28(r4), 1, 0
+    ps_merge11 f4, f11, f6
+    psq_st f5, 0x8(r4), 0, 0
+    ps_madd f7, f9, f2, f7
+    psq_st f4, 0x18(r4), 0, 0
+    ps_nmadd f7, f8, f3, f7
+    li r3, 0x1
+    psq_st f7, 0x2c(r4), 1, 0
+    blr
 #endif // clang-format on
 } f32 fn_8009CDC4(s32 arg1, f64 arg8, f64 arg9);
 
@@ -184,37 +184,37 @@ L_8009CCC4:
 ASM void PSMTXRotRad(Mtx m, char axis, f32 rad) {
 #ifdef __MWERKS__ // clang-format off
     nofralloc
-	stwu r1, -0x30(r1)
-	mflr r0
-	stw r0, 0x34(r1)
-	stfd f31, 0x20(r1)
-	psq_st f31, 0x28(r1), 0, 0
-	stfd f30, 0x10(r1)
-	psq_st f30, 0x18(r1), 0, 0
-	fmr f30, f1
-	stw r31, 0xc(r1)
-	mr r31, r4
-	stw r30, 0x8(r1)
-	mr r30, r3
-	bl sin
-	frsp f31, f1
-	fmr f1, f30
-	bl cos
-	frsp f2, f1
-	mr r3, r30
-	fmr f1, f31
-	extsb r4, r31
-	bl PSMTXRotTrig
-	psq_l f31, 0x28(r1), 0, 0
-	lfd f31, 0x20(r1)
-	psq_l f30, 0x18(r1), 0, 0
-	lfd f30, 0x10(r1)
-	lwz r31, 0xc(r1)
-	lwz r0, 0x34(r1)
-	lwz r30, 0x8(r1)
-	mtlr r0
-	addi r1, r1, 0x30
-	blr
+    stwu r1, -0x30(r1)
+    mflr r0
+    stw r0, 0x34(r1)
+    stfd f31, 0x20(r1)
+    psq_st f31, 0x28(r1), 0, 0
+    stfd f30, 0x10(r1)
+    psq_st f30, 0x18(r1), 0, 0
+    fmr f30, f1
+    stw r31, 0xc(r1)
+    mr r31, r4
+    stw r30, 0x8(r1)
+    mr r30, r3
+    bl sin
+    frsp f31, f1
+    fmr f1, f30
+    bl cos
+    frsp f2, f1
+    mr r3, r30
+    fmr f1, f31
+    extsb r4, r31
+    bl PSMTXRotTrig
+    psq_l f31, 0x28(r1), 0, 0
+    lfd f31, 0x20(r1)
+    psq_l f30, 0x18(r1), 0, 0
+    lfd f30, 0x10(r1)
+    lwz r31, 0xc(r1)
+    lwz r0, 0x34(r1)
+    lwz r30, 0x8(r1)
+    mtlr r0
+    addi r1, r1, 0x30
+    blr
 #endif // clang-format on
 }
 
@@ -223,9 +223,9 @@ void PSMTXRotTrig(register Mtx m, register char axis, register f32 sinA, registe
     register f32 fw0, fw1, fw2, fw3;
 
 #ifdef __MWERKS__ // clang-format off
-	asm {
-		frsp        sinA, sinA
-		frsp        cosA, cosA
+    asm {
+	    frsp        sinA, sinA
+	    frsp        cosA, cosA
 	}
 #endif // clang-format on
 
@@ -233,54 +233,54 @@ void PSMTXRotTrig(register Mtx m, register char axis, register f32 sinA, registe
     fc1 = 1.0f;
 
 #ifdef __MWERKS__ // clang-format off
-	asm {
-		ori         axis, axis, 0x20
-		ps_neg      nsinA, sinA
-		cmplwi      axis, 'x'
-		beq         _case_x
-		cmplwi      axis, 'y'
-		beq         _case_y
-		cmplwi      axis, 'z'
-		beq         _case_z
-		b           _end
+    asm {
+	    ori         axis, axis, 0x20
+	    ps_neg      nsinA, sinA
+	    cmplwi      axis, 'x'
+	    beq         _case_x
+	    cmplwi      axis, 'y'
+	    beq         _case_y
+	    cmplwi      axis, 'z'
+	    beq         _case_z
+	    b           _end
 
-	_case_x:
-		psq_st      fc1,  0(m), 1, 0
-		psq_st      fc0,  4(m), 0, 0
-		ps_merge00  fw0, sinA, cosA
-		psq_st      fc0, 12(m), 0, 0
-		ps_merge00  fw1, cosA, nsinA
-		psq_st      fc0, 28(m), 0, 0
-		psq_st      fc0, 44(m), 1, 0
-		psq_st      fw0, 36(m), 0, 0
-		psq_st      fw1, 20(m), 0, 0
-		b           _end;
+    _case_x:
+	    psq_st      fc1,  0(m), 1, 0
+	    psq_st      fc0,  4(m), 0, 0
+	    ps_merge00  fw0, sinA, cosA
+	    psq_st      fc0, 12(m), 0, 0
+	    ps_merge00  fw1, cosA, nsinA
+	    psq_st      fc0, 28(m), 0, 0
+	    psq_st      fc0, 44(m), 1, 0
+	    psq_st      fw0, 36(m), 0, 0
+	    psq_st      fw1, 20(m), 0, 0
+	    b           _end;
 
-	_case_y:
-		ps_merge00  fw0, cosA, fc0
-		ps_merge00  fw1, fc0, fc1
-		psq_st      fc0, 24(m), 0, 0
-		psq_st      fw0,  0(m), 0, 0
-		ps_merge00  fw2, nsinA, fc0
-		ps_merge00  fw3, sinA, fc0
-		psq_st      fw0, 40(m), 0, 0;
-		psq_st      fw1, 16(m), 0, 0;
-		psq_st      fw3,  8(m), 0, 0;
-		psq_st      fw2, 32(m), 0, 0;
-		b           _end;
+    _case_y:
+	    ps_merge00  fw0, cosA, fc0
+	    ps_merge00  fw1, fc0, fc1
+	    psq_st      fc0, 24(m), 0, 0
+	    psq_st      fw0,  0(m), 0, 0
+	    ps_merge00  fw2, nsinA, fc0
+	    ps_merge00  fw3, sinA, fc0
+	    psq_st      fw0, 40(m), 0, 0;
+	    psq_st      fw1, 16(m), 0, 0;
+	    psq_st      fw3,  8(m), 0, 0;
+	    psq_st      fw2, 32(m), 0, 0;
+	    b           _end;
 
-	_case_z:
-		psq_st      fc0,  8(m), 0, 0
-		ps_merge00  fw0, sinA, cosA
-		ps_merge00  fw2, cosA, nsinA
-		psq_st      fc0, 24(m), 0, 0
-		psq_st      fc0, 32(m), 0, 0
-		ps_merge00  fw1, fc1, fc0
-		psq_st      fw0, 16(m), 0, 0
-		psq_st      fw2,  0(m), 0, 0
-		psq_st      fw1, 40(m), 0, 0
+    _case_z:
+	    psq_st      fc0,  8(m), 0, 0
+	    ps_merge00  fw0, sinA, cosA
+	    ps_merge00  fw2, cosA, nsinA
+	    psq_st      fc0, 24(m), 0, 0
+	    psq_st      fc0, 32(m), 0, 0
+	    ps_merge00  fw1, fc1, fc0
+	    psq_st      fw0, 16(m), 0, 0
+	    psq_st      fw2,  0(m), 0, 0
+	    psq_st      fw1, 40(m), 0, 0
 
-	_end:
+    _end:
 
 	}
 #endif // clang-format on

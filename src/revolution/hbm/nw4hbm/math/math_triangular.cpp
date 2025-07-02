@@ -403,85 +403,85 @@ f32 Atan2FIdx(f32 y, f32 x) {
     }
 
     // clang-format off
-	if (x >= 0.0f)
+    if (x >= 0.0f)
 	{
-		if (y >= 0.0f)
+	    if (y >= 0.0f)
 		{
-			if (x >= y)
+		    if (x >= y)
 			{
-				a = x;
-				b = y;
-				c = 0.0f;
+			    a = x;
+			    b = y;
+			    c = 0.0f;
 
-				minus = false;
+			    minus = false;
 			}
-			else
+		    else
 			{
-				a = y;
-				b = x;
-				c = 64.0f;
+			    a = y;
+			    b = x;
+			    c = 64.0f;
 
-				minus = true;
+			    minus = true;
 			}
 		}
-		else
+	    else
 		{
-			if (x >= -y)
+		    if (x >= -y)
 			{
-				a = x;
-				b = -y;
-				c = 0.0f;
+			    a = x;
+			    b = -y;
+			    c = 0.0f;
 
-				minus = true;
+			    minus = true;
 			}
-			else
+		    else
 			{
-				a = -y;
-				b = x;
-				c = -64.0f;
+			    a = -y;
+			    b = x;
+			    c = -64.0f;
 
-				minus = false;
+			    minus = false;
 			}
 		}
 	}
-	else
+    else
 	{
-		if (y >= 0.0f)
+	    if (y >= 0.0f)
 		{
-			if (-x >= y)
+		    if (-x >= y)
 			{
-				a = -x;
-				b = y;
-				c = 128.0f;
+			    a = -x;
+			    b = y;
+			    c = 128.0f;
 
-				minus = true;
+			    minus = true;
 			}
-			else
+		    else
 			{
-				a = y;
-				b = -x;
-				c = 64.0f;
+			    a = y;
+			    b = -x;
+			    c = 64.0f;
 
-				minus = false;
+			    minus = false;
 			}
 		}
-		else
+	    else
 		{
-			if (-x >= -y)
+		    if (-x >= -y)
 			{
-				a = -x;
-				b = -y;
-				c = -128.0f;
+			    a = -x;
+			    b = -y;
+			    c = -128.0f;
 
-				minus = false;
+			    minus = false;
 			}
-			else
+		    else
 			{
-				a = -y;
-				b = -x;
-				c = -64.0f;
+			    a = -y;
+			    b = -x;
+			    c = -64.0f;
 
-				minus = true;
+			    minus = true;
 			}
 		}
 	}
