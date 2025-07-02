@@ -79,13 +79,13 @@ WEAK void VPanic(char const* file, int line, char const* fmt, std::va_list vlist
 s32 Console_GetTotalLines(detail::ConsoleHead* console);
 
 inline u16 Console_GetViewHeight(detail::ConsoleHead* console) {
-    NW4RAssertHeaderPointerNonnull_Line(433, console);
+    NW4HBMAssertHeaderPointerNonnull_Line(433, console);
 
     return console->viewLines;
 }
 
 inline bool Console_SetVisible(detail::ConsoleHead* console, bool isVisible) {
-    NW4RAssertHeaderPointerNonnull_Line(496, console);
+    NW4HBMAssertHeaderPointerNonnull_Line(496, console);
 
     bool before = console->isVisible;
     console->isVisible = isVisible;
@@ -93,7 +93,7 @@ inline bool Console_SetVisible(detail::ConsoleHead* console, bool isVisible) {
 }
 
 inline s32 Console_SetViewBaseLine(detail::ConsoleHead* console, s32 line) {
-    NW4RAssertHeaderPointerNonnull_Line(556, console);
+    NW4HBMAssertHeaderPointerNonnull_Line(556, console);
 
     s32 before = console->viewTopLine;
     console->viewTopLine = line;

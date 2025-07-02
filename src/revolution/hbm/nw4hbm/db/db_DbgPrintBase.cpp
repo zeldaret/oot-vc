@@ -21,7 +21,7 @@
 #include "revolution/MEM/mem_heapCommon.h"
 #include "revolution/MTX/mtx.h"
 
-#include "revolution/hbm/nw4hbm/NW4RAssert.h>
+#include "revolution/hbm/nw4hbm/NW4HBMAssert.h>
 
 /*******************************************************************************
  * variables
@@ -54,10 +54,10 @@ template <typename charT> DbgPrintBase<charT>::~DbgPrintBase() {}
 template <typename charT> DbgPrintBase<charT>* DbgPrintBase<charT>::GetInstance() { return mInstance; }
 
 template <typename charT> void DbgPrintBase<charT>::Initialize(void* buffer, u32 size, ut::Color textColor) {
-    NW4RAssertPointerValid_Line(123, buffer);
+    NW4HBMAssertPointerValid_Line(123, buffer);
 
     /* specifically not the source variant */
-    NW4RAssertHeaderMinimumValue_Line(124, size, 1);
+    NW4HBMAssertHeaderMinimumValue_Line(124, size, 1);
 
     SetBuffer(buffer, size);
     mInstance = new DbgPrintBase(textColor, nullptr);
@@ -65,67 +65,67 @@ template <typename charT> void DbgPrintBase<charT>::Initialize(void* buffer, u32
 
 template <typename charT>
 void DbgPrintBase<charT>::Initialize(void* buffer, u32 size, ut::Font const& font, ut::Color textColor) {
-    NW4RAssertPointerValid_Line(150, buffer);
+    NW4HBMAssertPointerValid_Line(150, buffer);
 
     /* specifically not the source variant */
-    NW4RAssertHeaderMinimumValue_Line(151, size, 1);
-    NW4RAssertPointerValid_Line(152, &font);
+    NW4HBMAssertHeaderMinimumValue_Line(151, size, 1);
+    NW4HBMAssertPointerValid_Line(152, &font);
 
     SetBuffer(buffer, size);
     mInstance = new DbgPrintBase(textColor, &font);
 }
 
 template <typename charT> void DbgPrintBase<charT>::SetFont(ut::Font const& font) {
-    NW4RAssertPointerValid_Line(177, this);
-    NW4RAssertPointerValid_Line(178, &font);
+    NW4HBMAssertPointerValid_Line(177, this);
+    NW4HBMAssertPointerValid_Line(178, &font);
 
     mFont = &font;
 }
 
 template <typename charT> ut::Font const* DbgPrintBase<charT>::GetFont() const {
-    NW4RAssertPointerValid_Line(195, this);
+    NW4HBMAssertPointerValid_Line(195, this);
 
     return mFont;
 }
 
 template <typename charT> void DbgPrintBase<charT>::SetTextColor(ut::Color color) {
-    NW4RAssertPointerValid_Line(212, this);
+    NW4HBMAssertPointerValid_Line(212, this);
 
     mTextColor = color;
 }
 
 template <typename charT> f32 DbgPrintBase<charT>::GetFontSize() const {
-    NW4RAssertPointerValid_Line(229, this);
+    NW4HBMAssertPointerValid_Line(229, this);
 
     return mFontSize;
 }
 
 template <typename charT> void DbgPrintBase<charT>::SetFontSize(f32 size) {
-    NW4RAssertPointerValid_Line(246, this);
+    NW4HBMAssertPointerValid_Line(246, this);
 
     mFontSize = size;
 }
 
 template <typename charT> ut::Color DbgPrintBase<charT>::GetTextColor() const {
-    NW4RAssertPointerValid_Line(263, this);
+    NW4HBMAssertPointerValid_Line(263, this);
 
     return mTextColor;
 }
 
 template <typename charT> void DbgPrintBase<charT>::SetVisible(bool bVisible) {
-    NW4RAssertPointerValid_Line(280, this);
+    NW4HBMAssertPointerValid_Line(280, this);
 
     mVisible = bVisible;
 }
 
 template <typename charT> bool DbgPrintBase<charT>::IsVisible() const {
-    NW4RAssertPointerValid_Line(297, this);
+    NW4HBMAssertPointerValid_Line(297, this);
 
     return mVisible;
 }
 
 template <typename charT> void DbgPrintBase<charT>::Registerf(int x, int y, charT const* format, ...) {
-    NW4RAssertPointerValid_Line(325, format);
+    NW4HBMAssertPointerValid_Line(325, format);
 
     std::va_list args;
 
@@ -135,7 +135,7 @@ template <typename charT> void DbgPrintBase<charT>::Registerf(int x, int y, char
 }
 
 template <typename charT> void DbgPrintBase<charT>::Registerf(int x, int y, int time, charT const* format, ...) {
-    NW4RAssertPointerValid_Line(351, format);
+    NW4HBMAssertPointerValid_Line(351, format);
 
     std::va_list args;
 
@@ -146,7 +146,7 @@ template <typename charT> void DbgPrintBase<charT>::Registerf(int x, int y, int 
 
 template <typename charT>
 void DbgPrintBase<charT>::VRegisterf(int x, int y, int time, charT const* format, std::va_list args) {
-    NW4RAssertPointerValid_Line(377, format);
+    NW4HBMAssertPointerValid_Line(377, format);
 
     int alignment = time == 1 ? -4 : 4;
     u32 maxAvailable = MEMGetAllocatableSizeForExpHeap(mHeapHandle);
@@ -165,13 +165,13 @@ void DbgPrintBase<charT>::VRegisterf(int x, int y, int time, charT const* format
 }
 
 template <typename charT> void DbgPrintBase<charT>::Register(int x, int y, int time, const charT* string, int length) {
-    NW4RAssertPointerValid_Line(414, this);
-    NW4RAssertPointerValid_Line(415, string);
+    NW4HBMAssertPointerValid_Line(414, this);
+    NW4HBMAssertPointerValid_Line(415, string);
 
     /* specifically not the source variant */
-    NW4RAssertHeaderMinimumValue_Line(416, length, 0);
+    NW4HBMAssertHeaderMinimumValue_Line(416, length, 0);
 
-    NW4RAssert_Line(417, mHeapHandle != MEM_HEAP_INVALID_HANDLE);
+    NW4HBMAssert_Line(417, mHeapHandle != MEM_HEAP_INVALID_HANDLE);
 
     u32 size = static_cast<u32>(length + 24); // TODO: where is 24 from?
     int alignment = time == 1 ? 4 : -4;
@@ -192,16 +192,16 @@ template <typename charT> void DbgPrintBase<charT>::Register(int x, int y, int t
 }
 
 template <typename charT> void DbgPrintBase<charT>::Unregister(DbgText* dbgText) {
-    NW4RAssertPointerValid_Line(452, this);
-    NW4RAssertPointerValid_Line(453, dbgText);
-    NW4RAssert_Line(454, mHeapHandle != MEM_HEAP_INVALID_HANDLE);
+    NW4HBMAssertPointerValid_Line(452, this);
+    NW4HBMAssertPointerValid_Line(453, dbgText);
+    NW4HBMAssert_Line(454, mHeapHandle != MEM_HEAP_INVALID_HANDLE);
 
     ut::List_Remove(&mTextList, dbgText);
     MEMFreeToExpHeap(mHeapHandle, dbgText);
 }
 
 template <typename charT> void DbgPrintBase<charT>::Reset() {
-    NW4RAssertPointerValid_Line(482, this);
+    NW4HBMAssertPointerValid_Line(482, this);
 
     if (mHeapHandle) {
         DbgText* dbgText = GetFirstText();
@@ -218,7 +218,7 @@ template <typename charT> void DbgPrintBase<charT>::Reset() {
 }
 
 template <typename charT> void DbgPrintBase<charT>::Flush() {
-    NW4RAssertPointerValid_Line(514, this);
+    NW4HBMAssertPointerValid_Line(514, this);
 
     DbgText* dbgText;
     ut::TextWriterBase<charT> writer;
@@ -254,7 +254,7 @@ template <typename charT> void DbgPrintBase<charT>::Flush() {
 }
 
 template <typename charT> void DbgPrintBase<charT>::Flush(int x, int y, int w, int h) {
-    NW4RAssertPointerValid_Line(571, this);
+    NW4HBMAssertPointerValid_Line(571, this);
 
     { // 39d461 wants lexical_block
         Mtx_4x4 matrix;
@@ -301,7 +301,7 @@ template <typename charT> void* DbgPrintBase<charT>::ReleaseBuffer() {
 }
 
 template <typename charT> void* DbgPrintBase<charT>::operator new(u32 size) {
-    NW4RAssert_Line(674, mHeapHandle != MEM_HEAP_INVALID_HANDLE);
+    NW4HBMAssert_Line(674, mHeapHandle != MEM_HEAP_INVALID_HANDLE);
 
     MEMSetGroupIDForExpHeap(mHeapHandle, 0);
     return MEMAllocFromExpHeap(mHeapHandle, size);

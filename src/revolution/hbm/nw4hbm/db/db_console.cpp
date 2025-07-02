@@ -47,7 +47,7 @@ static inline u8 const* SearchEndOfLine_(u8 const* str) {
 }
 
 static inline u16 GetRingUsedLines_(detail::ConsoleHead* console) {
-    NW4RAssertPointerNonnull_Line(108, console);
+    NW4HBMAssertPointerNonnull_Line(108, console);
 
     { // 39ac92 wants lexical_block
         s32 lines = console->printTop - console->ringTop;
@@ -236,7 +236,7 @@ end:
 }
 
 void Console_DrawDirect(detail::ConsoleHead* console) {
-    NW4RAssertPointerNonnull_Line(682, console);
+    NW4HBMAssertPointerNonnull_Line(682, console);
 
     if (DirectPrint_IsActive() && console->isVisible) {
         TryLockMutex_(&sMutex);
@@ -252,8 +252,8 @@ void Console_DrawDirect(detail::ConsoleHead* console) {
 static void PrintToBuffer_(detail::ConsoleHead* console, u8 const* str) {
     u8* storePtr;
 
-    NW4RAssertPointerNonnull_Line(806, console);
-    NW4RAssertPointerNonnull_Line(807, str);
+    NW4HBMAssertPointerNonnull_Line(806, console);
+    NW4HBMAssertPointerNonnull_Line(807, str);
 
     storePtr = GetTextPtr_(console, console->printTop, console->printXPos);
 
@@ -308,7 +308,7 @@ static void PrintToBuffer_(detail::ConsoleHead* console, u8 const* str) {
 }
 
 static void Console_PrintString_(ConsoleOutputType type, detail::ConsoleHead* console, u8 const* str) {
-    NW4RAssertPointerNonnull_Line(909, console);
+    NW4HBMAssertPointerNonnull_Line(909, console);
 
     if (type & CONSOLE_OUTPUT_DISPLAY) {
         OSReport("%s", str);
@@ -324,7 +324,7 @@ void Console_VFPrintf(ConsoleOutputType type, detail::ConsoleHead* console, char
     static int dummy; // needed to get the @0 at the end of sStrBuf
     static u8 sStrBuf[1024];
 
-    NW4RAssertPointerNonnull_Line(941, console);
+    NW4HBMAssertPointerNonnull_Line(941, console);
 
     if (TryLockMutex_(&sMutex)) {
         // Cool
@@ -350,7 +350,7 @@ void Console_Printf(detail::ConsoleHead* console, char const* format, ...) {
 s32 Console_GetTotalLines(detail::ConsoleHead* console) {
     s32 count;
 
-    NW4RAssertPointerNonnull_Line(1128, console);
+    NW4HBMAssertPointerNonnull_Line(1128, console);
 
     TryLockMutex_(&sMutex);
     count = GetActiveLines_(console) + console->ringTopLineCnt;

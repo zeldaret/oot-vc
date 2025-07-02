@@ -78,12 +78,12 @@ static void StringForce__(void) {
     void* mapDataBuf = nullptr;
     void* filePath = nullptr;
 
-    NW4RAssertPointerNonnull(pMapFile);
-    NW4RAssert(sMapFileList->moduleInfo != NULL);
-    NW4RAssertPointerNonnull(buffer);
-    NW4RAssertPointerNonnull(mapDataBuf);
-    NW4RAssertPointerNonnull(filePath);
-    NW4RAssert(pMapFile->fileEntry >= 0);
+    NW4HBMAssertPointerNonnull(pMapFile);
+    NW4HBMAssert(sMapFileList->moduleInfo != NULL);
+    NW4HBMAssertPointerNonnull(buffer);
+    NW4HBMAssertPointerNonnull(mapDataBuf);
+    NW4HBMAssertPointerNonnull(filePath);
+    NW4HBMAssert(pMapFile->fileEntry >= 0);
 }
 #endif // !defined(NDEBUG)
 
@@ -126,7 +126,7 @@ static u8 GetCharOnDvd_(u8 const* buf) {
 static u8* SearchNextLine_(u8* buf, s32 lines) {
     u8 c;
 
-    NW4RAssertPointerNonnull_Line(363, GetCharPtr_);
+    NW4HBMAssertPointerNonnull_Line(363, GetCharPtr_);
 
     ensure(buf, nullptr);
 
@@ -142,7 +142,7 @@ static u8* SearchNextLine_(u8* buf, s32 lines) {
 }
 
 static u8* SearchNextSection_(u8* buf) {
-    NW4RAssertPointerNonnull_Line(399, GetCharPtr_);
+    NW4HBMAssertPointerNonnull_Line(399, GetCharPtr_);
 
     do {
         buf = SearchNextLine_(buf, 1);
@@ -159,7 +159,7 @@ static u8* SearchParam_(u8* lineTop, u32 argNum, u8 splitter) {
     int inArg = 0;
     u8* buf = lineTop;
 
-    NW4RAssertPointerNonnull_Line(434, GetCharPtr_);
+    NW4HBMAssertPointerNonnull_Line(434, GetCharPtr_);
 
     ensure(buf, nullptr);
 
@@ -191,8 +191,8 @@ static u8* SearchParam_(u8* lineTop, u32 argNum, u8 splitter) {
 static u32 XStrToU32_(u8 const* str) {
     u32 val = 0;
 
-    NW4RAssertPointerNonnull_Line(488, str);
-    NW4RAssertPointerNonnull_Line(489, GetCharPtr_);
+    NW4HBMAssertPointerNonnull_Line(488, str);
+    NW4HBMAssertPointerNonnull_Line(489, GetCharPtr_);
 
     while (true) {
         u32 num;
@@ -228,9 +228,9 @@ inline
     CopySymbol_(const u8* buf, u8* str, u32 strLenMax, u8 splitter) {
     u32 cnt = 0;
 
-    NW4RAssertPointerNonnull_Line(546, buf);
-    NW4RAssertPointerNonnull_Line(547, str);
-    NW4RAssertPointerNonnull_Line(548, GetCharPtr_);
+    NW4HBMAssertPointerNonnull_Line(546, buf);
+    NW4HBMAssertPointerNonnull_Line(547, str);
+    NW4HBMAssertPointerNonnull_Line(548, GetCharPtr_);
 
     while (true) {
         u8 c = (*GetCharPtr_)(buf++);
@@ -257,8 +257,8 @@ static bool QuerySymbolToMapFile_(u8* buf, OSModuleInfo const* moduleInfo, u32 a
     OSSectionInfo* sectionInfo = nullptr;
     u32 sectionCnt;
 
-    NW4RAssertPointerNonnull_Line(604, strBuf);
-    NW4RAssert_Line(605, strBufSize > 0);
+    NW4HBMAssertPointerNonnull_Line(604, strBuf);
+    NW4HBMAssert_Line(605, strBufSize > 0);
 
     if (moduleInfo) {
         sectionInfo = reinterpret_cast<OSSectionInfo*>(moduleInfo->sectionInfoOffset);
@@ -342,8 +342,8 @@ static bool QuerySymbolToMapFile_(u8* buf, OSModuleInfo const* moduleInfo, u32 a
 }
 
 static bool QuerySymbolToSingleMapFile_(MapFile* pMapFile, u32 address, u8* strBuf, u32 strBufSize) {
-    NW4RAssertPointerNonnull_Line(725, pMapFile);
-    NW4RAssertPointerNonnull_Line(726, strBuf);
+    NW4HBMAssertPointerNonnull_Line(725, pMapFile);
+    NW4HBMAssertPointerNonnull_Line(726, strBuf);
 
     if (pMapFile->mapBuf) {
         GetCharPtr_ = &GetCharOnMem_;

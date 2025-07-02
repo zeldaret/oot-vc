@@ -65,7 +65,7 @@ static inline int StrLineWidth_(char const* str) {
     int len = 0;
     char c;
 
-    NW4RAssertPointerNonnull_Line(304, str);
+    NW4HBMAssertPointerNonnull_Line(304, str);
 
     while (true) {
         c = *str++;
@@ -258,7 +258,7 @@ void detail::DirectPrint_DrawStringToXfb(int posh, int posv, char const* format,
                                          bool backErase) {
     char string[256];
 
-    NW4RAssert_Line(645, sFrameBufferInfo.frameMemory != NULL);
+    NW4HBMAssert_Line(645, sFrameBufferInfo.frameMemory != NULL);
 
     int length = std::vsnprintf(string, sizeof string, format, vargs);
     int posLeftStart = posh;
@@ -319,8 +319,8 @@ static char const* DrawStringLineToXfb_(int posh, int posv, char const* str, int
     int code;
     int cnt = 0;
 
-    NW4RAssertPointerNonnull_Line(743, str);
-    NW4RAssert_Line(744, width > 0);
+    NW4HBMAssertPointerNonnull_Line(743, str);
+    NW4HBMAssert_Line(744, width > 0);
 
     for (; (c = *str) != '\0'; str++) {
         if (c == '\n' || c == '\0') { // another check against null character?

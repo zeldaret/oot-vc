@@ -72,7 +72,7 @@ void RemoteSpk::UpdateSpeaker(OSAlarm*, OSContext*) {
     ChanInfo* pinfo = GetInstance()->info;
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++, pinfo++) {
         if (pinfo->in_pcm && WPADIsSpeakerEnabled(i)) {
-            bool intrStatus = OSDisableInterrupts(); /* int intr */
+            int intrStatus = OSDisableInterrupts(); /* int intr */
 
             if (WPADCanSendStreamData(i)) {
                 MakeVolumeData(pinfo->in_pcm, pcmBuffer, pinfo->vol, static_cast<u32>(pinfo->length) / sizeof(s16));
