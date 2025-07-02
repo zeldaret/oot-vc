@@ -8,7 +8,7 @@
 #include "revolution/gx/GXTypes.h"
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
-#include "revolution/hbm/nw4hbm/ut/ut_Color.hpp"
+#include "revolution/hbm/nw4hbm/ut/Color.hpp"
 #include "revolution/tpl/TPL.h"
 #include "revolution/types.h"
 

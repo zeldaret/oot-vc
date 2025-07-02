@@ -198,7 +198,6 @@ cflags_base = [
     "-msgstyle gcc",
     "-sym on",
     "-DREVOLUTION",  # BTE changes
-    "-DHBM_APP_TYPE=HBM_APP_TYPE_NAND",
     "-i include",
     "-i libc",
     "-i src",
@@ -236,7 +235,7 @@ def RevolutionHBMLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/3.0a5",
-        "cflags": [*cflags_base, f"-Cpp_exceptions off", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off", "-lang c++", "-i libcpp"],
+        "cflags": [*cflags_base, f"-Cpp_exceptions off", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off", "-lang c++", "-i libcpp", "-DHBM_ASSERT"],
         "progress_category": "nw4hbm",
         "objects": objects,
     }

@@ -12,7 +12,7 @@
 #include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
 
 #include "revolution/hbm/nw4hbm/math/math_types.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_Color.hpp"
+#include "revolution/hbm/nw4hbm/ut/Color.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
 
 #include "revolution/gx.h"

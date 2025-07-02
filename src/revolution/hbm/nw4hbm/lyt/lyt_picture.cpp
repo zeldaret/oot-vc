@@ -14,7 +14,7 @@
 #include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp" // detail::ConvertOffsToPtr
 #include "revolution/hbm/nw4hbm/lyt/material.h"
 
-#include "revolution/hbm/nw4hbm/ut/ut_Color.hpp"
+#include "revolution/hbm/nw4hbm/ut/Color.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp" // ut::Min
 

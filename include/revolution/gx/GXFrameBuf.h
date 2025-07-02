@@ -3,6 +3,7 @@
 
 #include "revolution/types.h"
 #include "revolution/vi/vitypes.h"
+#include "revolution/gx/GXTypes.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -55,9 +55,16 @@ extern u32 __OSLastInterruptSrr0;
 extern s16 __OSLastInterrupt;
 extern s64 __OSLastInterruptTime;
 
-bool OSDisableInterrupts(void);
+
+#ifdef __cplusplus
+int OSEnableInterrupts(void);
+int OSDisableInterrupts(void);
+int OSRestoreInterrupts(int status);
+#else
 bool OSEnableInterrupts(void);
+bool OSDisableInterrupts(void);
 bool OSRestoreInterrupts(bool status);
+#endif
 
 OSInterruptHandler __OSSetInterruptHandler(OSInterruptType type, OSInterruptHandler handler);
 OSInterruptHandler __OSGetInterruptHandler(OSInterruptType type);

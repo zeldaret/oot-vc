@@ -6,7 +6,7 @@
  */
 
 #include "revolution/gx/GXTypes.h"
-#include "revolution/hbm/nw4hbm/ut/ut_Font.hpp"
+#include "revolution/hbm/nw4hbm/ut/Font.hpp"
 #include "revolution/types.h"
 
 /*******************************************************************************

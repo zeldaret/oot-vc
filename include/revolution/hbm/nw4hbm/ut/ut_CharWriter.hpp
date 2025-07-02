@@ -7,7 +7,7 @@
 
 #include "revolution/gx/GXTypes.h"
 #include "revolution/hbm/nw4hbm/math/math_types.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_Color.hpp"
+#include "revolution/hbm/nw4hbm/ut/Color.hpp"
 #include "revolution/types.h"
 
 /*******************************************************************************

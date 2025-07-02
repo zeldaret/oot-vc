@@ -206,6 +206,18 @@ inline void padStack(void) { int pad = 0; }
 #define FONT_TYPE_NNGCTEXTURE 1
 #define GLYPH_INDEX_NOT_FOUND 0xFFFF
 
+#define ensure(a, b)      \
+    {                     \
+        if (a == b)       \
+            return false; \
+    }
+
+#define ensure_noreturn(a, b) \
+    {                         \
+        if (a == b)           \
+            return;           \
+    }
+
 #endif
 
 #endif

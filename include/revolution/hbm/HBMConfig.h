@@ -23,7 +23,7 @@
  *
  * You can use one of the defines here or set HBM_APP_TYPE in your build system.
  */
-// #define HBM_APP_TYPE	HBM_APP_TYPE_DVD
+#define HBM_APP_TYPE	HBM_APP_TYPE_DVD
 // #define HBM_APP_TYPE	HBM_APP_TYPE_NAND
 
 #ifndef HBM_APP_TYPE

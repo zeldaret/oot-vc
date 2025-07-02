@@ -11,7 +11,7 @@
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp"
 #include "revolution/hbm/nw4hbm/math/math_types.hpp" // math::VEC2
-#include "revolution/hbm/nw4hbm/ut/ut_Color.hpp"
+#include "revolution/hbm/nw4hbm/ut/Color.hpp"
 #include "revolution/mtx/mtx.h"
 #include "revolution/types.h"
 
