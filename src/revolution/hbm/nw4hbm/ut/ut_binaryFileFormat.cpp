@@ -5,6 +5,7 @@
  */
 
 #include "macros.h"
+#include "revolution/hbm/HBMAssert.hpp"
 #include "revolution/hbm/nw4hbm/db/assert.hpp"
 #include "revolution/types.h"
 

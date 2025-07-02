@@ -7,6 +7,7 @@
 
 #include "macros.h"
 #include "revolution/gx/GXTypes.h"
+#include "revolution/hbm/HBMAssert.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_animation.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
 #include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp"
