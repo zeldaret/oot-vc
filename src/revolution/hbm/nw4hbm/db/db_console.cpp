@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/db/console.hpp"
+#include "revolution/hbm/nw4hbm/db/console.h"
 
 /*******************************************************************************
  * headers
@@ -47,7 +47,7 @@ static inline u8 const* SearchEndOfLine_(u8 const* str) {
 }
 
 static inline u16 GetRingUsedLines_(detail::ConsoleHead* console) {
-    NW4HBMAssertPointerNonnull_Line(console, 108);
+    NW4HBMAssertPointerNonnull_Line(console, 112);
 
     { // 39ac92 wants lexical_block
         s32 lines = console->printTop - console->ringTop;
@@ -85,6 +85,7 @@ static void DoDrawConsole_(detail::ConsoleHead* console, ut::TextWriterBase<char
 
 static void PrintToBuffer_(detail::ConsoleHead* console, u8 const* str);
 
+static void Console_Destroy(nw4hbm::db::detail::ConsoleHead* console);
 static void Console_PrintString_(ConsoleOutputType type, detail::ConsoleHead* console, u8 const* str);
 } // namespace db
 } // namespace nw4hbm
@@ -105,6 +106,12 @@ static OSMutex sMutex;
 
 namespace nw4hbm {
 namespace db {
+
+static void Console_Destroy(nw4hbm::db::detail::ConsoleHead* console) {
+    detail::ConsoleHead* pAssertionConsole = sAssertionConsole;
+    NW4HBMAssertPointerNonnull_Line(pAssertionConsole, 497);
+    pAssertionConsole->isVisible = false;
+}
 
 static void TerminateLine_(detail::ConsoleHead* console) {
     *GetTextPtr_(console, console->printTop, console->printXPos) = '\0';
@@ -236,7 +243,7 @@ end:
 }
 
 void Console_DrawDirect(detail::ConsoleHead* console) {
-    NW4HBMAssertPointerNonnull_Line(console, 682);
+    NW4HBMAssertPointerNonnull_Line(console, 621);
 
     if (DirectPrint_IsActive() && console->isVisible) {
         TryLockMutex_(&sMutex);
@@ -308,7 +315,7 @@ static void PrintToBuffer_(detail::ConsoleHead* console, u8 const* str) {
 }
 
 static void Console_PrintString_(ConsoleOutputType type, detail::ConsoleHead* console, u8 const* str) {
-    NW4HBMAssertPointerNonnull_Line(console, 909);
+    NW4HBMAssertPointerNonnull_Line(console, 843);
 
     if (type & CONSOLE_OUTPUT_DISPLAY) {
         OSReport("%s", str);
@@ -324,7 +331,7 @@ void Console_VFPrintf(ConsoleOutputType type, detail::ConsoleHead* console, char
     static int dummy; // needed to get the @0 at the end of sStrBuf
     static u8 sStrBuf[1024];
 
-    NW4HBMAssertPointerNonnull_Line(console, 941);
+    NW4HBMAssertPointerNonnull_Line(console, 872);
 
     if (TryLockMutex_(&sMutex)) {
         // Cool
@@ -350,7 +357,7 @@ void Console_Printf(detail::ConsoleHead* console, char const* format, ...) {
 s32 Console_GetTotalLines(detail::ConsoleHead* console) {
     s32 count;
 
-    NW4HBMAssertPointerNonnull_Line(console, 1128);
+    NW4HBMAssertPointerNonnull_Line(console, 1050);
 
     TryLockMutex_(&sMutex);
     count = GetActiveLines_(console) + console->ringTopLineCnt;

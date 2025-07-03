@@ -826,15 +826,28 @@ revolution/hbm/homebutton/HBMRemoteSpk.cpp:
 
 revolution/hbm/nw4hbm/db/db_assert.cpp:
 	.text       start:0x8010C7D4 end:0x8010CD90
+	.data       start:0x80194BE0 end:0x80194C90
+	.sbss       start:0x8025DBC0 end:0x8025DBD0
 
 revolution/hbm/nw4hbm/db/db_console.cpp:
 	.text       start:0x8010CD90 end:0x8010D6E4
+	.data       start:0x80194C90 end:0x80194CF8
+	.bss        start:0x802440B8 end:0x802444D0
+	.sdata      start:0x8025CE30 end:0x8025CE38
 
 revolution/hbm/nw4hbm/db/db_directPrint.cpp:
 	.text       start:0x8010D6E4 end:0x8010E134
+	.rodata     start:0x8016C618 end:0x8016C8D0
+	.data       start:0x80194DB0 end:0x80194E60
+	.bss        start:0x802444D0 end:0x80244500
+	.sbss       start:0x8025DBD0 end:0x8025DBD8
 
 revolution/hbm/nw4hbm/db/db_mapFile.cpp:
 	.text       start:0x8010E134 end:0x8010EA48
+	.data       start:0x80194E60 end:0x80194FC4
+	.bss        start:0x80244500 end:0x80244740
+	.sdata      start:0x8025CE38 end:0x8025CE40
+	.sbss       start:0x8025DBD8 end:0x8025DBE8
 
 revolution/hbm/nw4hbm/lyt/lyt_animation.cpp:
 	.text       start:0x8010EA48 end:0x8010F9B8

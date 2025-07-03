@@ -31,6 +31,7 @@ struct ConsoleHead {
     u16 priority; // size 0x02, offset 0x08
     u16 attr; // size 0x02, offset 0x0a
     u16 printTop; // size 0x02, offset 0x0c
+    u16 pad1;
     u16 printXPos; // size 0x02, offset 0x0e
     u16 ringTop; // size 0x02, offset 0x10
     /* 2 bytes padding */
@@ -64,6 +65,9 @@ enum ConsoleOutputType {
 
 namespace nw4hbm {
 namespace db {
+
+extern detail::ConsoleHead* sAssertionConsole;
+
 void Console_DrawDirect(detail::ConsoleHead* console);
 
 void Console_VFPrintf(ConsoleOutputType type, detail::ConsoleHead* console, char const* format, std::va_list vlist);
@@ -111,6 +115,7 @@ inline s32 Console_ShowLatestLine(detail::ConsoleHead* console) {
 
     return baseLine;
 }
+
 } // namespace db
 } // namespace nw4hbm
 

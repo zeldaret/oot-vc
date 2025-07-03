@@ -44,7 +44,7 @@ static u32 XStrToU32_(u8 const* str);
 static u32 CopySymbol_(u8 const* buf, u8* str, u32 strLenMax, u8 splitter);
 
 static bool QuerySymbolToMapFile_(u8* buf, OSModuleInfo const* moduleInfo, u32 address, u8* strBuf, u32 strBufSize);
-static bool QuerySymbolToSingleMapFile_(MapFile* pMapFile, u32 address, u8* strBuf, u32 strBufSize);
+static bool QuerySymbolToSingleMapFile_(MapFile* pMapFile, u32 address, u8* strBuf, u32 strBufSize) NO_INLINE;
 } // namespace db
 } // namespace nw4hbm
 
@@ -126,7 +126,7 @@ static u8 GetCharOnDvd_(u8 const* buf) {
 static u8* SearchNextLine_(u8* buf, s32 lines) {
     u8 c;
 
-    NW4HBMAssertPointerNonnull_Line(GetCharPtr_, 363);
+    NW4HBMAssertPointerNonnull_Line(GetCharPtr_, 361);
 
     ensure(buf, nullptr);
 
@@ -142,7 +142,7 @@ static u8* SearchNextLine_(u8* buf, s32 lines) {
 }
 
 static u8* SearchNextSection_(u8* buf) {
-    NW4HBMAssertPointerNonnull_Line(GetCharPtr_, 399);
+    NW4HBMAssertPointerNonnull_Line(GetCharPtr_, 397);
 
     do {
         buf = SearchNextLine_(buf, 1);
@@ -159,7 +159,7 @@ static u8* SearchParam_(u8* lineTop, u32 argNum, u8 splitter) {
     int inArg = 0;
     u8* buf = lineTop;
 
-    NW4HBMAssertPointerNonnull_Line(GetCharPtr_, 434);
+    NW4HBMAssertPointerNonnull_Line(GetCharPtr_, 432);
 
     ensure(buf, nullptr);
 
@@ -191,8 +191,8 @@ static u8* SearchParam_(u8* lineTop, u32 argNum, u8 splitter) {
 static u32 XStrToU32_(u8 const* str) {
     u32 val = 0;
 
-    NW4HBMAssertPointerNonnull_Line(str, 488);
-    NW4HBMAssertPointerNonnull_Line(GetCharPtr_, 489);
+    NW4HBMAssertPointerNonnull_Line(str, 486);
+    NW4HBMAssertPointerNonnull_Line(GetCharPtr_, 487);
 
     while (true) {
         u32 num;
@@ -228,9 +228,9 @@ inline
     CopySymbol_(const u8* buf, u8* str, u32 strLenMax, u8 splitter) {
     u32 cnt = 0;
 
-    NW4HBMAssertPointerNonnull_Line(buf, 546);
-    NW4HBMAssertPointerNonnull_Line(str, 547);
-    NW4HBMAssertPointerNonnull_Line(GetCharPtr_, 548);
+    NW4HBMAssertPointerNonnull_Line(buf, 544);
+    NW4HBMAssertPointerNonnull_Line(str, 545);
+    NW4HBMAssertPointerNonnull_Line(GetCharPtr_, 546);
 
     while (true) {
         u8 c = (*GetCharPtr_)(buf++);
@@ -257,8 +257,8 @@ static bool QuerySymbolToMapFile_(u8* buf, OSModuleInfo const* moduleInfo, u32 a
     OSSectionInfo* sectionInfo = nullptr;
     u32 sectionCnt;
 
-    NW4HBMAssertPointerNonnull_Line(strBuf, 604);
-    NW4HBMAssert_Line(605, strBufSize > 0);
+    NW4HBMAssertPointerNonnull_Line(strBuf, 602);
+    NW4HBMAssert_Line(strBufSize > 0, 603);
 
     if (moduleInfo) {
         sectionInfo = reinterpret_cast<OSSectionInfo*>(moduleInfo->sectionInfoOffset);
@@ -342,8 +342,8 @@ static bool QuerySymbolToMapFile_(u8* buf, OSModuleInfo const* moduleInfo, u32 a
 }
 
 static bool QuerySymbolToSingleMapFile_(MapFile* pMapFile, u32 address, u8* strBuf, u32 strBufSize) {
-    NW4HBMAssertPointerNonnull_Line(pMapFile, 725);
-    NW4HBMAssertPointerNonnull_Line(strBuf, 726);
+    NW4HBMAssertPointerNonnull_Line(pMapFile, 723);
+    NW4HBMAssertPointerNonnull_Line(strBuf, 724);
 
     if (pMapFile->mapBuf) {
         GetCharPtr_ = &GetCharOnMem_;
@@ -351,13 +351,13 @@ static bool QuerySymbolToSingleMapFile_(MapFile* pMapFile, u32 address, u8* strB
     }
 
     if (pMapFile->fileEntry >= 0) {
-        u8* buf = reinterpret_cast<u8*>(OS_BOOT_INFO.diskID.game);
         bool ret;
 
         if (DVDFastOpen(pMapFile->fileEntry, &sFileInfo)) {
             sFileLength = sFileInfo.size;
             GetCharPtr_ = &GetCharOnDvd_;
-            ret = QuerySymbolToMapFile_(buf, pMapFile->moduleInfo, address, strBuf, strBufSize);
+            ret = QuerySymbolToMapFile_(reinterpret_cast<u8*>(OS_BOOT_INFO.diskID.game), pMapFile->moduleInfo, address,
+                                        strBuf, strBufSize);
 
             DVDClose(&sFileInfo);
             return ret;

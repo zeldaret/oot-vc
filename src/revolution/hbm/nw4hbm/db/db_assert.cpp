@@ -11,7 +11,7 @@
 #include "macros.h"
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/db/console.hpp"
+#include "revolution/hbm/nw4hbm/db/console.h"
 #include "revolution/hbm/nw4hbm/db/directPrint.hpp"
 #include "revolution/hbm/nw4hbm/db/mapFile.hpp"
 
@@ -84,25 +84,21 @@ static void Assertion_Printf_(char const* fmt, ...) {
 
 #if HBM_APP_TYPE == HBM_APP_TYPE_DVD
 static bool ShowMapInfoSubroutine_(u32 address, bool preCRFlag) {
+    u8 strBuf[260];
+
     ensure(MapFile_Exists(), false);
-    ensure(0x80000000 <= address && address <= 0x82ffffff, false);
+    ensure(0x80000000 > address || address <= 0x82FFFFFF, false);
 
-    { // 39f796 wants lexical_block
-        u8 strBuf[260];
-        bool result = MapFile_QuerySymbol(address, strBuf, sizeof strBuf);
-
-        if (result) {
-            if (preCRFlag) {
-                Assertion_Printf_("\n");
-            }
-
-            Assertion_Printf_("%s\n", strBuf);
-
-            return true;
-        } else {
-            return false;
+    if (MapFile_QuerySymbol(address, strBuf, sizeof(strBuf))) {
+        if (preCRFlag) {
+            Assertion_Printf_("\n");
         }
+
+        Assertion_Printf_("%s\n", strBuf);
+        return true;
     }
+
+    return false;
 }
 #endif // HBM_APP_TYPE == HBM_APP_TYPE_DVD
 
@@ -120,7 +116,7 @@ static void ShowStack_(register_t sp) {
             break;
         }
 
-        if (reinterpret_cast<u32>(p) == 0xffffffff) {
+        if (reinterpret_cast<u32>(p) == 0xFFFFFFFF) {
             break;
         }
 
@@ -128,21 +124,20 @@ static void ShowStack_(register_t sp) {
             break;
         }
 
-        // clang-format off
-	    Assertion_Printf_("%08X:  %08X    %08X ",
-		                   p,     p[0],   p[1]);
-        // clang-format on
+        Assertion_Printf_("%08X:  %08X    %08X ", p, p[0], p[1]);
 
 #if HBM_APP_TYPE == HBM_APP_TYPE_DVD
         if (!ShowMapInfoSubroutine_(p[1], false))
 #endif // HBM_APP_TYPE == HBM_APP_TYPE_DVD
+        {
             Assertion_Printf_("\n");
+        }
 
         p = reinterpret_cast<register_t*>(*p);
     }
 }
 
-WEAK void VPanic(char const* file, int line, char const* fmt, std::va_list vlist) {
+WEAK void VPanic(const char* file, int line, const char* fmt, std::va_list vlist) {
     register register_t stackPointer;
 
     asm { mr stackPointer, r1 } // not OSGetStackPointer?
@@ -222,6 +217,10 @@ WEAK void Warning(char const* file, int line, char const* msg, ...) {
 void Assertion_ShowConsole(u32 time) {
     // ensure(sAssertionConsole, nullptr);
 
+    // if (sAssertionConsole == nullptr) {
+    //     return;
+    // }
+
     OSAlarm& alarm = GetWarningAlarm_();
     OSCancelAlarm(&alarm);
 
@@ -233,7 +232,7 @@ void Assertion_ShowConsole(u32 time) {
 }
 
 static OSAlarm& GetWarningAlarm_() {
-    static bool sInitializedAlarm = false;
+    static int sInitializedAlarm = false;
     static OSAlarm sWarningAlarm;
 
     if (!sInitializedAlarm) {
