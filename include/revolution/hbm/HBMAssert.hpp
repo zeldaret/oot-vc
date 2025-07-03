@@ -145,10 +145,10 @@
 #define NW4HBMAssertHeaderMinimumValue(var_, minValue_)                           NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, minValue_ <= var_, #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)(minValue_))
 
 // Range
-#define NW4HBMAssertHeaderRange_FileLine(file_, line_, var_, minValue_, maxValue_)    NW4HBMAssertMessage_FileLine(  file_ ,   line_ , var_ >= minValue_ && var_ <= maxValue_, #var_ " is out of bounds(%d)\n%d <= " #var_ " <= %d not satisfied.", (int)(var_), (int)(minValue_), (int)(maxValue_))
-#define NW4HBMAssertHeaderRange_File(var_, minValue_, maxValue_, file_)               NW4HBMAssertMessage_FileLine(  file_ , __LINE__, var_ >= minValue_ && var_ <= maxValue_, #var_ " is out of bounds(%d)\n%d <= " #var_ " <= %d not satisfied.", (int)(var_), (int)(minValue_), (int)(maxValue_))
-#define NW4HBMAssertHeaderRange_Line(var_, minValue_, maxValue_, line_)               NW4HBMAssertMessage_FileLine(__FILE__,   line_ , var_ >= minValue_ && var_ <= maxValue_, #var_ " is out of bounds(%d)\n%d <= " #var_ " <= %d not satisfied.", (int)(var_), (int)(minValue_), (int)(maxValue_))
-#define NW4HBMAssertHeaderRange(var_, minValue_, maxValue_)                           NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, var_ >= minValue_ && var_ <= maxValue_, #var_ " is out of bounds(%d)\n%d <= " #var_ " <= %d not satisfied.", (int)(var_), (int)(minValue_), (int)(maxValue_))
+#define NW4HBMAssertHeaderRangeValue_FileLine(file_, line_, var_, minValue_, maxValue_)    NW4HBMAssertMessage_FileLine(  file_ ,   line_ , var_ >= minValue_ && var_ <= maxValue_, #var_ " is out of bounds(%d)\n%d <= " #var_ " <= %d not satisfied.", (int)(var_), (int)(minValue_), (int)(maxValue_))
+#define NW4HBMAssertHeaderRangeValue_File(var_, minValue_, maxValue_, file_)               NW4HBMAssertMessage_FileLine(  file_ , __LINE__, var_ >= minValue_ && var_ <= maxValue_, #var_ " is out of bounds(%d)\n%d <= " #var_ " <= %d not satisfied.", (int)(var_), (int)(minValue_), (int)(maxValue_))
+#define NW4HBMAssertHeaderRangeValue_Line(var_, minValue_, maxValue_, line_)               NW4HBMAssertMessage_FileLine(__FILE__,   line_ , var_ >= minValue_ && var_ <= maxValue_, #var_ " is out of bounds(%d)\n%d <= " #var_ " <= %d not satisfied.", (int)(var_), (int)(minValue_), (int)(maxValue_))
+#define NW4HBMAssertHeaderRangeValue(var_, minValue_, maxValue_)                           NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, var_ >= minValue_ && var_ <= maxValue_, #var_ " is out of bounds(%d)\n%d <= " #var_ " <= %d not satisfied.", (int)(var_), (int)(minValue_), (int)(maxValue_))
 
 /*******************************************************************************
  * Strings, for deadstripping
