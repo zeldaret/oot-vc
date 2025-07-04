@@ -18,6 +18,7 @@
 #include "revolution/os/OSThread.h" // OSGetCurrentThread
 
 #include "revolution/hbm/HBMAssert.hpp"
+#include "revolution/hbm/nw4hbm/ut/Color.hpp"
 
 /*******************************************************************************
  * local function declarations
@@ -189,7 +190,8 @@ static void DoDrawString_(detail::ConsoleHead* console, u32 printLine, u8 const*
 
 static void DoDrawConsole_(detail::ConsoleHead* console, ut::TextWriterBase<char>* writer) {
     // was this meant to be an if statement?
-    TryLockMutex_(&sMutex);
+    // TryLockMutex_(&sMutex);
+
     { // 39ab35 wants lexical_block
         s32 viewOffset;
         u16 line;
@@ -202,7 +204,7 @@ static void DoDrawConsole_(detail::ConsoleHead* console, ut::TextWriterBase<char
         if (viewOffset < 0) {
             viewOffset = 0;
         } else if (viewOffset > GetActiveLines_(console)) {
-            goto end;
+            return;
         }
 
         line = static_cast<u16>(console->ringTop + viewOffset);
@@ -225,21 +227,21 @@ static void DoDrawConsole_(detail::ConsoleHead* console, ut::TextWriterBase<char
 
             if (line == console->height) {
                 if (console->attr & /* FLAG_BIT(1) */ 1) {
-                    goto end;
+                    return;
                 }
 
                 line = 0;
             }
 
             if (printLines >= console->viewLines) {
-                goto end;
+                return;
             }
         }
     }
 
     // maybe not, with this end label?
-end:
-    UnlockMutex_(&sMutex);
+// end:
+    // UnlockMutex_(&sMutex);
 }
 
 void Console_DrawDirect(detail::ConsoleHead* console) {
@@ -356,6 +358,10 @@ void Console_Printf(detail::ConsoleHead* console, char const* format, ...) {
 
 s32 Console_GetTotalLines(detail::ConsoleHead* console) {
     s32 count;
+
+    // this is not part of this function but it's required to generate the dtor (`nw4hbm::ut::Color::~Color()`)
+    // it was probably part of a function that got stripped by the linker
+    ::nw4hbm::ut::Color unused;
 
     NW4HBMAssertPointerNonnull_Line(console, 1050);
 

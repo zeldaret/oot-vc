@@ -23,34 +23,6 @@
 #include "revolution/vi/vi.h"
 
 #include "revolution/hbm/HBMAssert.hpp"
-#include "revolution/hbm/nw4hbm/ut/Color.hpp"
-
-/*******************************************************************************
- * types
- */
-
-// [SPQE7T]/ISpyD.elf:.debug_info::0x39919b
-struct FrameBufferInfo {
-    u8* frameMemory; // size 0x04, offset 0x00
-    u32 frameSize; // size 0x04, offset 0x04
-    u16 frameWidth; // size 0x02, offset 0x08
-    u16 frameHeight; // size 0x02, offset 0x0a
-    u16 frameRow; // size 0x02, offset 0x0c
-    u16 reserved; // size 0x02, offset 0x0e
-}; // size 0x10
-
-// [SPQE7T]/ISpyD.elf:.debug_info::0x399233
-struct YUVColorInfo {
-    nw4hbm::ut::Color colorRGBA; // size 0x04, offset 0x00
-    u16 colorY256; // size 0x02, offset 0x04
-    u16 colorU; // size 0x02, offset 0x06
-    u16 colorU2; // size 0x02, offset 0x08
-    u16 colorU4; // size 0x02, offset 0x0a
-    u16 colorV; // size 0x02, offset 0x0c
-    u16 colorV2; // size 0x02, offset 0x0e
-    u16 colorV4; // size 0x02, offset 0x10
-    u16 reserved; // size 0x02, offset 0x12
-}; // size 0x14
 
 /*******************************************************************************
  * local function declarations
@@ -258,6 +230,7 @@ void DirectPrint_SetColor(u8 r, u8 g, u8 b) {
     sFrameBufferColor.colorV2 = static_cast<u16>(v / 2);
     sFrameBufferColor.colorV4 = static_cast<u16>(v / 4);
 }
+
 void detail::DirectPrint_DrawStringToXfb(int posh, int posv, char const* format, std::va_list vargs, bool turnOver,
                                          bool backErase) {
     char string[256];
@@ -373,11 +346,13 @@ static void DrawCharToXfb_(int posh, int posv, int code) {
     u16* pixel =
         reinterpret_cast<u16*>(sFrameBufferInfo.frameMemory) + sFrameBufferInfo.frameRow * posv * wV + posh * wH;
 
-    ensure_noreturn(posv >= 0 && posh >= 0, true);
+    if (posv < 0 || posh < 0) {
+        return;
+    }
 
-    ensure_noreturn((int)sFrameBufferInfo.frameWidth > wH * (posh + 6) &&
-                        (int)sFrameBufferInfo.frameHeight > wV * (posv + 7),
-                    true);
+    if (sFrameBufferInfo.frameWidth <= wH * (posh + 6) || sFrameBufferInfo.frameHeight <= wV * (posv + 7)) {
+        return;
+    }
 
     for (int cntv = 0; cntv < 7; cntv++) {
         u32 fontBits = *fontLine++ << fonth;

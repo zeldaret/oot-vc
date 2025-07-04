@@ -11,9 +11,34 @@
 
 #include "revolution/gx/GXFrameBuf.h" // GXRenderModeObj
 
+#include "revolution/hbm/nw4hbm/ut/Color.hpp"
+
 /*******************************************************************************
  * functions
  */
+
+ // [SPQE7T]/ISpyD.elf:.debug_info::0x39919b
+struct FrameBufferInfo {
+    u8* frameMemory; // size 0x04, offset 0x00
+    u32 frameSize; // size 0x04, offset 0x04
+    u16 frameWidth; // size 0x02, offset 0x08
+    u16 frameHeight; // size 0x02, offset 0x0a
+    u16 frameRow; // size 0x02, offset 0x0c
+    u16 reserved; // size 0x02, offset 0x0e
+}; // size 0x10
+
+// [SPQE7T]/ISpyD.elf:.debug_info::0x399233
+struct YUVColorInfo {
+    GXColor colorRGBA; // size 0x04, offset 0x00
+    u16 colorY256; // size 0x02, offset 0x04
+    u16 colorU; // size 0x02, offset 0x06
+    u16 colorU2; // size 0x02, offset 0x08
+    u16 colorU4; // size 0x02, offset 0x0a
+    u16 colorV; // size 0x02, offset 0x0c
+    u16 colorV2; // size 0x02, offset 0x0e
+    u16 colorV4; // size 0x02, offset 0x10
+    u16 reserved; // size 0x02, offset 0x12
+}; // size 0x14
 
 namespace nw4hbm {
 namespace db {

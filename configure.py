@@ -643,7 +643,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/homebutton/HBMRemoteSpk.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/db/db_assert.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/db/db_console.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/db/db_directPrint.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/db/db_directPrint.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/db/db_mapFile.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_animation.cpp", extra_cflags=["-sym off"]),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_arcResourceAccessor.cpp"),
