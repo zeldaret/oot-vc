@@ -37,9 +37,7 @@ static bool ShowMapInfoSubroutine_(u32 address, bool preCRFlag);
 #endif // HBM_APP_TYPE == HBM_APP_TYPE_DVD
 
 static void ShowStack_(register_t sp) NO_INLINE;
-
-static OSAlarm& GetWarningAlarm_();
-static void WarningAlarmFunc_(OSAlarm*, OSContext*);
+static void WarningAlarmFunc_(OSAlarm* alarm, OSContext* ctx);
 } // namespace db
 } // namespace nw4hbm
 
@@ -51,7 +49,7 @@ namespace nw4hbm {
 namespace db {
 static u32 sWarningTime;
 static detail::ConsoleHead* sAssertionConsole;
-static bool sDispWarningAuto = true;
+static bool sDispWarningAuto;
 } // namespace db
 } // namespace nw4hbm
 
@@ -178,6 +176,46 @@ WEAK void VPanic(const char* file, int line, const char* fmt, std::va_list vlist
     PPCHalt();
 }
 
+/* --- */
+
+// this is very dumb but it works to make .data match
+
+u16 Console_GetViewHeight(detail::ConsoleHead* console) {
+    NW4HBMAssertHeaderPointerNonnull_FileLine(console, "console.h", 434);
+
+    return console->viewLines;
+}
+
+bool Console_SetVisible(detail::ConsoleHead* console, bool isVisible) {
+    NW4HBMAssertHeaderPointerNonnull_FileLine(console, "console.h", 497);
+
+    bool before = console->isVisible;
+    console->isVisible = isVisible;
+    return before;
+}
+
+s32 Console_SetViewBaseLine(detail::ConsoleHead* console, s32 line) {
+    NW4HBMAssertHeaderPointerNonnull_FileLine(console, "console.h", 557);
+
+    s32 before = console->viewTopLine;
+    console->viewTopLine = line;
+    return before;
+}
+
+s32 Console_ShowLatestLine(detail::ConsoleHead* console) {
+    s32 baseLine = Console_GetTotalLines(console) - Console_GetViewHeight(console);
+
+    if (baseLine < 0) {
+        baseLine = 0;
+    }
+
+    Console_SetViewBaseLine(console, baseLine);
+
+    return baseLine;
+}
+
+/* --- */
+
 WEAK void Panic(char const* file, int line, char const* msg, ...) {
     std::va_list vlist;
 
@@ -195,10 +233,7 @@ WEAK void VWarning(char const* file, int line, char const* fmt, std::va_list vli
         Console_Printf(sAssertionConsole, "\n");
 
         Console_ShowLatestLine(sAssertionConsole);
-
-        if (sDispWarningAuto) {
-            Assertion_ShowConsole(sWarningTime);
-        }
+        Console_SetVisible(sAssertionConsole, true);
     } else {
         OSReport("%s:%d Warning:", file, line);
         OSVReport(fmt, vlist);
@@ -207,46 +242,28 @@ WEAK void VWarning(char const* file, int line, char const* fmt, std::va_list vli
 }
 
 WEAK void Warning(char const* file, int line, char const* msg, ...) {
-    std::va_list vlist;
-
-    va_start(vlist, msg);
-    VWarning(file, line, msg, vlist);
-    va_end(vlist);
-}
-
-void Assertion_ShowConsole(u32 time) {
-    // ensure(sAssertionConsole, nullptr);
-
-    // if (sAssertionConsole == nullptr) {
-    //     return;
-    // }
-
-    OSAlarm& alarm = GetWarningAlarm_();
-    OSCancelAlarm(&alarm);
-
-    Console_SetVisible(sAssertionConsole, true);
-
-    if (time) {
-        OSSetAlarm(&alarm, time, &WarningAlarmFunc_);
-    }
-}
-
-static OSAlarm& GetWarningAlarm_() {
-    static int sInitializedAlarm = false;
+    static bool sInitializedAlarm = false;
     static OSAlarm sWarningAlarm;
+
+    std::va_list vlist;
 
     if (!sInitializedAlarm) {
         OSCreateAlarm(&sWarningAlarm);
         sInitializedAlarm = true;
     }
 
-    return sWarningAlarm;
+    va_start(vlist, msg);
+    VWarning(file, line, msg, vlist);
+    va_end(vlist);
+
+    if (sWarningTime) {
+        OSCancelAlarm(&sWarningAlarm);
+        OSSetAlarm(&sWarningAlarm, sWarningTime, WarningAlarmFunc_);
+    }
 }
 
-static void WarningAlarmFunc_(OSAlarm*, OSContext*) {
-    if (sAssertionConsole) {
-        Console_SetVisible(sAssertionConsole, false);
-    }
+static void WarningAlarmFunc_(OSAlarm* alarm, OSContext* ctx) {
+    Console_SetVisible(sAssertionConsole, false);
 }
 
 } // namespace db

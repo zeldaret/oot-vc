@@ -16,6 +16,9 @@
 
 #include "revolution/hbm/HBMAssert.hpp"
 
+#include "revolution/os/OSAlarm.h"
+#include "revolution/os/OSContext.h"
+
 /*******************************************************************************
  * types
  */
@@ -82,39 +85,10 @@ WEAK void VPanic(char const* file, int line, char const* fmt, std::va_list vlist
 
 s32 Console_GetTotalLines(detail::ConsoleHead* console);
 
-inline u16 Console_GetViewHeight(detail::ConsoleHead* console) {
-    NW4HBMAssertHeaderPointerNonnull_Line(433, console);
-
-    return console->viewLines;
-}
-
-inline bool Console_SetVisible(detail::ConsoleHead* console, bool isVisible) {
-    NW4HBMAssertHeaderPointerNonnull_Line(496, console);
-
-    bool before = console->isVisible;
-    console->isVisible = isVisible;
-    return before;
-}
-
-inline s32 Console_SetViewBaseLine(detail::ConsoleHead* console, s32 line) {
-    NW4HBMAssertHeaderPointerNonnull_Line(556, console);
-
-    s32 before = console->viewTopLine;
-    console->viewTopLine = line;
-    return before;
-}
-
-inline s32 Console_ShowLatestLine(detail::ConsoleHead* console) {
-    s32 baseLine = Console_GetTotalLines(console) - Console_GetViewHeight(console);
-
-    if (baseLine < 0) {
-        baseLine = 0;
-    }
-
-    Console_SetViewBaseLine(console, baseLine);
-
-    return baseLine;
-}
+u16 Console_GetViewHeight(detail::ConsoleHead* console);
+bool Console_SetVisible(detail::ConsoleHead* console, bool isVisible);
+s32 Console_SetViewBaseLine(detail::ConsoleHead* console, s32 line);
+s32 Console_ShowLatestLine(detail::ConsoleHead* console);
 
 } // namespace db
 } // namespace nw4hbm

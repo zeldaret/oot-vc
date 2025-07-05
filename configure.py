@@ -644,7 +644,7 @@ config.libs = [
             Object(NotLinked, "revolution/hbm/homebutton/HBMGUIManager.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/homebutton/HBMController.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/homebutton/HBMRemoteSpk.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/db/db_assert.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/db/db_assert.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/db/db_console.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/db/db_directPrint.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/db/db_mapFile.cpp"),

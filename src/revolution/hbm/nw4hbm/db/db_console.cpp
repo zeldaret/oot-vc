@@ -86,7 +86,6 @@ static void DoDrawConsole_(detail::ConsoleHead* console, ut::TextWriterBase<char
 
 static void PrintToBuffer_(detail::ConsoleHead* console, u8 const* str);
 
-static void Console_Destroy(nw4hbm::db::detail::ConsoleHead* console);
 static void Console_PrintString_(ConsoleOutputType type, detail::ConsoleHead* console, u8 const* str);
 } // namespace db
 } // namespace nw4hbm
@@ -107,12 +106,6 @@ static OSMutex sMutex;
 
 namespace nw4hbm {
 namespace db {
-
-static void Console_Destroy(nw4hbm::db::detail::ConsoleHead* console) {
-    detail::ConsoleHead* pAssertionConsole = sAssertionConsole;
-    NW4HBMAssertPointerNonnull_Line(pAssertionConsole, 497);
-    pAssertionConsole->isVisible = false;
-}
 
 static void TerminateLine_(detail::ConsoleHead* console) {
     *GetTextPtr_(console, console->printTop, console->printXPos) = '\0';
