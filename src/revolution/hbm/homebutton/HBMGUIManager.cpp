@@ -24,9 +24,6 @@
 #include "revolution/os/OSError.h"
 #include "revolution/types.h"
 
-//! TODO: remove once matched
-extern "C" void fn_8010CBAC(char*, int, ...);
-
 /*******************************************************************************
  * local function declarations
  */

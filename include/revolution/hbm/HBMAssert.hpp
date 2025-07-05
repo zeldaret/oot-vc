@@ -109,9 +109,9 @@
 #define NW4HBMAssertPointerNonnull_Line(ptr_, line_)                    NW4HBMAssertMessage_FileLine(__FILE__,   line_ , (ptr_) != 0, "NW4HBM:Pointer must not be NULL (" #ptr_ ")")
 #define NW4HBMAssertPointerNonnull(ptr_)                                NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, (ptr_) != 0, "NW4HBM:Pointer must not be NULL (" #ptr_ ")")
 
-#define NW4HBMAssertHeaderPointerNonnull_FileLine(file_, line_, ptr_) NW4HBMAssertMessage_FileLine(  file_ ,   line_ , (ptr_) != 0, "Pointer must not be NULL (" #ptr_ ")")
-#define NW4HBMAssertHeaderPointerNonnull_File(file_, ptr_)            NW4HBMAssertMessage_FileLine(  file_ , __LINE__, (ptr_) != 0, "Pointer must not be NULL (" #ptr_ ")")
-#define NW4HBMAssertHeaderPointerNonnull_Line(line_, ptr_)            NW4HBMAssertMessage_FileLine(__FILE__,   line_ , (ptr_) != 0, "Pointer must not be NULL (" #ptr_ ")")
+#define NW4HBMAssertHeaderPointerNonnull_FileLine(ptr_, file_, line_) NW4HBMAssertMessage_FileLine(  file_ ,   line_ , (ptr_) != 0, "Pointer must not be NULL (" #ptr_ ")")
+#define NW4HBMAssertHeaderPointerNonnull_File(ptr_, file_)            NW4HBMAssertMessage_FileLine(  file_ , __LINE__, (ptr_) != 0, "Pointer must not be NULL (" #ptr_ ")")
+#define NW4HBMAssertHeaderPointerNonnull_Line(ptr_, line_)            NW4HBMAssertMessage_FileLine(__FILE__,   line_ , (ptr_) != 0, "Pointer must not be NULL (" #ptr_ ")")
 #define NW4HBMAssertHeaderPointerNonnull(ptr_)                        NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, (ptr_) != 0, "Pointer must not be NULL (" #ptr_ ")")
 
 #define POINTER_VALID_TEST(ptr_)                            \

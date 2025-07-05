@@ -827,6 +827,8 @@ revolution/hbm/homebutton/HBMRemoteSpk.cpp:
 revolution/hbm/nw4hbm/db/db_assert.cpp:
 	.text       start:0x8010C7D4 end:0x8010CD90
 	.data       start:0x80194BE0 end:0x80194C90
+	.bss        start:0x80244088 end:0x802440B8
+	.sdata      start:0x8025CE28 end:0x8025CE30
 	.sbss       start:0x8025DBC0 end:0x8025DBD0
 
 revolution/hbm/nw4hbm/db/db_console.cpp:

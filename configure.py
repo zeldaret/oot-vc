@@ -197,6 +197,9 @@ cflags_base = [
     "-nodefaults",
     "-msgstyle gcc",
     "-sym on",
+    '-pragma "cats off"',
+    '-pragma "warn_notinlined off"',
+    "-maxerrors 1",
     "-DREVOLUTION",  # BTE changes
     "-i include",
     "-i libc",

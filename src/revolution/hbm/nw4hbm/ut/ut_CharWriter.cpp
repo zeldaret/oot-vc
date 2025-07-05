@@ -11,9 +11,7 @@
 #include "revolution/hbm/nw4hbm/math/math_types.hpp"
 #include "revolution/hbm/nw4hbm/ut/Color.hpp"
 #include "revolution/hbm/nw4hbm/ut/Font.hpp"
-
-//! TODO: remove once matched
-extern "C" void fn_8010CBAC(char*, int, ...);
+#include "revolution/hbm/nw4hbm/db/console.h"
 
 /*******************************************************************************
  * local function declarations
@@ -111,7 +109,7 @@ void CharWriter::SetupGX() {
                 break;
 
             default:
-                fn_8010CBAC(__FILE__, 207, "CharWriter::SetupGX: Unknown font sheet format(=%d)", format);
+                NW4HBMWarningMessage_Line(207, "CharWriter::SetupGX: Unknown font sheet format(=%d)", format);
                 SetupGXDefault();
                 break;
         }

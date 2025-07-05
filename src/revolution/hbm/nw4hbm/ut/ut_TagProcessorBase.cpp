@@ -9,9 +9,6 @@
  * functions
  */
 
-//! TODO: remove once matched
-extern "C" void fn_8010CBAC(char*, int, ...);
-
 namespace nw4hbm {
 namespace ut {
 

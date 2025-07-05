@@ -7,14 +7,12 @@
 #include "macros.h"
 #include "revolution/hbm/HBMAssert.hpp"
 #include "revolution/hbm/nw4hbm/db/assert.hpp"
+#include "revolution/hbm/nw4hbm/db/console.h"
 #include "revolution/types.h"
 
 /*******************************************************************************
  * functions
  */
-
-//! TODO: remove once matched
-extern "C" void fn_8010CBAC(char*, int, ...);
 
 namespace nw4hbm {
 namespace ut {
@@ -33,30 +31,30 @@ bool IsValidBinaryFile(const BinaryFileHeader* header, byte4_t signature, u16 ve
         s8 signature7 = (signature >> 8) & 0xFF;
         s8 signature8 = (signature & 0xFF);
 
-        fn_8010CBAC(__FILE__, 60, "Signature check failed ('%c%c%c%c' must be '%c%c%c%c').", signature1, signature2,
+        NW4HBMWarningMessage_Line(60, "Signature check failed ('%c%c%c%c' must be '%c%c%c%c').", signature1, signature2,
                     signature3, signature4, signature5, signature6, signature7, signature8);
         return false;
     }
 
     // U+FEFF * BYTE ORDER MARK
     if (header->byteOrder != 0xFEFF) {
-        fn_8010CBAC(__FILE__, 65, "Unsupported byte order.");
+        NW4HBMWarningMessage_Line(65, "Unsupported byte order.");
         return false;
     }
 
     if (header->version != version) {
-        fn_8010CBAC(__FILE__, 75, "Version check faild ('%d.%d' must be '%d.%d').", (header->version >> 8) & 0xFF,
+        NW4HBMWarningMessage_Line(75, "Version check faild ('%d.%d' must be '%d.%d').", (header->version >> 8) & 0xFF,
                     header->version & 0xFF, (version >> 8) & 0xFF, version & 0xFF);
         return false;
     }
 
     if (header->fileSize < sizeof *header + sizeof(BinaryBlockHeader) * minBlocks) {
-        fn_8010CBAC(__FILE__, 80, "Too small file size(=%d).", header->fileSize);
+        NW4HBMWarningMessage_Line(80, "Too small file size(=%d).", header->fileSize);
         return false;
     }
 
     if (header->dataBlocks < minBlocks) {
-        fn_8010CBAC(__FILE__, 85, "Too small number of data blocks(=%d).", header->dataBlocks);
+        NW4HBMWarningMessage_Line(85, "Too small number of data blocks(=%d).", header->dataBlocks);
         return false;
     }
 

@@ -5,6 +5,7 @@
  */
 
 #include "macros.h" // NW4HBM_VERSION
+#include "revolution/hbm/nw4hbm/db/console.h"
 #include "revolution.h"
 
 /*******************************************************************************
@@ -40,9 +41,6 @@ template <typename T> void ResolveOffset(T*& ptr, void* base) {
  * functions
  */
 
-//! TODO: remove once matched
-extern "C" void fn_8010CBAC(char*, int, ...);
-
 namespace nw4hbm {
 namespace ut {
 
@@ -59,7 +57,7 @@ bool ResFont::SetResource(void* brfnt) {
     BinaryFileHeader* fileHeader = static_cast<BinaryFileHeader*>(brfnt);
 
     if (!IsManaging(nullptr)) {
-        fn_8010CBAC(__FILE__, 107, "Font resource already atached.");
+        NW4HBMWarningMessage_Line(107, "Font resource already atached.");
         return false;
     }
 
@@ -82,12 +80,12 @@ bool ResFont::SetResource(void* brfnt) {
     } else {
         if (fileHeader->version == NW4HBM_VERSION(1, 4)) {
             if (!IsValidBinaryFile(fileHeader, MAGIC_FONT, NW4HBM_VERSION(1, 4), 2)) {
-                fn_8010CBAC(__FILE__, 150, "Invalid font resource.");
+                NW4HBMWarningMessage_Line(150, "Invalid font resource.");
                 return false;
             }
         } else {
             if (!IsValidBinaryFile(fileHeader, MAGIC_FONT, NW4HBM_VERSION(1, 2), 2)) {
-                fn_8010CBAC(__FILE__, 160, "Invalid font resource.");
+                NW4HBMWarningMessage_Line(160, "Invalid font resource.");
                 return false;
             }
         }

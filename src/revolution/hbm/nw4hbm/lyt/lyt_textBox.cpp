@@ -31,11 +31,9 @@
 #include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_TagProcessorBase.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
+#include "revolution/hbm/nw4hbm/db/console.h"
 
 #include "revolution/gx/GXTypes.h"
-
-//! TODO: remove once matched
-extern "C" void fn_8010CBAC(char*, int, ...);
 
 /*******************************************************************************
  * local function declarations
@@ -463,20 +461,20 @@ u16 TextBox::SetString(const wchar_t* str, u16 dstIdx) { return SetString(str, d
 
 u16 TextBox::SetString(const wchar_t* str, u16 dstIdx, u16 strLen) {
     if (!mTextBuf) {
-        fn_8010CBAC(__FILE__, 0, "mTextBuf is NULL.\n");
+        NW4HBMWarningMessage_Line(0, "mTextBuf is NULL.\n");
         return 0;
     }
 
     u16 bufLen = GetStringBufferLength();
     if (dstIdx >= bufLen) {
-        fn_8010CBAC(__FILE__, 0, "dstIdx is out of range.\n");
+        NW4HBMWarningMessage_Line(0, "dstIdx is out of range.\n");
         return 0;
     }
 
     const u16 cpLen = ut::Min<u16>(strLen, bufLen - dstIdx);
 
     if (cpLen < strLen) {
-        fn_8010CBAC(__FILE__, 0, "%d character(s) droped.\n", strLen - cpLen);
+        NW4HBMWarningMessage_Line(0, "%d character(s) droped.\n", strLen - cpLen);
     }
 
     std::memcpy(&mTextBuf[dstIdx], str, sizeof(wchar_t) * cpLen);

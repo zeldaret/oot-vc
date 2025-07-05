@@ -10,9 +10,6 @@
 #include "revolution/hbm/nw4hbm/db/assert.hpp"
 #include "revolution/types.h"
 
-//! TODO: remove once matched
-extern "C" void fn_8010CBAC(char*, int, ...);
-
 /*******************************************************************************
  * classes and functions
  */

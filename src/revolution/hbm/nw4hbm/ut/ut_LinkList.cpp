@@ -7,9 +7,6 @@
 #include "macros.h"
 #include "revolution.h"
 
-//! TODO: remove once matched
-extern "C" void fn_8010CBAC(char*, int, ...);
-
 /*******************************************************************************
  * functions
  */
