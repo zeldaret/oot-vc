@@ -262,9 +262,7 @@ WEAK void Warning(char const* file, int line, char const* msg, ...) {
     }
 }
 
-static void WarningAlarmFunc_(OSAlarm* alarm, OSContext* ctx) {
-    Console_SetVisible(sAssertionConsole, false);
-}
+static void WarningAlarmFunc_(OSAlarm* alarm, OSContext* ctx) { Console_SetVisible(sAssertionConsole, false); }
 
 } // namespace db
 } // namespace nw4hbm

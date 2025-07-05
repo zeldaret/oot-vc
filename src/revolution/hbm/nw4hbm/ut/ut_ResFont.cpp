@@ -5,8 +5,8 @@
  */
 
 #include "macros.h" // NW4HBM_VERSION
-#include "revolution/hbm/nw4hbm/db/console.h"
 #include "revolution.h"
+#include "revolution/hbm/nw4hbm/db/console.h"
 
 /*******************************************************************************
  * macros

@@ -20,6 +20,7 @@
 #include "revolution/hbm/nw4hbm/lyt/material.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
 
+#include "revolution/hbm/nw4hbm/db/console.h"
 #include "revolution/hbm/nw4hbm/math/math_types.hpp" // math::VEC2
 #include "revolution/hbm/nw4hbm/ut/Color.hpp"
 #include "revolution/hbm/nw4hbm/ut/Font.hpp"
@@ -31,7 +32,6 @@
 #include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_TagProcessorBase.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
-#include "revolution/hbm/nw4hbm/db/console.h"
 
 #include "revolution/gx/GXTypes.h"
 

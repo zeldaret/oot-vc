@@ -17,7 +17,7 @@
  * functions
  */
 
- // [SPQE7T]/ISpyD.elf:.debug_info::0x39919b
+// [SPQE7T]/ISpyD.elf:.debug_info::0x39919b
 struct FrameBufferInfo {
     u8* frameMemory; // size 0x04, offset 0x00
     u32 frameSize; // size 0x04, offset 0x04

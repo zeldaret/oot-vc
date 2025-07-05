@@ -32,7 +32,7 @@ bool IsValidBinaryFile(const BinaryFileHeader* header, byte4_t signature, u16 ve
         s8 signature8 = (signature & 0xFF);
 
         NW4HBMWarningMessage_Line(60, "Signature check failed ('%c%c%c%c' must be '%c%c%c%c').", signature1, signature2,
-                    signature3, signature4, signature5, signature6, signature7, signature8);
+                                  signature3, signature4, signature5, signature6, signature7, signature8);
         return false;
     }
 
@@ -44,7 +44,7 @@ bool IsValidBinaryFile(const BinaryFileHeader* header, byte4_t signature, u16 ve
 
     if (header->version != version) {
         NW4HBMWarningMessage_Line(75, "Version check faild ('%d.%d' must be '%d.%d').", (header->version >> 8) & 0xFF,
-                    header->version & 0xFF, (version >> 8) & 0xFF, version & 0xFF);
+                                  header->version & 0xFF, (version >> 8) & 0xFF, version & 0xFF);
         return false;
     }
 

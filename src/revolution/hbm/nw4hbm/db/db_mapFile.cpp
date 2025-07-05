@@ -80,7 +80,8 @@ static u8 GetCharOnMem_(u8 const* buf) { return *buf; }
 
 static s32 GetSize(s32 offset, u32 length) {
     if (offset + ARRAY_COUNT(sMapBuf) >= length) {
-        return ROUND_UP(length - offset, 32);;
+        return ROUND_UP(length - offset, 32);
+        ;
     }
 
     return ARRAY_COUNT(sMapBuf);

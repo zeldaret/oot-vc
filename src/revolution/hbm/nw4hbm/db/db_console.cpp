@@ -233,7 +233,7 @@ static void DoDrawConsole_(detail::ConsoleHead* console, ut::TextWriterBase<char
     }
 
     // maybe not, with this end label?
-// end:
+    // end:
     // UnlockMutex_(&sMutex);
 }
 

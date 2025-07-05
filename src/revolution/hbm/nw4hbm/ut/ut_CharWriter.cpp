@@ -8,10 +8,10 @@
 
 #include "macros.h"
 #include "revolution/gx.h"
+#include "revolution/hbm/nw4hbm/db/console.h"
 #include "revolution/hbm/nw4hbm/math/math_types.hpp"
 #include "revolution/hbm/nw4hbm/ut/Color.hpp"
 #include "revolution/hbm/nw4hbm/ut/Font.hpp"
-#include "revolution/hbm/nw4hbm/db/console.h"
 
 /*******************************************************************************
  * local function declarations
