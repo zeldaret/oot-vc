@@ -844,7 +844,7 @@ revolution/hbm/nw4hbm/db/db_directPrint.cpp:
 
 revolution/hbm/nw4hbm/db/db_mapFile.cpp:
 	.text       start:0x8010E134 end:0x8010EA48
-	.data       start:0x80194E60 end:0x80194FC4
+	.data       start:0x80194E60 end:0x80195068
 	.bss        start:0x80244500 end:0x80244740
 	.sdata      start:0x8025CE38 end:0x8025CE40
 	.sbss       start:0x8025DBD8 end:0x8025DBE8
