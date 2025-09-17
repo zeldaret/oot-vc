@@ -107,21 +107,24 @@ extern "C" char unused1[] = "ResFont::RemoveResource(): Res font is not loaded.\
 
 FontInformation* ResFont::Rebuild(BinaryFileHeader* fileHeader) {
     BinaryBlockHeader* blockHeader;
-    FontInformation* info = nullptr;
-    int nBlocks = 0;
+    FontInformation* info;
+    int nBlocks;
 
     NW4HBMAssertPointerValid_Line(fileHeader, 218);
-    NW4HBMAlign2_Line(fileHeader, 219);
+    NW4HBMAlign32_Line(fileHeader, 219);
+
+    info = nullptr;
+    nBlocks = 0;
+    blockHeader = CONVERT_OFFSET_TO_PTR(BinaryBlockHeader, fileHeader, fileHeader->headerSize);
 
     while (nBlocks < fileHeader->dataBlocks) {
         NW4HBMAssertPointerValid_Line(blockHeader, 230);
-        blockHeader = CONVERT_OFFSET_TO_PTR(BinaryBlockHeader, fileHeader, fileHeader->headerSize);
 
         switch (blockHeader->kind) {
             case MAGIC_FONT_INFO: {
+                NW4HBMAssert_Line(info == NULL, 237);
                 info = CONVERT_OFFSET_TO_PTR(FontInformation, blockHeader, sizeof *blockHeader);
 
-                NW4HBMAssert_Line(info == NULL, 237);
                 NW4HBMAssert_Line(info->fontType == FONT_TYPE_NNGCTEXTURE, 243);
                 NW4HBMAssert_Line(info->alterCharIndex != GLYPH_INDEX_NOT_FOUND, 244);
 
