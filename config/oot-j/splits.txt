@@ -882,6 +882,7 @@ revolution/hbm/nw4hbm/lyt/lyt_drawInfo.cpp:
 
 revolution/hbm/nw4hbm/lyt/lyt_group.cpp:
 	.text       start:0x80111108 end:0x801115B0
+	.data       start:0x80195838 end:0x80195938
 
 revolution/hbm/nw4hbm/lyt/lyt_layout.cpp:
 	.text       start:0x801115B0 end:0x80112564
