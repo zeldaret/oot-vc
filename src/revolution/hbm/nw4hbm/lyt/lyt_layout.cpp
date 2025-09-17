@@ -55,6 +55,7 @@ template <class T> T* CreateObject() {
     if (pMem) {
         return new (pMem) T();
     } else {
+        NW4HBMWarningMessage_Line(47, "can't alloc memory.");
         return nullptr;
     }
 }
@@ -134,10 +135,18 @@ Layout::~Layout() {
 }
 
 bool Layout::Build(const void* lytResBuf, ResourceAccessor* pResAcsr) {
+    NW4HBMAssertPointerNonnull_Line(mspAllocator, 171);
+    NW4HBMAssertPointerNonnull_Line(lytResBuf, 172);
+
     const res::BinaryFileHeader* fileHead = static_cast<const res::BinaryFileHeader*>(lytResBuf);
 
     if (!detail::TestFileHeader(*fileHead, FILE_HEADER_SIGNATURE_LAYOUT)) {
         return false;
+    }
+
+    if (fileHead->version != 8) {
+        NW4HBMPanicMessage_Line(187, "Version check faild ('%d.%d' must be '%d.%d').", (fileHead->version >> 8) & 0xFF,
+                            fileHead->version & 0xFF, 0, 8);
     }
 
     ResBlockSet resBlockSet = {};
@@ -194,6 +203,7 @@ bool Layout::Build(const void* lytResBuf, ResourceAccessor* pResAcsr) {
                 break;
 
             case 'pas1': // pane start?
+                NW4HBMAssertPointerNonnull_Line(pLastPane, 249);
                 pParentPane = pLastPane;
                 break;
 
@@ -230,10 +240,18 @@ bool Layout::Build(const void* lytResBuf, ResourceAccessor* pResAcsr) {
 }
 
 AnimTransform* Layout::CreateAnimTransform(const void* anmResBuf, ResourceAccessor* pResAcsr) {
+    NW4HBMAssertPointerNonnull_Line(mspAllocator, 295);
+    NW4HBMAssertPointerNonnull_Line(anmResBuf, 296);
+
     const res::BinaryFileHeader* pFileHead = static_cast<const res::BinaryFileHeader*>(anmResBuf);
 
     if (!detail::TestFileHeader(*pFileHead)) {
         return nullptr;
+    }
+
+    if (pFileHead->version != 8) {
+        NW4HBMPanicMessage_Line(311, "Version check faild ('%d.%d' must be '%d.%d').", (pFileHead->version >> 8) & 0xFF,
+                            pFileHead->version & 0xFF, 0, 8);
     }
 
     const res::AnimationBlock* pInfoBlock = nullptr;
@@ -245,6 +263,8 @@ AnimTransform* Layout::CreateAnimTransform(const void* anmResBuf, ResourceAccess
     for (int i = 0; i < pFileHead->dataBlocks; i++) {
         switch (detail::GetSignatureInt(pDataBlockHead->kind)) {
             case 'pai1': // painting? idk
+                NW4HBMAssert_Line(ret == 0, 321);
+
                 switch (detail::GetSignatureInt(pFileHead->signature)) {
                     case 'RLAN':
                     case res::AnimationInfo::ANIM_INFO_PANE_PAIN_SRT:
@@ -358,6 +378,7 @@ Pane* Layout::BuildPaneObj(s32 kind, const void* dataPtr, const ResBlockSet& res
         }
 
         default:
+            NW4HBMPanicMessage_Line(503, "unknown data type");
             return nullptr;
     }
 }

@@ -654,7 +654,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_common.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_drawInfo.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_group.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_layout.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_layout.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_material.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_pane.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_picture.cpp"),
