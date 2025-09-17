@@ -182,59 +182,52 @@ static void DoDrawString_(detail::ConsoleHead* console, u32 printLine, u8 const*
 }
 
 static void DoDrawConsole_(detail::ConsoleHead* console, ut::TextWriterBase<char>* writer) {
-    // was this meant to be an if statement?
-    // TryLockMutex_(&sMutex);
+    s32 viewOffset;
+    u16 line;
+    u16 printLines;
 
-    { // 39ab35 wants lexical_block
-        s32 viewOffset;
-        u16 line;
-        u16 printLines;
-        u16 topLine;
+    viewOffset = console->viewTopLine - console->ringTopLineCnt;
+    printLines = 0;
 
-        viewOffset = console->viewTopLine - console->ringTopLineCnt;
-        printLines = 0;
-
-        if (viewOffset < 0) {
-            viewOffset = 0;
-        } else if (viewOffset > GetActiveLines_(console)) {
-            return;
-        }
-
-        line = static_cast<u16>(console->ringTop + viewOffset);
-
-        if (line >= console->height) {
-            line -= console->height;
-        }
-
-        topLine = console->printTop + BOOLIFY_TERNARY_TYPE(u16, console->printXPos);
-
-        if (topLine == console->height) {
-            topLine = 0;
-        }
-
-        while (line != topLine) {
-            DoDrawString_(console, printLines, GetTextPtr_(console, line, 0), writer);
-
-            printLines++;
-            line++;
-
-            if (line == console->height) {
-                if (console->attr & /* FLAG_BIT(1) */ 1) {
-                    return;
-                }
-
-                line = 0;
-            }
-
-            if (printLines >= console->viewLines) {
-                return;
-            }
-        }
+    if (viewOffset < 0) {
+        viewOffset = 0;
+    } else if (viewOffset > GetActiveLines_(console)) {
+        return;
     }
 
-    // maybe not, with this end label?
-    // end:
-    // UnlockMutex_(&sMutex);
+    line = static_cast<u16>(console->ringTop + viewOffset);
+
+    if (line >= console->height) {
+        line -= console->height;
+    }
+
+    while (true) {
+        if (line == console->printTop && console->printXPos == 0) {
+            break;
+        }
+
+        DoDrawString_(console, printLines, GetTextPtr_(console, line, 0), writer);
+
+        printLines++;
+
+        if (line == console->printTop) {
+            break;
+        }
+
+        line++;
+
+        if (line == console->height) {
+            if (console->attr & 2) {
+                return;
+            }
+
+            line = 0;
+        }
+
+        if (printLines >= console->viewLines) {
+            return;
+        }
+    }
 }
 
 void Console_DrawDirect(detail::ConsoleHead* console) {
@@ -254,13 +247,13 @@ void Console_DrawDirect(detail::ConsoleHead* console) {
 static void PrintToBuffer_(detail::ConsoleHead* console, u8 const* str) {
     u8* storePtr;
 
-    NW4HBMAssertPointerNonnull_Line(console, 806);
-    NW4HBMAssertPointerNonnull_Line(str, 807);
+    NW4HBMAssertPointerNonnull_Line(console, 747);
+    NW4HBMAssertPointerNonnull_Line(str, 748);
 
     storePtr = GetTextPtr_(console, console->printTop, console->printXPos);
 
     while (*str) {
-        if (console->attr & 1 && console->printTop == console->height) {
+        if (console->attr & 2 && console->printTop == console->height) {
             break;
         }
 
