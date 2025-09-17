@@ -650,7 +650,7 @@ config.libs = [
             Object(NotLinked, "revolution/hbm/nw4hbm/db/db_mapFile.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_animation.cpp", extra_cflags=["-sym off"]),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_arcResourceAccessor.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_bounding.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_bounding.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_common.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_drawInfo.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_group.cpp"),

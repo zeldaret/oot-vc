@@ -39,5 +39,7 @@ void Bounding::DrawSelf(const DrawInfo& drawInfo) {
     }
 }
 
+const ut::detail::RuntimeTypeInfo* Bounding::GetRuntimeTypeInfo() const { return &typeInfo; }
+
 } // namespace lyt
 } // namespace nw4hbm

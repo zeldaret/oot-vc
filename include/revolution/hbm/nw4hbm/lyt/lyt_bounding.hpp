@@ -41,7 +41,7 @@ class Bounding : public Pane {
 
     // virtual function ordering
     // vtable Pane
-    virtual const ut::detail::RuntimeTypeInfo* GetRuntimeTypeInfo() const { return &typeInfo; }
+    virtual const ut::detail::RuntimeTypeInfo* GetRuntimeTypeInfo() const;
 
     virtual void DrawSelf(const DrawInfo& drawInfo);
 
