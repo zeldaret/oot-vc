@@ -85,6 +85,8 @@ class ArcResourceAccessor : public ResourceAccessor {
     // methods
     bool Attach(void* archiveStart, const char* resourceRootDirectory);
 
+    bool IsAttached(void) { return this->mArcBuf != nullptr; }
+
     // members
   private:
     /* base ResourceAccessor */ // offset 0x00, size 0x04
@@ -110,6 +112,7 @@ class MultiArcResourceAccessor : public ResourceAccessor {
     // vtable ResourceAccessor
     virtual void* GetResource(u32 resType, const char* name, u32* pSize);
     virtual ut::Font* GetFont(const char* name);
+    ut::Font* dummy(const char* name);
 
     // methods
     void Attach(ArcResourceLink* pLink);

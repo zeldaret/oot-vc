@@ -41,13 +41,17 @@ s32 FindNameResource(ARCHandle* pArcHandle, const char* resName) {
 
     ARCDir dir;
     bool bSuccess ATTRIBUTE_UNUSED = ARCOpenDir(pArcHandle, ".", &dir);
+    NW4HBMAssert_Line(bSuccess, 48);
 
     ARCEntry dirEntry;
     while (ARCReadDir(&dir, &dirEntry)) {
-        if (dirEntry.type == ARC_ENTRY_FOLDER) {
+        if (dirEntry.type != ARC_ENTRY_FILE) {
             bSuccess = ARCChangeDir(pArcHandle, dirEntry.name);
+            NW4HBMAssert_Line(bSuccess, 57);
+
             entryNum = FindNameResource(pArcHandle, resName);
             bSuccess = ARCChangeDir(pArcHandle, "..");
+            NW4HBMAssert_Line(bSuccess, 60);
 
             if (entryNum != -1) {
                 break;
@@ -59,12 +63,17 @@ s32 FindNameResource(ARCHandle* pArcHandle, const char* resName) {
     }
 
     bSuccess = ARCCloseDir(&dir);
+    NW4HBMAssert_Line(bSuccess, 77);
     return entryNum;
 }
 
 #pragma pop
 
+static char unused1[] = "NW4HBM:Failed assertion std::strlen(name) < FONTNAMEBUF_MAX";
+
 void* GetResourceSub(ARCHandle* pArcHandle, const char* resRootDir, u32 resType, const char* name, u32* pSize) {
+    (void)unused1; // necessary
+
     s32 entryNum = -1;
 
     if (ARCConvertPathToEntrynum(pArcHandle, resRootDir) != -1 && ARCChangeDir(pArcHandle, resRootDir)) {
@@ -81,15 +90,18 @@ void* GetResourceSub(ARCHandle* pArcHandle, const char* resRootDir, u32 resType,
             if (ARCConvertPathToEntrynum(pArcHandle, resTypeStr) != -1 && ARCChangeDir(pArcHandle, resTypeStr)) {
                 entryNum = ARCConvertPathToEntrynum(pArcHandle, name);
                 bool bSuccess ATTRIBUTE_UNUSED = ARCChangeDir(pArcHandle, "..");
+                NW4HBMAssert_Line(bSuccess, 117);
             }
         }
 
         bool bSuccess ATTRIBUTE_UNUSED = ARCChangeDir(pArcHandle, "..");
+        NW4HBMAssert_Line(bSuccess, 123);
     }
 
     if (entryNum != -1) {
         ARCFileInfo arcFileInfo;
         bool bSuccess ATTRIBUTE_UNUSED = ARCFastOpen(pArcHandle, entryNum, &arcFileInfo);
+        NW4HBMAssert_Line(bSuccess, 131);
 
         void* resPtr = ARCGetStartAddrInMem(&arcFileInfo);
 
@@ -123,6 +135,12 @@ ut::Font* detail::FindFont(FontRefLink::LinkList* pFontRefList, const char* name
 ArcResourceAccessor::ArcResourceAccessor() : mArcBuf(nullptr) {}
 
 bool ArcResourceAccessor::Attach(void* archiveStart, const char* resourceRootDirectory) {
+    // clang-format off
+    NW4HBMAssert_Line(! IsAttached(), 220);
+    NW4HBMAssertPointerNonnull_Line(archiveStart, 221);
+    NW4HBMAssertPointerNonnull_Line(resourceRootDirectory, 222);
+    // clang-format on
+
     bool bSuccess = ARCInitHandle(archiveStart, &mArcHandle);
 
     if (!bSuccess) {
@@ -136,7 +154,14 @@ bool ArcResourceAccessor::Attach(void* archiveStart, const char* resourceRootDir
     return true;
 }
 
+static char unused2[] = "NW4HBM:Failed assertion IsAttached()";
+static char unused3[] = "NW4HBM:Pointer must not be NULL (pLink)";
+
 void* ArcResourceAccessor::GetResource(u32 resType, const char* name, u32* pSize) {
+    // necessary
+    (void)unused2;
+    (void)unused3;
+
     return GetResourceSub(&mArcHandle, mResRootDir, resType, name, pSize);
 }
 

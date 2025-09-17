@@ -859,10 +859,14 @@ revolution/hbm/nw4hbm/lyt/lyt_animation.cpp:
 
 revolution/hbm/nw4hbm/lyt/lyt_arcResourceAccessor.cpp:
 	.text       start:0x8010F9B8 end:0x801100BC
+	.data       start:0x801954D8 end:0x80195750
+	.sdata      start:0x8025CE48 end:0x8025CE50
 
 revolution/hbm/nw4hbm/lyt/lyt_bounding.cpp:
 	.text       start:0x801100BC end:0x801101D4
 	.ctors      start:0x8016A6E8 end:0x8016A6EC
+	.data       start:0x80195750 end:0x801957B8
+	.sbss       start:0x8025DBE8 end:0x8025DBF0
 
 revolution/hbm/nw4hbm/lyt/lyt_common.cpp:
 	.text       start:0x801101D4 end:0x80111054
