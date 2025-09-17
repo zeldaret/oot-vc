@@ -54,6 +54,7 @@ void TexCoordAry::Free() {
 }
 
 void TexCoordAry::Reserve(u8 num) {
+    NW4HBMAssert_Line(num <= GX_MAX_TEXMAP, 93);
     if (mCap < num) {
         Free();
         mpData = static_cast<TexCoords*>(Layout::AllocMemory(sizeof *mpData * num));
@@ -93,6 +94,7 @@ void TexCoordAry::SetSize(u8 num) {
 }
 
 void TexCoordAry::Copy(const void* pResTexCoord, u8 texCoordNum) {
+    NW4HBMAssert_Line(texCoordNum <= mCap, 161);
     mNum = ut::Max(mNum, texCoordNum);
     const TexCoords* src = static_cast<const TexCoords*>(pResTexCoord);
 
@@ -225,7 +227,7 @@ void DrawLine(const math::VEC2& pos, const Size& size, ut::Color color) {
     GXSetNumIndStages(0);
 
     GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0);
-    GXSetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GXSetTevOp(GX_TEVSTAGE0, GX_BLEND);
     GXSetTevDirect(GX_TEVSTAGE0);
 
     GXSetTevSwapMode(GX_TEVSTAGE0, GX_TEV_SWAP0, GX_TEV_SWAP0);
