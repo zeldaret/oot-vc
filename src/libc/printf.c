@@ -543,46 +543,48 @@ static char* double2hex(long double num, char* buff, print_format format) {
     form.digits = 0x20;
     __num2dec(&form, num, &dec);
 
-    switch (*dec.sig.text) {
-        case '0':
-            dec.exp = 0;
-            break;
-        case 'I':
-            if (dec.sign) {
-                p = buff - 5;
-                if (format.conversion_char == 'A') {
-                    strcpy(p, "-INF");
-                } else {
-                    strcpy(p, "-inf");
-                }
-            } else {
-                p = buff - 4;
-                if (format.conversion_char == 'A') {
-                    strcpy(p, "INF");
-                } else {
-                    strcpy(p, "inf");
-                }
-            }
+    if (fabs(num) == 0.0) {
+        p = buff - 6;
+        strcpy(p, "0x0p0");
+        return p;
+    }
 
-            return p;
-        case 'N':
-            if (dec.sign) {
-                p = buff - 5;
-                if (format.conversion_char == 'A') {
-                    strcpy(p, "-NAN");
-                } else {
-                    strcpy(p, "-nan");
-                }
+    if (dec.sig.text[0] == 'I') {
+        if (dec.sign) {
+            p = buff - 5;
+            if (format.conversion_char == 'A') {
+                strcpy(p, "-INF");
             } else {
-                p = buff - 4;
-                if (format.conversion_char == 'A') {
-                    strcpy(p, "NAN");
-                } else {
-                    strcpy(p, "nan");
-                }
+                strcpy(p, "-inf");
             }
+        } else {
+            p = buff - 4;
+            if (format.conversion_char == 'A') {
+                strcpy(p, "INF");
+            } else {
+                strcpy(p, "inf");
+            }
+        }
 
-            return p;
+        return p;
+    } else if (dec.sig.text[0] == 'N') {
+        if (dec.sign) {
+            p = buff - 5;
+            if (format.conversion_char == 'A') {
+                strcpy(p, "-NAN");
+            } else {
+                strcpy(p, "-nan");
+            }
+        } else {
+            p = buff - 4;
+            if (format.conversion_char == 'A') {
+                strcpy(p, "NAN");
+            } else {
+                strcpy(p, "nan");
+            }
+        }
+
+        return p;
     }
 
     exp_format.justification_options = right_justification;
@@ -609,12 +611,7 @@ static char* double2hex(long double num, char* buff, print_format format) {
     }
 
     snum = (snum >> (32 - expbits)) & expmask;
-
-    if (snum != 0) {
-        exp = snum - 0x3FF;
-    } else {
-        exp = 0;
-    }
+    exp = snum - 0x3FF;
 
     p = long2str(exp, buff, exp_format);
     if (format.conversion_char == 'a') {
@@ -773,7 +770,7 @@ static char* float2str(long double num, char* buff, print_format format) {
             dec.exp = 0;
             break;
         case 'I':
-            if (num < 0) {
+            if ((double)num < 0) {
                 p = buff - 5;
 
                 if (isupper(format.conversion_char)) {
