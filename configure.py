@@ -656,7 +656,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_group.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_layout.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_material.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_pane.cpp"),
+            Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_pane.cpp", mw_version="GC/3.0a5.2", extra_cflags=["-fp_contract on"]),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_picture.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_textBox.cpp"),

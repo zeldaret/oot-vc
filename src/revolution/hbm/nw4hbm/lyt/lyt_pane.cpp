@@ -123,9 +123,15 @@ extern void _deadstrip2();
 extern void _deadstrip2() { Pane::LinkList::GetNodeFromPointer(nullptr); }
 
 void Pane::InsertChild(LinkList::Iterator next, Pane* pChild) {
+    NW4HBMAssertPointerNonnull_Line(pChild, 253);
+    NW4HBMAssert_Line(pChild->mpParent == 0, 254);
     mChildList.Insert(next, pChild);
     pChild->mpParent = this;
 }
+
+char _lyt_pane_unused1[] = "NW4HBM:Pointer must not be NULL (pNext)";
+char _lyt_pane_unused2[] = "NW4HBM:Failed assertion pNext->mpParent == this";
+char _lyt_pane_unused3[] = "NW4HBM:Failed assertion pChild->mpParent == this";
 
 const ut::Rect Pane::GetPaneRect(const DrawInfo& drawInfo) const {
     ut::Rect ret;
@@ -149,6 +155,7 @@ const ut::Color Pane::GetVtxColor(u32) const { return ut::Color(0xffffffff); }
 void Pane::SetVtxColor(u32, ut::Color) { /* ... */ }
 
 u8 Pane::GetColorElement(u32 idx) const {
+    NW4HBMAssert_Line(idx < ANIMTARGET_PANE_COLOR_MAX, 319);
     switch (idx) {
         case 16:
             return mAlpha;
@@ -159,6 +166,7 @@ u8 Pane::GetColorElement(u32 idx) const {
 }
 
 void Pane::SetColorElement(u32 idx, u8 value) {
+    NW4HBMAssert_Line(idx < ANIMTARGET_PANE_COLOR_MAX, 334);
     switch (idx) {
         case 16:
             mAlpha = value;
@@ -325,7 +333,10 @@ void Pane::AnimateSelf(u32 option) {
     }
 }
 
-void Pane::BindAnimation(AnimTransform* pAnimTrans, bool bRecursive) { pAnimTrans->Bind(this, bRecursive); }
+void Pane::BindAnimation(AnimTransform* pAnimTrans, bool bRecursive) {
+    NW4HBMAssertPointerNonnull_Line(pAnimTrans, 596);
+    pAnimTrans->Bind(this, bRecursive);
+}
 
 void Pane::UnbindAnimation(AnimTransform* pAnimTrans, bool bRecursive) {
     UnbindAnimationSelf(pAnimTrans);
@@ -354,7 +365,10 @@ void Pane::UnbindAnimationSelf(AnimTransform* pAnimTrans) {
     }
 }
 
-void Pane::AddAnimationLink(AnimationLink* pAnimationLink) { mAnimList.PushBack(pAnimationLink); }
+void Pane::AddAnimationLink(AnimationLink* pAnimationLink) {
+    NW4HBMAssertPointerNonnull_Line(pAnimationLink, 649);
+    mAnimList.PushBack(pAnimationLink);
+}
 
 AnimationLink* Pane::FindAnimationLink(AnimTransform* pAnimTrans) {
     if (AnimationLink* ret = detail::FindAnimationLink(&mAnimList, pAnimTrans)) {
