@@ -52,6 +52,7 @@ Picture::Picture(const res::Picture* pResPic, const ResBlockSet& resBlockSet) : 
     }
 
     if (Material* pMemMaterial = static_cast<Material*>(Layout::AllocMemory(sizeof *pMemMaterial))) {
+        NW4HBMAssertPointerNonnull_Line(resBlockSet.pMaterialList, 149);
         const u32* matOffsTbl = detail::ConvertOffsToPtr<u32>(resBlockSet.pMaterialList, 0xc);
         const res::Material* pResMaterial =
             detail::ConvertOffsToPtr<res::Material>(resBlockSet.pMaterialList, matOffsTbl[pResPic->materialIdx]);
@@ -86,6 +87,11 @@ void Picture::Append(TPLPalette* pTplRes) {
 void Picture::Append(const GXTexObj& texObj) {
     if (mpMaterial->GetTextureNum() >= mpMaterial->GetTextureCap() ||
         mpMaterial->GetTextureNum() >= mpMaterial->GetTexCoordGenCap()) {
+        NW4HBMWarningMessage_Line(192,
+                                  "mpMaterial->GetTextureNum(%d) is large. mpMaterial->GetTextureCap(%d), "
+                                  "mpMaterial->GetTexCoordGenCap(%d)\n",
+                                  mpMaterial->GetTextureNum(), mpMaterial->GetTextureCap(),
+                                  mpMaterial->GetTexCoordGenCap());
         return;
     }
 
@@ -106,9 +112,15 @@ void Picture::ReserveTexCoord(u8 num) { mTexCoordAry.Reserve(num); }
 
 void Picture::SetTexCoordNum(u8 num) { mTexCoordAry.SetSize(num); }
 
-const ut::Color Picture::GetVtxColor(u32 idx) const { return mVtxColors[idx]; }
+const ut::Color Picture::GetVtxColor(u32 idx) const {
+    NW4HBMAssert_Line(idx < VERTEXCOLOR_MAX, 251);
+    return mVtxColors[idx];
+}
 
-void Picture::SetVtxColor(u32 idx, ut::Color value) { mVtxColors[idx] = value; }
+void Picture::SetVtxColor(u32 idx, ut::Color value) {
+    NW4HBMAssert_Line(idx < VERTEXCOLOR_MAX, 262);
+    mVtxColors[idx] = value;
+}
 
 u8 Picture::GetVtxColorElement(u32 idx) const { return detail::GetVtxColorElement(mVtxColors, idx); }
 

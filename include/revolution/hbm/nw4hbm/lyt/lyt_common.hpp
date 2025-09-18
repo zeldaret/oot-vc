@@ -10,10 +10,14 @@
 #include "revolution/hbm/nw4hbm/ut/Color.hpp"
 #include "revolution/tpl/TPL.h"
 #include "revolution/types.h"
+#include "revolution/hbm/HBMAssert.hpp"
 
 /*******************************************************************************
  * macros
  */
+
+#define VERTEXCOLOR_MAX 4
+#define ANIMTARGET_VERTEXCOLOR_MAX 16
 
 // TODO: change to constexpr variables, like snd
 
@@ -165,10 +169,12 @@ inline const char* GetStrTableStr(const void* pStrTable, int index) {
 
 // But why
 inline u8 GetVtxColorElement(const ut::Color* cols, u32 idx) {
+    NW4HBMAssert_FileLine(idx < ANIMTARGET_VERTEXCOLOR_MAX, "common.h", 199);
     return reinterpret_cast<const u8*>(cols + idx / 4)[idx % 4];
 }
 
 inline void SetVtxColorElement(ut::Color* cols, u32 idx, u8 value) {
+    NW4HBMAssert_FileLine(idx < ANIMTARGET_VERTEXCOLOR_MAX, "common.h", 212);
     reinterpret_cast<u8*>(cols + idx / 4)[idx % 4] = value;
 }
 

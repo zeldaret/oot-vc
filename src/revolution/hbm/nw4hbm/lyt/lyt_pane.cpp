@@ -133,6 +133,8 @@ char _lyt_pane_unused1[] = "NW4HBM:Pointer must not be NULL (pNext)";
 char _lyt_pane_unused2[] = "NW4HBM:Failed assertion pNext->mpParent == this";
 char _lyt_pane_unused3[] = "NW4HBM:Failed assertion pChild->mpParent == this";
 
+#pragma ppc_iro_level 0
+
 const ut::Rect Pane::GetPaneRect(const DrawInfo& drawInfo) const {
     ut::Rect ret;
     math::VEC2 basePt = GetVtxPos();
@@ -149,6 +151,8 @@ const ut::Rect Pane::GetPaneRect(const DrawInfo& drawInfo) const {
 
     return ret;
 }
+
+#pragma ppc_iro_level reset
 
 const ut::Color Pane::GetVtxColor(u32) const { return ut::Color(0xffffffff); }
 

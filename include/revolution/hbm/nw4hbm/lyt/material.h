@@ -572,7 +572,10 @@ class Material {
     void SetTextureNoWrap(u8 texMapIdx, TPLPalette* pTplRes);
     void SetColorElement(u32 colorType, s16 value);
 
-    void SetTexCoordGen(u32 idx, TexCoordGen value) { GetTexCoordGenAry()[idx] = value; }
+    void SetTexCoordGen(u32 idx, TexCoordGen value) {
+        NW4HBMAssert_Line(idx < mGXMemNum.texCoordGen, 180);
+        GetTexCoordGenAry()[idx] = value;
+    }
 
     void SetTexSRTElement(u32 texSRTIdx, u32 eleIdx, f32 value) {
         NW4HBMAssert_Line(texSRTIdx < mGXMemNum.texSRT, 293);
