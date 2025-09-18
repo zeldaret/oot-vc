@@ -283,6 +283,7 @@ void CopyGXTexObj(GXTexObj* pDst, const GXTexObj* pSrc) {
 namespace nw4hbm {
 namespace lyt {
 
+#pragma dont_inline on
 Material::Material(const res::Material* pRes, const ResBlockSet& resBlockSet) {
     Init();
     SetName(pRes->name);
@@ -324,11 +325,13 @@ Material::Material(const res::Material* pRes, const ResBlockSet& resBlockSet) {
     if (mpGXMem) {
         SetTextureNum(texMapNum);
         if (texMapNum) {
+            NW4HBMAssertPointerNonnull_Line(resBlockSet.pTextureList, 469);
             const res::Texture* textures = detail::ConvertOffsToPtr<res::Texture>(resBlockSet.pTextureList, 12);
 
             GXTexObj* texMaps = GetTexMapAry();
 
             for (u8 i = 0; i < mGXMemNum.texMap; i++) {
+                NW4HBMAssert_Line(pResTexMap[i].texIdx < resBlockSet.pTextureList->texNum, 475);
                 const char* fileName =
                     detail::ConvertOffsToPtr<char>(textures, textures[pResTexMap[i].texIdx].nameStrOffset);
 
@@ -341,6 +344,8 @@ Material::Material(const res::Material* pRes, const ResBlockSet& resBlockSet) {
         }
 
         TexSRT* texSRTs = GetTexSRTAry();
+        NW4HBMAssert_Line(texSRTNum <= mGXMemNum.texSRT, 486);
+
         for (int i = 0; i < texSRTNum; i++) {
             texSRTs[i].translate = resTexSRTs[i].translate;
             texSRTs[i].rotate = resTexSRTs[i].rotate;
@@ -354,6 +359,7 @@ Material::Material(const res::Material* pRes, const ResBlockSet& resBlockSet) {
         }
 
         if (allocChanCtrl) {
+            NW4HBMAssert_Line(IsChanCtrlCap(), 504);
             const ChanCtrl* pResChanCtrl = detail::ConvertOffsToPtr<ChanCtrl>(pRes, resOffs);
 
             *GetChanCtrlAry() = *pResChanCtrl;
@@ -361,6 +367,7 @@ Material::Material(const res::Material* pRes, const ResBlockSet& resBlockSet) {
         }
 
         if (allocMatCol) {
+            NW4HBMAssert_Line(IsMatColorCap(), 512);
             const ut::Color* pResMatCol = detail::ConvertOffsToPtr<ut::Color>(pRes, resOffs);
 
             *GetMatColAry() = *pResMatCol;
@@ -368,6 +375,7 @@ Material::Material(const res::Material* pRes, const ResBlockSet& resBlockSet) {
         }
 
         if (allocTevSwap) {
+            NW4HBMAssert_Line(IsTevSwapCap(), 520);
             const TevSwapMode* pResTevSwap = detail::ConvertOffsToPtr<TevSwapMode>(pRes, resOffs);
 
             TevSwapMode* tevSwaps = GetTevSwapAry();
@@ -381,6 +389,7 @@ Material::Material(const res::Material* pRes, const ResBlockSet& resBlockSet) {
         }
 
         if (indTexSRTNum) {
+            NW4HBMAssert_Line(indTexSRTNum <= mGXMemNum.indSRT, 532);
             TexSRT* indTexSRTs = GetIndTexSRTAry();
             const TexSRT* pResIndMtx = detail::ConvertOffsToPtr<TexSRT>(pRes, resOffs);
 
@@ -415,6 +424,7 @@ Material::Material(const res::Material* pRes, const ResBlockSet& resBlockSet) {
         resOffs += sizeof(TevStage) * pRes->resNum.GetTevStageNum();
 
         if (allocAlpComp) {
+            NW4HBMAssert_Line(IsAlphaCompareCap(), 568);
             const AlphaCompare* pResAlphaCompare = detail::ConvertOffsToPtr<AlphaCompare>(pRes, resOffs);
 
             *GetAlphaComparePtr() = *pResAlphaCompare;
@@ -422,6 +432,7 @@ Material::Material(const res::Material* pRes, const ResBlockSet& resBlockSet) {
         }
 
         if (allocBlendMode) {
+            NW4HBMAssert_Line(IsBlendModeCap(), 576);
             const BlendMode* pResBlendMode = detail::ConvertOffsToPtr<BlendMode>(pRes, resOffs);
 
             *GetBlendModePtr() = *pResBlendMode;
@@ -429,6 +440,19 @@ Material::Material(const res::Material* pRes, const ResBlockSet& resBlockSet) {
         }
     }
 }
+#pragma dont_inline off
+
+u8 MaterialResourceNum::GetTexMapNum() const { return detail::GetBits<>(bits, 0, 4); }
+u8 MaterialResourceNum::GetTexSRTNum() const { return detail::GetBits<>(bits, 4, 4); }
+u8 MaterialResourceNum::GetTexCoordGenNum() const { return detail::GetBits<>(bits, 8, 4); }
+u8 MaterialResourceNum::GetChanCtrlNum() const { return detail::GetBits<>(bits, 25, 1); }
+u8 MaterialResourceNum::GetMatColNum() const { return detail::GetBits<>(bits, 27, 1); }
+bool MaterialResourceNum::HasTevSwapTable() const { return detail::TestBit<>(bits, 12); }
+bool MaterialResourceNum::HasAlphaCompare() const { return detail::TestBit<>(bits, 23); }
+bool MaterialResourceNum::HasBlendMode() const { return detail::TestBit<>(bits, 24); }
+u8 MaterialResourceNum::GetIndTexSRTNum() const { return detail::GetBits<>(bits, 13, 2); }
+u8 MaterialResourceNum::GetIndTexStageNum() const { return detail::GetBits<>(bits, 15, 3); }
+u8 MaterialResourceNum::GetTevStageNum() const { return detail::GetBits<>(bits, 18, 5); }
 
 void Material::Init() {
     mTevCols[0] = DefaultBlackColor;
@@ -468,6 +492,13 @@ void Material::InitBitGXNums(detail::BitGXNums* ptr) {
 void Material::ReserveGXMem(u8 texMapNum, u8 texSRTNum, u8 texCoordGenNum, u8 tevStageNum, bool allocTevSwap,
                             u8 indStageNum, u8 indSRTNum, bool allocChanCtrl, bool allocMatCol, bool allocAlpComp,
                             bool allocBlendMode) {
+    NW4HBMAssert_Line(texMapNum <= GX_MAX_TEXMAP, 661);
+    NW4HBMAssert_Line(texSRTNum <= TexMtxMax, 662);
+    NW4HBMAssert_Line(texCoordGenNum <= GX_MAX_TEXCOORD, 663);
+    NW4HBMAssert_Line(tevStageNum <= GX_MAX_TEVSTAGE, 664);
+    NW4HBMAssert_Line(indStageNum <= GX_MAX_INDTEXSTAGE, 665);
+    NW4HBMAssert_Line(indSRTNum <= IndTexMtxMax, 666);
+
     int tevSwapNum = allocTevSwap ? 1 : 0;
     int chanCtrlNum = allocChanCtrl ? 1 : 0;
     int matColNum = allocMatCol ? 1 : 0;
@@ -630,7 +661,10 @@ TevStage* Material::GetTevStageAry() {
 void Material::SetName(const char* name) { std::strncpy(mName, name, ARRAY_COUNT(mName)); }
 
 void Material::SetTextureNum(u8 num) {
+    NW4HBMAssert_Line(num <= mGXMemCap.texMap, 907);
+
     if (num) {
+        NW4HBMAssertPointerNonnull_Line(mpGXMem, 910);
         GXTexObj* texMaps = GetTexMapAry();
 
         for (u32 i = mGXMemNum.texMap; i < num; i++) {
@@ -642,7 +676,10 @@ void Material::SetTextureNum(u8 num) {
 }
 
 void Material::SetTexCoordGenNum(u8 num) {
+    NW4HBMAssert_Line(num <= mGXMemCap.texCoordGen, 924);
+
     if (num) {
+        NW4HBMAssertPointerNonnull_Line(mpGXMem, 927);
         TexCoordGen* texCoordGens = GetTexCoordGenAry();
 
         for (u32 i = mGXMemNum.texCoordGen; i < num; i++) {
@@ -654,7 +691,10 @@ void Material::SetTexCoordGenNum(u8 num) {
 }
 
 void Material::SetTevStageNum(u8 num) {
+    NW4HBMAssert_Line(num <= mGXMemCap.tevStage, 941);
+
     if (num) {
+        NW4HBMAssertPointerNonnull_Line(mpGXMem, 944);
         TevStage* tevStages = GetTevStageAry();
 
         for (u32 i = mGXMemNum.tevStage; i < num; i++) {
@@ -666,7 +706,10 @@ void Material::SetTevStageNum(u8 num) {
 }
 
 void Material::SetIndStageNum(u8 num) {
+    NW4HBMAssert_Line(num <= mGXMemCap.indStage, 958);
+
     if (num) {
+        NW4HBMAssertPointerNonnull_Line(mpGXMem, 961);
         IndirectStage* indStages = GetIndirectStageAry();
 
         for (u32 i = mGXMemNum.indStage; i < num; i++) {
@@ -677,14 +720,20 @@ void Material::SetIndStageNum(u8 num) {
     }
 }
 
-void Material::GetTexture(GXTexObj* pTexObj, u8 texMapIdx) const { CopyGXTexObj(pTexObj, &GetTexMapAry()[texMapIdx]); }
+void Material::GetTexture(GXTexObj* pTexObj, u8 texMapIdx) const {
+    NW4HBMAssertPointerNonnull_Line(pTexObj, 988);
+    NW4HBMAssert_Line(texMapIdx < mGXMemNum.texMap, 989);
+    CopyGXTexObj(pTexObj, &GetTexMapAry()[texMapIdx]);
+}
 
 void Material::SetTexture(u8 texMapIdx, TPLPalette* pTplRes) {
+    NW4HBMAssert_Line(texMapIdx < mGXMemNum.texMap, 1010);
     GXTexObj* pDstTexObj = &GetTexMapAry()[texMapIdx];
     detail::InitGXTexObjFromTPL(pDstTexObj, pTplRes, 0);
 }
 
 void Material::SetTextureNoWrap(u8 texMapIdx, TPLPalette* pTplRes) {
+    NW4HBMAssert_Line(texMapIdx < mGXMemNum.texMap, 1033);
     GXTexObj* pDstTexObj = &GetTexMapAry()[texMapIdx];
     GXTexWrapMode wrapS = GXGetTexObjWrapS(pDstTexObj);
     GXTexWrapMode wrapT = GXGetTexObjWrapT(pDstTexObj);
@@ -693,6 +742,7 @@ void Material::SetTextureNoWrap(u8 texMapIdx, TPLPalette* pTplRes) {
 }
 
 void Material::SetTexture(u8 texMapIdx, const GXTexObj& texObj) {
+    NW4HBMAssert_Line(texMapIdx < mGXMemNum.texMap, 1061);
     GXTexObj* pDstTexObj = &GetTexMapAry()[texMapIdx];
     CopyGXTexObj(pDstTexObj, &texObj);
 }
@@ -840,11 +890,16 @@ bool Material::SetupGX(bool bModVtxCol, u8 alpha) {
         TexCoordGen* texCoordGens = GetTexCoordGenAry();
 
         for (int i = 0; i < mGXMemNum.texCoordGen; i++) {
+            NW4HBMAssert_Line(texCoordGens[i].GetTexGenType() != GX_TG_MTX3x4, 1288);
             u32 texMtx = texCoordGens[i].GetTexMtx();
 
-            if (texCoordGens[i].GetTexGenType() == 1 && texMtx != 60) {
-                bUseTexMtx[GetTexMtxIdx(texMtx)] = true;
-                bSetTexMtx = true;
+            if (texCoordGens[i].GetTexGenType() == GX_TG_MTX2x4) {
+                NW4HBMAssert_Line(texMtx == GX_IDENTITY || GetTexMtxIdx(texMtx) < mGXMemNum.texSRT, 1294);
+
+                if (texMtx != GX_IDENTITY) {
+                    bUseTexMtx[GetTexMtxIdx(texMtx)] = true;
+                    bSetTexMtx = true;
+                }
             }
 
             GXSetTexCoordGen(static_cast<GXTexCoordID>(i), texCoordGens[i].GetTexGenType(),

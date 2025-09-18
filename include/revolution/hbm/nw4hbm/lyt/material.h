@@ -436,17 +436,17 @@ class MaterialResourceNum {
     // methods
   public:
     // methods
-    u8 GetTexMapNum() const { return detail::GetBits<>(bits, 0, 4); }
-    u8 GetTexSRTNum() const { return detail::GetBits<>(bits, 4, 4); }
-    u8 GetTexCoordGenNum() const { return detail::GetBits<>(bits, 8, 4); }
-    bool HasTevSwapTable() const { return detail::TestBit<>(bits, 12); }
-    u8 GetIndTexSRTNum() const { return detail::GetBits<>(bits, 13, 2); }
-    u8 GetIndTexStageNum() const { return detail::GetBits<>(bits, 15, 3); }
-    u8 GetTevStageNum() const { return detail::GetBits<>(bits, 18, 5); }
-    bool HasAlphaCompare() const { return detail::TestBit<>(bits, 23); }
-    bool HasBlendMode() const { return detail::TestBit<>(bits, 24); }
-    u8 GetChanCtrlNum() const { return detail::GetBits<>(bits, 25, 1); }
-    u8 GetMatColNum() const { return detail::GetBits<>(bits, 27, 1); }
+    u8 GetTexMapNum() const;
+    u8 GetTexSRTNum() const;
+    u8 GetTexCoordGenNum() const;
+    bool HasTevSwapTable() const;
+    u8 GetIndTexSRTNum() const;
+    u8 GetIndTexStageNum() const;
+    u8 GetTevStageNum() const;
+    bool HasAlphaCompare() const;
+    bool HasBlendMode() const;
+    u8 GetChanCtrlNum() const;
+    u8 GetMatColNum() const;
 
     // members
   private:
