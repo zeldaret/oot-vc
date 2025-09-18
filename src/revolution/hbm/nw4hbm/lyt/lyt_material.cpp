@@ -68,7 +68,20 @@ inline u32 GetTexMtxIdx(u32 texMtx) { return (texMtx - 30) / 3; }
 
 // .rodata
 static const GXColorS10 DefaultBlackColor = {0x0000, 0x0000, 0x0000, 0x0000};
-static const GXColorS10 DefaultWhiteColor = {0x00ff, 0x00ff, 0x00ff, 0x00ff};
+
+// seems like this doesn't exist?
+// static GXColorS10 DefaultWhiteColor = {0x00ff, 0x00ff, 0x00ff, 0x00ff};
+
+static inline void SetDefaultWhiteColor(GXColorS10* p) {
+    p->r = 255;
+    p->g = 255;
+    p->b = 255;
+    p->a = 255;
+}
+
+static inline bool IsDefaultWhiteColor(GXColorS10* p) {
+    return p->r == 255 && p->g == 255 && p->b == 255 && p->a == 255;
+}
 
 /*******************************************************************************
  * functions
@@ -456,8 +469,8 @@ u8 MaterialResourceNum::GetTevStageNum() const { return detail::GetBits<>(bits, 
 
 void Material::Init() {
     mTevCols[0] = DefaultBlackColor;
-    mTevCols[1] = DefaultWhiteColor;
-    mTevCols[2] = DefaultWhiteColor;
+    SetDefaultWhiteColor(&mTevCols[1]);
+    SetDefaultWhiteColor(&mTevCols[2]);
 
     InitBitGXNums(&mGXMemCap);
     InitBitGXNums(&mGXMemNum);
@@ -814,6 +827,14 @@ void Material::SetColorElement(u32 colorType, s16 value) {
     }
 }
 
+inline int dummytest(bool a) {
+    if (a) {
+        return 1;
+    }
+
+    return 0;
+}
+
 bool Material::SetupGX(bool bModVtxCol, u8 alpha) {
     // clang-format off
     static GXTevKColorSel kColSels[8] =
@@ -1077,7 +1098,7 @@ bool Material::SetupGX(bool bModVtxCol, u8 alpha) {
                     }
                 }
 
-                if (mTevCols[0] != DefaultBlackColor || mTevCols[1] != DefaultWhiteColor) {
+                if (mTevCols[0] != DefaultBlackColor || !IsDefaultWhiteColor(&mTevCols[1])) {
                     GXTevStageID tevStage = static_cast<GXTevStageID>(tevStageID);
 
                     GXSetTevOrder(tevStage, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR_NULL);
