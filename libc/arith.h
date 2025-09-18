@@ -17,7 +17,7 @@ long labs(long __x);
 div_t div(int __numer, int __denom);
 int __msl_add(int* __x, int __y);
 int __msl_ladd(long* __x, long __y);
-int __msl_mul(int* __x, int __y);
+int __msl_lmul(long* __x, long __y);
 div_t __msl_div(int __x, int __y);
 int __msl_mod(int __x, int __y);
 

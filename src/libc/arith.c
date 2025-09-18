@@ -60,8 +60,8 @@ int __msl_ladd(long* __x, long __y) {
     return 1;
 }
 
-int __msl_mul(int* __x, int __y) {
-    int x = *__x;
+int __msl_lmul(long* __x, long __y) {
+    long x = *__x;
     int sign;
 
     sign = ((x < 0) ^ (__y < 0)) ? -1 : 1;

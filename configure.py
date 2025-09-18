@@ -232,7 +232,7 @@ def RevolutionLib(lib_name: str, objects: List[Object], cpp_exceptions: str = "o
 def LibC(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
-        "mw_version": "GC/3.0a3",
+        "mw_version": "GC/3.0a5",
         "cflags": [*cflags_base, "-Cpp_exceptions on", "-O4,p", "-ipa file", "-rostr", "-use_lmw_stmw on", "-lang c", "-fp_contract off"],
         "progress_category": "libc",
         "objects": objects,
@@ -241,7 +241,7 @@ def LibC(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
 def MathLibC(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
-        "mw_version": "GC/3.0a3",
+        "mw_version": "GC/3.0a5",
         "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-rostr", "-use_lmw_stmw on", "-lang c", "-fp_contract off"],
         "progress_category": "libc",
         "objects": objects,
@@ -250,7 +250,7 @@ def MathLibC(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
 def RuntimeLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
-        "mw_version": "GC/3.0a3",
+        "mw_version": "GC/3.0a5",
         "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-rostr", "-use_lmw_stmw on", "-enc SJIS"],
         "progress_category": "runtime",
         "objects": objects,
@@ -670,7 +670,7 @@ config.libs = [
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/string.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/strtold.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/strtoul.c"),
-            Object(NotLinked, "libc/time.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/time.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/wstring.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/wchar_io.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/sysenv.c"),
