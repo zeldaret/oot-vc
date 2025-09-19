@@ -2,7 +2,7 @@
 #include "macros.h"
 #include "revolution/os.h"
 
-static inline void InitInline(void) {
+static inline void InitDefaultHeap(void) {
     void* arenaLo;
     void* arenaHi;
 
@@ -22,12 +22,12 @@ static inline void InitInline(void) {
     }
 }
 
-void Init(s32 size) {
-    InitInline();
+void __sys_alloc(s32 size) {
+    InitDefaultHeap();
     OSAllocFromHeap(__OSCurrHeap, size);
 }
 
 WEAK void __sys_free(void* ptr) {
-    InitInline();
+    InitDefaultHeap();
     OSFreeToHeap(__OSCurrHeap, ptr);
 }

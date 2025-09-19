@@ -1024,6 +1024,7 @@ runtime/New.cpp:
 	extab       start:0x80006688 end:0x800066BC
 	extabindex  start:0x80006C1C end:0x80006C34
 	.text       start:0x8015263C end:0x80152740
+	.sbss       start:0x8025DCE0 end:0x8025DCE8
 
 runtime/NMWException.cpp:
 	extab       start:0x800066BC end:0x800066FC
@@ -1051,6 +1052,7 @@ runtime/Gecko_ExceptionPPC.cpp:
 	extab       start:0x800066FC end:0x80006770
 	extabindex  start:0x80006C64 end:0x80006CB8
 	.text       start:0x8015389C end:0x80154FE4
+	.sdata      start:0x8025CFA0 end:0x8025CFA8
 
 runtime/GCN_mem_alloc.c:
 	.text       start:0x80154FE4 end:0x80155154
@@ -1060,6 +1062,12 @@ libc/alloc.c:
 	extab       start:0x80006770 end:0x800067A8
 	extabindex  start:0x80006CB8 end:0x80006D0C
 	.text       start:0x80155154 end:0x80155F54
+	.rodata     start:0x8016E4B0 end:0x8016E4C8
+	.bss        start:0x80259E18 end:0x80259E50
+	.sbss       start:0x8025DCE8 end:0x8025DCF0
+
+libc/errno.c:
+	.sbss       start:0x8025DCF0 end:0x8025DCF8
 
 libc/ansi_files.c:
 	extab       start:0x800067A8 end:0x800067B8
@@ -1075,6 +1083,14 @@ libc/ansi_fp.c:
 	.rodata     start:0x8016E4C8 end:0x8016E5A8
 	.data       start:0x801A02C8 end:0x801A0430
 	.sdata2     start:0x8025E968 end:0x8025E9A0
+
+libc/ctype.c:
+	.rodata     start:0x8016E5A8 end:0x8016E9A8
+
+libc/locale.c:
+	.rodata     start:0x8016E9A8 end:0x8016EAB0
+	.data       start:0x801A0430 end:0x801A0628
+	.sdata2     start:0x8025E9A0 end:0x8025E9B8
 
 libc/arith.c:
 	extab       start:0x800067F0 end:0x80006800
@@ -1133,7 +1149,7 @@ libc/printf.c:
 	.text       start:0x80158D40 end:0x8015B294
 	.rodata     start:0x8016EAB0 end:0x8016EAE0
 	.data       start:0x801A0628 end:0x801A0878
-	.sdata      start:0x8025CFA0 end:0x8025CFB0
+	.sdata      start:0x8025CFA8 end:0x8025CFB0
 	.sdata2     start:0x8025E9B8 end:0x8025E9C0
 
 libc/qsort.c:
@@ -1144,6 +1160,9 @@ libc/qsort.c:
 libc/rand.c:
 	.text       start:0x8015B404 end:0x8015B42C
 	.sdata      start:0x8025CFB0 end:0x8025CFB8
+
+libc/float.c:
+	.sdata      start:0x8025CFB8 end:0x8025CFC8
 
 libc/scanf.c:
 	extab       start:0x800068D0 end:0x800068E8
@@ -1180,7 +1199,13 @@ libc/time.c:
 	extab       start:0x80006940 end:0x80006988
 	extabindex  start:0x80006F70 end:0x80006FDC
 	.text       start:0x8015EFF8 end:0x80160920
-	.bss        start:0x8025A1D0 end:0x8025A1F8
+	.rodata     start:0x8016EB18 end:0x8016EC40
+	.data       start:0x801A0A20 end:0x801A0B78
+	.bss        start:0x8025A170 end:0x8025A1F4
+	.sdata2     start:0x8025E9E0 end:0x8025EA00
+
+libc/wctype.c:
+	.rodata     start:0x8016EC40 end:0x8016F240
 
 libc/wstring.c:
 	.text       start:0x80160920 end:0x80160980
