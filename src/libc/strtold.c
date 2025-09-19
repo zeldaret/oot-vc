@@ -135,7 +135,7 @@ long double __strtold(int max_width, int (*ReadProc)(void*, int, int), void* Rea
 
                 if ((i == 3) || (i == 8)) {
                     if (sig_negative) {
-                        result = -INFINITY;
+                        result = (float)-(double)INFINITY;
                     } else {
                         result = INFINITY;
                     }
