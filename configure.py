@@ -203,6 +203,7 @@ cflags_base = [
     "-DREVOLUTION",  # BTE changes
     "-i include",
     "-i libc",
+    "-i libcpp",
     "-i src",
     "-ir include/revolution/bte",  # thanks broadcom...
 ]
