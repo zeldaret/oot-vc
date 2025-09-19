@@ -822,6 +822,7 @@ runtime/New.cpp:
 	extab       start:0x80006688 end:0x800066BC
 	extabindex  start:0x80006C1C end:0x80006C34
 	.text       start:0x8015263C end:0x80152740
+	.sbss       start:0x8025DCE0 end:0x8025DCE8
 
 runtime/NMWException.cpp:
 	extab       start:0x800066BC end:0x800066FC
@@ -863,6 +864,9 @@ libc/alloc.c:
 	.bss        start:0x80259E18 end:0x80259E50
 	.sbss       start:0x8025DCE8 end:0x8025DCF0
 
+libc/errno.c:
+	.sbss       start:0x8025DCF0 end:0x8025DCF8
+
 libc/ansi_files.c:
 	extab       start:0x800067A8 end:0x800067B8
 	extabindex  start:0x80006D0C end:0x80006D24
@@ -877,6 +881,14 @@ libc/ansi_fp.c:
 	.rodata     start:0x8016E4C8 end:0x8016E5A8
 	.data       start:0x801A02C8 end:0x801A0430
 	.sdata2     start:0x8025E968 end:0x8025E9A0
+
+libc/ctype.c:
+	.rodata     start:0x8016E5A8 end:0x8016E9A8
+
+libc/locale.c:
+	.rodata     start:0x8016E9A8 end:0x8016EAB0
+	.data       start:0x801A0430 end:0x801A0628
+	.sdata2     start:0x8025E9A0 end:0x8025E9B8
 
 libc/arith.c:
 	extab       start:0x800067F0 end:0x80006800
@@ -947,6 +959,9 @@ libc/rand.c:
 	.text       start:0x8015B404 end:0x8015B42C
 	.sdata      start:0x8025CFB0 end:0x8025CFB8
 
+libc/float.c:
+	.sdata      start:0x8025CFB8 end:0x8025CFC8
+
 libc/scanf.c:
 	extab       start:0x800068D0 end:0x800068E8
 	extabindex  start:0x80006EC8 end:0x80006EEC
@@ -986,6 +1001,9 @@ libc/time.c:
 	.data       start:0x801A0A20 end:0x801A0B78
 	.bss        start:0x8025A170 end:0x8025A1F4
 	.sdata2     start:0x8025E9E0 end:0x8025EA00
+
+libc/wctype.c:
+	.rodata     start:0x8016EC40 end:0x8016F240
 
 libc/wstring.c:
 	.text       start:0x80160920 end:0x80160980
