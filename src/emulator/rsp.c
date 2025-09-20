@@ -176,8 +176,7 @@ static bool rspFindUCode(Rsp* pRSP, RspTask* pTask) {
     u64* pFUCode;
     u64 nCheckSum;
     u32 nLengthData;
-    u32 i;
-    u32 j;
+    unsigned int i;
     u32 nLengthCode;
     char aBigBuffer[4096];
     char acUCodeName[64];
@@ -216,9 +215,14 @@ static bool rspFindUCode(Rsp* pRSP, RspTask* pTask) {
 
     for (i = 0; i < (nLengthData >> 3); i++) {
         nFUData = pFUData[i];
-        for (j = 0; j < 8; j++) {
-            aBigBuffer[i * 8 + j] = nFUData >> (int)(56 - j * 8);
-        }
+        aBigBuffer[8 * i + 0] = (nFUData >> 56) & 0xFF;
+        aBigBuffer[8 * i + 1] = (nFUData >> 48) & 0xFF;
+        aBigBuffer[8 * i + 2] = (nFUData >> 40) & 0xFF;
+        aBigBuffer[8 * i + 3] = (nFUData >> 32) & 0xFF;
+        aBigBuffer[8 * i + 4] = (nFUData >> 24) & 0xFF;
+        aBigBuffer[8 * i + 5] = (nFUData >> 16) & 0xFF;
+        aBigBuffer[8 * i + 6] = (nFUData >> 8) & 0xFF;
+        aBigBuffer[8 * i + 7] = (nFUData >> 0) & 0xFF;
 
         if (((nFUData >> 32) & 0xFFFFFFFF) != 'RSP ') {
             continue;
