@@ -185,6 +185,7 @@ emulator/rsp.c:
 	.text       start:0x80064A64 end:0x8007D8A0
 	.data       start:0x80174B10 end:0x80174FC0
 	.sdata      start:0x8025C898 end:0x8025C8C8
+	.sbss       start:0x8025D148 end:0x8025D168
 	.sdata2     start:0x8025DF90 end:0x8025DFD8
 
 emulator/rdp.c:
