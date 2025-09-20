@@ -1212,12 +1212,10 @@ static bool rspParseGBI_F3DEX2(Rsp* pRSP, u64** ppnGBI, bool* pbDone) {
 
                         xlHeapCopy((u8*)pRSP->pDMEM + nDestAdrs, &destVtx, sizeof(zVtxDest));
 
-                        nSrcAdrs += 6;
-                        nDestAdrs += 16;
-                        iCount++;
                         if (pRSP->nNumZSortVertices > 127) {
                             return false;
                         }
+                        break;
                     }
                 }
             }
