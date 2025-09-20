@@ -816,11 +816,11 @@ static bool systemSetupGameALL(System* pSystem) {
             if (!xlHeapCopy(pBuffer, lbl_8016FEA0, 0x300)) {
                 return false;
             }
-            if (!fn_8007D6A0(SYSTEM_RSP(gpSystem), (void**)&pBuffer, 0, 4)) {
+            if (!rspGetIMEM(SYSTEM_RSP(gpSystem), (void**)&pBuffer, 0, 4)) {
                 return false;
             }
             pBuffer[0] = 0x17D7;
-            if (!fn_8007D688(SYSTEM_RSP(gpSystem), (void**)&pBuffer, 0, 4)) {
+            if (!rspGetDMEM(SYSTEM_RSP(gpSystem), (void**)&pBuffer, 0, 4)) {
                 return false;
             }
             pBuffer[0] = -1;
@@ -966,11 +966,11 @@ static bool systemSetupGameALL(System* pSystem) {
             if (!xlHeapCopy(pBuffer, lbl_8016FEA0, 0x300)) {
                 return false;
             }
-            if (!fn_8007D6A0(SYSTEM_RSP(gpSystem), &pBuffer, 0, 4)) {
+            if (!rspGetIMEM(SYSTEM_RSP(gpSystem), (void**)&pBuffer, 0, 4)) {
                 return false;
             }
             pBuffer[0] = 0x17D7;
-            if (!fn_8007D688(SYSTEM_RSP(gpSystem), (void**)&pBuffer, 0, 4)) {
+            if (!rspGetDMEM(SYSTEM_RSP(gpSystem), (void**)&pBuffer, 0, 4)) {
                 return false;
             }
             pBuffer[0] = -1;
@@ -1094,12 +1094,11 @@ static bool systemSetupGameALL(System* pSystem) {
             }
             pBuffer[0x80] = 0xAC290000;
             pBuffer[0xA1] = 0x240B17D7;
-            if (!fn_8007D6A0(SYSTEM_RSP(gpSystem), &pBuffer, 0, 4)) {
+            if (!rspGetIMEM(SYSTEM_RSP(gpSystem), (void**)&pBuffer, 0, 4)) {
                 return false;
             }
             pBuffer[0] = 0x17D7;
-
-            if (!fn_8007D688(SYSTEM_RSP(gpSystem), (void**)&pBuffer, 0, 4)) {
+            if (!rspGetDMEM(SYSTEM_RSP(gpSystem), (void**)&pBuffer, 0, 4)) {
                 return false;
             }
             pBuffer[0] = -1;
@@ -1156,11 +1155,11 @@ static bool systemSetupGameALL(System* pSystem) {
             }
             pBuffer[0x59] = 0x01EC6021;
             pBuffer[0xAE] = 0x8941680C;
-            if (!fn_8007D6A0(SYSTEM_RSP(gpSystem), &pBuffer, 0, 4)) {
+            if (!rspGetIMEM(SYSTEM_RSP(gpSystem), (void**)&pBuffer, 0, 4)) {
                 return false;
             }
             pBuffer[0] = 0x17D8;
-            if (!fn_8007D688(SYSTEM_RSP(gpSystem), (void**)&pBuffer, 0, 4)) {
+            if (!rspGetDMEM(SYSTEM_RSP(gpSystem), (void**)&pBuffer, 0, 4)) {
                 return false;
             }
             pBuffer[0] = -1;
