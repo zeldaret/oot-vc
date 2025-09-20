@@ -2496,15 +2496,18 @@ static bool rspAInterleave2(Rsp* pRSP, u32 nCommandLo, u32 nCommandHi) {
 }
 
 static bool rspADistFilter2(Rsp* pRSP, u32 nCommandLo, u32 nCommandHi) {
-    s32 dpow = ((nCommandHi >> 16) & 0x0F) << 12;
-    s32 ipow = ((nCommandHi >> 16) & 0xF0) >> 4;
-    s16 outp = (s16)(nCommandLo >> 16) >> 1;
-    s16 nCount = (s16)(nCommandHi & 0xFFFF) >> 1;
+    s32 dpow;
+    s16 outp;
+    s16 nCount;
     s32 i;
     s64 mult;
 
+    dpow = ((nCommandHi >> 16) & 0xFF) << 12;
+    outp = (s16)(nCommandLo >> 16) >> 1;
+    nCount = (s16)(nCommandHi & 0xFFFF) >> 1;
+
     for (i = 0; i < nCount; i++) {
-        mult = (s16)dpow | ((s16)ipow << 16);
+        mult = dpow;
         mult = (mult * (s64)pRSP->anAudioBuffer[outp + i]) >> 16;
         if (mult > 0x7FFF) {
             mult = 0x7FFF;
