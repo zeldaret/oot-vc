@@ -1010,12 +1010,12 @@ static bool rspObjSprite(Rsp* pRSP, Frame* pFrame, s32 nAddress) {
         fTexTop = 0.0f;
         fTexBottom = (2.0f * fSpriteHeight) - 2.0f;
     }
+    fScaleX = (1024.0f / objSprite.s.scaleW) * pFrame->rScaleX;
+    fScaleY = (1024.0f / objSprite.s.scaleH) * pFrame->rScaleY;
     fLeft = -fSpriteWidth / 2.0f;
     fRight = fSpriteWidth / 2.0f;
     fTop = fSpriteHeight / 2.0f;
     fBottom = -fSpriteHeight / 2.0f;
-    fScaleX = (1024.0f / objSprite.s.scaleW) * pFrame->rScaleX;
-    fScaleY = (1024.0f / objSprite.s.scaleH) * pFrame->rScaleY;
 
     frameFillVertex(pFrame, 0, fLeft, fTop, 0, fTexLeft, fTexTop);
     frameFillVertex(pFrame, 1, fRight, fTop, 0, fTexRight, fTexTop);
@@ -1202,10 +1202,12 @@ bool rspObjRectangleR(Rsp* pRSP, Frame* pFrame, s32 nAddress) {
         fTexTop = 0.0f;
         fTexBottom = (2.0f * fSpriteHeight) - 2.0f;
     }
+    fScaleX = 1024.0f / objSprite.s.scaleW;
+    fScaleY = 1024.0f / objSprite.s.scaleH;
     fLeft = -fSpriteWidth / 2.0f;
-    fRight = (1024.0f / objSprite.s.scaleW) * fSpriteWidth / 2.0f;
+    fRight = fScaleX * fSpriteWidth / 2.0f;
     fTop = fSpriteHeight / 2.0f;
-    fBottom = (1024.0f / objSprite.s.scaleH) * -fSpriteHeight / 2.0f;
+    fBottom = fScaleY * -fSpriteHeight / 2.0f;
 
     frameFillVertex(pFrame, 0, fLeft, fTop, 0, fTexLeft, fTexTop);
     frameFillVertex(pFrame, 1, fRight, fTop, 0, fTexRight, fTexTop);
@@ -1422,12 +1424,13 @@ static bool rspObjMatrix(Rsp* pRSP, Frame* pFrame, s32 nAddress) {
 }
 
 static bool rspSetupS2DEX(Rsp* pRSP) {
+    f32 fN;
+    f32 fF;
     f32 fL;
     f32 fR;
     f32 fB;
     f32 fT;
     Frame* pFrame;
-    f32 fScale = 2.0f;
 
     pFrame = SYSTEM_FRAME(gpSystem);
 
@@ -1441,6 +1444,8 @@ static bool rspSetupS2DEX(Rsp* pRSP) {
     pRSP->twoDValues.fX = 0.0f;
     pRSP->twoDValues.fY = 0.0f;
 
+    fN = 0.0f;
+    fF = 2.0f;
     fL = -pFrame->anSizeX[FS_TARGET] / 2.0f;
     fR = pFrame->anSizeX[FS_TARGET] / 2.0f;
     fB = -pFrame->anSizeY[FS_TARGET] / 2.0f;
@@ -1448,12 +1453,12 @@ static bool rspSetupS2DEX(Rsp* pRSP) {
 
     Matrix4by4Identity(pRSP->aMatrixOrtho);
 
-    pRSP->aMatrixOrtho[0][0] = fScale / (fR - fL);
-    pRSP->aMatrixOrtho[1][1] = fScale / (fT - fB);
-    pRSP->aMatrixOrtho[2][2] = -1.0f;
+    pRSP->aMatrixOrtho[0][0] = 2.0f / (fR - fL);
+    pRSP->aMatrixOrtho[1][1] = 2.0f / (fT - fB);
+    pRSP->aMatrixOrtho[2][2] = -2.0f / (fF - fN);
     pRSP->aMatrixOrtho[3][0] = -(fR + fL) / (fR - fL);
     pRSP->aMatrixOrtho[3][1] = -(fT + fB) / (fT - fB);
-    pRSP->aMatrixOrtho[3][2] = -fScale / 2.0f;
+    pRSP->aMatrixOrtho[3][2] = -(fF + fN) / (fF - fN);
     pRSP->aMatrixOrtho[3][3] = 1.0f;
 
     return true;
