@@ -33,9 +33,6 @@ class CharStrmReader {
     }
 
     void Set(const char* stream) {
-        NW4HBMAssertPointerValid_FileLine(this, "CharStrmReader.h", 59);
-        NW4HBMAlign2_FileLine(stream, "CharStrmReader.h", 60);
-        NW4HBMAssertPointerValid_FileLine(stream, "CharStrmReader.h", 61);
         mCharStrm = stream;
     }
 
@@ -43,6 +40,7 @@ class CharStrmReader {
         NW4HBMAssertPointerValid_FileLine(this, "CharStrmReader.h", 59);
         NW4HBMAlign2_FileLine(stream, "CharStrmReader.h", 60);
         NW4HBMAssertPointerValid_FileLine(stream, "CharStrmReader.h", 61);
+        NW4HBMAssert_FileLine(mReadFunc == ReadNextCharUTF16, "CharStrmReader.h", 62);
         mCharStrm = stream;
     }
 
@@ -53,7 +51,6 @@ class CharStrmReader {
 
     char16_t Next() {
         NW4HBMAssertPointerValid_FileLine(this, "CharStrmReader.h", 74);
-        NW4HBMAssert_FileLine(mReadFunc == ReadNextCharUTF16, "CharStrmReader.h", 62);
         return (this->*mReadFunc)();
     }
 

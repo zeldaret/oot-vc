@@ -916,11 +916,15 @@ revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.cpp:
 revolution/hbm/nw4hbm/lyt/lyt_textBox.cpp:
 	.text       start:0x80117778 end:0x8011A5C0
 	.ctors      start:0x8016A6F4 end:0x8016A6F8
-	.data       start:0x80196770 end:0x80196BC8
+	.data       start:0x80196770 end:0x80196DE8
+	.sbss       start:0x8025DC10 end:0x8025DC18
 
 revolution/hbm/nw4hbm/lyt/lyt_window.cpp:
 	.text       start:0x8011A5C0 end:0x8011CE94
 	.ctors      start:0x8016A6F8 end:0x8016A6FC
+	.data       start:0x80196DE8 end:0x80197048
+	.sbss       start:0x8025DC18 end:0x8025DC20
+	.sdata2     start:0x8025E6C0 end:0x8025E6D8
 
 revolution/hbm/nw4hbm/math/math_triangular.cpp:
 	.text       start:0x8011CE94 end:0x8011D104

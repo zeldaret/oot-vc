@@ -162,6 +162,8 @@ int CalcLineRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, co
 
             pTextWriter->SetCursorX(x);
             operation = pTextWriter->GetTagProcessor().CalcRect(&rect, code, &context);
+
+            NW4HBMAssertPointerValid_Line(context.str, 123);
             reader.Set(context.str);
 
             pRect->left = ut::Min(pRect->left, rect.left);

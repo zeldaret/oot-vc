@@ -89,6 +89,7 @@ TextureFlipInfo& GetTexutreFlipInfo(u8 textureFlip) {
 	};
     // clang-format on
 
+    NW4HBMAssert_Line(textureFlip < TEXTUREFLIP_MAX, 50);
     return flipInfos[textureFlip];
 }
 
@@ -291,31 +292,30 @@ namespace lyt {
 Window::Window(const res::Window* pBlock, const ResBlockSet& resBlockSet) : Pane(pBlock) {
     mContentInflation = pBlock->inflation;
 
-    const u32* matOffsTbl = detail::ConvertOffsToPtr<u32>(resBlockSet.pMaterialList, sizeof *resBlockSet.pMaterialList);
+    NW4HBMAssertPointerNonnull_Line(resBlockSet.pMaterialList, 193);
+    const u32* matOffsTbl = detail::ConvertOffsToPtr<u32>(resBlockSet.pMaterialList, sizeof(*resBlockSet.pMaterialList));
 
-    { // 0x49ee86 wants lexical_block
-        const res::WindowContent* pResContent =
-            detail::ConvertOffsToPtr<res::WindowContent>(pBlock, pBlock->contentOffset);
+    const res::WindowContent* pResContent =
+        detail::ConvertOffsToPtr<res::WindowContent>(pBlock, pBlock->contentOffset);
 
-        for (int i = 0; i < (int)ARRAY_COUNT(mContent.vtxColors); i++) {
-            mContent.vtxColors[i] = pResContent->vtxCols[i];
+    for (int i = 0; i < (int)ARRAY_COUNT(mContent.vtxColors); i++) {
+        mContent.vtxColors[i] = pResContent->vtxCols[i];
+    }
+
+    if (pResContent->texCoordNum) {
+        u8 texCoordNum = ut::Min<u8>(pResContent->texCoordNum, 8);
+        mContent.texCoordAry.Reserve(texCoordNum);
+
+        if (!mContent.texCoordAry.IsEmpty()) {
+            mContent.texCoordAry.Copy(&pResContent[1], texCoordNum);
         }
+    }
 
-        if (pResContent->texCoordNum) {
-            u8 texCoordNum = ut::Min<u8>(pResContent->texCoordNum, 8);
-            mContent.texCoordAry.Reserve(texCoordNum);
+    if (void* pMemMaterial = Layout::AllocMemory(sizeof(Material))) {
+        const res::Material* pResMaterial = detail::ConvertOffsToPtr<res::Material>(
+            resBlockSet.pMaterialList, matOffsTbl[pResContent->materialIdx]);
 
-            if (!mContent.texCoordAry.IsEmpty()) {
-                mContent.texCoordAry.Copy(&pResContent[1], texCoordNum);
-            }
-        }
-
-        if (void* pMemMaterial = Layout::AllocMemory(sizeof(Material))) {
-            const res::Material* pResMaterial = detail::ConvertOffsToPtr<res::Material>(
-                resBlockSet.pMaterialList, matOffsTbl[pResContent->materialIdx]);
-
-            mpMaterial = new (pMemMaterial) Material(pResMaterial, resBlockSet);
-        }
+        mpMaterial = new (pMemMaterial) Material(pResMaterial, resBlockSet);
     }
 
     mFrameNum = 0;
@@ -407,9 +407,15 @@ void Window::SetAnimationEnable(AnimTransform* pAnimTrans, bool bEnable, bool bR
     Pane::SetAnimationEnable(pAnimTrans, bEnable, bRecursive);
 }
 
-const ut::Color Window::GetVtxColor(u32 idx) const { return mContent.vtxColors[idx]; }
+const ut::Color Window::GetVtxColor(u32 idx) const {
+    NW4HBMAssert_Line(idx < VERTEXCOLOR_MAX, 360);
+    return mContent.vtxColors[idx];
+}
 
-void Window::SetVtxColor(u32 idx, ut::Color value) { mContent.vtxColors[idx] = value; }
+void Window::SetVtxColor(u32 idx, ut::Color value) {
+    NW4HBMAssert_Line(idx < VERTEXCOLOR_MAX, 371);
+    mContent.vtxColors[idx] = value;
+}
 
 u8 Window::GetVtxColorElement(u32 idx) const { return detail::GetVtxColorElement(mContent.vtxColors, idx); }
 
@@ -642,6 +648,7 @@ WindowFrameSize Window::GetFrameSize(u8 frameNum, const Frame* frames) {
 }
 
 Material* Window::GetFrameMaterial(u32 frameIdx) const {
+    NW4HBMAssert_Line(frameIdx < WINDOWFRAME_MAX, 658);
     if (frameIdx >= mFrameNum) {
         return nullptr;
     }

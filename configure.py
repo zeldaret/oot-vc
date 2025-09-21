@@ -239,7 +239,7 @@ def RevolutionHBMLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/3.0a5",
-        "cflags": [*cflags_base, f"-Cpp_exceptions off", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off", "-lang c++", "-i libcpp", "-DHBM_ASSERT"],
+        "cflags": [*cflags_base, f"-Cpp_exceptions off", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off", "-lang c++", "-DHBM_ASSERT"],
         "progress_category": "nw4hbm",
         "objects": objects,
     }
@@ -660,8 +660,8 @@ config.libs = [
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_pane.cpp", extra_cflags=["-fp_contract on"]),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_picture.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_textBox.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_window.cpp"),
+            Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_textBox.cpp", mw_version="GC/3.0a5.2"),
+            Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_window.cpp", mw_version="GC/3.0a5.2"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/math/math_triangular.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/code_8011D104.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_AxManager.cpp"),

@@ -19,6 +19,8 @@
 #define TEXTCOLOR_MAX 2
 #define VERTEXCOLOR_MAX 4
 #define ANIMTARGET_VERTEXCOLOR_MAX 16
+#define TEXTUREFLIP_MAX 6
+#define WINDOWFRAME_MAX 8
 
 // TODO: change to constexpr variables, like snd
 
