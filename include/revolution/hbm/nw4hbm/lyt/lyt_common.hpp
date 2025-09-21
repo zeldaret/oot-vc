@@ -16,6 +16,7 @@
  * macros
  */
 
+#define TEXTCOLOR_MAX 2
 #define VERTEXCOLOR_MAX 4
 #define ANIMTARGET_VERTEXCOLOR_MAX 16
 

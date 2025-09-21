@@ -135,9 +135,9 @@
 #define NW4HBMAssertHeaderPointerValid(ptr_)                          NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, POINTER_VALID_TEST(ptr_), "Pointer Error\n" #ptr_ "(=%p) is not valid pointer.", ptr_)
 
 // MinimumValue
-#define NW4HBMAssertMinimumValue_FileLine(file_, line_, var_, minValue_)  NW4HBMAssertMessage_FileLine(  file_ ,   line_ , minValue_ <= var_, "NW4HBM:" #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)minValue_)
-#define NW4HBMAssertMinimumValue_File(file_, var_, minValue_)             NW4HBMAssertMessage_FileLine(  file_ , __LINE__, minValue_ <= var_, "NW4HBM:" #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)minValue_)
-#define NW4HBMAssertMinimumValue_Line(line_, var_, minValue_)             NW4HBMAssertMessage_FileLine(__FILE__,   line_ , minValue_ <= var_, "NW4HBM:" #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)minValue_)
+#define NW4HBMAssertMinimumValue_FileLine(var_, minValue_, file_, line_)  NW4HBMAssertMessage_FileLine(  file_ ,   line_ , minValue_ <= var_, "NW4HBM:" #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)minValue_)
+#define NW4HBMAssertMinimumValue_File(var_, minValue_, file_)             NW4HBMAssertMessage_FileLine(  file_ , __LINE__, minValue_ <= var_, "NW4HBM:" #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)minValue_)
+#define NW4HBMAssertMinimumValue_Line(var_, minValue_, line_)             NW4HBMAssertMessage_FileLine(__FILE__,   line_ , minValue_ <= var_, "NW4HBM:" #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)minValue_)
 #define NW4HBMAssertMinimumValue(var_, minValue_)                         NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, minValue_ <= var_, "NW4HBM:" #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)minValue_)
 
 #define NW4HBMAssertHeaderMinimumValue_FileLine(file_, line_, var_, minValue_)    NW4HBMAssertMessage_FileLine(  file_ ,   line_ , minValue_ <= var_, #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied.", (int)(var_), (int)(minValue_))

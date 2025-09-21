@@ -27,7 +27,10 @@ class CharStrmReader {
     CharStrmReader(ReadFunc func) : mCharStrm(nullptr), mReadFunc(func) {}
 
     // methods
-    const void* GetCurrentPos() const { return mCharStrm; }
+    const void* GetCurrentPos() const {
+        NW4HBMAssertPointerValid_FileLine(this, "CharStrmReader.h", 68);
+        return mCharStrm;
+    }
 
     void Set(const char* stream) {
         NW4HBMAssertPointerValid_FileLine(this, "CharStrmReader.h", 59);
@@ -35,7 +38,13 @@ class CharStrmReader {
         NW4HBMAssertPointerValid_FileLine(stream, "CharStrmReader.h", 61);
         mCharStrm = stream;
     }
-    void Set(const wchar_t* stream) { mCharStrm = stream; }
+
+    void Set(const wchar_t* stream) {
+        NW4HBMAssertPointerValid_FileLine(this, "CharStrmReader.h", 59);
+        NW4HBMAlign2_FileLine(stream, "CharStrmReader.h", 60);
+        NW4HBMAssertPointerValid_FileLine(stream, "CharStrmReader.h", 61);
+        mCharStrm = stream;
+    }
 
     char16_t ReadNextCharUTF8();
     char16_t ReadNextCharUTF16();
@@ -43,8 +52,12 @@ class CharStrmReader {
     char16_t ReadNextCharSJIS();
 
     char16_t Next() {
+        NW4HBMAssertPointerValid_FileLine(this, "CharStrmReader.h", 74);
         NW4HBMAssert_FileLine(mReadFunc == ReadNextCharUTF16, "CharStrmReader.h", 62);
         return (this->*mReadFunc)();
+    }
+
+    void Something() {
     }
 
     template <typename charT> charT GetChar() const {

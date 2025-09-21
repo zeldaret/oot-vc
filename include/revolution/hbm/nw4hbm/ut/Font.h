@@ -135,7 +135,10 @@ class Font {
 
     // methods
     void InitReaderFunc(FontEncoding encoding);
-    CharStrmReader GetCharStrmReader() const {
+
+    // why???
+    CharStrmReader GetCharStrmReader() const NO_INLINE {
+        NW4HBMAssertPointerValid_Line(this, 117);
         CharStrmReader reader(mReaderFunc);
         return reader;
     }

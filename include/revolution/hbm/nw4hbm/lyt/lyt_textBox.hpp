@@ -12,9 +12,6 @@
 #include "revolution/hbm/nw4hbm/ut/ut_Rect.hpp"
 #include "revolution/types.h"
 
-#define TEXTCOLOR_MAX 2
-#define VERTEXCOLOR_MAX 4
-
 /*******************************************************************************
  * classes and functions
  */
@@ -99,6 +96,14 @@ class TextBox : public Pane {
         NW4HBMAssert_FileLine(type < TEXTCOLOR_MAX, "textBox.h", 95);
         return mTextColors[type];
     }
+
+// inline doesn't work, even with `level`...
+#define __SetTextColor(type, value)                                   \
+    {                                                                 \
+        NW4HBMAssert_FileLine(type < TEXTCOLOR_MAX, "textBox.h", 96); \
+        mTextColors[type] = value;                                    \
+    }
+
     const Size GetFontSize() const { return mFontSize; }
 
     void SetFontSize(const Size& fontSize) { mFontSize = fontSize; }
@@ -117,6 +122,8 @@ class TextBox : public Pane {
     void SetFont(const ut::Font* pFont);
 
     void Init(u16 allocStrLen);
+
+    // void fn_80119770(u16 param1);
 
     // members
   private:
