@@ -228,6 +228,7 @@ static u16 line_1606[N64_FRAME_WIDTH / 4][4][4];
 static u16 line_1630[N64_FRAME_WIDTH / 4][4][4];
 static GXTexObj sFrameObj_1647;
 static GXTexObj sFrameObj_1660;
+static GXTexObj lbl_801A1680;
 static GXTexObj frameObj_1663;
 static GXTexObj frameObj_1673;
 static u16 tempLine[ZELDA_PAUSE_EQUIP_PLAYER_WIDTH / 4][4][4];
@@ -895,9 +896,7 @@ void fn_8004A314(Frame* pFrame) {
     }
 }
 
-// frameDrawSetupFog_StarFox
-
-bool frameDrawSetupFog_Default(Frame* pFrame) {
+bool frameDrawSetupFog_StarFox(Frame* pFrame) {
     GXColor color;
     GXFogType nFogType;
     f32 rNear;
@@ -906,7 +905,9 @@ bool frameDrawSetupFog_Default(Frame* pFrame) {
     f32 rOffset;
     f32 rStart;
     f32 rEnd;
+    f32 var_f5;
     f32 var_f6;
+    f32 var_f9;
 
     rMultiplier = (s16)(pFrame->aMode[0] >> 16);
     rOffset = (s16)(pFrame->aMode[0] & 0xFFFF);
@@ -916,13 +917,88 @@ bool frameDrawSetupFog_Default(Frame* pFrame) {
     color = pFrame->aColor[FCT_FOG];
     nFogType = GX_FOG_EXP;
 
-    if ((rOffset == rMultiplier) && (0.0f == rOffset)) {
+    if (rOffset == rMultiplier && rOffset == 0.0f) {
         GXSetFog(GX_FOG_NONE, color, 0.0f, 0.0f, 0.0f, 1000.0f);
         return true;
     }
+
     var_f6 = -rOffset;
-    rStart = pFrame->unk_3F150[3][2] / ((var_f6 / rMultiplier) - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
-    var_f6 = (249.0f + var_f6) / rMultiplier;
+    var_f9 = var_f6 / rMultiplier;
+    rStart = pFrame->unk_3F150[3][2] / (var_f9 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
+
+    var_f5 = 253.0f;
+    var_f6 = var_f5 + var_f6;
+    var_f6 = (var_f6) / rMultiplier;
+
+    if (rStart < rNear) {
+        rStart = rNear;
+    }
+    if (rStart > rFar) {
+        rStart = rFar;
+    }
+    if (var_f6 > 1.2f) {
+        nFogType = GX_FOG_EXP;
+        rStart = -rOffset / rMultiplier;
+        rEnd = (rMultiplier + rOffset) / 256.0f;
+        rEnd = 1.0f - rEnd;
+        rEnd = rEnd * (rFar - rNear) + rNear;
+    } else {
+        if (var_f6 > 1.0f) {
+            var_f6 = 1.0f;
+        }
+        rEnd = pFrame->unk_3F150[3][2] / (var_f6 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
+        if (rEnd < rNear) {
+            rEnd = rNear;
+        }
+        if (rEnd > rFar) {
+            rEnd = rFar;
+        }
+    }
+
+    rNear *= 0.1f;
+    if (((pFrame->aMode[FMT_OTHER0] >> 26) & 3) == 1 || (pFrame->aMode[FMT_OTHER0] >> 30) == 3 ||
+        ((pFrame->aMode[FMT_OTHER0] >> 22) & 3) == 3) {
+        GXSetFog(nFogType, color, rStart, rEnd, rNear, rFar);
+    } else {
+        GXSetFog(GX_FOG_NONE, color, 0.0f, 0.0f, 0.0f, 1000.0f);
+    }
+    return true;
+}
+
+bool frameDrawSetupFog_Default(Frame* pFrame) {
+    GXColor color;
+    s32 nFogType;
+    f32 rNear;
+    f32 rFar;
+    f32 rMultiplier;
+    f32 rOffset;
+    f32 rStart;
+    f32 rEnd;
+    f32 var_f5;
+    f32 var_f6;
+    f32 var_f9;
+
+    rMultiplier = (s16)(pFrame->aMode[0] >> 16);
+    rOffset = (s16)(pFrame->aMode[0] & 0xFFFF);
+
+    rFar = pFrame->unk_3F210;
+    rNear = pFrame->unk_3F214;
+    color = pFrame->aColor[FCT_FOG];
+    nFogType = GX_FOG_EXP;
+
+    if (rOffset == rMultiplier && rOffset == 0.0f) {
+        GXSetFog(GX_FOG_NONE, color, 0.0f, 0.0f, 0.0f, 1000.0f);
+        return true;
+    }
+
+    var_f6 = -rOffset;
+    var_f9 = var_f6 / rMultiplier;
+    rStart = pFrame->unk_3F150[3][2] / (var_f9 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
+
+    var_f5 = 249.0f;
+    var_f6 = var_f5 + var_f6;
+    var_f6 = var_f6 / rMultiplier;
+
     if (rStart < rNear) {
         rStart = rNear;
     }
@@ -1113,7 +1189,65 @@ void ZeldaGreyScaleConvert(Frame* pFrame) {
     frameDrawReset(pFrame, 0x47F2D);
 }
 
-// fn_8004B198
+//! TODO: make sFrameObj (lbl_801A1680) a static variable in the function
+void fn_8004B198(Frame* pFrame, void* pBuffer) {
+    GXColor color;
+    Mtx matrix;
+    f32 x1;
+    f32 y1;
+    f32 x0;
+    f32 y0;
+
+    color.r = 255;
+    color.g = 255;
+    color.b = 255;
+    color.a = 255;
+    frameDrawSetup2D(pFrame);
+    GXSetNumTevStages(1);
+    GXSetNumChans(0);
+    GXSetNumTexGens(1);
+    GXSetTevColor(GX_TEVREG0, color);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_C0, GX_CC_ZERO);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+    GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
+    GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
+    GXSetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
+    GXSetZCompLoc(GX_TRUE);
+    PSMTXIdentity(matrix);
+    GXLoadTexMtxImm(matrix, 0x1E, GX_MTX2x4);
+    GXInitTexObj(&lbl_801A1680, pBuffer, N64_FRAME_WIDTH, N64_FRAME_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP,
+                 GX_DISABLE);
+    GXInitTexObjLOD(&lbl_801A1680, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+    GXLoadTexObj(&lbl_801A1680, GX_TEXMAP0);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+
+    x0 = 0.0f;
+    y0 = 1.0f;
+    x1 = N64_FRAME_WIDTH;
+    y1 = N64_FRAME_HEIGHT;
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3f32(x0, x0, 0.0f);
+    GXTexCoord2f32(x0, x0);
+    GXPosition3f32(x1, x0, 0.0f);
+    GXTexCoord2f32(y0, x0);
+    GXPosition3f32(x1, y1, 0.0f);
+    GXTexCoord2f32(y0, y0);
+    GXPosition3f32(x0, y1, 0.0f);
+    GXTexCoord2f32(x0, y0);
+    GXEnd();
+
+    pFrame->nMode = 0;
+    pFrame->nModeVtx = -1;
+    frameDrawReset(pFrame, 0x47F2D);
+    return;
+}
 
 //! TODO: make sCommandCodes a static variable in the function
 bool frameHackTIMG_Zelda(Frame* pFrame, u64** pnGBI, u32* pnCommandLo, u32* pnCommandHi) {
@@ -1221,6 +1355,94 @@ bool frameHackCIMG_Zelda(Frame* pFrame, FrameBuffer* pBuffer, u64* pnGBI, u32 nC
     }
 
     PAD_STACK();
+    return true;
+}
+
+bool fn_8004B940(Frame* pFrame, Cpu* pCPU) {
+    CpuFunction* pFunction;
+
+    if (pFrame->unk_34 != 0) {
+        pFrame->unk_34++;
+        switch (pFrame->unk_34 & 0xFF) {
+            case 0x02:
+                fn_8009C5B0(VI_GM_0_8);
+                break;
+            case 0x03:
+                fn_8009C5B0(VI_GM_0_6);
+                break;
+            case 0x04:
+                fn_8009C5B0(VI_GM_0_4);
+                break;
+            case 0x05:
+                fn_8009C5B0(VI_GM_0_6);
+                break;
+            case 0x06:
+                fn_8009C5B0(VI_GM_0_8);
+                break;
+            case 0x07:
+                fn_8009C5B0(VI_GM_1_0);
+                break;
+            case 0x08:
+                fn_8009C5B0(VI_GM_0_8);
+                break;
+            case 0x09:
+                fn_8009C5B0(VI_GM_0_6);
+                break;
+            case 0x0A:
+                fn_8009C5B0(VI_GM_0_4);
+                break;
+            case 0x0B:
+                fn_8009C5B0(VI_GM_0_6);
+                break;
+            case 0x0C:
+                fn_8009C5B0(VI_GM_0_8);
+                break;
+            case 0x0D:
+                fn_8009C5B0(VI_GM_1_0);
+                break;
+            case 0x0E:
+                fn_8009C5B0(VI_GM_0_8);
+                break;
+            case 0x0F:
+                fn_8009C5B0(VI_GM_0_6);
+                break;
+            case 0x10:
+                fn_8009C5B0(VI_GM_0_4);
+                break;
+            case 0x11:
+                fn_8009C5B0(VI_GM_0_6);
+                break;
+            case 0x12:
+                fn_8009C5B0(VI_GM_0_8);
+                break;
+            case 0x13:
+                fn_8009C5B0(VI_GM_1_0);
+                break;
+            case 0x3C:
+                if (gpSystem->eTypeROM == NKTJ) {
+                    if (cpuFindFunction(pCPU, 0x802B2E7C, &pFunction)) {
+                        if (!fn_8003F330(pCPU, pFunction)) {
+                            return false;
+                        }
+                    }
+                } else if (gpSystem->eTypeROM == NKTE) {
+                    if (cpuFindFunction(pCPU, 0x802B2EBC, &pFunction)) {
+                        if (!fn_8003F330(pCPU, pFunction)) {
+                            return false;
+                        }
+                    }
+                } else if (gpSystem->eTypeROM == NKTP) {
+                    if (cpuFindFunction(pCPU, 0x802B2F5C, &pFunction)) {
+                        if (!fn_8003F330(pCPU, pFunction)) {
+                            return false;
+                        }
+                    }
+                }
+                pFrame->unk_34 &= ~0xFF;
+                break;
+        }
+    }
+
     return true;
 }
 
@@ -2870,7 +3092,42 @@ bool frameSetColor(Frame* pFrame, FrameColorType eType, u32 nRGBA) {
     return true;
 }
 
-// fn_80052174
+void fn_80052174(Frame* pFrame) {
+    GXColor color;
+
+    frameDrawSetup2D(pFrame);
+    GXSetZMode(GX_ENABLE, GX_ALWAYS, GX_ENABLE);
+    GXSetZCompLoc(GX_TRUE);
+    GXSetColorUpdate(GX_DISABLE);
+    GXSetAlphaUpdate(GX_DISABLE);
+    GXSetNumTevStages(1);
+    GXSetNumChans(1);
+    GXSetNumTexGens(0);
+    color.r = 255;
+    color.g = 0;
+    color.b = 0;
+    color.a = 255;
+    GXSetTevColor(GX_TEVREG0, color);
+    GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+    GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_C0);
+    GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_KONST);
+    GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR_NULL);
+    GXSetBlendMode(GX_BM_NONE, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition3f32(0.0, 0.0, -1001.0);
+    GXPosition3f32(N64_FRAME_WIDTH, 0.0, -1001.0);
+    GXPosition3f32(N64_FRAME_WIDTH, N64_FRAME_HEIGHT, -1001.0);
+    GXPosition3f32(0.0, N64_FRAME_HEIGHT, -1001.0);
+    GXEnd();
+
+    GXSetColorUpdate(GX_ENABLE);
+    GXSetAlphaUpdate(GX_ENABLE);
+}
 
 bool frameBeginOK(Frame* pFrame) {
     if (gbFrameValid) {
@@ -3239,6 +3496,34 @@ bool frameLoadTexturePack(Frame* pFrame, const char* szFileName) {
         }
     }
 
+    return true;
+}
+
+bool fn_8005329C(Frame* pFrame, s32 r, s32 g, s32 b) {
+    if (r < 0) {
+        r = 0;
+    }
+    if (r > 255) {
+        r = 255;
+    }
+
+    if (g < 0) {
+        g = 0;
+    }
+    if (g > 255) {
+        g = 255;
+    }
+
+    if (b < 0) {
+        b = 0;
+    }
+    if (b > 255) {
+        b = 255;
+    }
+
+    lbl_80172710[0] = r;
+    lbl_80172710[1] = g;
+    lbl_80172710[2] = b;
     return true;
 }
 
