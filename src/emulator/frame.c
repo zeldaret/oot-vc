@@ -836,59 +836,59 @@ void fn_8004A314(Frame* pFrame) {
     if (pFrame->matrixProjection[0][3] != 0.0f || pFrame->matrixProjection[1][3] != 0.0f ||
         pFrame->matrixProjection[2][3] != 0.0f) {
         PSMTXTranspose(pFrame->matrixProjection, sp28);
-        PSMTX44Identity(pFrame->unknown2);
-        PSMTX44Identity(pFrame->unknown3);
+        PSMTX44Identity(pFrame->unk_3F190);
+        PSMTX44Identity(pFrame->unk_3F1D0);
 
-        pFrame->unknown2[2][0] = -sp28[3][0];
-        pFrame->unknown2[2][1] = -sp28[3][1];
-        pFrame->unknown2[2][2] = -sp28[3][2];
-        pFrame->unknown2[2][3] = -sp28[3][3];
+        pFrame->unk_3F190[2][0] = -sp28[3][0];
+        pFrame->unk_3F190[2][1] = -sp28[3][1];
+        pFrame->unk_3F190[2][2] = -sp28[3][2];
+        pFrame->unk_3F190[2][3] = -sp28[3][3];
 
         if (sp28[3][0] != 0.0f) {
-            pFrame->unknown3[2][2] = -sp28[2][0] / sp28[3][0];
+            pFrame->unk_3F1D0[2][2] = -sp28[2][0] / sp28[3][0];
         } else if (sp28[3][1] != 0.0f) {
-            pFrame->unknown3[2][2] = -sp28[2][1] / sp28[3][1];
+            pFrame->unk_3F1D0[2][2] = -sp28[2][1] / sp28[3][1];
         } else {
-            pFrame->unknown3[2][2] = -sp28[2][2] / sp28[3][2];
+            pFrame->unk_3F1D0[2][2] = -sp28[2][2] / sp28[3][2];
         }
 
-        pFrame->unknown3[2][3] = -((pFrame->unknown3[2][2] * pFrame->unknown2[2][3]) - sp28[2][3]);
-        pFrame->unknown3[3][2] = -1.0f;
-        pFrame->unknown3[3][3] = 0.0f;
+        pFrame->unk_3F1D0[2][3] = -((pFrame->unk_3F1D0[2][2] * pFrame->unk_3F190[2][3]) - sp28[2][3]);
+        pFrame->unk_3F1D0[3][2] = -1.0f;
+        pFrame->unk_3F1D0[3][3] = 0.0f;
 
-        pFrame->unknown3[1][2] = 1.0f;
-        pFrame->unknown2[1][0] = sp28[1][0] - pFrame->unknown2[2][0];
-        pFrame->unknown2[1][1] = sp28[1][1] - pFrame->unknown2[2][1];
-        pFrame->unknown2[1][2] = sp28[1][2] - pFrame->unknown2[2][2];
-        pFrame->unknown2[1][3] = sp28[1][3] - pFrame->unknown2[2][3];
+        pFrame->unk_3F1D0[1][2] = 1.0f;
+        pFrame->unk_3F190[1][0] = sp28[1][0] - pFrame->unk_3F190[2][0];
+        pFrame->unk_3F190[1][1] = sp28[1][1] - pFrame->unk_3F190[2][1];
+        pFrame->unk_3F190[1][2] = sp28[1][2] - pFrame->unk_3F190[2][2];
+        pFrame->unk_3F190[1][3] = sp28[1][3] - pFrame->unk_3F190[2][3];
 
-        pFrame->unknown3[0][2] = 1.0f;
-        pFrame->unknown2[0][0] = sp28[0][0] - pFrame->unknown2[2][0];
-        pFrame->unknown2[0][1] = sp28[0][1] - pFrame->unknown2[2][1];
-        pFrame->unknown2[0][2] = sp28[0][2] - pFrame->unknown2[2][2];
-        pFrame->unknown2[0][3] = sp28[0][3] - pFrame->unknown2[2][3];
+        pFrame->unk_3F1D0[0][2] = 1.0f;
+        pFrame->unk_3F190[0][0] = sp28[0][0] - pFrame->unk_3F190[2][0];
+        pFrame->unk_3F190[0][1] = sp28[0][1] - pFrame->unk_3F190[2][1];
+        pFrame->unk_3F190[0][2] = sp28[0][2] - pFrame->unk_3F190[2][2];
+        pFrame->unk_3F190[0][3] = sp28[0][3] - pFrame->unk_3F190[2][3];
 
-        PSMTXTranspose(pFrame->unknown2, pFrame->unknown2);
-        PSMTXTranspose(pFrame->unknown3, pFrame->unknown);
+        PSMTXTranspose(pFrame->unk_3F190, pFrame->unk_3F190);
+        PSMTXTranspose(pFrame->unk_3F1D0, pFrame->unk_3F150);
 
-        fn_8004A314_inline(pFrame->unknown, sp18, -1.0f);
-        fn_8004A314_inline(pFrame->unknown, sp8, 1.0f);
+        fn_8004A314_inline(pFrame->unk_3F150, sp18, -1.0f);
+        fn_8004A314_inline(pFrame->unk_3F150, sp8, 1.0f);
 
         temp_f1_2 = sp8[3] * 0.1f;
         temp_f2_4 = sp18[3] + temp_f1_2;
 
-        pFrame->unknown3[2][2] = temp_f1_2 / temp_f2_4;
-        pFrame->unknown3[2][3] = temp_f1_2 * sp18[3] / temp_f2_4;
+        pFrame->unk_3F1D0[2][2] = temp_f1_2 / temp_f2_4;
+        pFrame->unk_3F1D0[2][3] = temp_f1_2 * sp18[3] / temp_f2_4;
 
         pFrame->unk_3F210 = sp18[3];
         pFrame->unk_3F214 = -sp8[3];
         pFrame->eTypeProjection = FMP_PERSPECTIVE;
     } else {
-        memcpy(pFrame->unknown2, pFrame->matrixProjection, sizeof(Mtx44));
-        PSMTX44Identity(pFrame->unknown3);
-        memcpy(pFrame->unknown, pFrame->unknown3, sizeof(Mtx44));
-        pFrame->unknown3[2][2] = -0.25f;
-        pFrame->unknown3[2][3] = -0.5f;
+        memcpy(pFrame->unk_3F190, pFrame->matrixProjection, sizeof(Mtx44));
+        PSMTX44Identity(pFrame->unk_3F1D0);
+        memcpy(pFrame->unk_3F150, pFrame->unk_3F1D0, sizeof(Mtx44));
+        pFrame->unk_3F1D0[2][2] = -0.25f;
+        pFrame->unk_3F1D0[2][3] = -0.5f;
         pFrame->unk_3F210 = 1.0f;
         pFrame->unk_3F214 = 0.0f;
         pFrame->eTypeProjection = FMP_ORTHOGRAPHIC;
@@ -921,7 +921,7 @@ bool frameDrawSetupFog_Default(Frame* pFrame) {
         return true;
     }
     var_f6 = -rOffset;
-    rStart = pFrame->unknown[3][2] / ((var_f6 / rMultiplier) - (pFrame->unknown[2][2] / pFrame->unknown[2][3]));
+    rStart = pFrame->unk_3F150[3][2] / ((var_f6 / rMultiplier) - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
     var_f6 = (249.0f + var_f6) / rMultiplier;
     if (rStart < rNear) {
         rStart = rNear;
@@ -939,7 +939,7 @@ bool frameDrawSetupFog_Default(Frame* pFrame) {
         if (var_f6 > 1.0f) {
             var_f6 = 1.0f;
         }
-        rEnd = pFrame->unknown[3][2] / (var_f6 - (pFrame->unknown[2][2] / pFrame->unknown[2][3]));
+        rEnd = pFrame->unk_3F150[3][2] / (var_f6 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
         if (rEnd < rNear) {
             rEnd = rNear;
         }
@@ -3718,7 +3718,7 @@ bool frameLoadVertex(Frame* pFrame, void* pBuffer, s32 iVertex0, s32 nCount) {
             fn_8004A314(pFrame);
             pFrame->nMode |= 0x08000000;
         }
-        PSMTX44Concat(matrixModel, pFrame->unknown2, pFrame->matrixView);
+        PSMTX44Concat(matrixModel, pFrame->unk_3F190, pFrame->matrixView);
         pFrame->nMode |= 0x400000;
     }
 
@@ -3952,7 +3952,7 @@ bool frameCullDL(Frame* pFrame, s32 nVertexStart, s32 nVertexEnd) {
     s32 nCode;
     s32 nCodeFull;
 
-    matrix = pFrame->unknown;
+    matrix = pFrame->unk_3F150;
     vtxP = &pFrame->aVertex[nVertexStart];
     endVtxP = &pFrame->aVertex[nVertexEnd];
     nCodeFull = 0xFF;
