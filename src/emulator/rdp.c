@@ -6,6 +6,7 @@
 #include "emulator/vc64_RVL.h"
 #include "emulator/xlCoreRVL.h"
 #include "macros.h"
+#include "revolution/gx/GXMisc.h"
 
 //! TODO: document these
 void fn_8004BB60(Frame* pFrame, FrameBuffer* pBuffer, s32* unknown);
@@ -245,7 +246,7 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                     }
 
                     if (i == 8 && ((nCommandLo & 0xFF) < 0xFF)) {
-                        pFrame->bBlurOn = true;
+                        pFrame->unk_24 = 1;
                         fn_8004B198(pFrame, pFrame->nTempBuffer);
                     }
                 }
@@ -263,8 +264,7 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
             break;
         case 0xF8: // G_SETFOGCOLOR
             if (gpSystem->eTypeROM == 'CZLJ' || gpSystem->eTypeROM == 'CZLE' || gpSystem->eTypeROM == 'NZLP') {
-                // TODO: probably not nFrameCounter
-                if (pFrame->nFrameCounter != 0 && nCommandLo == 0xFF0000FF) {
+                if (pFrame->unk_30 != 0 && nCommandLo == 0xFF0000FF) {
                     nCommandLo = 0x3C0000FF;
                 }
             }
@@ -304,9 +304,9 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                     primitive.nY1--;
                 }
 
-                if (pFrame->cBlurAlpha > 1) {
-                    pFrame->cBlurAlpha++;
-                    if (pFrame->cBlurAlpha > 1900 && pFrame->cBlurAlpha < 2200) {
+                if (pFrame->unk_4C > 1) {
+                    pFrame->unk_4C++;
+                    if (pFrame->unk_4C > 1900 && pFrame->unk_4C < 2200) {
                         if (primitive.nX0 == 0 && primitive.nY0 == 0 && primitive.nX1 == 319 && primitive.nY1 == 7) {
                             primitive.nY1 = 0x1E;
                         } else if (primitive.nX0 == 0 && primitive.nY0 == 232 && primitive.nX1 == 319 &&
@@ -316,9 +316,9 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                     }
                 }
             } else if (gpSystem->eTypeROM == 'NSMP') {
-                if (!pFrame->bHackPause && primitive.nX0 == 0 && primitive.nY0 == 1 && primitive.nX1 == 319 &&
+                if (!pFrame->unk_28 != 0 && primitive.nX0 == 0 && primitive.nY0 == 1 && primitive.nX1 == 319 &&
                     primitive.nY1 == 238) {
-                    pFrame->bHackPause = true;
+                    pFrame->unk_28 = 1;
                     primitive.nX0 = 1;
                     primitive.nX1 = 0;
                     primitive.nY0 = 1;
@@ -330,9 +330,9 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                     primitive.nY0 = 0;
                     primitive.nY1 = 240;
                 }
-                if (pFrame->cBlurAlpha > 1) {
-                    pFrame->cBlurAlpha++;
-                    if (pFrame->cBlurAlpha > 1900 && pFrame->cBlurAlpha < 2200) {
+                if (pFrame->unk_4C > 1) {
+                    pFrame->unk_4C++;
+                    if (pFrame->unk_4C > 1900 && pFrame->unk_4C < 2200) {
                         if (primitive.nX0 == 1 && primitive.nY0 == 31 && primitive.nX1 == 318 && primitive.nY1 == 208) {
                             primitive.nX1 = 317;
                             primitive.nY1 = 207;
@@ -341,7 +341,7 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                 }
             } else {
                 if (gpSystem->eTypeROM == 'NKTJ' || gpSystem->eTypeROM == 'NKTE' || gpSystem->eTypeROM == 'NKTP') {
-                    if (pFrame->bPauseThisFrame & 0xFF) {
+                    if (pFrame->unk_34 & 0xFF) {
                         primitive.nY1 = 0;
                         primitive.nY0 = 0;
                         primitive.nX1 = 0;
@@ -436,7 +436,7 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
             pTile->nY1 = nCommandLo & 0xFFF;
 
             if (gpSystem->eTypeROM == 'NSMJ' && pTile->nFormat == 3) {
-                pFrame->bBlurOn = true;
+                pFrame->unk_24 = 1;
             }
 
             if (!frameDrawReset(pFrame, 1)) {
@@ -479,19 +479,18 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
             rectangle.nY1 = nCommandLo & 0xFFF;
 
             if (gpSystem->eTypeROM == 'NSMP') {
-                // TODO: probably not cBlurAlpha
-                if (pFrame->cBlurAlpha > 12600 && rectangle.nX1 == 1280) {
+                if (pFrame->unk_4C > 12600 && rectangle.nX1 == 1280) {
                     rectangle.nX1 = 1275;
                 }
             } else if (gpSystem->eTypeROM == 'NKTJ' || gpSystem->eTypeROM == 'NKTE' || gpSystem->eTypeROM == 'NKTP') {
                 s32 var_r4_5;
 
-                if (pFrame->bHackPause == 0) {
+                if (pFrame->unk_28 == 0) {
                     lbl_8025D170 = 0;
                     lbl_8025D174 = 0;
                     lbl_8025D17C = 0;
                     lbl_8025D180 = 0;
-                    pFrame->nHackCount = 0;
+                    pFrame->unk_2C = 0;
                     lbl_8025D190 = 0;
                     lbl_8025D18C = 0;
                     lbl_8025D188 = 0;
@@ -500,9 +499,8 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
 
                 var_r4_5 = 0;
 
-                // TODO: probably not bHackPause
-                pFrame->bHackPause++;
-                if (pFrame->bHackPause == 2 && rectangle.nX0 == 0 && rectangle.nY0 == 0 && rectangle.nX1 != 1280 &&
+                pFrame->unk_28++;
+                if (pFrame->unk_28 == 2 && rectangle.nX0 == 0 && rectangle.nY0 == 0 && rectangle.nX1 != 1280 &&
                     rectangle.nY1 != 960) {
                     rectangle.nX0 = 1280 - rectangle.nX1;
                     rectangle.nY0 = 960 - rectangle.nY1;
@@ -511,8 +509,8 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                     lbl_8025D18C = rectangle.nY0;
                     lbl_8025D190 = rectangle.nY1;
                     lbl_8025D170 = 1;
-                    lbl_8025D174 = pFrame->bHackPause + 9;
-                    pFrame->nHackCount = 9;
+                    lbl_8025D174 = pFrame->unk_28 + 9;
+                    pFrame->unk_2C = 9;
                 }
 
                 if (lbl_8025D170 == 0) {
@@ -521,38 +519,38 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                         lbl_8025D188 = rectangle.nX1;
                         lbl_8025D18C = rectangle.nY0;
                         lbl_8025D190 = rectangle.nY1;
-                        lbl_8025D174 = pFrame->bHackPause + 7;
+                        lbl_8025D174 = pFrame->unk_28 + 7;
                         lbl_8025D170 = 1;
-                        pFrame->nHackCount = 8;
+                        pFrame->unk_2C = 8;
                     } else if (rectangle.nX1 != 1280 || rectangle.nY1 != 960 ||
                                ((rectangle.nX0 != 0 || rectangle.nY0 != 0) && rectangle.nX1 == 1280 &&
                                 rectangle.nY1 == 960)) {
-                        lbl_8025D174 = pFrame->bHackPause;
+                        lbl_8025D174 = pFrame->unk_28;
                         lbl_8025D170 = 1;
                     }
                 }
 
                 switch (lbl_8025D168) {
                     case 2:
-                        if (pFrame->bHackPause == 11 && lbl_8025D174 == 0 && lbl_8025D178 != 0) {
-                            lbl_8025D174 = pFrame->bHackPause + 1;
+                        if (pFrame->unk_28 == 11 && lbl_8025D174 == 0 && lbl_8025D178 != 0) {
+                            lbl_8025D174 = pFrame->unk_28 + 1;
                             lbl_8025D170 = 1;
-                        } else if (pFrame->bHackPause == 12 && lbl_8025D178 != 0 && rectangle.nX0 == 0 &&
+                        } else if (pFrame->unk_28 == 12 && lbl_8025D178 != 0 && rectangle.nX0 == 0 &&
                                    rectangle.nY0 == 0 && rectangle.nX1 == 640 && rectangle.nY1 == 480) {
                             lbl_8025D170 = 1;
-                            lbl_8025D174 = pFrame->bHackPause;
+                            lbl_8025D174 = pFrame->unk_28;
                         }
                         break;
                     case 3:
-                        if (pFrame->bHackPause == 11 && lbl_8025D174 == 0 && lbl_8025D178 != 0) {
-                            lbl_8025D174 = pFrame->bHackPause + 1;
+                        if (pFrame->unk_28 == 11 && lbl_8025D174 == 0 && lbl_8025D178 != 0) {
+                            lbl_8025D174 = pFrame->unk_28 + 1;
                             lbl_8025D170 = 1;
                         }
                         break;
                 }
 
                 if (lbl_8025D170 != 0) {
-                    if (pFrame->bHackPause == lbl_8025D174) {
+                    if (pFrame->unk_28 == lbl_8025D174) {
                         if (lbl_8025D190 != rectangle.nY1 && rectangle.nY1 == 0x2D0) {
                             var_r4_5 = 1;
                         }
@@ -563,28 +561,28 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                         if (lbl_8025D168 == lbl_8025D17C) {
                             lbl_8025D180 = 1;
                         }
-                    } else if (pFrame->bHackPause == lbl_8025D174 + 1) {
+                    } else if (pFrame->unk_28 == lbl_8025D174 + 1) {
                         if (lbl_8025D188 == rectangle.nX1 && lbl_8025D190 == rectangle.nY1) {
                             if (lbl_8025D184 == rectangle.nX0 && lbl_8025D18C == rectangle.nY0 &&
                                 lbl_8025D188 == 0x500 && lbl_8025D190 == 0x3C0) {
-                                lbl_8025D174 = pFrame->bHackPause + 3;
-                                if (pFrame->bHackPause == lbl_8025D178) {
+                                lbl_8025D174 = pFrame->unk_28 + 3;
+                                if (pFrame->unk_28 == lbl_8025D178) {
                                     var_r4_5 = 1;
-                                    lbl_8025D174 = pFrame->bHackPause + 7;
+                                    lbl_8025D174 = pFrame->unk_28 + 7;
                                     lbl_8025D178 = 0;
                                     lbl_8025D17C += 1;
-                                    pFrame->nHackCount = 7;
+                                    pFrame->unk_2C = 7;
                                 }
                             } else if (lbl_8025D184 == rectangle.nX0 && lbl_8025D18C == 0xF0 && rectangle.nY0 == 0 &&
                                        lbl_8025D188 == 0x500 && lbl_8025D190 == 0x3C0) {
                                 var_r4_5 = 1;
-                                lbl_8025D178 = pFrame->bHackPause;
+                                lbl_8025D178 = pFrame->unk_28;
                                 lbl_8025D17C += 1;
-                                lbl_8025D174 = pFrame->bHackPause + 7;
-                                pFrame->nHackCount = 7;
+                                lbl_8025D174 = pFrame->unk_28 + 7;
+                                pFrame->unk_2C = 7;
                             } else {
                                 lbl_8025D17C += 1;
-                                lbl_8025D174 = pFrame->bHackPause + 7;
+                                lbl_8025D174 = pFrame->unk_28 + 7;
                                 if (rectangle.nX0 > lbl_8025D184) {
                                     lbl_8025D184 = rectangle.nX0;
                                 }
@@ -594,18 +592,18 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                                 if (lbl_8025D184 % 320 != 0 || lbl_8025D188 % 320 != 0 || lbl_8025D18C % 240 != 0 ||
                                     lbl_8025D190 % 240 != 0) {
                                     var_r4_5 = 1;
-                                    lbl_8025D178 = pFrame->bHackPause;
+                                    lbl_8025D178 = pFrame->unk_28;
                                 }
-                                pFrame->nHackCount = 7;
+                                pFrame->unk_2C = 7;
                             }
                         } else {
-                            lbl_8025D174 = pFrame->bHackPause + 3;
+                            lbl_8025D174 = pFrame->unk_28 + 3;
                             if (lbl_8025D188 == rectangle.nX1 && lbl_8025D190 == 0 && rectangle.nY1 == 8) {
                                 var_r4_5 = 1;
-                                lbl_8025D178 = pFrame->bHackPause;
+                                lbl_8025D178 = pFrame->unk_28;
                                 lbl_8025D17C += 1;
-                                lbl_8025D174 = pFrame->bHackPause + 7;
-                                pFrame->nHackCount = 7;
+                                lbl_8025D174 = pFrame->unk_28 + 7;
+                                pFrame->unk_2C = 7;
                             }
                         }
                     }
@@ -624,8 +622,8 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                         GXPixModeSync();
                         GXSetColorUpdate(1);
                     }
-                    if (pFrame->nHackCount != 0) {
-                        switch (pFrame->nHackCount) {
+                    if (pFrame->unk_2C != 0) {
+                        switch (pFrame->unk_2C) {
                             case 2:
                             case 3:
                             case 4:
@@ -636,7 +634,7 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                                 rectangle.nY0 = lbl_8025D18C;
                                 rectangle.nY1 = lbl_8025D190;
                             default:
-                                pFrame->nHackCount -= 1;
+                                pFrame->unk_2C -= 1;
                                 break;
                         }
                     }
@@ -661,14 +659,13 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
         case 0xE9: // G_RDPFULLSYNC
             if (gpSystem->eTypeROM == 'NKTJ' || gpSystem->eTypeROM == 'NKTE' || gpSystem->eTypeROM == 'NKTP') {
                 lbl_8025D168 = 1;
-                // TODO: probably not bHackPause
-                if (pFrame->bHackPause < 8) {
+                if (pFrame->unk_28 < 8) {
                     lbl_8025D168 = 0;
-                } else if (pFrame->bHackPause > 14 && pFrame->bHackPause <= 23) {
+                } else if (pFrame->unk_28 > 14 && pFrame->unk_28 <= 23) {
                     lbl_8025D168 = 2;
-                } else if (pFrame->bHackPause > 23 && pFrame->bHackPause <= 35) {
+                } else if (pFrame->unk_28 > 23 && pFrame->unk_28 <= 35) {
                     lbl_8025D168 = 3;
-                } else if (pFrame->bHackPause > 35) {
+                } else if (pFrame->unk_28 > 35) {
                     lbl_8025D168 = 4;
                 }
             }
@@ -700,10 +697,9 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
             primitive.iTile = (nCommandLo >> 24) & 7;
             primitive.bFlip = nCommandHi >> 24 == 0xE5 ? true : false;
 
-            // TODO: is this really pFrame->bBlurOn?
             if ((gpSystem->eTypeROM == 'NKTJ' || gpSystem->eTypeROM == 'NKTE' || gpSystem->eTypeROM == 'NKTP') &&
                 lbl_8025D168 <= 1) {
-                pFrame->bBlurOn = true;
+                pFrame->unk_24 = 1;
             } else if (gpSystem->eTypeROM == 'NFXJ' || gpSystem->eTypeROM == 'NFXE' || gpSystem->eTypeROM == 'NFXP') {
                 if ((primitive.nX0 >> 2) > N64_FRAME_WIDTH && primitive.nX0 > primitive.nX1) {
                     primitive.nX0 = 0;
@@ -713,9 +709,9 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                     primitive.nY1 = 0;
                 }
             } else if ((gpSystem->eTypeROM == 'CZLJ' || gpSystem->eTypeROM == 'CZLE' || gpSystem->eTypeROM == 'NZLP') &&
-                       pFrame->bBlurOn && primitive.nX0 == (204 << 2) && primitive.nX1 == (300 << 2) &&
+                       pFrame->unk_24 != 0 && primitive.nX0 == (204 << 2) && primitive.nX1 == (300 << 2) &&
                        primitive.nY0 == (140 << 2) && primitive.nY1 == (225 << 2)) {
-                pFrame->bBlurOn = false;
+                pFrame->unk_24 = 0;
                 break;
             }
 

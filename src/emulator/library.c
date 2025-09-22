@@ -3568,38 +3568,36 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                 if (gpSystem->eTypeROM == NSMP) {
                     bDone = true;
                     bFlag = false;
-                    pFrame->bUsingLens++;
+                    pFrame->unk_48++;
                 }
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B710) {
                 if (gpSystem->eTypeROM == NSMJ || gpSystem->eTypeROM == NSME || gpSystem->eTypeROM == NSMP) {
                     bDone = true;
                     bFlag = false;
-                    pFrame->unk4C++;
+                    pFrame->unk_4C++;
                     treeCleanUpCheck(SYSTEM_CPU(gpSystem), NULL);
                 } else if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
                     bDone = true;
                     bFlag = false;
 
-                    if (pFrame->unk4C == 0) {
-                        pFrame->unk4C = 1;
-                        pFrame->bSnapShot = 0;
-                        pFrame->nFrameCounter = 0;
-                        pFrame->bCameFromBomberNotes = 0;
-                        pFrame->bInBomberNotes = 0;
-                        pFrame->bShrinking = 0;
+                    if (pFrame->unk_4C == 0) {
+                        pFrame->unk_4C = 1;
+                        pFrame->unk_44 = 0;
+                        pFrame->unk_30 = 0;
+                        pFrame->unk_38 = 0;
+                        pFrame->unk_3C = 0;
+                        pFrame->unk_40 = 0;
                         treeCleanUpCheck(SYSTEM_CPU(gpSystem), NULL);
                     }
                 } else if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
-                    if (pFrame->bCameFromBomberNotes == 0 && pFrame->bInBomberNotes == 0 && nChecksum == 0x5D447143) {
-                        pFrame->bCameFromBomberNotes = 1;
-                        pFrame->bInBomberNotes = 0x3C;
-                    } else if (pFrame->bCameFromBomberNotes == 1 && pFrame->bInBomberNotes != 0 &&
-                               nChecksum == 0xBFD9B964) {
-                        pFrame->bCameFromBomberNotes = 2;
-                        pFrame->bInBomberNotes = 0x3C;
-                    } else if (pFrame->bCameFromBomberNotes == 2 && pFrame->bInBomberNotes != 0 &&
-                               nChecksum == 0x110CA1BB) {
-                        pFrame->unk4C++;
+                    if (pFrame->unk_38 == 0 && pFrame->unk_3C == 0 && nChecksum == 0x5D447143) {
+                        pFrame->unk_38 = 1;
+                        pFrame->unk_3C = 0x3C;
+                    } else if (pFrame->unk_38 == 1 && pFrame->unk_3C != 0 && nChecksum == 0xBFD9B964) {
+                        pFrame->unk_38 = 2;
+                        pFrame->unk_3C = 0x3C;
+                    } else if (pFrame->unk_38 == 2 && pFrame->unk_3C != 0 && nChecksum == 0x110CA1BB) {
+                        pFrame->unk_4C++;
                         treeCleanUpCheck(SYSTEM_CPU(gpSystem), NULL);
                     }
 
@@ -3609,68 +3607,68 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
             } else {
                 if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
                     if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6C0) {
-                        pFrame->bPauseThisFrame = 1;
+                        pFrame->unk_34 = 1;
                         bDone = true;
                         bFlag = false;
                     } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6C8) {
-                        pFrame->nFrameCounter = 1;
-                        pFrame->bCameFromBomberNotes = 0;
+                        pFrame->unk_30 = 1;
+                        pFrame->unk_38 = 0;
                         bDone = true;
                         bFlag = false;
-                        pFrame->bInBomberNotes = 0;
-                        pFrame->bShrinking = 0;
+                        pFrame->unk_3C = 0;
+                        pFrame->unk_40 = 0;
                     } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6D0) {
-                        pFrame->nFrameCounter = 0;
+                        pFrame->unk_30 = 0;
                         bDone = true;
                         bFlag = false;
 
                         //! TODO: fake match
-                        ((volatile Frame*)pFrame)->bCameFromBomberNotes = 1;
+                        ((volatile Frame*)pFrame)->unk_38 = 1;
 
-                        pFrame->bInBomberNotes = 0;
-                        pFrame->bShrinking = 0;
+                        pFrame->unk_3C = 0;
+                        pFrame->unk_40 = 0;
                     } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6D8) {
-                        pFrame->nFrameCounter = 0;
+                        pFrame->unk_30 = 0;
                         bDone = true;
                         bFlag = false;
-                        pFrame->bCameFromBomberNotes = 0;
+                        pFrame->unk_38 = 0;
 
                         //! TODO: fake match
-                        ((volatile Frame*)pFrame)->bInBomberNotes = 1;
+                        ((volatile Frame*)pFrame)->unk_3C = 1;
 
-                        pFrame->bShrinking = 0;
+                        pFrame->unk_40 = 0;
                     } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6E0) {
-                        pFrame->nFrameCounter = 0;
+                        pFrame->unk_30 = 0;
                         bDone = true;
                         bFlag = false;
-                        pFrame->bCameFromBomberNotes = 0;
-                        pFrame->bInBomberNotes = 0;
+                        pFrame->unk_38 = 0;
+                        pFrame->unk_3C = 0;
 
                         //! TODO: fake match
-                        ((volatile Frame*)pFrame)->bShrinking = 1;
+                        ((volatile Frame*)pFrame)->unk_40 = 1;
                     } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6E8) {
-                        pFrame->nFrameCounter = 0;
+                        pFrame->unk_30 = 0;
                         bDone = true;
                         bFlag = false;
-                        pFrame->bCameFromBomberNotes = 0;
-                        pFrame->bInBomberNotes = 0;
-                        pFrame->bShrinking = 0;
+                        pFrame->unk_38 = 0;
+                        pFrame->unk_3C = 0;
+                        pFrame->unk_40 = 0;
                     }
                 } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6F0) {
                     if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
-                        pFrame->nFrameCounter = 1;
+                        pFrame->unk_30 = 1;
                         bDone = true;
                         bFlag = false;
                     }
                 } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6F8) {
                     if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
-                        pFrame->nFrameCounter = 0;
+                        pFrame->unk_30 = 0;
                         bDone = true;
                         bFlag = false;
                     }
                 } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B700) {
                     if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
-                        pFrame->bBlurOn = 1;
+                        pFrame->unk_24 = 1;
                         bDone = true;
                         bFlag = false;
                     }

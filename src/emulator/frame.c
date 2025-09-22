@@ -1488,14 +1488,14 @@ static bool frameLoadTexture(Frame* pFrame, FrameTexture* pTexture, s32 iTexture
         eWrapT = GX_REPEAT;
     }
     if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
-        if (pFrame->bBlurOn) {
+        if (pFrame->unk_24 != 0) {
             if (eWrapS == GX_REPEAT) {
                 eWrapS = GX_CLAMP;
             }
             if (eWrapT == GX_REPEAT) {
                 eWrapT = GX_CLAMP;
             }
-            pFrame->bBlurOn = false;
+            pFrame->unk_24 = 0;
         }
     }
     if (pTexture->eWrapS != eWrapS || pTexture->eWrapT != eWrapT) {
@@ -2998,40 +2998,38 @@ bool frameEnd(Frame* pFrame) {
         }
     }
 
-    pFrame->bBlurOn = false;
-    pFrame->bHackPause = false;
-    pFrame->nHackCount = 0;
+    pFrame->unk_24 = 0;
+    pFrame->unk_28 = 0;
+    pFrame->unk_2C = 0;
 
     if (gpSystem->eTypeROM == NSMJ || gpSystem->eTypeROM == NSME) {
-        if (pFrame->unk4C > 0x3264) {
+        if (pFrame->unk_4C > 12900) {
             frameEnd_UnknownInline(pFrame, 73);
         }
     } else if (gpSystem->eTypeROM == NSMP) {
-        if (pFrame->bUsingLens != 0) {
-            pFrame->bUsingLens++;
+        if (pFrame->unk_48 != 0) {
+            pFrame->unk_48++;
 
-            if (pFrame->bUsingLens > 0x1F4) {
-                pFrame->bUsingLens = 0;
+            if (pFrame->unk_48 > 500) {
+                pFrame->unk_48 = 0;
             }
         }
     } else if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
-        if (pFrame->nFrameCounter != 0 && lbl_8025D168 >= 2) {
+        if (pFrame->unk_30 != 0 && lbl_8025D168 >= 2) {
             frameEnd_UnknownInline(pFrame, 93);
-        } else if (pFrame->bCameFromBomberNotes && lbl_8025D168 == 3 && gpSystem->eTypeROM == NKTP) {
+        } else if (pFrame->unk_38 != 0 && lbl_8025D168 == 3 && gpSystem->eTypeROM == NKTP) {
             frameEnd_UnknownInline(pFrame, 73);
-        } else if (pFrame->bInBomberNotes && lbl_8025D168 == 3 &&
-                   (gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTJ)) {
+        } else if (pFrame->unk_3C && lbl_8025D168 == 3 && (gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTJ)) {
             frameEnd_UnknownInline(pFrame, 73);
-        } else if (pFrame->bShrinking && lbl_8025D168 == 3 &&
-                   (gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTJ)) {
+        } else if (pFrame->unk_40 && lbl_8025D168 == 3 && (gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTJ)) {
             frameEnd_UnknownInline(pFrame, 80);
-        } else if (pFrame->unk4C != 0) {
+        } else if (pFrame->unk_4C != 0) {
             if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE) {
                 frameEnd_UnknownInline(pFrame, 66);
             } else {
                 frameEnd_UnknownInline(pFrame, 79);
             }
-        } else if (pFrame->bSnapShot) {
+        } else if (pFrame->unk_44 != 0) {
             if (lbl_8025D168 >= 4) {
                 frameEnd_UnknownInline(pFrame, 80);
             } else {
@@ -3042,29 +3040,29 @@ bool frameEnd(Frame* pFrame) {
     } else if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
         s32 var_r29;
 
-        if (pFrame->bInBomberNotes > 0) {
-            pFrame->bInBomberNotes--;
-            if (pFrame->bInBomberNotes == 0) {
-                pFrame->bCameFromBomberNotes = 0;
+        if (pFrame->unk_3C > 0) {
+            pFrame->unk_3C--;
+            if (pFrame->unk_3C == 0) {
+                pFrame->unk_38 = 0;
             }
         }
-        if (pFrame->unk4C != 0) {
-            pFrame->unk4C++;
+        if (pFrame->unk_4C != 0) {
+            pFrame->unk_4C++;
             if (gpSystem->eTypeROM == NZLP) {
-                if (pFrame->unk4C < 0xCB2) {
-                    var_r29 = 0x56;
-                } else if (pFrame->unk4C < 0x12C0) {
-                    var_r29 = 0x3B;
+                if (pFrame->unk_4C < 3250) {
+                    var_r29 = 86;
+                } else if (pFrame->unk_4C < 4800) {
+                    var_r29 = 59;
                 } else {
-                    var_r29 = 0x50;
+                    var_r29 = 80;
                 }
             } else {
-                if (pFrame->unk4C < 0xED8) {
-                    var_r29 = 0x5B;
-                } else if (pFrame->unk4C < 0x15E0) {
-                    var_r29 = 0x3D;
+                if (pFrame->unk_4C < 3800) {
+                    var_r29 = 91;
+                } else if (pFrame->unk_4C < 5600) {
+                    var_r29 = 61;
                 } else {
-                    var_r29 = 0x50;
+                    var_r29 = 80;
                 }
             }
             frameEnd_UnknownInline(pFrame, var_r29);
@@ -3308,24 +3306,35 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
             GXSetDrawDoneCallback(&frameDrawDone);
 
             gnCountMapHack = 0;
+            pFrame->unk_24 = 0;
+            pFrame->unk_28 = 0;
+            pFrame->unk_2C = 0;
+            pFrame->unk_30 = 0;
+            pFrame->unk_34 = 0;
+            pFrame->unk_38 = 0;
+            pFrame->unk_3C = 0;
+            pFrame->unk_40 = 0;
+            pFrame->unk_44 = 0;
+            pFrame->unk_48 = 0;
+            pFrame->unk_4C = 0;
+            pFrame->nHackCount = 0;
             pFrame->bBlurOn = false;
             pFrame->bHackPause = false;
-            pFrame->nHackCount = 0;
             pFrame->nFrameCounter = 0;
+            pFrame->nNumCIMGAddresses = 0;
             pFrame->bPauseThisFrame = false;
             pFrame->bCameFromBomberNotes = false;
             pFrame->bInBomberNotes = false;
             pFrame->bShrinking = 0;
+            pFrame->bSnapShot = 0;
             pFrame->bUsingLens = false;
             pFrame->cBlurAlpha = 170;
             pFrame->bBlurredThisFrame = false;
             pFrame->nFrameCIMGCalls = 0;
+            pFrame->bModifyZBuffer = false;
             pFrame->nZBufferSets = 0;
             pFrame->nLastFrameZSets = 0;
             pFrame->bPauseBGDrawn = false;
-            pFrame->bFrameOn = false;
-            pFrame->bModifyZBuffer = false;
-            pFrame->bOverrideDepth = false;
             break;
         case 3:
             break;
@@ -3915,7 +3924,7 @@ bool frameLoadVertex(Frame* pFrame, void* pBuffer, s32 iVertex0, s32 nCount) {
 
         if (nTexGen == 0) {
             s16tof32Scaled32Pair(&pnData16[4], &pVertex->rS);
-            if (gpSystem->eTypeROM == NSMJ && pFrame->bBlurOn && pVertex->rS == 0.0) {
+            if (gpSystem->eTypeROM == NSMJ && pFrame->unk_24 != 0 && pVertex->rS == 0.0) {
                 pVertex->rS -= 2.0;
             }
         }
@@ -3925,8 +3934,8 @@ bool frameLoadVertex(Frame* pFrame, void* pBuffer, s32 iVertex0, s32 nCount) {
         pnData16 += 0x8;
     }
 
-    if (gpSystem->eTypeROM == NSMJ && pFrame->bBlurOn) {
-        pFrame->bBlurOn = false;
+    if (gpSystem->eTypeROM == NSMJ && pFrame->unk_24 != 0) {
+        pFrame->unk_24 = 0;
     }
 
     return true;
@@ -3943,7 +3952,7 @@ bool frameCullDL(Frame* pFrame, s32 nVertexStart, s32 nVertexEnd) {
     s32 nCode;
     s32 nCodeFull;
 
-    matrix = pFrame->matrixProjection;
+    matrix = pFrame->unknown;
     vtxP = &pFrame->aVertex[nVertexStart];
     endVtxP = &pFrame->aVertex[nVertexEnd];
     nCodeFull = 0xFF;
