@@ -1513,7 +1513,8 @@ static void cpuCompileNOP(s32* anCode, s32* iCode, s32 number) {
         }                                \
     } while (0)
 
-static bool fn_8000E734(Cpu* pCPU, s32 nOpcode, s32 nOpcodePrev, s32 nOpcodeNext, s32 nAddress, s32* anCode, s32* iCode, s32* arg8) {
+static bool fn_8000E734(Cpu* pCPU, s32 nOpcode, s32 nOpcodePrev, s32 nOpcodeNext, s32 nAddress, s32* anCode, s32* iCode,
+                        s32* arg8) {
     if (gpSystem->eTypeROM == CLBJ || gpSystem->eTypeROM == CLBE || gpSystem->eTypeROM == CLBP) {
         // Mario Party
         if (nOpcode == 0x8C9F0004 && nOpcodePrev == 0x8C9D0000 && nOpcodeNext == 0x8C900008) {
@@ -1529,7 +1530,8 @@ static bool fn_8000E734(Cpu* pCPU, s32 nOpcode, s32 nOpcodePrev, s32 nOpcodeNext
     return true;
 }
 
-static bool fn_8000E81C(Cpu* pCPU, s32 nOpcode, s32 nOpcodePrev, s32 nOpcodeNext, s32 nAddress, s32* anCode, s32* iCode, s32* arg8) {
+static bool fn_8000E81C(Cpu* pCPU, s32 nOpcode, s32 nOpcodePrev, s32 nOpcodeNext, s32 nAddress, s32* anCode, s32* iCode,
+                        s32* arg8) {
     s32 var_r4;
 
     if (gpSystem->eTypeROM == CLBJ || gpSystem->eTypeROM == CLBE || gpSystem->eTypeROM == CLBP) {
@@ -4095,7 +4097,8 @@ static bool cpuGetPPC(Cpu* pCPU, s32* pnAddress, CpuFunction* pFunction, s32* an
                     if (!ramGetSize(SYSTEM_RAM(gpSystem), &nSize)) {
                         return false;
                     }
-                    if ((u32)MIPS_IMM_U16(nOpcode) >= 0x8000 && (u32)MIPS_IMM_U16(nOpcode) <= (0x8000 | (nSize >> 16))) {
+                    if ((u32)MIPS_IMM_U16(nOpcode) >= 0x8000 &&
+                        (u32)MIPS_IMM_U16(nOpcode) <= (0x8000 | (nSize >> 16))) {
                         pCPU->nFlagRAM |= (1 << MIPS_RT(nOpcode));
                     } else {
                         pCPU->nFlagRAM &= ~(1 << MIPS_RT(nOpcode));
@@ -7359,7 +7362,8 @@ static bool cpuGetPPC(Cpu* pCPU, s32* pnAddress, CpuFunction* pFunction, s32* an
                 anCode[iCode++] = 0x60A50000 | ((u32)nAddress & 0xFFFF);
                 anCode[iCode++] = 0x48000000 | (((u32)pCPU->pfStep - (u32)&anCode[iCode]) & 0x03FFFFFC) | 1;
             } else {
-                iCode += var_r17 ? 5 : 3;
+                // TODO: wrong codegen
+                iCode += (var_r17 ? 4 : 2) + 1;
             }
             if ((pCPU->nFlagCODE & 1) && anCode == NULL && pFunction->pfCode == NULL) {
                 iCode += 12;
@@ -10321,7 +10325,8 @@ static s32 cpuExecuteOpcode(Cpu* pCPU, s32 nCount0, s32 nAddressN64, s32 nAddres
             do {
                 if (CPU_DEVICE_GET8(apDevice, aiDevice, nAddress, &nData8)) {
                     nData32 = ((u32)nData8 & 0xFF) << nCount;
-                    pCPU->aGPR[MIPS_RT(nOpcode)].s32 = nData32 | (pCPU->aGPR[MIPS_RT(nOpcode)].s32 & ~(s32)(0xFF << nCount));
+                    pCPU->aGPR[MIPS_RT(nOpcode)].s32 =
+                        nData32 | (pCPU->aGPR[MIPS_RT(nOpcode)].s32 & ~(s32)(0xFF << nCount));
                 }
                 nCount -= 8;
             } while ((nAddress++ & 3) != 0);
@@ -10354,7 +10359,8 @@ static s32 cpuExecuteOpcode(Cpu* pCPU, s32 nCount0, s32 nAddressN64, s32 nAddres
             do {
                 if (CPU_DEVICE_GET8(apDevice, aiDevice, nAddress, &nData8)) {
                     nData32 = ((u32)nData8 & 0xFF) << nCount;
-                    pCPU->aGPR[MIPS_RT(nOpcode)].s32 = nData32 | (pCPU->aGPR[MIPS_RT(nOpcode)].s32 & ~(s32)(0xFF << nCount));
+                    pCPU->aGPR[MIPS_RT(nOpcode)].s32 =
+                        nData32 | (pCPU->aGPR[MIPS_RT(nOpcode)].s32 & ~(s32)(0xFF << nCount));
                 }
                 nCount += 8;
             } while ((nAddress-- & 3) != 0);
