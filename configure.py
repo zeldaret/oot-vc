@@ -716,7 +716,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/ut/ut_ResFont.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/ut/ut_ResFontBase.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/ut/ut_TagProcessorBase.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_TextWriterBase.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/ut/ut_TextWriterBase.cpp"),
         ]
     ),
     RuntimeLib(

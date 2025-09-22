@@ -298,18 +298,24 @@ template <typename charT> void TextWriterBase<charT>::CalcStringRectImpl(Rect* p
     } while (remain > 0);
 }
 
+template <typename charT> void TextWriterBase<charT>::ut_TextWriterBase_unused1(Rect* pRect, const charT* str, int length) {
+    void* buffer;
+    int size;
+
+    NW4HBMAssertPointerValid(this);
+    NW4HBMAssertPointerValid(pRect);
+    NW4HBMAssertPointerValid(str);
+    NW4HBMAssertHeaderMinimumValue(length, 0);
+    NW4HBMAssertPointerValid(buffer);
+    NW4HBMAssertHeaderMinimumValue(size, 0);
+}
+
 template <typename charT> int TextWriterBase<charT>::CalcLineRectImpl(Rect* pRect, const charT* str, int length) {
     NW4HBMAssertPointerValid_Line(this, 893);
     NW4HBMAssertPointerValid_Line(pRect, 894);
     NW4HBMAssertPointerValid_Line(str, 895);
     NW4HBMAssertHeaderMinimumValue_Line(length, 0, 896);
     PrintContext<charT> context = {this, str, 0.0f, 0.0f, 0};
-
-    // necessary to match the data, breaks sdata :))
-    static char* ut_TextWriterBase_unused5 = NW4HBMAssertPointerValid_String(buffer);
-    static char* ut_TextWriterBase_unused6 = NW4HBMAssertHeaderMinimumValue_String(size);
-    (void)ut_TextWriterBase_unused5;
-    (void)ut_TextWriterBase_unused6;
 
     const Font* font = GetFont();
     f32 x = 0.0f;

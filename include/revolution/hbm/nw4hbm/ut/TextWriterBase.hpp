@@ -74,6 +74,7 @@ template <typename charT> class TextWriterBase : public CharWriter {
     }
 
     f32 CalcLineWidth(const charT* str, int length);
+    void ut_TextWriterBase_unused1(Rect* pRect, const charT* str, int length);
     int CalcLineRectImpl(Rect* pRect, const charT* str, int length);
     void CalcStringRectImpl(Rect* pRect, const charT* str, int length);
     f32 PrintImpl(const charT* str, int length);

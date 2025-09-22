@@ -1015,7 +1015,7 @@ revolution/hbm/nw4hbm/ut/ut_TextWriterBase.cpp:
 	.ctors      start:0x8016A730 end:0x8016A734
 	.data       start:0x8019FA68 end:0x801A0060
 	.bss        start:0x80259DF0 end:0x80259E08
-	.sdata      start:0x8025CF78 end:0x8025CF90
+	.sdata      start:0x8025CF78 end:0x8025CF80
 	.sbss       start:0x8025DCC8 end:0x8025DCD8
 	.sdata2     start:0x8025E950 end:0x8025E968
 
