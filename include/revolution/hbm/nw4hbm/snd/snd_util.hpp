@@ -63,23 +63,27 @@ class Util {
     };
 
     template <typename T0, typename T1, typename T2, typename T3>
-    static inline const T0* GetDataRefAddress0(const DataRef<T0, T1, T2, T3>& rRef, const void* pBase) {
-        return static_cast<const T0*>(GetDataRefAddressImpl(static_cast<RefType>(rRef.refType), rRef.value, pBase));
+    static inline const T0* GetDataRefAddress0(const DataRef<T0, T1, T2, T3>& ref, const void* pBase) {
+        NW4HBMAssert_FileLine(ref.dataType == 0, "Util.h", 111);
+        return static_cast<const T0*>(GetDataRefAddressImpl(static_cast<RefType>(ref.refType), ref.value, pBase));
     }
 
     template <typename T0, typename T1, typename T2, typename T3>
-    static inline const T1* GetDataRefAddress1(const DataRef<T0, T1, T2, T3>& rRef, const void* pBase) {
-        return static_cast<const T1*>(GetDataRefAddressImpl(static_cast<RefType>(rRef.refType), rRef.value, pBase));
+    static inline const T1* GetDataRefAddress1(const DataRef<T0, T1, T2, T3>& ref, const void* pBase) {
+        NW4HBMAssert_FileLine(ref.dataType == 1, "Util.h", 112);
+        return static_cast<const T1*>(GetDataRefAddressImpl(static_cast<RefType>(ref.refType), ref.value, pBase));
     }
 
     template <typename T0, typename T1, typename T2, typename T3>
-    static inline const T2* GetDataRefAddress2(const DataRef<T0, T1, T2, T3>& rRef, const void* pBase) {
-        return static_cast<const T2*>(GetDataRefAddressImpl(static_cast<RefType>(rRef.refType), rRef.value, pBase));
+    static inline const T2* GetDataRefAddress2(const DataRef<T0, T1, T2, T3>& ref, const void* pBase) {
+        NW4HBMAssert_FileLine(ref.dataType == 2, "Util.h", 113);
+        return static_cast<const T2*>(GetDataRefAddressImpl(static_cast<RefType>(ref.refType), ref.value, pBase));
     }
 
     template <typename T0, typename T1, typename T2, typename T3>
-    static inline const T3* GetDataRefAddress3(const DataRef<T0, T1, T2, T3>& rRef, const void* pBase) {
-        return static_cast<const T3*>(GetDataRefAddressImpl(static_cast<RefType>(rRef.refType), rRef.value, pBase));
+    static inline const T3* GetDataRefAddress3(const DataRef<T0, T1, T2, T3>& ref, const void* pBase) {
+        NW4HBMAssert_FileLine(ref.dataType == 3, "Util.h", 114);
+        return static_cast<const T3*>(GetDataRefAddressImpl(static_cast<RefType>(ref.refType), ref.value, pBase));
     }
 
     /******************************************************************************

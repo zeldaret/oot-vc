@@ -11,7 +11,7 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-NW4R_UT_LINKLIST_TYPEDEF_FORCE(FxBase);
+// NW4R_UT_LINKLIST_TYPEDEF_FORCE(FxBase);
 
 u8 AxManager::sZeroBuffer[AxManager::ZERO_BUFFER_SIZE];
 
@@ -35,6 +35,8 @@ AxManager& AxManager::GetInstance() {
     static AxManager instance;
     return instance;
 }
+
+#pragma ppc_iro_level 0
 
 void AxManager::Init() {
     s32 i;
@@ -68,7 +70,11 @@ void AxManager::Init() {
     mInitialized = true;
 }
 
+#pragma ppc_iro_level reset
+
 void AxManager::Shutdown() {
+    s32 i;
+
     if (!mInitialized) {
         return;
     }
@@ -90,10 +96,22 @@ void AxManager::Shutdown() {
 
     mZeroBufferAddress = nullptr;
 
+    // fake?
+    while (&this->unk_14[0]) {
+        AxVoice& front = this->unk_10.GetFront();
+    }
+
+    // fake
+    // while (this->mMasterVolume.GetTarget() != 0) {
+    // }
+
     mInitialized = false;
 }
 
-f32 AxManager::GetOutputVolume() const { return mMasterVolume.GetValue(); }
+f32 AxManager::GetOutputVolume() const {
+    f32 result = mMasterVolume.GetValue() * mVolumeForReset.GetValue();
+    return result * mMainOutVolume.GetValue();
+}
 
 void AxManager::Update() {
     s32 status = DVDGetDriveStatus();
@@ -172,7 +190,10 @@ void AxManager::Update() {
     AXSetMasterVolume(static_cast<u16>(AX_MAX_VOLUME * masterRatio));
 }
 
-void* AxManager::GetZeroBufferAddress() { return mZeroBufferAddress; }
+void* AxManager::GetZeroBufferAddress() {
+    NW4HBMAssertMessage_Line(mZeroBufferAddress, 370, "Zero buffer is not created.");
+    return mZeroBufferAddress;
+}
 
 void AxManager::RegisterCallback(CallbackListNode* pNode, AXOutCallback pCallback) {
     ut::AutoInterruptLock lock;
@@ -210,7 +231,7 @@ void AxManager::SetOutputMode(OutputMode mode) {
         }
     }
 
-    ut::AutoInterruptLock lock;
+    // ut::AutoInterruptLock lock;
     VoiceManager::GetInstance().UpdateAllVoicesSync(Voice::SYNC_AX_MIX);
 }
 
@@ -299,15 +320,17 @@ void AxManager::ClearEffect(AuxBus bus, int frame) {
 void AxManager::ShutdownEffect(AuxBus bus) {
     ut::AutoInterruptLock lock;
 
-    if (GetEffectList(bus).IsEmpty()) {
+    FxBase::LinkList& list = GetEffectList(bus);
+
+    if (!list.IsEmpty()) {
         return;
     }
 
-    for (FxBaseList::Iterator it = GetEffectList(bus).GetBeginIter(); it != GetEffectList(bus).GetEndIter(); ++it) {
+    for (FxBase::LinkList::Iterator it = list.GetBeginIter(); it != list.GetEndIter(); ++it) {
         it->Shutdown();
     }
 
-    GetEffectList(bus).Clear();
+    list.Clear();
 
     switch (bus) {
         case AUX_A: {
@@ -360,7 +383,7 @@ void AxManager::AuxCallbackFunc(void* pChans, void* pContext) {
             std::memset(buffer[i], 0, FX_BUFFER_SIZE);
         }
     } else {
-        for (FxBaseList::Iterator it = GetInstance().GetEffectList(bus).GetBeginIter();
+        for (FxBase::LinkList::Iterator it = GetInstance().GetEffectList(bus).GetBeginIter();
              it != GetInstance().GetEffectList(bus).GetEndIter(); ++it) {
 
             it->UpdateBuffer(num, buffer, FX_BUFFER_SIZE, FX_SAMPLE_FORMAT, FX_SAMPLE_RATE,

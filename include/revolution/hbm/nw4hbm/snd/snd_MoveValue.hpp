@@ -8,18 +8,12 @@ namespace snd {
 namespace detail {
 
 template <typename TValue, typename TTime> class MoveValue {
+    // methods
   public:
+    // cdtors
     MoveValue() : mOrigin(TValue()), mTarget(TValue()), mFrame(TTime()), mCounter(TTime()) {}
 
-    void InitValue(TValue t1) {
-        mOrigin = t1;
-        mTarget = t1;
-        mFrame = 0;
-        mCounter = 0;
-    }
-
-    bool IsFinished() const { return mCounter >= mFrame; }
-
+    // methods
     TValue GetValue() const {
         if (IsFinished()) {
             return mTarget;
@@ -28,25 +22,37 @@ template <typename TValue, typename TTime> class MoveValue {
         return mOrigin + mCounter * (mTarget - mOrigin) / mFrame;
     }
 
+    void SetTarget(TValue targetValue, TTime frames) {
+        mOrigin = GetValue();
+        mTarget = targetValue;
+        mFrame = frames;
+        mCounter = TTime();
+    }
+
+    bool IsFinished() const { return mCounter >= mFrame; }
+
+    void InitValue(TValue value) {
+        mOrigin = value;
+        mTarget = value;
+        mFrame = TTime();
+        mCounter = TTime();
+    }
+
     void Update() {
         if (mCounter < mFrame) {
             mCounter++;
         }
     }
 
-    void SetTarget(TValue target, TTime frame) {
-        mOrigin = GetValue();
-        mTarget = target;
-        mFrame = frame;
-        mCounter = 0;
-    }
+    TValue GetTarget() { return mTarget; }
 
+    // members
   private:
-    TValue mOrigin; // at 0x0
-    TValue mTarget; // at 0x4
-    TTime mFrame; // at 0x8
-    TTime mCounter; // at 0xC
-};
+    TValue mOrigin; // size TValue, offset 0x00
+    TValue mTarget; // size TValue, offset TValue
+    TTime mFrame; // size TTime,  offset TValue * 2
+    TTime mCounter; // size TTine,  offset TValue * 2 + TTime
+}; // size TValue * 2 + TTime * 2
 
 } // namespace detail
 } // namespace snd

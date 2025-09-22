@@ -130,6 +130,7 @@ class Voice : public DisposeCallback {
   private:
     AxVoice* mAxVoice[CHANNEL_MAX][VOICES_MAX]; // at 0xC
     SoundParam mVoiceOutParam[VOICES_MAX]; // at 0x2C
+    u8 mActiveFlag;
     int mChannelCount; // at 0x9C
     int mVoiceOutCount; // at 0xA0
 

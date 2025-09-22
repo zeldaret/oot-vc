@@ -953,9 +953,19 @@ revolution/hbm/nw4hbm/snd/snd_Channel.cpp:
 	.text       start:0x8012454C end:0x80125680
 	.ctors      start:0x8016A6FC end:0x8016A700
 
+revolution/hbm/nw4hbm/snd/code_80125680.cpp:
+	.text       start:0x80125680 end:0x80125D14
+	.ctors      start:0x8016A700 end:0x8016A704
+
+revolution/hbm/nw4hbm/snd/snd_EnvGenerator.cpp:
+	.text       start:0x80125D14 end:0x80126324
+	.rodata     start:0x8016C8D0 end:0x8016CBD0
+	.data       start:0x80198D90 end:0x80198EE0
+	.sdata2     start:0x8025E7C0 end:0x8025E7F0
+
 revolution/hbm/nw4hbm/snd/code_8011D104.cpp:
-	.text       start:0x80125680 end:0x8013CD64
-	.ctors      start:0x8016A700 end:0x8016A720
+	.text       start:0x80126324 end:0x8013CD64
+	.ctors      start:0x8016A704 end:0x8016A720
 
 revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp:
 	.text       start:0x8013CD64 end:0x8013CFBC

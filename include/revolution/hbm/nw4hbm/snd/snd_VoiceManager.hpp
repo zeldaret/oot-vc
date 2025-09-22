@@ -1,6 +1,7 @@
 #ifndef NW4R_SND_VOICE_MANAGER_H
 #define NW4R_SND_VOICE_MANAGER_H
 #include "revolution/types.h"
+#include "macros.h"
 
 #include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
 
@@ -30,7 +31,17 @@ class VoiceManager {
     void UpdateAllVoices();
     void NotifyVoiceUpdate();
     void ChangeVoicePriority(Voice* pVoice);
-    void UpdateAllVoicesSync(u32 syncFlag);
+    void UpdateAllVoicesSync(u32 syncFlag) {
+        ut::AutoInterruptLock lock;
+
+        NW4HBM_RANGE_FOR_NO_AUTO_INC(itr, mPrioVoiceList) {
+            DECLTYPE(itr) curItr = itr++;
+
+            if (curItr->mActiveFlag) {
+                curItr->mSyncFlag |= syncFlag;
+            }
+        }
+    }
 
     const VoiceList& GetVoiceList() const { return mPrioVoiceList; }
 

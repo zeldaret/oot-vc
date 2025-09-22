@@ -18,10 +18,18 @@ namespace detail {
 
 class AxManager {
   public:
-    struct CallbackListNode {
-        NW4R_UT_LINKLIST_NODE_DECL(); // at 0x0
-        AXOutCallback callback; // at 0x8
-    };
+		// [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x2a6808
+		struct CallbackListNode
+		{
+		// typedefs
+		public:
+			typedef ut::LinkList<CallbackListNode, 0x00> LinkList;
+
+		// members
+		public:
+			ut::LinkListNode	node;		// size 0x08, offset 0x00
+			AXOutCallback		callback;	// size 0x04, offset 0x08
+		}; // size 0x0c
 
     NW4R_UT_LINKLIST_TYPEDEF_DECL(AxVoice);
     NW4R_UT_LINKLIST_TYPEDEF_DECL(CallbackListNode);
@@ -56,7 +64,10 @@ class AxManager {
     void ClearEffect(AuxBus bus, int frame);
     void ShutdownEffect(AuxBus bus);
 
-    FxBaseList& GetEffectList(AuxBus bus) { return mFxList[bus]; }
+    FxBase::LinkList& GetEffectList(AuxBus bus) {
+      NW4HBMAssertHeaderClampedLValue_Line(bus, AUX_A, AUX_BUS_NUM, 189);
+      return mFxList[bus];
+    }
 
   private:
     static const u8 AUX_CALLBACK_WAIT_FRAME = 6;
@@ -92,7 +103,7 @@ class AxManager {
     volatile s32 mResetReadyCounter; // at 0x50
     MoveValue<f32, int> mAuxFadeVolume[AUX_BUS_NUM]; // at 0x54
     MoveValue<f32, int> mAuxUserVolume[AUX_BUS_NUM]; // at 0x84
-    FxBaseList mFxList[AUX_BUS_NUM]; // at 0xB4
+    FxBase::LinkList mFxList[AUX_BUS_NUM]; // at 0xB4
     AXAuxCallback mAuxCallback[AUX_BUS_NUM]; // at 0xD8
     void* mAuxCallbackContext[AUX_BUS_NUM]; // at 0xE4
     u8 mAuxCallbackWaitCounter[AUX_BUS_NUM]; // at 0xF0

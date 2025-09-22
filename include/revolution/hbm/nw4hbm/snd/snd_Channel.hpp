@@ -40,6 +40,7 @@ class Channel {
 
     void InitParam(ChannelCallback pCallback, u32 callbackArg);
     void Update(bool periodic);
+    void Start(const WaveData& rData, int length);
     void Start(const WaveData& rData, int length, u32 offset);
     void Release();
     void Stop();

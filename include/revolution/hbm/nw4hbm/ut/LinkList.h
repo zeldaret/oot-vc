@@ -132,7 +132,7 @@ class LinkListImpl : private NonCopyable {
     Iterator Erase(Iterator itFirst, Iterator itLast);
 
     void Clear();
-    bool IsEmpty() { return mSize != 0; };
+    bool IsEmpty() const { return mSize != 0; };
     void SetPrev(LinkListNode* p, LinkListNode* pPrev);
     void SetNext(LinkListNode* p, LinkListNode* pNext);
     u32 GetSize() const { return mSize; }
@@ -241,7 +241,12 @@ template <typename T, int I> class LinkList : public detail::LinkListImpl {
 
         const T* operator->() const { return GetPointerFromNode(mIterator.operator->()); }
 
-        const T& operator*() const { return *this->operator->(); }
+        const T& operator*() const {
+            const T* p = this->operator->();
+            NW4HBMAssertPointerNonnull_Line(p, 0);
+
+            return *p;
+        }
 
         friend bool operator==(ConstIterator lhs, ConstIterator rhs) { return lhs.mIterator == rhs.mIterator; }
 
@@ -264,11 +269,25 @@ template <typename T, int I> class LinkList : public detail::LinkListImpl {
 
     Iterator Insert(Iterator it, T* p) { return LinkListImpl::Insert(it.it_, GetNodeFromPointer(p)); }
 
-    T& GetFront() { return *GetBeginIter(); }
-    const T& GetFront() const { return *GetBeginIter(); }
+    T& GetFront() {
+        NW4HBMAssert_Line(!IsEmpty(), 0);
+        return *GetBeginIter();
+    }
 
-    T& GetBack() { return *--GetEndIter(); }
-    const T& GetBack() const { return *--GetEndIter(); }
+    const T& GetFront() const {
+        NW4HBMAssert_Line(!IsEmpty(), 0);
+        return *GetBeginIter();
+    }
+
+    T& GetBack() {
+        NW4HBMAssert_Line(!IsEmpty(), 0);
+        return *--GetEndIter();
+    }
+
+    const T& GetBack() const {
+        NW4HBMAssert_Line(!IsEmpty(), 0);
+        return *--GetEndIter();
+    }
 
     void PushBack(T* p) { Insert(GetEndIter(), p); }
     Iterator Erase(Iterator it) { return LinkListImpl::Erase(it.it_); }

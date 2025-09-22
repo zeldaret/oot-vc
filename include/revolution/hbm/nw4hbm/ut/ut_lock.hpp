@@ -45,7 +45,7 @@ class AutoInterruptLock : private NonCopyable {
     ~AutoInterruptLock() { OSRestoreInterrupts(mOldState); }
 
   private:
-    bool mOldState; // at 0x0
+    int mOldState; // at 0x0
 };
 
 } // namespace ut

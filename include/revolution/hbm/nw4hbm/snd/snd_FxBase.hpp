@@ -17,6 +17,10 @@ enum SampleFormat {
 };
 
 class FxBase : private ut::NonCopyable {
+	// typedefs
+	public:
+		typedef ut::LinkList<FxBase, 0x04> LinkList;
+
   public:
     virtual ~FxBase() {} // at 0x8
 
@@ -26,12 +30,11 @@ class FxBase : private ut::NonCopyable {
 
     virtual void UpdateBuffer(int /* channels */, void** /* ppBuffer */, u32 /* size */, SampleFormat /* format */,
                               f32 /* sampleRate */, OutputMode /* mode */) {} // at 0x14
+    // virtual void OnChangeOutputMode();
 
-  public:
-    NW4R_UT_LINKLIST_NODE_DECL(); // at 0x4
+	public:
+		ut::LinkListNode	mFxLink;	// size 0x08, offset 0x04
 };
-
-NW4R_UT_LINKLIST_TYPEDEF_DECL(FxBase);
 
 } // namespace snd
 } // namespace nw4hbm

@@ -46,7 +46,7 @@ Channel* Bank::NoteOn(const NoteOnInfo& rInfo) const {
     pChannel->SetInitPan(initPan);
 
     pChannel->SetInitSurroundPan(0.0f);
-    pChannel->Start(waveData, rInfo.length, 0);
+    pChannel->Start(waveData, rInfo.length);
 
     return pChannel;
 }
