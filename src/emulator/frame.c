@@ -60,7 +60,6 @@ _XL_OBJECTTYPE gClassFrame = {
 
 // .sdata
 static char lbl_8025C820[] = ".";
-static u8 cAlpha = 0x0F;
 static u8 sRemapI[] = {0, 2, 4, 6, 8, 10, 12, 15};
 static char lbl_8025C830[] = ".T64";
 
@@ -77,7 +76,6 @@ s32 lbl_80172710[] = {
     0x000000BE,
     0x000000BE,
     0x000000BE,
-    0x00000000,
 };
 
 s32 sCommandCodes_1679[] = {
@@ -100,9 +98,9 @@ s32 GBIcode[] = {
     0x0A000000,
 };
 
-s32 sZBufShift[] = {
-    0x0003F800, 0x00000000, 0x0003F000, 0x00000000, 0x0003E000, 0x00000001, 0x0003C000, 0x00000002,
-    0x00038000, 0x00000003, 0x00030000, 0x00000004, 0x00020000, 0x00000005, 0x00000000, 0x00000006,
+u32 sZBufShift[8][2] = {
+    {0x0003F800, 0}, {0x0003F000, 0}, {0x0003E000, 1}, {0x0003C000, 2},
+    {0x00038000, 3}, {0x00030000, 4}, {0x00020000, 5}, {0x00000000, 6},
 };
 
 u32 ganNameColor[] = {
@@ -558,8 +556,9 @@ static inline bool frameSetupCache_UnknownInline(Frame* pFrame) {
             const char* szFileName = arcEntry.name;
             s32 nLength = strlen(szFileName);
 
-            if (szFileName[nLength - 4] == '.' && szFileName[nLength - 3] == 'T' && szFileName[nLength - 2] == '6' &&
-                szFileName[nLength - 1] == '4') {
+            //! @bug: probably meant to check for ".t64" and ".T64"
+            if (szFileName[nLength - 4] == '.' && (szFileName[nLength - 3] == 'T' || szFileName[nLength - 3] == 'T') &&
+                szFileName[nLength - 2] == '6' && szFileName[nLength - 1] == '4') {
                 if (!frameLoadTexturePack(pFrame, szFileName)) {
                     return false;
                 }
@@ -753,7 +752,61 @@ static bool frameLoadTile(Frame* pFrame, FrameTexture** ppTexture, s32 iTileCode
     return true;
 }
 
-// fn_8004A020
+bool fn_8004A020(Frame* pFrame) {
+    s32 i;
+
+    if (lbl_80172710[0] != 0xFF || lbl_80172710[1] != 0xFF || lbl_80172710[2] != 0xFF) {
+        pFrame->nMode &= ~0x40000000;
+        frameDrawSetup2D(pFrame);
+
+        GXSetNumTevStages(1);
+        GXSetNumChans(1);
+        GXSetNumTexGens(0);
+        GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_C0);
+        GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
+        GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+        GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_FALSE, GX_TEVPREV);
+        GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR_NULL);
+        GXClearVtxDesc();
+        GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+        GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_TEX_ST, GX_RGBA6, 0U);
+        GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
+
+        for (i = 0; i < 3; i++) {
+            if (lbl_80172710[i] > 0xFF) {
+                lbl_80172710[i] = 0xFF;
+            }
+            if (lbl_80172710[i] < 0) {
+                lbl_80172710[i] = 0;
+            }
+        }
+
+        if (lbl_80172710[0] != 0xFF || lbl_80172710[1] != 0xFF || lbl_80172710[2] != 0xFF) {
+            GXColor color;
+
+            color.r = lbl_80172710[0];
+            color.g = lbl_80172710[1];
+            color.b = lbl_80172710[2];
+            color.a = 0xFF;
+
+            GXSetTevColor(GX_TEVREG0, color);
+            GXSetBlendMode(GX_BM_BLEND, GX_BL_ZERO, GX_BL_SRCCLR, GX_LO_NOOP);
+
+            GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+            GXPosition3f32(0.0f, 0.0f, 0.0f);
+            GXPosition3f32(N64_FRAME_WIDTH, 0.0f, 0.0f);
+            GXPosition3f32(N64_FRAME_WIDTH, N64_FRAME_HEIGHT, 0.0f);
+            GXPosition3f32(0.0f, N64_FRAME_HEIGHT, 0.0f);
+            GXEnd();
+        }
+
+        pFrame->nMode = 0;
+        pFrame->nModeVtx = -1;
+        frameDrawReset(pFrame, 0x47F2D);
+    }
+
+    return true;
+}
 
 static inline void fn_8004A314_inline(Mtx44 mtx, f32 a[4], f32 d) {
     f32 length;
@@ -783,59 +836,59 @@ void fn_8004A314(Frame* pFrame) {
     if (pFrame->matrixProjection[0][3] != 0.0f || pFrame->matrixProjection[1][3] != 0.0f ||
         pFrame->matrixProjection[2][3] != 0.0f) {
         PSMTXTranspose(pFrame->matrixProjection, sp28);
-        PSMTX44Identity(pFrame->unknown2);
-        PSMTX44Identity(pFrame->unknown3);
+        PSMTX44Identity(pFrame->unk_3F190);
+        PSMTX44Identity(pFrame->unk_3F1D0);
 
-        pFrame->unknown2[2][0] = -sp28[3][0];
-        pFrame->unknown2[2][1] = -sp28[3][1];
-        pFrame->unknown2[2][2] = -sp28[3][2];
-        pFrame->unknown2[2][3] = -sp28[3][3];
+        pFrame->unk_3F190[2][0] = -sp28[3][0];
+        pFrame->unk_3F190[2][1] = -sp28[3][1];
+        pFrame->unk_3F190[2][2] = -sp28[3][2];
+        pFrame->unk_3F190[2][3] = -sp28[3][3];
 
         if (sp28[3][0] != 0.0f) {
-            pFrame->unknown3[2][2] = -sp28[2][0] / sp28[3][0];
+            pFrame->unk_3F1D0[2][2] = -sp28[2][0] / sp28[3][0];
         } else if (sp28[3][1] != 0.0f) {
-            pFrame->unknown3[2][2] = -sp28[2][1] / sp28[3][1];
+            pFrame->unk_3F1D0[2][2] = -sp28[2][1] / sp28[3][1];
         } else {
-            pFrame->unknown3[2][2] = -sp28[2][2] / sp28[3][2];
+            pFrame->unk_3F1D0[2][2] = -sp28[2][2] / sp28[3][2];
         }
 
-        pFrame->unknown3[2][3] = -((pFrame->unknown3[2][2] * pFrame->unknown2[2][3]) - sp28[2][3]);
-        pFrame->unknown3[3][2] = -1.0f;
-        pFrame->unknown3[3][3] = 0.0f;
+        pFrame->unk_3F1D0[2][3] = -((pFrame->unk_3F1D0[2][2] * pFrame->unk_3F190[2][3]) - sp28[2][3]);
+        pFrame->unk_3F1D0[3][2] = -1.0f;
+        pFrame->unk_3F1D0[3][3] = 0.0f;
 
-        pFrame->unknown3[1][2] = 1.0f;
-        pFrame->unknown2[1][0] = sp28[1][0] - pFrame->unknown2[2][0];
-        pFrame->unknown2[1][1] = sp28[1][1] - pFrame->unknown2[2][1];
-        pFrame->unknown2[1][2] = sp28[1][2] - pFrame->unknown2[2][2];
-        pFrame->unknown2[1][3] = sp28[1][3] - pFrame->unknown2[2][3];
+        pFrame->unk_3F1D0[1][2] = 1.0f;
+        pFrame->unk_3F190[1][0] = sp28[1][0] - pFrame->unk_3F190[2][0];
+        pFrame->unk_3F190[1][1] = sp28[1][1] - pFrame->unk_3F190[2][1];
+        pFrame->unk_3F190[1][2] = sp28[1][2] - pFrame->unk_3F190[2][2];
+        pFrame->unk_3F190[1][3] = sp28[1][3] - pFrame->unk_3F190[2][3];
 
-        pFrame->unknown3[0][2] = 1.0f;
-        pFrame->unknown2[0][0] = sp28[0][0] - pFrame->unknown2[2][0];
-        pFrame->unknown2[0][1] = sp28[0][1] - pFrame->unknown2[2][1];
-        pFrame->unknown2[0][2] = sp28[0][2] - pFrame->unknown2[2][2];
-        pFrame->unknown2[0][3] = sp28[0][3] - pFrame->unknown2[2][3];
+        pFrame->unk_3F1D0[0][2] = 1.0f;
+        pFrame->unk_3F190[0][0] = sp28[0][0] - pFrame->unk_3F190[2][0];
+        pFrame->unk_3F190[0][1] = sp28[0][1] - pFrame->unk_3F190[2][1];
+        pFrame->unk_3F190[0][2] = sp28[0][2] - pFrame->unk_3F190[2][2];
+        pFrame->unk_3F190[0][3] = sp28[0][3] - pFrame->unk_3F190[2][3];
 
-        PSMTXTranspose(pFrame->unknown2, pFrame->unknown2);
-        PSMTXTranspose(pFrame->unknown3, pFrame->unknown);
+        PSMTXTranspose(pFrame->unk_3F190, pFrame->unk_3F190);
+        PSMTXTranspose(pFrame->unk_3F1D0, pFrame->unk_3F150);
 
-        fn_8004A314_inline(pFrame->unknown, sp18, -1.0f);
-        fn_8004A314_inline(pFrame->unknown, sp8, 1.0f);
+        fn_8004A314_inline(pFrame->unk_3F150, sp18, -1.0f);
+        fn_8004A314_inline(pFrame->unk_3F150, sp8, 1.0f);
 
         temp_f1_2 = sp8[3] * 0.1f;
         temp_f2_4 = sp18[3] + temp_f1_2;
 
-        pFrame->unknown3[2][2] = temp_f1_2 / temp_f2_4;
-        pFrame->unknown3[2][3] = temp_f1_2 * sp18[3] / temp_f2_4;
+        pFrame->unk_3F1D0[2][2] = temp_f1_2 / temp_f2_4;
+        pFrame->unk_3F1D0[2][3] = temp_f1_2 * sp18[3] / temp_f2_4;
 
         pFrame->unk_3F210 = sp18[3];
         pFrame->unk_3F214 = -sp8[3];
         pFrame->eTypeProjection = FMP_PERSPECTIVE;
     } else {
-        memcpy(pFrame->unknown2, pFrame->matrixProjection, sizeof(Mtx44));
-        PSMTX44Identity(pFrame->unknown3);
-        memcpy(pFrame->unknown, pFrame->unknown3, sizeof(Mtx44));
-        pFrame->unknown3[2][2] = -0.25f;
-        pFrame->unknown3[2][3] = -0.5f;
+        memcpy(pFrame->unk_3F190, pFrame->matrixProjection, sizeof(Mtx44));
+        PSMTX44Identity(pFrame->unk_3F1D0);
+        memcpy(pFrame->unk_3F150, pFrame->unk_3F1D0, sizeof(Mtx44));
+        pFrame->unk_3F1D0[2][2] = -0.25f;
+        pFrame->unk_3F1D0[2][3] = -0.5f;
         pFrame->unk_3F210 = 1.0f;
         pFrame->unk_3F214 = 0.0f;
         pFrame->eTypeProjection = FMP_ORTHOGRAPHIC;
@@ -868,7 +921,7 @@ bool frameDrawSetupFog_Default(Frame* pFrame) {
         return true;
     }
     var_f6 = -rOffset;
-    rStart = pFrame->unknown[3][2] / ((var_f6 / rMultiplier) - (pFrame->unknown[2][2] / pFrame->unknown[2][3]));
+    rStart = pFrame->unk_3F150[3][2] / ((var_f6 / rMultiplier) - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
     var_f6 = (249.0f + var_f6) / rMultiplier;
     if (rStart < rNear) {
         rStart = rNear;
@@ -886,7 +939,7 @@ bool frameDrawSetupFog_Default(Frame* pFrame) {
         if (var_f6 > 1.0f) {
             var_f6 = 1.0f;
         }
-        rEnd = pFrame->unknown[3][2] / (var_f6 - (pFrame->unknown[2][2] / pFrame->unknown[2][3]));
+        rEnd = pFrame->unk_3F150[3][2] / (var_f6 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
         if (rEnd < rNear) {
             rEnd = rNear;
         }
@@ -908,8 +961,16 @@ bool frameDrawSetupFog_Default(Frame* pFrame) {
 //! TODO: make sFrameObj a static variable in the function
 void ZeldaDrawFrame(Frame* pFrame, u16* pData) {
     Mtx matrix;
-    u32 pad[8];
+    f32 x0;
+    f32 y0;
+    f32 x1;
+    f32 y1;
+    f32 s0;
+    f32 t0;
+    f32 s1;
+    f32 t1;
     GXColor color;
+    static u8 cAlpha = 0x0F;
 
     color.r = 255;
     color.g = 255;
@@ -941,15 +1002,23 @@ void ZeldaDrawFrame(Frame* pFrame, u16* pData) {
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 
+    s0 = 0.0f;
+    t0 = 0.0f;
+    s1 = 1.0f;
+    t1 = 1.0f;
+    x0 = 0.0f;
+    y0 = 0.0f;
+    x1 = N64_FRAME_WIDTH;
+    y1 = N64_FRAME_HEIGHT;
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-    GXPosition3f32(0.0f, 0.0f, 0.0f);
-    GXTexCoord2f32(0.0f, 0.0f);
-    GXPosition3f32(N64_FRAME_WIDTH, 0.0f, 0.0f);
-    GXTexCoord2f32(1.0f, 0.0f);
-    GXPosition3f32(N64_FRAME_WIDTH, N64_FRAME_HEIGHT, 0.0f);
-    GXTexCoord2f32(1.0f, 1.0f);
-    GXPosition3f32(0.0f, N64_FRAME_HEIGHT, 0.0f);
-    GXTexCoord2f32(0.0f, 1.0f);
+    GXPosition3f32(x0, y0, 0.0f);
+    GXTexCoord2f32(s0, t0);
+    GXPosition3f32(x1, y0, 0.0f);
+    GXTexCoord2f32(s1, t0);
+    GXPosition3f32(x1, y1, 0.0f);
+    GXTexCoord2f32(s1, t1);
+    GXPosition3f32(x0, y1, 0.0f);
+    GXTexCoord2f32(s0, t1);
     GXEnd();
 
     pFrame->nMode = 0;
@@ -957,12 +1026,20 @@ void ZeldaDrawFrame(Frame* pFrame, u16* pData) {
     frameDrawReset(pFrame, 0x47F2D);
 }
 
-//! TODO: make sFrameObj and cAlpha a static variable in the function
+//! TODO: make sFrameObj a static variable in the function
 void ZeldaGreyScaleConvert(Frame* pFrame) {
     Mtx matrix;
     void* dataP;
-    s32 pad[9];
+    f32 x0;
+    f32 y0;
+    f32 x1;
+    f32 y1;
+    f32 s0;
+    f32 t0;
+    f32 s1;
+    f32 t1;
     GXColor color;
+    static u8 cAlpha = 0;
 
     dataP = DemoCurrentBuffer;
     color.r = 192;
@@ -1012,15 +1089,23 @@ void ZeldaGreyScaleConvert(Frame* pFrame) {
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
     GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 
+    s0 = 0.0f;
+    t0 = 0.0f;
+    s1 = 1.0f;
+    t1 = 1.0f;
+    x0 = 0.0f;
+    y0 = 0.0f;
+    x1 = N64_FRAME_WIDTH;
+    y1 = N64_FRAME_HEIGHT;
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-    GXPosition3f32(0.0f, 0.0f, 0.0f);
-    GXTexCoord2f32(0.0f, 0.0f);
-    GXPosition3f32(N64_FRAME_WIDTH, 0.0f, 0.0f);
-    GXTexCoord2f32(1.0f, 0.0f);
-    GXPosition3f32(N64_FRAME_WIDTH, N64_FRAME_HEIGHT, 0.0f);
-    GXTexCoord2f32(1.0f, 1.0f);
-    GXPosition3f32(0.0f, N64_FRAME_HEIGHT, 0.0f);
-    GXTexCoord2f32(0.0f, 1.0f);
+    GXPosition3f32(x0, y0, 0.0f);
+    GXTexCoord2f32(s0, t0);
+    GXPosition3f32(x1, y0, 0.0f);
+    GXTexCoord2f32(s1, t0);
+    GXPosition3f32(x1, y1, 0.0f);
+    GXTexCoord2f32(s1, t1);
+    GXPosition3f32(x0, y1, 0.0f);
+    GXTexCoord2f32(s0, t1);
     GXEnd();
 
     pFrame->nMode = 0;
@@ -1139,6 +1224,46 @@ bool frameHackCIMG_Zelda(Frame* pFrame, FrameBuffer* pBuffer, u64* pnGBI, u32 nC
     return true;
 }
 
+void fn_8004BB60(Frame* pFrame, FrameBuffer* pBuffer, s32* unknown) {
+    u32* pData = pBuffer->pData;
+    int i;
+
+    for (i = 0; i < 0x20; i++) {
+        if (pData[0] == 0x00000FFF) {
+            if (pData[1] == 0xFFF00000 && pData[2] == 0x0000F000 && pData[3] == 0x000F0000) {
+                pData[0] = 0x00000000;
+                pData[1] = 0x00000000;
+                pData[2] = 0x00000FFF;
+                pData[3] = 0xFFF00000;
+                pData[4] = 0x0000F000;
+                pData[5] = 0x000F0000;
+                DCStoreRange(&pData[0], 16 * sizeof(s32));
+
+                pData[18] = 0x0000F000;
+                pData[19] = 0xF0000000;
+                pData[20] = 0x00000F0F;
+                pData[21] = 0x00000000;
+                pData[22] = 0x000000F0;
+                pData[23] = 0x00000000;
+                pData[24] = 0x00000F0F;
+                pData[25] = 0x00000000;
+                pData[26] = 0x0000F000;
+                pData[27] = 0xF0000000;
+                pData[28] = 0x00000000;
+                pData[29] = 0x00000000;
+                pData[30] = 0x00000000;
+                pData[31] = 0x00000000;
+                DCStoreRange(&pData[16], 16 * sizeof(s32));
+
+                *unknown = 1;
+                return;
+            }
+        } else {
+            pData += 16;
+        }
+    }
+}
+
 static inline void CopyCFB(u16* srcP) {
     GXSetTexCopySrc(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
     GXSetTexCopyDst(N64_FRAME_WIDTH, N64_FRAME_HEIGHT, GX_TF_RGB565, GX_TRUE);
@@ -1180,7 +1305,49 @@ void CopyAndConvertCFB(u16* srcP) {
     }
 }
 
-// fn_8004BDF4
+void fn_8004BDF4(u16* pData) {
+    u16* pDataEnd;
+    int tileY;
+    int tileX;
+    int y;
+    int x;
+    int i;
+    u32 val;
+    u32 mask;
+    u32 shift;
+
+    pDataEnd = pData + N64_FRAME_WIDTH * N64_FRAME_HEIGHT;
+    tileY = 0;
+    while (pData < pDataEnd) {
+        for (y = 0; y < 4; y++) {
+            for (tileX = 0; tileX < N64_FRAME_WIDTH / 4; tileX++) {
+                for (x = 0; x < 4; x++) {
+                    val = sTempZBuf[tileY * (N64_FRAME_WIDTH / 4) + tileX][y][x];
+                    val = ((val & 0xFF) << 8) | (val >> 8);
+                    val = (val << 2) | 3;
+
+                    for (i = 0; i < 8; i++) {
+                        mask = sZBufShift[i][0];
+                        shift = sZBufShift[i][1];
+                        if ((val & mask) == mask) {
+                            val = (val & ~mask) >> shift;
+                            val = (val << 2) | ((7 - i) << 13);
+                            break;
+                        }
+                    }
+
+                    if (val == 0xFFFC) {
+                        *pData = val;
+                    } else {
+                        *pData = val / 1.6f;
+                    }
+                    pData++;
+                }
+            }
+        }
+        tileY++;
+    }
+}
 
 static void frameDrawSyncCallback(u16 nToken) {
     if (nToken == FRAME_SYNC_TOKEN) {
@@ -1264,19 +1431,18 @@ static bool frameMakeTLUT(Frame* pFrame, FrameTexture* pTexture, s32 nCount, s32
     u16* anColor;
     u16 nData16;
 
-    if (bReload) {
-        // if (pTexture->iPackColor == -1) {
-        //     return true;
-        // }
-        // anColor = (u16*)((u8*)pFrame->aColorData + ((pTexture->iPackColor & 0xFFFF) << 5));
-    } else {
+    if (!bReload) {
         if (!packTakeBlocks(&pTexture->iPackColor, pFrame->anPackColor, ARRAY_COUNT(pFrame->anPackColor),
                             (nCount * sizeof(u16)) >> 5)) {
             return false;
         }
-        anColor = (u16*)((u8*)pFrame->aColorData + ((pTexture->iPackColor & 0xFFFF) << 5));
+    } else {
+        if (pTexture->iPackColor == -1) {
+            return false;
+        }
     }
 
+    anColor = (u16*)((u8*)pFrame->aColorData + ((pTexture->iPackColor & 0xFFFF) << 5));
     for (iColor = 0; iColor < nCount; iColor++) {
         nData16 = pFrame->TMEM.data.u64[nOffsetTMEM + 0x100 + iColor] & 0xFFFF;
         if (nData16 & 1) {
@@ -1321,26 +1487,36 @@ static bool frameLoadTexture(Frame* pFrame, FrameTexture* pTexture, s32 iTexture
     } else {
         eWrapT = GX_REPEAT;
     }
+    if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
+        if (pFrame->unk_24 != 0) {
+            if (eWrapS == GX_REPEAT) {
+                eWrapS = GX_CLAMP;
+            }
+            if (eWrapT == GX_REPEAT) {
+                eWrapT = GX_CLAMP;
+            }
+            pFrame->unk_24 = 0;
+        }
+    }
     if (pTexture->eWrapS != eWrapS || pTexture->eWrapT != eWrapT) {
         pTexture->eWrapS = eWrapS;
         pTexture->eWrapT = eWrapT;
 
-        if ((GXCITexFmt)pTexture->eFormat == GX_TF_C4 || (GXCITexFmt)pTexture->eFormat == GX_TF_C8) {
+        if (pTexture->eFormat == GX_TF_C4 || pTexture->eFormat == GX_TF_C8) {
             if (pTexture->iPackColor == -1) {
                 pData = NULL;
             } else {
                 pData = (u8*)pFrame->aColorData + ((pTexture->iPackColor & 0xFFFF) << 5);
             }
-            GXInitTlutObj(&pTexture->objectTLUT, pData, GX_TL_RGB5A3,
-                          (GXCITexFmt)pTexture->eFormat == GX_TF_C4 ? 16 : 256);
+            GXInitTlutObj(&pTexture->objectTLUT, pData, GX_TL_RGB5A3, pTexture->eFormat == GX_TF_C4 ? 16 : 256);
 
             if (pTexture->iPackPixel == -1) {
                 pData = NULL;
             } else {
                 pData = (u8*)pFrame->aPixelData + ((pTexture->iPackPixel & 0xFFFF) << 11);
             }
-            GXInitTexObjCI(&pTexture->objectTexture, pData, pTexture->nSizeX, pTexture->nSizeY,
-                           (GXCITexFmt)pTexture->eFormat, eWrapS, eWrapT, GX_FALSE, 0);
+            GXInitTexObjCI(&pTexture->objectTexture, pData, pTexture->nSizeX, pTexture->nSizeY, pTexture->eFormat,
+                           eWrapS, eWrapT, GX_FALSE, 0);
         } else {
             if (pTexture->iPackPixel == -1) {
                 pData = NULL;
@@ -1371,7 +1547,7 @@ static bool frameLoadTexture(Frame* pFrame, FrameTexture* pTexture, s32 iTexture
         }
     }
 
-    if ((GXCITexFmt)pTexture->eFormat == GX_TF_C4 || (GXCITexFmt)pTexture->eFormat == GX_TF_C8) {
+    if (pTexture->eFormat == GX_TF_C4 || pTexture->eFormat == GX_TF_C8) {
         GXLoadTlut(&pTexture->objectTLUT, ganNameColor[iName]);
     }
 
@@ -2822,40 +2998,38 @@ bool frameEnd(Frame* pFrame) {
         }
     }
 
-    pFrame->bBlurOn = false;
-    pFrame->bHackPause = false;
-    pFrame->nHackCount = 0;
+    pFrame->unk_24 = 0;
+    pFrame->unk_28 = 0;
+    pFrame->unk_2C = 0;
 
     if (gpSystem->eTypeROM == NSMJ || gpSystem->eTypeROM == NSME) {
-        if (pFrame->cBlurAlpha > 0x3264) {
+        if (pFrame->unk_4C > 12900) {
             frameEnd_UnknownInline(pFrame, 73);
         }
     } else if (gpSystem->eTypeROM == NSMP) {
-        if (pFrame->bUsingLens != 0) {
-            pFrame->bUsingLens++;
+        if (pFrame->unk_48 != 0) {
+            pFrame->unk_48++;
 
-            if (pFrame->bUsingLens > 0x1F4) {
-                pFrame->bUsingLens = 0;
+            if (pFrame->unk_48 > 500) {
+                pFrame->unk_48 = 0;
             }
         }
     } else if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
-        if (pFrame->nFrameCounter != 0 && lbl_8025D168 >= 2) {
+        if (pFrame->unk_30 != 0 && lbl_8025D168 >= 2) {
             frameEnd_UnknownInline(pFrame, 93);
-        } else if (pFrame->bCameFromBomberNotes && lbl_8025D168 == 3 && gpSystem->eTypeROM == NKTP) {
+        } else if (pFrame->unk_38 != 0 && lbl_8025D168 == 3 && gpSystem->eTypeROM == NKTP) {
             frameEnd_UnknownInline(pFrame, 73);
-        } else if (pFrame->bInBomberNotes && lbl_8025D168 == 3 &&
-                   (gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTJ)) {
+        } else if (pFrame->unk_3C && lbl_8025D168 == 3 && (gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTJ)) {
             frameEnd_UnknownInline(pFrame, 73);
-        } else if (pFrame->bShrinking && lbl_8025D168 == 3 &&
-                   (gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTJ)) {
+        } else if (pFrame->unk_40 && lbl_8025D168 == 3 && (gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTJ)) {
             frameEnd_UnknownInline(pFrame, 80);
-        } else if (pFrame->cBlurAlpha != 0) {
+        } else if (pFrame->unk_4C != 0) {
             if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE) {
                 frameEnd_UnknownInline(pFrame, 66);
             } else {
                 frameEnd_UnknownInline(pFrame, 79);
             }
-        } else if (pFrame->bSnapShot) {
+        } else if (pFrame->unk_44 != 0) {
             if (lbl_8025D168 >= 4) {
                 frameEnd_UnknownInline(pFrame, 80);
             } else {
@@ -2866,29 +3040,29 @@ bool frameEnd(Frame* pFrame) {
     } else if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
         s32 var_r29;
 
-        if (pFrame->bInBomberNotes > 0) {
-            pFrame->bInBomberNotes--;
-            if (pFrame->bInBomberNotes == 0) {
-                pFrame->bCameFromBomberNotes = 0;
+        if (pFrame->unk_3C > 0) {
+            pFrame->unk_3C--;
+            if (pFrame->unk_3C == 0) {
+                pFrame->unk_38 = 0;
             }
         }
-        if (pFrame->cBlurAlpha != 0) {
-            pFrame->cBlurAlpha++;
+        if (pFrame->unk_4C != 0) {
+            pFrame->unk_4C++;
             if (gpSystem->eTypeROM == NZLP) {
-                if (pFrame->cBlurAlpha < 0xCB2) {
-                    var_r29 = 0x56;
-                } else if (pFrame->cBlurAlpha < 0x12C0) {
-                    var_r29 = 0x3B;
+                if (pFrame->unk_4C < 3250) {
+                    var_r29 = 86;
+                } else if (pFrame->unk_4C < 4800) {
+                    var_r29 = 59;
                 } else {
-                    var_r29 = 0x50;
+                    var_r29 = 80;
                 }
             } else {
-                if (pFrame->cBlurAlpha < 0xED8) {
-                    var_r29 = 0x5B;
-                } else if (pFrame->cBlurAlpha < 0x15E0) {
-                    var_r29 = 0x3D;
+                if (pFrame->unk_4C < 3800) {
+                    var_r29 = 91;
+                } else if (pFrame->unk_4C < 5600) {
+                    var_r29 = 61;
                 } else {
-                    var_r29 = 0x50;
+                    var_r29 = 80;
                 }
             }
             frameEnd_UnknownInline(pFrame, var_r29);
@@ -2904,11 +3078,11 @@ bool frameEnd(Frame* pFrame) {
         DCInvalidateRange(pData, N64_FRAME_WIDTH * N64_FRAME_HEIGHT * sizeof(u16));
     }
 
-    if (fn_8004A020(pFrame) == 0) {
+    if (!fn_8004A020(pFrame)) {
         return false;
     }
 
-    if (fn_8005F7E4(SYSTEM_HELP(gpSystem)) == 0) {
+    if (!fn_8005F7E4(SYSTEM_HELP(gpSystem))) {
         return false;
     }
 
@@ -3069,10 +3243,9 @@ bool frameLoadTexturePack(Frame* pFrame, const char* szFileName) {
 }
 
 static inline bool frameEvent_UnknownInline(Frame* pFrame) {
-    if (!fn_8005F5F4(SYSTEM_HELP(gpSystem), &pFrame->aPixelData, 0x30300000, (HelpMenuCallback)&frameSetupCache)) {
+    if (!fn_8005F5F4(SYSTEM_HELP(gpSystem), &pFrame->aPixelData, 0x30300000, &frameSetupCache)) {
         return false;
-    } else if (!fn_8005F5F4(SYSTEM_HELP(gpSystem), &pFrame->aColorData, 0x30050000,
-                            (HelpMenuCallback)&frameSetupCache)) {
+    } else if (!fn_8005F5F4(SYSTEM_HELP(gpSystem), &pFrame->aColorData, 0x30050000, &frameSetupCache)) {
         return false;
     }
 
@@ -3084,15 +3257,16 @@ static inline bool frameEvent_UnknownInline(Frame* pFrame) {
 }
 
 bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
-    s32 temp_r4;
+    s32 var_r30;
+    s32 temp_r7;
 
     switch (nEvent) {
         case 1:
             GXAbortFrame();
             break;
         case 2:
-            pFrame->iHintMatrix = 0;
             pFrame->nMode = 0x20000;
+            pFrame->iHintMatrix = 0;
             pFrame->nFlag = 0;
             pFrame->nCountFrames = 0;
             gbFrameBegin = true;
@@ -3111,43 +3285,56 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
             pFrame->nOffsetDepth1 = -1;
             pFrame->viewport.rX = 0.0f;
             pFrame->viewport.rY = 0.0f;
+
+            var_r30 = rmode->efbHeight;
             pFrame->viewport.rSizeX = GC_FRAME_WIDTH;
-            pFrame->viewport.rSizeY = GC_FRAME_HEIGHT;
+            pFrame->viewport.rSizeY = var_r30;
             pFrame->anSizeX[FS_SOURCE] = N64_FRAME_WIDTH;
             pFrame->anSizeY[FS_SOURCE] = N64_FRAME_HEIGHT;
             pFrame->rScaleX = (f32)pFrame->anSizeX[FS_TARGET] / (f32)N64_FRAME_WIDTH;
             pFrame->rScaleY = (f32)pFrame->anSizeY[FS_TARGET] / (f32)N64_FRAME_HEIGHT;
-            pFrame->unk_A4 = GC_FRAME_WIDTH;
-            pFrame->unk_A8 = GC_FRAME_HEIGHT;
+            pFrame->unk_A4 = pFrame->unk_A8 = 0.0f;
 
-            temp_r4 = GC_FRAME_HEIGHT >> (xlCoreHiResolution() ? 0 : 1);
-            if (temp_r4 > 0) {
+            temp_r7 = var_r30 >> (xlCoreHiResolution() ? 0 : 1);
+            if (temp_r7 > 0) {
                 pFrame->anSizeX[FS_TARGET] = GC_FRAME_WIDTH;
-                pFrame->anSizeY[FS_TARGET] = temp_r4;
+                pFrame->anSizeY[FS_TARGET] = temp_r7;
                 pFrame->rScaleX = GC_FRAME_WIDTH / (f32)pFrame->anSizeX[FS_SOURCE];
-                pFrame->rScaleY = temp_r4 / (f32)pFrame->anSizeY[FS_SOURCE];
+                pFrame->rScaleY = temp_r7 / (f32)pFrame->anSizeY[FS_SOURCE];
+                pFrame->unk_A4 = pFrame->unk_A8 = 0.0f;
             }
             GXSetDrawDoneCallback(&frameDrawDone);
 
             gnCountMapHack = 0;
+            pFrame->unk_24 = 0;
+            pFrame->unk_28 = 0;
+            pFrame->unk_2C = 0;
+            pFrame->unk_30 = 0;
+            pFrame->unk_34 = 0;
+            pFrame->unk_38 = 0;
+            pFrame->unk_3C = 0;
+            pFrame->unk_40 = 0;
+            pFrame->unk_44 = 0;
+            pFrame->unk_48 = 0;
+            pFrame->unk_4C = 0;
+            pFrame->nHackCount = 0;
             pFrame->bBlurOn = false;
             pFrame->bHackPause = false;
-            pFrame->nHackCount = 0;
             pFrame->nFrameCounter = 0;
+            pFrame->nNumCIMGAddresses = 0;
             pFrame->bPauseThisFrame = false;
             pFrame->bCameFromBomberNotes = false;
             pFrame->bInBomberNotes = false;
             pFrame->bShrinking = 0;
+            pFrame->bSnapShot = 0;
             pFrame->bUsingLens = false;
             pFrame->cBlurAlpha = 170;
             pFrame->bBlurredThisFrame = false;
             pFrame->nFrameCIMGCalls = 0;
+            pFrame->bModifyZBuffer = false;
             pFrame->nZBufferSets = 0;
             pFrame->nLastFrameZSets = 0;
             pFrame->bPauseBGDrawn = false;
-            pFrame->bFrameOn = false;
-            pFrame->bModifyZBuffer = false;
-            pFrame->bOverrideDepth = false;
             break;
         case 3:
             break;
@@ -3156,7 +3343,7 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
             pFrame->nCopyBuffer = NULL;
             pFrame->nCameraBuffer = NULL;
 
-            if (!fn_8005F5F4(SYSTEM_HELP(gpSystem), pFrame->nTempBuffer, 0x30025800, NULL)) {
+            if (!fn_8005F5F4(SYSTEM_HELP(gpSystem), &pFrame->nTempBuffer, 0x30025800, NULL)) {
                 return false;
             }
 
@@ -3531,7 +3718,7 @@ bool frameLoadVertex(Frame* pFrame, void* pBuffer, s32 iVertex0, s32 nCount) {
             fn_8004A314(pFrame);
             pFrame->nMode |= 0x08000000;
         }
-        PSMTX44Concat(matrixModel, pFrame->unknown2, pFrame->matrixView);
+        PSMTX44Concat(matrixModel, pFrame->unk_3F190, pFrame->matrixView);
         pFrame->nMode |= 0x400000;
     }
 
@@ -3737,7 +3924,7 @@ bool frameLoadVertex(Frame* pFrame, void* pBuffer, s32 iVertex0, s32 nCount) {
 
         if (nTexGen == 0) {
             s16tof32Scaled32Pair(&pnData16[4], &pVertex->rS);
-            if (gpSystem->eTypeROM == NSMJ && pFrame->bBlurOn && pVertex->rS == 0.0) {
+            if (gpSystem->eTypeROM == NSMJ && pFrame->unk_24 != 0 && pVertex->rS == 0.0) {
                 pVertex->rS -= 2.0;
             }
         }
@@ -3747,8 +3934,8 @@ bool frameLoadVertex(Frame* pFrame, void* pBuffer, s32 iVertex0, s32 nCount) {
         pnData16 += 0x8;
     }
 
-    if (gpSystem->eTypeROM == NSMJ && pFrame->bBlurOn) {
-        pFrame->bBlurOn = false;
+    if (gpSystem->eTypeROM == NSMJ && pFrame->unk_24 != 0) {
+        pFrame->unk_24 = 0;
     }
 
     return true;
@@ -3765,7 +3952,7 @@ bool frameCullDL(Frame* pFrame, s32 nVertexStart, s32 nVertexEnd) {
     s32 nCode;
     s32 nCodeFull;
 
-    matrix = pFrame->matrixProjection;
+    matrix = pFrame->unk_3F150;
     vtxP = &pFrame->aVertex[nVertexStart];
     endVtxP = &pFrame->aVertex[nVertexEnd];
     nCodeFull = 0xFF;
