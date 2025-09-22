@@ -972,9 +972,16 @@ revolution/hbm/nw4hbm/ut/ut_CharWriter.cpp:
 	.sbss       start:0x8025DCA0 end:0x8025DCA8
 	.sdata2     start:0x8025E928 end:0x8025E948
 
+revolution/hbm/nw4hbm/ut/ut_DvdFileStream.cpp:
+	.text       start:0x80141E78 end:0x80141E84
+	.ctors      start:0x8016A720 end:0x8016A724
+	.sbss       start:0x8025DCA8 end:0x8025DCB0
+
 revolution/hbm/nw4hbm/ut/ut_FileStream.cpp:
-	.text       start:0x80141E78 end:0x80142114
-	.ctors      start:0x8016A720 end:0x8016A728
+	.text       start:0x80141E84 end:0x80142114
+	.ctors      start:0x8016A724 end:0x8016A728
+	.data       start:0x8019E7E0 end:0x8019E8C8
+	.sbss       start:0x8025DCB0 end:0x8025DCB8
 
 revolution/hbm/nw4hbm/ut/ut_Font.cpp:
 	.text       start:0x80142114 end:0x801422D8
@@ -983,6 +990,8 @@ revolution/hbm/nw4hbm/ut/ut_Font.cpp:
 revolution/hbm/nw4hbm/ut/ut_IOStream.cpp:
 	.text       start:0x801422D8 end:0x80142514
 	.ctors      start:0x8016A728 end:0x8016A72C
+	.data       start:0x8019E940 end:0x8019EA08
+	.sbss       start:0x8025DCB8 end:0x8025DCC0
 
 revolution/hbm/nw4hbm/ut/ut_LinkList.cpp:
 	.text       start:0x80142514 end:0x80142A80
@@ -996,6 +1005,7 @@ revolution/hbm/nw4hbm/ut/ut_NandFileStream.cpp:
 	.text       start:0x80142E28 end:0x80143E14
 	.ctors      start:0x8016A72C end:0x8016A730
 	.data       start:0x8019EC10 end:0x8019EDC0
+	.sbss       start:0x8025DCC0 end:0x8025DCC8
 
 revolution/hbm/nw4hbm/ut/ut_ResFont.cpp:
 	.text       start:0x80143E14 end:0x80144E2C

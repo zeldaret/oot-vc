@@ -10,6 +10,8 @@ namespace ut {
 
 class NandFileStream : public FileStream {
   public:
+    virtual const ut::detail::RuntimeTypeInfo* GetRuntimeTypeInfo() const { return &typeInfo; }
+
     NandFileStream(const char* pPath, u32 mode);
     NandFileStream(const NANDFileInfo* pInfo, u32 mode, bool enableClose);
     virtual ~NandFileStream(); // at 0xC
@@ -25,7 +27,6 @@ class NandFileStream : public FileStream {
     virtual bool WriteAsync(const void* pSrc, u32 size, StreamCallback pCallback, void* pCallbackArg); // at 0x20
     virtual void Seek(s32 offset, u32 origin); // at 0x44
 
-    virtual void fn_80143E08() const {}
     virtual bool IsBusy() const { return mIsBusy; } // at 0x24
     virtual u32 Tell() const { return mFilePosition.Tell(); } // at 0x58
     virtual u32 GetSize() const { return mFilePosition.GetFileSize(); } // at 0x40
@@ -61,6 +62,9 @@ class NandFileStream : public FileStream {
     volatile bool mIsBusy; // at 0x166
     bool mCloseOnDestroyFlg; // at 0x167
     bool mCloseEnableFlg; // at 0x168
+
+  public:
+    static const ut::detail::RuntimeTypeInfo typeInfo;
 };
 
 } // namespace ut

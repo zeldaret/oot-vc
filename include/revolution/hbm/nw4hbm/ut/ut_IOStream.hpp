@@ -5,25 +5,30 @@
 
 namespace nw4hbm {
 namespace ut {
+namespace detail {
+class RuntimeTypeInfo;
+}
+} // namespace ut
+} // namespace nw4hbm
+
+namespace nw4hbm {
+namespace ut {
 
 class IOStream {
   public:
     typedef void (*StreamCallback)(s32 result, IOStream* pStream, void* pCallbackArg);
 
   public:
+    virtual const ut::detail::RuntimeTypeInfo* GetRuntimeTypeInfo() const { return &typeInfo; } // at 0x8
+
     IOStream() : mAvailable(false), mCallback(nullptr), mArg(nullptr) {}
     virtual ~IOStream() {} // at 0xC
 
     virtual void Close() = 0; // at 0x10
-
-    virtual s32 Read(void* pDst, u32 size) = 0; // at 0x14
-    virtual bool ReadAsync(void* pDst, u32 size, StreamCallback pCallback,
-                           void* pCallbackArg); // at 0x18
-
+    virtual s32 Read(void* pDst, u32 size); // at 0x14
+    virtual bool ReadAsync(void* pDst, u32 size, StreamCallback pCallback, void* pCallbackArg); // at 0x18
     virtual void Write(const void* pSrc, u32 size); // at 0x1C
-    virtual bool WriteAsync(const void* pSrc, u32 size, StreamCallback pCallback,
-                            void* pCallbackArg); // at 0x20
-
+    virtual bool WriteAsync(const void* pSrc, u32 size, StreamCallback pCallback, void* pCallbackArg); // at 0x20
     virtual bool IsBusy() const; // at 0x24
 
     virtual bool CanAsync() const = 0; // at 0x28
@@ -41,6 +46,9 @@ class IOStream {
     s32 mAsyncResult; // at 0x8
     StreamCallback mCallback; // at 0xC
     void* mArg; // at 0x10
+
+  public:
+    static const ut::detail::RuntimeTypeInfo typeInfo;
 };
 
 } // namespace ut

@@ -3,11 +3,21 @@
 namespace nw4hbm {
 namespace ut {
 
-void FileStream::Cancel() {}
+const ut::detail::RuntimeTypeInfo FileStream::typeInfo(&IOStream::typeInfo);
+
+void FileStream::Seek(s32 offset, u32 origin) {
+    NW4HBMAssertMessage_Line(CanSeek(), 44, "Stream don't support SEEK function\n");
+}
+
+void FileStream::Cancel() {
+    NW4HBMAssertMessage_Line(CanCancel(), 60, "Stream don't support CANCEL function\n");
+}
 
 bool FileStream::CancelAsync(StreamCallback pCallback, void* pCallbackArg) {
 #pragma unused(pCallback)
 #pragma unused(pCallbackArg)
+    NW4HBMAssertMessage_Line(CanCancel(), 78, "Stream don't support CANCEL function\n");
+    NW4HBMAssertMessage_Line(CanAsync(), 79, "Stream don't support ASYNC function\n");
     return true;
 }
 

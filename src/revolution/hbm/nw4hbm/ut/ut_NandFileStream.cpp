@@ -4,6 +4,8 @@
 namespace nw4hbm {
 namespace ut {
 
+const ut::detail::RuntimeTypeInfo NandFileStream::typeInfo(&FileStream::typeInfo);
+
 void NandFileStream::NandAsyncCallback_(s32 result, NANDCommandBlock* commandBlock) {
     NW4HBMAssertPointerNonnull_Line(commandBlock, 44);
     NandFileStream* p = reinterpret_cast<NandFileStreamInfo*>(commandBlock)->stream;
@@ -134,8 +136,8 @@ s32 NandFileStream::Read(void* buf, u32 length) {
 }
 
 bool NandFileStream::ReadAsync(void* buf, u32 length, StreamCallback pCallback, void* pCallbackArg) {
-    NW4HBMAlign32_Line(buf, 313);
-    NW4HBMAlign32_Line(length, 314);
+    NW4HBMAlign32_2_Line(buf, 313);
+    NW4HBMAlign32_2_Line(length, 314);
     NW4HBMAssertMessage_Line(this->IsAvailable() != 0, 315, "NandFileStream is not opened");
 
     return ReadAsyncImpl(buf, length, pCallback, pCallbackArg);

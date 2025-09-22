@@ -16,6 +16,8 @@ class FileStream : public IOStream {
     };
 
   public:
+    virtual const ut::detail::RuntimeTypeInfo* GetRuntimeTypeInfo() const { return &typeInfo; }
+
     FileStream() {}
     virtual ~FileStream() {} // at 0xC
 
@@ -50,6 +52,9 @@ class FileStream : public IOStream {
         u32 mFileSize; // at 0x0
         u32 mPosition; // at 0x4
     };
+
+  public:
+    static const ut::detail::RuntimeTypeInfo typeInfo;
 };
 
 } // namespace ut

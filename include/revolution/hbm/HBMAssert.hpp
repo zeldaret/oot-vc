@@ -99,6 +99,10 @@
 #define NW4HBMAlign32_File(expr_, file_)              NW4HBMAssertMessage_FileLine(  file_ , __LINE__, !((u32)expr_ & 0x1F), "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 32 bytes boundary.", expr_)
 #define NW4HBMAlign32_Line(expr_, line_)              NW4HBMAssertMessage_FileLine(__FILE__,   line_ , !((u32)expr_ & 0x1F), "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 32 bytes boundary.", expr_)
 #define NW4HBMAlign32(expr_)                          NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, !((u32)expr_ & 0x1F), "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 32 bytes boundary.", expr_)
+#define NW4HBMAlign32_2_FileLine(file_, line_, expr_)   NW4HBMAssertMessage_FileLine(  file_ ,   line_ , ((u32)expr_ & 0x1F) ? 0 : 1, "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 32 bytes boundary.", expr_)
+#define NW4HBMAlign32_2_File(expr_, file_)              NW4HBMAssertMessage_FileLine(  file_ , __LINE__, ((u32)expr_ & 0x1F) ? 0 : 1, "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 32 bytes boundary.", expr_)
+#define NW4HBMAlign32_2_Line(expr_, line_)              NW4HBMAssertMessage_FileLine(__FILE__,   line_ , ((u32)expr_ & 0x1F) ? 0 : 1, "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 32 bytes boundary.", expr_)
+#define NW4HBMAlign32_2(expr_)                          NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, ((u32)expr_ & 0x1F) ? 0 : 1, "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 32 bytes boundary.", expr_)
 
 /* Extended asserts */
 

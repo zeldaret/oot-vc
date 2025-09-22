@@ -8,6 +8,7 @@
 #include "revolution/hbm/nw4hbm/ut/list.h"
 #include "revolution/hbm/nw4hbm/ut/ut_CharStrmReader.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_CharWriter.hpp"
+#include "revolution/hbm/nw4hbm/ut/ut_DvdFileStream.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_FileStream.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_IOStream.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_NandFileStream.hpp"
