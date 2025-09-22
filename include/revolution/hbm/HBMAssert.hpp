@@ -168,8 +168,8 @@
 #define NW4HBMAssertPointerNonnull_String(ptr_)       "NW4HBM:Pointer must not be NULL (" #ptr_ ")"
 #define NW4HBMAssertHeaderPointerNonnull_String(ptr_) "Pointer must not be NULL (" #ptr_ ")"
 
-#define NW4HBMAssertPointerValid_String(val_, ptr_)       "NW4HBM:Pointer Error\n" #ptr_ "(=%p) is not valid pointer."
-#define NW4HBMAssertHeaderPointerValid_String(val_, ptr_) "Pointer Error\n" #ptr_ "(=%p) is not valid pointer."
+#define NW4HBMAssertPointerValid_String(ptr_)       "NW4HBM:Pointer Error\n" #ptr_ "(=%p) is not valid pointer."
+#define NW4HBMAssertHeaderPointerValid_String(ptr_) "Pointer Error\n" #ptr_ "(=%p) is not valid pointer."
 
 #define NW4HBMAssertMinimumValue_String(var_)         "NW4HBM:" #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied."
 #define NW4HBMAssertHeaderMinimumValue_String(var_)   #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied."
