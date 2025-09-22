@@ -38,8 +38,8 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
 
     pnGBI = *ppnGBI;
     pFrame = SYSTEM_FRAME(gpSystem);
-    nCommandHi = GBI_COMMAND_HI(pnGBI);
     nCommandLo = GBI_COMMAND_LO(pnGBI);
+    nCommandHi = GBI_COMMAND_HI(pnGBI);
 
     *ppnGBI = ++pnGBI;
     pFrame->pnGBI = pnGBI;
@@ -75,7 +75,7 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                 }
             }
 
-            if (nFound == 0) {
+            if (!nFound) {
                 pFrame->anCIMGAddresses[i] = nAddress;
                 pFrame->nNumCIMGAddresses++;
             }
@@ -218,8 +218,8 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
             break;
         case 0xFB: // G_SETENVCOLOR
             if (gpSystem->eTypeROM == 'NSMP' && nCommandLo == 0xFFFFFFF0 &&
-                (*((u32*)SYSTEM_RAM(gpSystem)->pBuffer) == 0xFFDFB158 ||
-                 *((u32*)SYSTEM_RAM(gpSystem)->pBuffer) == 0xFFE0E908)) {
+                ((u8*)pnGBI - SYSTEM_RAM(gpSystem)->pBuffer == 0x0021B158 ||
+                 (u8*)pnGBI - SYSTEM_RAM(gpSystem)->pBuffer == 0x0020E908)) {
                 nCommandLo = 0;
             }
             if (!frameSetColor(pFrame, FCT_ENVIRONMENT, nCommandLo)) {
@@ -229,10 +229,14 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
         case 0xFA: // G_SETPRIMCOLOR
             if (gpSystem->eTypeROM == 'NFXJ' || gpSystem->eTypeROM == 'NFXE' || gpSystem->eTypeROM == 'NFXP') {
                 if ((nCommandLo & 0xFFFFFF00) == 0xFF000000) {
-                    nCommandLo |= 0x8500;
+                    nCommandLo = 0x8500 | (nCommandLo & 0xFF);
                 } else {
+                    static u32 sCommandCodes[] = {
+                        0xE7000000, 0x00000000, 0xBA001402, 0x00000000, 0xFCFFFFFF,
+                        0xFFFDF6FB, 0xB900031D, 0x00504240, 0xFA000000, 0x00000000,
+                    };
                     s32 i;
-                    u32* pGBI = (u32*)pnGBI;
+                    u32* pGBI = (u32*)pnGBI - 10;
 
                     for (i = 0; i < 8; i++) {
                         if (pGBI[i] != sCommandCodes[i]) {
@@ -259,7 +263,8 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
             break;
         case 0xF8: // G_SETFOGCOLOR
             if (gpSystem->eTypeROM == 'CZLJ' || gpSystem->eTypeROM == 'CZLE' || gpSystem->eTypeROM == 'NZLP') {
-                if (pFrame->nFrameCounter != 0 && (nCommandLo + 0x01000000) == 0xFF) {
+                // TODO: probably not nFrameCounter
+                if (pFrame->nFrameCounter != 0 && nCommandLo == 0xFF0000FF) {
                     nCommandLo = 0x3C0000FF;
                 }
             }
@@ -269,13 +274,12 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
             break;
         case 0xF7: { // G_SETFILLCOLOR
             u32 nColor = ((nCommandLo >> 11) & 0x1F) << 27 | ((nCommandLo >> 6) & 0x1F) << 19 |
-                         ((nCommandLo >> 1) & 0x1F) << 11 | ((nCommandLo & 1) << 7);
+                         ((nCommandLo >> 1) & 0x1F) << 11 | (nCommandLo & 1) << 7;
 
             if (gpSystem->eTypeROM == 'NSMJ' || gpSystem->eTypeROM == 'NSME' || gpSystem->eTypeROM == 'NSMP') {
-                nColor = ((nCommandLo >> 24) & 0x70000) | ((nCommandLo & 0xE000) << 11) | ((nCommandLo & 0x38) << 5);
-                // nColor = ((nCommandLo << 7) & 0x80) | ((nCommandLo << 5) & 0x700) | (((nCommandLo << 0xA) & 0xF800) |
-                // ((nCommandLo << 8) & 0x70000) | (((nCommandLo << 0xD) & 0xF80000) | ((nCommandLo << 0x10) &
-                // 0xF8000000) | ((nCommandLo << 0xB) & 0x07000000)));
+                nColor = ((nCommandLo >> 11) & 0x1F) << 27 | ((nCommandLo >> 13) & 7) << 24 |
+                         ((nCommandLo >> 6) & 0x1F) << 19 | ((nCommandLo >> 8) & 7) << 16 |
+                         ((nCommandLo >> 1) & 0x1F) << 11 | ((nCommandLo >> 3) & 7) << 8 | (nCommandLo & 1) << 7;
             } else if (gpSystem->eTypeROM == 'NKTJ' || gpSystem->eTypeROM == 'NKTE' || gpSystem->eTypeROM == 'NKTP') {
                 if (lbl_8025D168 >= 1) {
                     nColor = 0x80;
@@ -300,26 +304,25 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                     primitive.nY1--;
                 }
 
-                if (pFrame->unk4C > 1) {
-                    pFrame->unk4C++;
-                    if (pFrame->unk4C > 1900 && pFrame->unk4C < 2200) {
+                if (pFrame->cBlurAlpha > 1) {
+                    pFrame->cBlurAlpha++;
+                    if (pFrame->cBlurAlpha > 1900 && pFrame->cBlurAlpha < 2200) {
                         if (primitive.nX0 == 0 && primitive.nY0 == 0 && primitive.nX1 == 319 && primitive.nY1 == 7) {
                             primitive.nY1 = 0x1E;
-                        }
-                        if (primitive.nX0 == 0 && primitive.nY0 == 232 && primitive.nX1 == 319 &&
-                            primitive.nY1 == 239) {
-                            primitive.nY0 = 0x1E;
+                        } else if (primitive.nX0 == 0 && primitive.nY0 == 232 && primitive.nX1 == 319 &&
+                                   primitive.nY1 == 239) {
+                            primitive.nY0 = 0xD0;
                         }
                     }
                 }
             } else if (gpSystem->eTypeROM == 'NSMP') {
                 if (!pFrame->bHackPause && primitive.nX0 == 0 && primitive.nY0 == 1 && primitive.nX1 == 319 &&
                     primitive.nY1 == 238) {
-                    pFrame->bHackPause = 1;
-                    primitive.nX0 = 0;
-                    primitive.nX1 = 1;
-                    primitive.nY0 = 0;
-                    primitive.nY1 = 1;
+                    pFrame->bHackPause = true;
+                    primitive.nX0 = 1;
+                    primitive.nX1 = 0;
+                    primitive.nY0 = 1;
+                    primitive.nY1 = 0;
                 }
                 if (primitive.nX0 == 0 && primitive.nY0 == 0 && primitive.nX1 == 319 && primitive.nY1 == 0) {
                     primitive.nX0 = 318;
@@ -327,9 +330,9 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                     primitive.nY0 = 0;
                     primitive.nY1 = 240;
                 }
-                if (pFrame->unk4C > 1) {
-                    pFrame->unk4C++;
-                    if (pFrame->unk4C > 1900 && pFrame->unk4C < 2200) {
+                if (pFrame->cBlurAlpha > 1) {
+                    pFrame->cBlurAlpha++;
+                    if (pFrame->cBlurAlpha > 1900 && pFrame->cBlurAlpha < 2200) {
                         if (primitive.nX0 == 1 && primitive.nY0 == 31 && primitive.nX1 == 318 && primitive.nY1 == 208) {
                             primitive.nX1 = 317;
                             primitive.nY1 = 207;
@@ -348,10 +351,12 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                            gpSystem->eTypeROM == 'NFXP') {
                     if (primitive.nX0 == 0 && primitive.nY0 == 0 && primitive.nX1 == 319 && primitive.nY1 == 239) {
                         //! TODO: figure this out
-                        if ((*pFrame->nCopyBuffer & 0xFFFFFF00) && *pFrame->nCopyBuffer > 0x7F) {
-                            *pFrame->nCopyBuffer = 0x32323280;
-                        } else if ((*pFrame->nCopyBuffer + 0x01000000) == 0) {
-                            *pFrame->nCopyBuffer |= 0x8500;
+                        if ((*(u32*)&pFrame->aColor[FCT_PRIMITIVE] & 0xFFFFFF00) == 0xFFFFFF00 &&
+                            (*(u32*)&pFrame->aColor[FCT_PRIMITIVE] & 0xFF) > 0x7F) {
+                            *(u32*)&pFrame->aColor[FCT_PRIMITIVE] = 0x32323280;
+                        } else if (*(u32*)&pFrame->aColor[FCT_PRIMITIVE] == 0xFF000000) {
+                            *(u32*)&pFrame->aColor[FCT_PRIMITIVE] =
+                                0x8500 | (*(u32*)&pFrame->aColor[FCT_PRIMITIVE] & 0xFF);
                         }
                     }
                 }
@@ -418,7 +423,7 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                 return false;
             }
 
-            pTile->nCodePixel = pFrame->nCodePixel + pFrame->lastTile * 0x2C;
+            pFrame->aTile[pFrame->lastTile].nCodePixel = pFrame->nCodePixel;
             break;
         }
         case 0xF2: { // G_SETTILESIZE
@@ -468,16 +473,18 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
         case 0xED: { // G_SETSCISSOR
             Rectangle rectangle;
 
-            rectangle.nX0 = (nCommandHi >> 12) & 0xFFF; // sp48
-            rectangle.nY0 = nCommandHi & 0xFFF; // sp4C
-            rectangle.nX1 = (nCommandLo >> 12) & 0xFFF; // sp50
-            rectangle.nY1 = nCommandLo & 0xFFF; // sp54
+            rectangle.nX0 = (nCommandHi >> 12) & 0xFFF;
+            rectangle.nY0 = nCommandHi & 0xFFF;
+            rectangle.nX1 = (nCommandLo >> 12) & 0xFFF;
+            rectangle.nY1 = nCommandLo & 0xFFF;
 
             if (gpSystem->eTypeROM == 'NSMP') {
-                rectangle.nX1 = 1275;
+                // TODO: probably not cBlurAlpha
+                if (pFrame->cBlurAlpha > 12600 && rectangle.nX1 == 1280) {
+                    rectangle.nX1 = 1275;
+                }
             } else if (gpSystem->eTypeROM == 'NKTJ' || gpSystem->eTypeROM == 'NKTE' || gpSystem->eTypeROM == 'NKTP') {
                 s32 var_r4_5;
-                s32 var_r5_8;
 
                 if (pFrame->bHackPause == 0) {
                     lbl_8025D170 = 0;
@@ -493,42 +500,43 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
 
                 var_r4_5 = 0;
 
-                if ((pFrame->bHackPause + 1) == 2 && rectangle.nX0 == 0 && rectangle.nY0 == 0 &&
-                    rectangle.nY0 != 1280 && rectangle.nY1 != 960) {
-                    var_r5_8 = 1;
+                // TODO: probably not bHackPause
+                pFrame->bHackPause++;
+                if (pFrame->bHackPause == 2 && rectangle.nX0 == 0 && rectangle.nY0 == 0 && rectangle.nX1 != 1280 &&
+                    rectangle.nY1 != 960) {
                     rectangle.nX0 = 1280 - rectangle.nX1;
                     rectangle.nY0 = 960 - rectangle.nY1;
-                    lbl_8025D170 = 1;
                     lbl_8025D184 = rectangle.nX0;
                     lbl_8025D188 = rectangle.nX1;
                     lbl_8025D18C = rectangle.nY0;
                     lbl_8025D190 = rectangle.nY1;
+                    lbl_8025D170 = 1;
                     lbl_8025D174 = pFrame->bHackPause + 9;
                     pFrame->nHackCount = 9;
                 }
 
                 if (lbl_8025D170 == 0) {
                     if (rectangle.nX0 == 640 && rectangle.nY0 == 480 && rectangle.nX1 == 1280 && rectangle.nY1 == 960) {
-                        var_r5_8 = 1;
-                        lbl_8025D170 = 1;
                         lbl_8025D184 = rectangle.nX0;
                         lbl_8025D188 = rectangle.nX1;
                         lbl_8025D18C = rectangle.nY0;
                         lbl_8025D190 = rectangle.nY1;
                         lbl_8025D174 = pFrame->bHackPause + 7;
+                        lbl_8025D170 = 1;
                         pFrame->nHackCount = 8;
                     } else if (rectangle.nX1 != 1280 || rectangle.nY1 != 960 ||
-                               ((rectangle.nX0 != 0 || rectangle.nY0 != 0) && rectangle.nY1 == 960)) {
-                        lbl_8025D170 = 1;
+                               ((rectangle.nX0 != 0 || rectangle.nY0 != 0) && rectangle.nX1 == 1280 &&
+                                rectangle.nY1 == 960)) {
                         lbl_8025D174 = pFrame->bHackPause;
+                        lbl_8025D170 = 1;
                     }
                 }
 
                 switch (lbl_8025D168) {
                     case 2:
-                        if (pFrame->bHackPause == 0xB && lbl_8025D174 == 0 && lbl_8025D178 != 0) {
-                            lbl_8025D170 = 1;
+                        if (pFrame->bHackPause == 11 && lbl_8025D174 == 0 && lbl_8025D178 != 0) {
                             lbl_8025D174 = pFrame->bHackPause + 1;
+                            lbl_8025D170 = 1;
                         } else if (pFrame->bHackPause == 12 && lbl_8025D178 != 0 && rectangle.nX0 == 0 &&
                                    rectangle.nY0 == 0 && rectangle.nX1 == 640 && rectangle.nY1 == 480) {
                             lbl_8025D170 = 1;
@@ -537,10 +545,107 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                         break;
                     case 3:
                         if (pFrame->bHackPause == 11 && lbl_8025D174 == 0 && lbl_8025D178 != 0) {
-                            lbl_8025D170 = 1;
                             lbl_8025D174 = pFrame->bHackPause + 1;
+                            lbl_8025D170 = 1;
                         }
                         break;
+                }
+
+                if (lbl_8025D170 != 0) {
+                    if (pFrame->bHackPause == lbl_8025D174) {
+                        if (lbl_8025D190 != rectangle.nY1 && rectangle.nY1 == 0x2D0) {
+                            var_r4_5 = 1;
+                        }
+                        lbl_8025D184 = rectangle.nX0;
+                        lbl_8025D188 = rectangle.nX1;
+                        lbl_8025D18C = rectangle.nY0;
+                        lbl_8025D190 = rectangle.nY1;
+                        if (lbl_8025D168 == lbl_8025D17C) {
+                            lbl_8025D180 = 1;
+                        }
+                    } else if (pFrame->bHackPause == lbl_8025D174 + 1) {
+                        if (lbl_8025D188 == rectangle.nX1 && lbl_8025D190 == rectangle.nY1) {
+                            if (lbl_8025D184 == rectangle.nX0 && lbl_8025D18C == rectangle.nY0 &&
+                                lbl_8025D188 == 0x500 && lbl_8025D190 == 0x3C0) {
+                                lbl_8025D174 = pFrame->bHackPause + 3;
+                                if (pFrame->bHackPause == lbl_8025D178) {
+                                    var_r4_5 = 1;
+                                    lbl_8025D174 = pFrame->bHackPause + 7;
+                                    lbl_8025D178 = 0;
+                                    lbl_8025D17C += 1;
+                                    pFrame->nHackCount = 7;
+                                }
+                            } else if (lbl_8025D184 == rectangle.nX0 && lbl_8025D18C == 0xF0 && rectangle.nY0 == 0 &&
+                                       lbl_8025D188 == 0x500 && lbl_8025D190 == 0x3C0) {
+                                var_r4_5 = 1;
+                                lbl_8025D178 = pFrame->bHackPause;
+                                lbl_8025D17C += 1;
+                                lbl_8025D174 = pFrame->bHackPause + 7;
+                                pFrame->nHackCount = 7;
+                            } else {
+                                lbl_8025D17C += 1;
+                                lbl_8025D174 = pFrame->bHackPause + 7;
+                                if (rectangle.nX0 > lbl_8025D184) {
+                                    lbl_8025D184 = rectangle.nX0;
+                                }
+                                if (rectangle.nY0 > lbl_8025D18C) {
+                                    lbl_8025D18C = rectangle.nY0;
+                                }
+                                if (lbl_8025D184 % 320 != 0 || lbl_8025D188 % 320 != 0 || lbl_8025D18C % 240 != 0 ||
+                                    lbl_8025D190 % 240 != 0) {
+                                    var_r4_5 = 1;
+                                    lbl_8025D178 = pFrame->bHackPause;
+                                }
+                                pFrame->nHackCount = 7;
+                            }
+                        } else {
+                            lbl_8025D174 = pFrame->bHackPause + 3;
+                            if (lbl_8025D188 == rectangle.nX1 && lbl_8025D190 == 0 && rectangle.nY1 == 8) {
+                                var_r4_5 = 1;
+                                lbl_8025D178 = pFrame->bHackPause;
+                                lbl_8025D17C += 1;
+                                lbl_8025D174 = pFrame->bHackPause + 7;
+                                pFrame->nHackCount = 7;
+                            }
+                        }
+                    }
+
+                    if (var_r4_5 != 0) {
+                        s32 x;
+                        s32 y;
+
+                        GXSetColorUpdate(0);
+                        GXSetZCompLoc(0);
+                        for (y = lbl_8025D18C / 2; y < lbl_8025D190 / 2; y++) {
+                            for (x = lbl_8025D184 / 2; x < lbl_8025D188 / 2; x++) {
+                                GXPokeZ(x, y, 0xFFFFFF);
+                            }
+                        }
+                        GXPixModeSync();
+                        GXSetColorUpdate(1);
+                    }
+                    if (pFrame->nHackCount != 0) {
+                        switch (pFrame->nHackCount) {
+                            case 2:
+                            case 3:
+                            case 4:
+                            case 5:
+                            case 6:
+                                rectangle.nX0 = lbl_8025D184;
+                                rectangle.nX1 = lbl_8025D188;
+                                rectangle.nY0 = lbl_8025D18C;
+                                rectangle.nY1 = lbl_8025D190;
+                            default:
+                                pFrame->nHackCount -= 1;
+                                break;
+                        }
+                    }
+
+                    if (lbl_8025D180 != 0 && rectangle.nX0 == rectangle.nY0 &&
+                        !(rectangle.nX1 == 0x500 && rectangle.nY1 == 0x3C0)) {
+                        rectangle.nX1 = 0x500;
+                        rectangle.nY1 = 0x3C0;
+                    }
                 }
             }
 
@@ -552,7 +657,22 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
         case 0xEC: // G_SETCONVERT
         case 0xEB: // G_SETKEYR
         case 0xEA: // G_SETKEYGB
+            break;
         case 0xE9: // G_RDPFULLSYNC
+            if (gpSystem->eTypeROM == 'NKTJ' || gpSystem->eTypeROM == 'NKTE' || gpSystem->eTypeROM == 'NKTP') {
+                lbl_8025D168 = 1;
+                // TODO: probably not bHackPause
+                if (pFrame->bHackPause < 8) {
+                    lbl_8025D168 = 0;
+                } else if (pFrame->bHackPause > 14 && pFrame->bHackPause <= 23) {
+                    lbl_8025D168 = 2;
+                } else if (pFrame->bHackPause > 23 && pFrame->bHackPause <= 35) {
+                    lbl_8025D168 = 3;
+                } else if (pFrame->bHackPause > 35) {
+                    lbl_8025D168 = 4;
+                }
+            }
+            break;
         case 0xE8: // G_RDPTILESYNC
         case 0xE7: // G_RDPPIPESYNC
         case 0xE6: // G_RDPLOADSYNC
@@ -580,13 +700,27 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
             primitive.iTile = (nCommandLo >> 24) & 7;
             primitive.bFlip = nCommandHi >> 24 == 0xE5 ? true : false;
 
-            if ((gpSystem->eTypeROM == 'NZSJ' || gpSystem->eTypeROM == 'NZSE' || gpSystem->eTypeROM == 'NZSP') &&
-                (pFrame->bSnapShot & 0xF) != 0 && (s32)nCommandHi == 0xE43C023C && nCommandLo == 0x0014021C) {
-                pFrame->bSnapShot |= 0x100;
+            // TODO: is this really pFrame->bBlurOn?
+            if ((gpSystem->eTypeROM == 'NKTJ' || gpSystem->eTypeROM == 'NKTE' || gpSystem->eTypeROM == 'NKTP') &&
+                lbl_8025D168 <= 1) {
+                pFrame->bBlurOn = true;
+            } else if (gpSystem->eTypeROM == 'NFXJ' || gpSystem->eTypeROM == 'NFXE' || gpSystem->eTypeROM == 'NFXP') {
+                if ((primitive.nX0 >> 2) > N64_FRAME_WIDTH && primitive.nX0 > primitive.nX1) {
+                    primitive.nX0 = 0;
+                    primitive.nX1 = 0;
+                } else if ((primitive.nY0 >> 2) > N64_FRAME_HEIGHT && primitive.nY0 > primitive.nY1) {
+                    primitive.nY0 = 0;
+                    primitive.nY1 = 0;
+                }
+            } else if ((gpSystem->eTypeROM == 'CZLJ' || gpSystem->eTypeROM == 'CZLE' || gpSystem->eTypeROM == 'NZLP') &&
+                       pFrame->bBlurOn && primitive.nX0 == (204 << 2) && primitive.nX1 == (300 << 2) &&
+                       primitive.nY0 == (140 << 2) && primitive.nY1 == (225 << 2)) {
+                pFrame->bBlurOn = false;
+                break;
             }
 
-            nCommandHi = GBI_COMMAND_HI(pnGBI);
             nCommandLo = GBI_COMMAND_LO(pnGBI);
+            nCommandHi = GBI_COMMAND_HI(pnGBI);
             *ppnGBI = ++pnGBI;
 
             // TODO: translate commands to enum
@@ -594,91 +728,53 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                 primitive.rS = (s16)(nCommandLo >> 16) / 32.0f;
                 primitive.rT = (s16)(nCommandLo & 0xFFFF) / 32.0f;
 
-                nCommandHi = GBI_COMMAND_HI(pnGBI);
                 nCommandLo = GBI_COMMAND_LO(pnGBI);
+                nCommandHi = GBI_COMMAND_HI(pnGBI);
                 *ppnGBI = ++pnGBI;
 
                 primitive.rDeltaS = (s16)(nCommandLo >> 16) / 1024.0f;
                 primitive.rDeltaT = (s16)(nCommandLo & 0xFFFF) / 1024.0f;
-
-                rX0 = (primitive.nX0 + 3) >> 2;
-                rX1 = (primitive.nX1 + 3) >> 2;
-                rY0 = (primitive.nY0 + 3) >> 2;
-                rY1 = (primitive.nY1 + 3) >> 2;
             } else {
                 primitive.rS = (s16)(nCommandHi >> 16) / 32.0f;
                 primitive.rT = (s16)(nCommandHi & 0xFFFF) / 32.0f;
                 primitive.rDeltaS = (s16)(nCommandLo >> 16) / 1024.0f;
                 primitive.rDeltaT = (s16)(nCommandLo & 0xFFFF) / 1024.0f;
             }
+
+            if (gpSystem->eTypeROM == 'NSMJ' || gpSystem->eTypeROM == 'NSME' || gpSystem->eTypeROM == 'NSMP') {
+                if (primitive.nY0 == (67 << 2) && primitive.nY1 == (83 << 2) && primitive.rT == 0.0) {
+                    primitive.rT = 0.01f;
+                }
+                if (gpSystem->eTypeROM == 'NSMP' && primitive.nY0 == (36 << 2) && primitive.nY1 == (52 << 2) &&
+                    primitive.rT == 0.0) {
+                    primitive.rT = 0.01f;
+                }
+            } else if (gpSystem->eTypeROM == 'NKTJ' || gpSystem->eTypeROM == 'NKTE' || gpSystem->eTypeROM == 'NKTP') {
+                if (primitive.rDeltaS == 4.0) {
+                    primitive.nX1 -= 4;
+                    primitive.rS += 0.5;
+                } else if ((primitive.nY0 == (17 << 2) && primitive.nY1 == (33 << 2)) ||
+                           (primitive.nY0 == (33 << 2) && primitive.nY1 == (49 << 2)) ||
+                           (primitive.nY0 == (49 << 2) && primitive.nY1 == (65 << 2)) ||
+                           (primitive.nY0 == (65 << 2) && primitive.nY1 == (81 << 2))) {
+                    if (primitive.rDeltaS == 1.0) {
+                        primitive.nX1 -= 4;
+                        primitive.rS += 0.5;
+                    }
+                } else if (primitive.nX0 == (40 << 2) && primitive.nX1 == (85 << 2) && primitive.rS == 0.0 &&
+                           primitive.rT == 32.0) {
+                    primitive.nY1 -= 4;
+                }
+            }
+
             if (pFrame->iTileDrawn != primitive.iTile) {
                 frameDrawReset(pFrame, 1);
             }
             pFrame->iTileDrawn = primitive.iTile;
-            if (gpSystem->eTypeROM == NZSJ && rX0 == 0.0f && rX1 == N64_FRAME_WIDTH && rY0 == 0.0f &&
-                rY1 == N64_FRAME_HEIGHT && pFrame->bUsingLens) {
-                u32* pGBI = (u32*)pnGBI;
-
-                if (pGBI[4] == 0xF8000000) {
-                    GXSetCopyFilter(GX_FALSE, NULL, GX_FALSE, NULL);
-                    GXSetCopyFilter(rmode->aa, rmode->sample_pattern, GX_TRUE, rmode->vfilter);
-                    GXSetColorUpdate(GX_FALSE);
-                    pFrame->bModifyZBuffer = true;
-                }
-                if (pGBI[4] == 0xF9000000) {
-                    GXSetColorUpdate(GX_FALSE);
-                    if (pFrame->aMode[FMT_COMBINE_COLOR1] == 0x1F031F01 &&
-                        pFrame->aMode[FMT_COMBINE_ALPHA1] == 0x07030701 &&
-                        pFrame->aMode[FMT_COMBINE_COLOR2] == 0x1F031F01 &&
-                        pFrame->aMode[FMT_COMBINE_ALPHA2] == 0x7030701) {
-                        pFrame->aMode[FMT_COMBINE_COLOR1] = 0x1F030106;
-                        pFrame->aMode[FMT_COMBINE_ALPHA1] = 0x07030106;
-                        pFrame->aMode[FMT_COMBINE_COLOR2] = 0x1F030106;
-                        pFrame->aMode[FMT_COMBINE_ALPHA2] = 0x07030106;
-                    } else if (pFrame->aMode[FMT_COMBINE_COLOR1] == 0x1F030106 &&
-                               pFrame->aMode[FMT_COMBINE_ALPHA1] == 0x07030106 &&
-                               pFrame->aMode[FMT_COMBINE_COLOR2] == 0x1F030106 &&
-                               pFrame->aMode[FMT_COMBINE_ALPHA2] == 0x07030106) {
-                        pFrame->aMode[FMT_COMBINE_COLOR1] = 0x1F031F01;
-                        pFrame->aMode[FMT_COMBINE_ALPHA1] = 0x07030701;
-                        pFrame->aMode[FMT_COMBINE_COLOR2] = 0x1F031F01;
-                        pFrame->aMode[FMT_COMBINE_ALPHA2] = 0x07030701;
-                    }
-                    if (!frameSetColor(pFrame, FCT_PRIMITIVE, 0x000000FF)) {
-                        return false;
-                    }
-                    if (!frameSetColor(pFrame, FCT_BLEND, 0x00000008)) {
-                        return false;
-                    }
-                    pFrame->primLODfrac = 0;
-                    pFrame->primLODmin = 0;
-                    pFrame->aMode[FMT_OTHER0] = 0xAF504365;
-                    pFrame->aMode[FMT_OTHER1] = 0xEF002C30;
-                    pFrame->aMode[FMT_FOG] = 0;
-                    pFrame->aMode[FMT_GEOMETRY] = 0;
-                    pFrame->aMode[FMT_TEXTURE1] = 0;
-                    pFrame->aMode[FMT_TEXTURE2] = 0;
-                    pFrame->bOverrideDepth = true;
-                    pFrame->bModifyZBuffer = true;
-                    pFrame->nMode = 0x0C1203F0;
-                }
-            }
-
             if (!pFrame->aDraw[3](pFrame, &primitive)) {
                 return false;
             }
 
-            pGBI = (u32*)pnGBI;
-            if (gpSystem->eTypeROM == NZSJ && rX0 == 0.0f && rX1 == N64_FRAME_WIDTH && rY0 == 0.0f &&
-                rY1 == N64_FRAME_HEIGHT && pFrame->bUsingLens) {
-
-                if (pGBI[4] == 0xF8000000) {
-                    pFrame->bOverrideDepth = false;
-                } else if (pGBI[4] == 0xF9000000) {
-                    pFrame->bOverrideDepth = false;
-                }
-            }
-            GXSetColorUpdate(GX_TRUE);
             break;
         }
         case 0xC8: // G_TRI_FILL
