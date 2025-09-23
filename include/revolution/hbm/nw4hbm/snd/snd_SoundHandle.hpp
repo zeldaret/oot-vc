@@ -1,104 +1,56 @@
 #ifndef NW4R_SND_SOUND_HANDLE_H
 #define NW4R_SND_SOUND_HANDLE_H
 
-#include "revolution/hbm/nw4hbm/snd/snd_BasicSound.hpp"
-#include "revolution/hbm/ut.hpp"
+/*******************************************************************************
+ * headers
+ */
+
 #include "revolution/types.h"
 
-namespace nw4hbm {
-namespace snd {
+#include "revolution/hbm/nw4hbm/snd/snd_BasicSound.hpp"
 
-class SoundHandle : private ut::NonCopyable {
-  public:
-    SoundHandle() : mSound(nullptr) {}
-    ~SoundHandle() { DetachSound(); }
+#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp" // ut::NonCopyable
 
-    void detail_AttachSound(detail::BasicSound* pSound);
-    void detail_AttachSoundAsTempHandle(detail::BasicSound* pSound);
+/*******************************************************************************
+ * classes and functions
+ */
 
-    bool IsAttachedSound() const { return mSound != nullptr; }
+namespace nw4hbm { namespace snd
+{
+	// [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x2894f
+	class SoundHandle : private ut::NonCopyable
+	{
+	// methods
+	public:
+		// cdtors
+		SoundHandle() : mSound() {}
+		~SoundHandle() { DetachSound(); }
 
-    detail::BasicSound* detail_GetAttachedSound() { return mSound; }
+		// methods
+		void detail_AttachSound(detail::BasicSound *sound);
+		bool IsAttachedSound() const { return mSound != nullptr; }
+		detail::BasicSound *detail_GetAttachedSound() { return mSound; }
+		void DetachSound();
 
-    void DetachSound();
+		u32 GetId() const
+		{
+			if (IsAttachedSound())
+				return mSound->GetId();
 
-    bool IsPrepared() const {
-        if (IsAttachedSound()) {
-            return mSound->IsPrepared();
-        }
+			return detail::BasicSound::INVALID_ID;
+		}
 
-        return false;
-    }
+		void StartPrepared()
+		{
+			if (IsAttachedSound())
+				mSound->StartPrepared();
+		}
 
-    u32 GetId() const {
-        if (IsAttachedSound()) {
-            return mSound->GetId();
-        }
+	// members
+	private:
+		/* base NonCopyable */			// size 0x00, offset 0x00
+		detail::BasicSound	*mSound;	// size 0x04, offset 0x00
+	}; // size 0x04
+}} // namespace nw4hbm::snd
 
-        return -1;
-    }
-
-    void StartPrepared() {
-        if (IsAttachedSound()) {
-            mSound->StartPrepared();
-        }
-    }
-    void Stop(int frames) {
-        if (IsAttachedSound()) {
-            mSound->Stop(frames);
-        }
-    }
-
-    void Pause(bool flag, int frames) {
-        if (IsAttachedSound()) {
-            mSound->Pause(flag, frames);
-        }
-    }
-
-    void SetVolume(f32 volume, int frames) {
-        if (IsAttachedSound()) {
-            mSound->SetVolume(volume, frames);
-        }
-    }
-    void SetPan(f32 pan) {
-        if (IsAttachedSound()) {
-            mSound->SetPan(pan);
-        }
-    }
-    void SetPitch(f32 pitch) {
-        if (IsAttachedSound()) {
-            mSound->SetPitch(pitch);
-        }
-    }
-
-    void SetOutputLine(int flag) {
-        if (IsAttachedSound()) {
-            mSound->SetOutputLine(flag);
-        }
-    }
-
-    void SetMainOutVolume(f32 volume) {
-        if (IsAttachedSound()) {
-            mSound->SetMainOutVolume(volume);
-        }
-    }
-    void SetRemoteOutVolume(int remote, f32 volume) {
-        if (IsAttachedSound()) {
-            mSound->SetRemoteOutVolume(remote, volume);
-        }
-    }
-
-    void SetFxSend(AuxBus bus, f32 send) {
-        if (IsAttachedSound()) {
-            mSound->SetFxSend(bus, send);
-        }
-    }
-
-  private:
-    detail::BasicSound* mSound; // at 0x0
-};
-
-} // namespace snd
-} // namespace nw4hbm
-
-#endif
+#endif // NW4R_SND_SOUND_HANDLE_H

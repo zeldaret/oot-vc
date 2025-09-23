@@ -2,6 +2,7 @@
 #define NW4R_SND_VOICE_H
 
 #include "revolution/hbm/nw4hbm/snd/snd_AxVoice.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_BasicSound.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_DisposeCallbackManager.hpp"
 #include "revolution/hbm/nw4hbm/snd/global.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"

@@ -194,6 +194,10 @@ namespace nw4hbm { namespace snd
 
 		ut::FileStream *detail_OpenFileStream(u32 fileId, void *buffer,
 		                                      int size) const;
+		ut::FileStream* detail_OpenGroupStream(u32 id, void* pBuffer,
+												int bufferSize) const;
+		ut::FileStream* detail_OpenGroupWaveDataStream(u32 id, void* pBuffer,
+														int bufferSize) const;
 
 	private:
 		ut::FileStream *OpenExtStreamImpl(void *buffer, int size,

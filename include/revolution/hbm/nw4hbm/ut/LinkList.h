@@ -289,6 +289,8 @@ template <typename T, int I> class LinkList : public detail::LinkListImpl {
         return *--GetEndIter();
     }
 
+    void PopFront() { Erase(GetBeginIter()); }
+    void PopBack() { Erase(--GetEndIter()); }
     void PushBack(T* p) { Insert(GetEndIter(), p); }
     Iterator Erase(Iterator it) { return LinkListImpl::Erase(it.it_); }
     Iterator Erase(T* p) { return LinkListImpl::Erase(GetNodeFromPointer(p)); }

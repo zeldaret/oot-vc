@@ -42,6 +42,8 @@ extern "C" {
 #define ATTRIBUTE_FALLTHROUGH
 #endif
 
+#define ATTRIBUTE_MAYBE_UNUSED ATTRIBUTE_UNUSED /* only used in e.g. asserts */
+
 #define __CONCAT(x, y) x##y
 #define CONCAT(x, y) __CONCAT(x, y)
 

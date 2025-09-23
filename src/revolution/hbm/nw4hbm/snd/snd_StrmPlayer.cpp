@@ -1,8 +1,8 @@
 #include "revolution/hbm/snd.hpp"
 #include "revolution/hbm/ut.hpp"
 
-#include "climits.hpp"
-#include "cstring.hpp"
+#include <limits.h>
+#include <cstring.hpp>
 
 namespace nw4hbm {
 namespace snd {

@@ -24,6 +24,9 @@ class ExternalSoundPlayer {
     void InsertSoundList(BasicSound* pSound);
     void RemoveSoundList(BasicSound* pSound);
 
+    bool detail_CanPlaySound(int startPriority);
+    bool AppendSound(BasicSound *sound);
+
     template <typename TForEachFunc> TForEachFunc ForEachSound(TForEachFunc pFunc, bool reverse) {
         if (reverse) {
             BasicSoundExtPlayList::RevIterator it = mSoundList.GetBeginReverseIter();
@@ -51,7 +54,7 @@ class ExternalSoundPlayer {
     }
 
   private:
-    BasicSoundExtPlayList mSoundList; // at 0x0
+    BasicSound::ExtSoundPlayerPlayLinkList mSoundList; // at 0x0
     u16 mPlayableCount; // at 0xC
     f32 mVolume; // at 0x10
 };

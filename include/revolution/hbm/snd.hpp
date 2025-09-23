@@ -33,6 +33,8 @@
 #include "revolution/hbm/nw4hbm/snd/snd_SeqTrack.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_SoundArchive.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_SoundArchiveFile.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_SoundArchiveLoader.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_SoundArchivePlayer.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_SoundHandle.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_SoundHeap.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_SoundMemoryAllocatable.hpp"

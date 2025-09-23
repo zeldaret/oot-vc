@@ -33,6 +33,9 @@ class SoundPlayer {
 
     void SetVolume(f32 volume);
 
+    bool detail_CanPlaySound(int startPriority);
+    bool detail_AppendSound(detail::BasicSound *sound);
+
     int detail_GetOutputLine() const;
     bool detail_IsEnabledOutputLine() const;
 
@@ -47,23 +50,23 @@ class SoundPlayer {
     void detail_SortPriorityList();
 
     detail::SeqSound* detail_AllocSeqSound(int priority, int startPriority,
-                                           detail::BasicSound::AmbientArgInfo* pArgInfo,
+                                           detail::BasicSound::AmbientInfo* pArgInfo,
                                            detail::ExternalSoundPlayer* pExtPlayer, u32 id,
                                            detail::SoundInstanceManager<detail::SeqSound>* pManager);
 
     detail::StrmSound* detail_AllocStrmSound(int priority, int startPriority,
-                                             detail::BasicSound::AmbientArgInfo* pArgInfo,
+                                             detail::BasicSound::AmbientInfo* pArgInfo,
                                              detail::ExternalSoundPlayer* pExtPlayer, u32 id,
                                              detail::SoundInstanceManager<detail::StrmSound>* pManager);
 
     detail::WaveSound* detail_AllocWaveSound(int priority, int startPriority,
-                                             detail::BasicSound::AmbientArgInfo* pArgInfo,
+                                             detail::BasicSound::AmbientInfo* pArgInfo,
                                              detail::ExternalSoundPlayer* pExtPlayer, u32 id,
                                              detail::SoundInstanceManager<detail::WaveSound>* pManager);
 
-    int CalcPriorityReduction(detail::BasicSound::AmbientArgInfo* pArgInfo, u32 id);
+    int CalcPriorityReduction(detail::BasicSound::AmbientInfo* pArgInfo, u32 id);
 
-    void InitAmbientArg(detail::BasicSound* pSound, detail::BasicSound::AmbientArgInfo* pArgInfo);
+    void InitAmbientArg(detail::BasicSound* pSound, detail::BasicSound::AmbientInfo* pArgInfo);
 
     void SetPlayableSoundCount(int count);
     void detail_SetPlayableSoundLimit(int limit);
@@ -87,8 +90,8 @@ class SoundPlayer {
     f32 detail_GetMainOutVolume() const { return mMainOutVolume; }
 
   private:
-    detail::BasicSoundPlayerPlayList mSoundList; // at 0x0
-    detail::BasicSoundPlayerPrioList mPriorityList; // at 0xC
+    detail::BasicSound::SoundPlayerPlayLinkList mSoundList; // at 0x0
+    detail::BasicSound::SoundPlayerPlayLinkList mPriorityList; // at 0xC
     detail::PlayerHeapList mHeapList; // at 0x18
 
     u16 mPlayableCount; // at 0x24
