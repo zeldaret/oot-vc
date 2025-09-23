@@ -104,6 +104,21 @@
 #define NW4HBMAlign32_2_Line(expr_, line_)              NW4HBMAssertMessage_FileLine(__FILE__,   line_ , ((u32)expr_ & 0x1F) ? 0 : 1, "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 32 bytes boundary.", expr_)
 #define NW4HBMAlign32_2(expr_)                          NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, ((u32)expr_ & 0x1F) ? 0 : 1, "NW4HBM:Alignment Error(0x%x)\n" #expr_ " must be aligned to 32 bytes boundary.", expr_)
 
+// Generic align
+// Aligned
+#define NW4HBM_IS_ALIGNED_(x, align)	(((unsigned long)(x) & ((align) - 1)) == 0) // just redefine instead of pulling in <macros.h>
+
+#define NW4HBMAssertAligned_FileLine(file_, line_, val_, align_)								NW4HBMAssertMessage_FileLine(  file_ ,   line_ , NW4HBM_IS_ALIGNED_(val_, align_), "NW4HBM:Alignment Error(0x%x)\n" #val_ " must be aligned to " #align_ " bytes boundary.", val_)
+#define NW4HBMAssertAligned_File(file_, val_, align_)											NW4HBMAssertMessage_FileLine(  file_ , __LINE__, NW4HBM_IS_ALIGNED_(val_, align_), "NW4HBM:Alignment Error(0x%x)\n" #val_ " must be aligned to " #align_ " bytes boundary.", val_)
+#define NW4HBMAssertAligned_Line(line_, val_, align_)											NW4HBMAssertMessage_FileLine(__FILE__,   line_ , NW4HBM_IS_ALIGNED_(val_, align_), "NW4HBM:Alignment Error(0x%x)\n" #val_ " must be aligned to " #align_ " bytes boundary.", val_)
+#define NW4HBMAssertAligned(val_, align_)														NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, NW4HBM_IS_ALIGNED_(val_, align_), "NW4HBM:Alignment Error(0x%x)\n" #val_ " must be aligned to " #align_ " bytes boundary.", val_)
+
+#define NW4HBMAssertHeaderAligned_FileLine(file_, line_, val_, align_)						NW4HBMAssertMessage_FileLine(  file_ ,   line_ , NW4HBM_IS_ALIGNED_(val_, align_),      "Alignment Error(0x%x)\n" #val_ " must be aligned to " #align_ " bytes boundary.", val_)
+#define NW4HBMAssertHeaderAligned_File(file_, val_, align_)									NW4HBMAssertMessage_FileLine(  file_ , __LINE__, NW4HBM_IS_ALIGNED_(val_, align_),      "Alignment Error(0x%x)\n" #val_ " must be aligned to " #align_ " bytes boundary.", val_)
+#define NW4HBMAssertHeaderAligned_Line(line_, val_, align_)									NW4HBMAssertMessage_FileLine(__FILE__,   line_ , NW4HBM_IS_ALIGNED_(val_, align_),      "Alignment Error(0x%x)\n" #val_ " must be aligned to " #align_ " bytes boundary.", val_)
+#define NW4HBMAssertHeaderAligned(val_, align_)												NW4HBMAssertMessage_FileLine(__FILE__, __LINE__, NW4HBM_IS_ALIGNED_(val_, align_),      "Alignment Error(0x%x)\n" #val_ " must be aligned to " #align_ " bytes boundary.", val_)
+
+
 /* Extended asserts */
 
 // PointerNonnull
@@ -200,6 +215,12 @@
 
 #define NW4HBMAssertMinimumValue_String(var_)         "NW4HBM:" #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied."
 #define NW4HBMAssertHeaderMinimumValue_String(var_)   #var_ " is out of bounds(%d)\n%d <= " #var_ " not satisfied."
+
+#define NW4HBMAssertClampedLValue_String(var_)			"NW4HBM:" #var_ " is out of bounds(%d)\n%d <= " #var_ " < %d not satisfied."
+#define NW4HBMAssertHeaderClampedLValue_String(var_)		        #var_ " is out of bounds(%d)\n%d <= " #var_ " < %d not satisfied."
+
+#define NW4HBMAssertClampedLRValue_String(var_)			"NW4HBM:" #var_ " is out of bounds(%d)\n%d <= " #var_ " <= %d not satisfied."
+#define NW4HBMAssertHeaderClampedLRValue_String(var_)		        #var_ " is out of bounds(%d)\n%d <= " #var_ " <= %d not satisfied."
 
 /*******************************************************************************
  * Declarations

@@ -22,20 +22,6 @@ enum OutputLineFlag {
     OUTPUT_LINE_REMOTE_N = (1 << 1),
 };
 
-enum AuxBus {
-    AUX_A,
-    AUX_B,
-    AUX_C,
-    AUX_BUS_NUM
-};
-
-enum OutputMode {
-    OUTPUT_MODE_STEREO,
-    OUTPUT_MODE_SURROUND,
-    OUTPUT_MODE_DPL2,
-    OUTPUT_MODE_MONO
-};
-
 struct SoundParam {
     f32 volume; // at 0x0
     f32 pitch; // at 0x4
@@ -47,23 +33,6 @@ struct SoundParam {
 };
 
 namespace detail {
-
-enum PanMode {
-    PAN_MODE_DUAL,
-    PAN_MODE_BALANCE,
-};
-
-enum PanCurve {
-    PAN_CURVE_SQRT,
-    PAN_CURVE_SQRT_0DB,
-    PAN_CURVE_SQRT_0DB_CLAMP,
-    PAN_CURVE_SINCOS,
-    PAN_CURVE_SINCOS_0DB,
-    PAN_CURVE_SINCOS_0DB_CLAMP,
-    PAN_CURVE_LINEAR,
-    PAN_CURVE_LINEAR_0DB,
-    PAN_CURVE_LINEAR_0DB_CLAMP,
-};
 
 struct AdpcmParam {
     u16 coef[16]; // at 0x0

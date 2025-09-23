@@ -35,9 +35,11 @@ extern "C" {
 #ifndef __INTELLISENSE__
 #define NO_INLINE __attribute__((never_inline))
 #define ATTRIBUTE_UNUSED __attribute__((unused))
+#define ATTRIBUTE_FALLTHROUGH __attribute__((fallthrough))
 #else
 #define NO_INLINE
 #define ATTRIBUTE_UNUSED
+#define ATTRIBUTE_FALLTHROUGH
 #endif
 
 #define __CONCAT(x, y) x##y

@@ -36,10 +36,13 @@ typedef volatile f64 vf64;
 
 #ifndef __cplusplus
 typedef int bool;
-#endif
-
 #define false 0
 #define true 1
+#else
+typedef int BOOL;
+#define FALSE 0
+#define TRUE 1
+#endif
 
 #define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
 

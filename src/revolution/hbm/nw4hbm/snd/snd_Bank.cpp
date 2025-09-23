@@ -15,8 +15,8 @@ Channel* Bank::NoteOn(const NoteOnInfo& rInfo) const {
         return nullptr;
     }
 
-    WaveData waveData;
-    if (!mBankReader.ReadWaveParam(&waveData, instInfo.waveIndex, mWaveDataAddress)) {
+    WaveInfo waveData;
+    if (!mBankReader.ReadWaveInfo(&waveData, instInfo.waveDataLocation.index, mWaveDataAddress)) {
         return nullptr;
     }
 

@@ -44,17 +44,17 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-EnvGenerator::EnvGenerator() { Init(VOLUME_INIT); }
+EnvGenerator::EnvGenerator() { Init(); }
 
-void EnvGenerator::Init(f32 initDecibel) {
+void EnvGenerator::Init() {
     SetAttack(ATTACK_INIT);
     SetDecay(DECAY_INIT);
     SetSustain(SUSTAIN_INIT);
     SetRelease(RELEASE_INIT);
-    Reset(initDecibel);
+    Reset();
 }
 
-void EnvGenerator::Reset(f32 initDecibel) {
+void EnvGenerator::Reset() {
     mValue = VOLUME_INIT * 10.0f;
     mStatus = STATUS_ATTACK;
 }

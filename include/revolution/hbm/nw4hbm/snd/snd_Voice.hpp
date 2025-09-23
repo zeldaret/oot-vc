@@ -2,18 +2,21 @@
 #define NW4R_SND_VOICE_H
 
 #include "revolution/hbm/nw4hbm/snd/snd_AxVoice.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_DisposeCallback.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_DisposeCallbackManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/global.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
 #include "revolution/hbm/ut.hpp"
 #include "revolution/types.h"
 #include "revolution/wpad.h"
+
+#include "macros.h"
 
 namespace nw4hbm {
 namespace snd {
 namespace detail {
 
 // Forward declarations
-class WaveData;
+class WaveInfo;
 
 class Voice : public DisposeCallback {
     friend class VoiceManager;
@@ -65,7 +68,7 @@ class Voice : public DisposeCallback {
     bool Acquire(int channels, int voices, int priority, VoiceCallback pCallback, void* pCallbackArg);
     void Free();
 
-    void Setup(const WaveData& rData, u32 offset);
+    void Setup(const WaveInfo& rData, u32 offset);
 
     void Start();
     void Stop();

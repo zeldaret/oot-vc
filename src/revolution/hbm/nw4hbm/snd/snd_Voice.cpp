@@ -242,7 +242,7 @@ void Voice::Free() {
     mIsActive = false;
 }
 
-void Voice::Setup(const WaveData& rData, u32 offset) {
+void Voice::Setup(const WaveInfo& rData, u32 offset) {
     AxVoice::Format format = WaveFormatToAxFormat(rData.sampleFormat);
     int sampleRate = rData.sampleRate;
 

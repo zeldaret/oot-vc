@@ -115,7 +115,7 @@ void RemoteSpeaker::ExecCommand(SpeakerCommand command) {
             mValidCallbackFlag = true;
             mCommandBusyFlag = true;
             mState = STATE_EXEC_SPEAKER_ON;
-            WPADControlSpeaker(mChannelIndex, WPAD_SPEAKER_ON, SpeakerOnCallback);
+            WPADControlSpeaker(mChannelIndex, WPAD_SPEAKER_ON, (WPADCallback*)SpeakerOnCallback);
             break;
         }
 
@@ -123,7 +123,7 @@ void RemoteSpeaker::ExecCommand(SpeakerCommand command) {
             mValidCallbackFlag = true;
             mCommandBusyFlag = true;
             mState = STATE_EXEC_SPEAKER_PLAY;
-            WPADControlSpeaker(mChannelIndex, WPAD_SPEAKER_PLAY, SpeakerPlayCallback);
+            WPADControlSpeaker(mChannelIndex, WPAD_SPEAKER_PLAY, (WPADCallback*)SpeakerPlayCallback);
             break;
         }
 
@@ -131,7 +131,7 @@ void RemoteSpeaker::ExecCommand(SpeakerCommand command) {
             mValidCallbackFlag = true;
             mCommandBusyFlag = true;
             mState = STATE_EXEC_SPEAKER_OFF;
-            WPADControlSpeaker(mChannelIndex, WPAD_SPEAKER_OFF, SpeakerOffCallback);
+            WPADControlSpeaker(mChannelIndex, WPAD_SPEAKER_OFF, (WPADCallback*)SpeakerOffCallback);
             break;
         }
     }
@@ -331,7 +331,7 @@ void RemoteSpeaker::SpeakerOffCallback(s32 chan, s32 result) {
 
 void RemoteSpeaker::NotifyCallback(s32 chan, s32 result) {
     if (mValidCallbackFlag && mWpadCallback != nullptr) {
-        mWpadCallback(chan, result);
+        mWpadCallback(chan, (WPADResult)result);
         mWpadCallback = nullptr;
     }
 }

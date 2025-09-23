@@ -34,9 +34,9 @@ class EnvGenerator {
     EnvGenerator();
 
     // methods
-    void Init(f32 initDecibel);
+    void Init();
     void Update(int msec);
-    void Reset(f32 initDecibel);
+    void Reset();
 
     Status GetStatus() const { return mStatus; }
     f32 GetValue() const;

@@ -12,6 +12,7 @@ namespace std
 	    extern char *strncpy(char *s1, const char *s2, std::size_t n) __attribute__((nothrow));
 
 	    extern char *strcat(char *s1, const char *s2) __attribute__((nothrow));
+		extern char *strncat(char *s1, const char *s2, std::size_t n) __attribute__((nothrow));
 
 	    extern int strcmp(const char *s1, const char *s2) __attribute__((nothrow));
 	    extern int strncmp(const char *s1, const char *s2, std::size_t n) __attribute__((nothrow));

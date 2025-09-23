@@ -3,6 +3,7 @@
 
 #include "revolution/hbm/nw4hbm/snd/snd_MoveValue.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
+#include "revolution/hbm/nw4hbm/snd/global.h"
 #include "revolution/hbm/ut.hpp"
 #include "revolution/types.h"
 #include "revolution/wpad/WPAD.h"

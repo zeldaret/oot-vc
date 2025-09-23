@@ -253,7 +253,7 @@ void Channel::Update(bool periodic) {
     }
 }
 
-void Channel::Start(const WaveData& rData, int length, u32 offset) {
+void Channel::Start(const WaveInfo& rData, int length, u32 offset) {
     mLength = length;
 
     mLfo.Reset();

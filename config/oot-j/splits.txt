@@ -963,9 +963,68 @@ revolution/hbm/nw4hbm/snd/snd_EnvGenerator.cpp:
 	.data       start:0x80198D90 end:0x80198EE0
 	.sdata2     start:0x8025E7C0 end:0x8025E7F0
 
+revolution/hbm/nw4hbm/snd/code_80126324.cpp:
+	.text       start:0x80126324 end:0x801264F0
+
+revolution/hbm/nw4hbm/snd/snd_FrameHeap.cpp:
+	.text       start:0x801264F0 end:0x80126F48
+
+revolution/hbm/nw4hbm/snd/snd_InstancePool.cpp:
+	.text       start:0x80126F48 end:0x801271F8
+
+revolution/hbm/nw4hbm/snd/snd_Lfo.cpp:
+	.text       start:0x801271F8 end:0x80127454
+
+revolution/hbm/nw4hbm/snd/snd_MemorySoundArchive.cpp:
+	.text       start:0x80127454 end:0x80127500
+
+revolution/hbm/nw4hbm/snd/code_80127500.cpp:
+	.text       start:0x80127500 end:0x801275DC
+
+revolution/hbm/nw4hbm/snd/snd_MmlParser.cpp:
+	.text       start:0x801275DC end:0x80128710
+
+revolution/hbm/nw4hbm/snd/snd_MmlSeqTrack.cpp:
+	.text       start:0x80128710 end:0x801287DC
+
+revolution/hbm/nw4hbm/snd/snd_MmlSeqTrackAllocator.cpp:
+	.text       start:0x801287DC end:0x80128924
+
+revolution/hbm/nw4hbm/snd/snd_NandSoundArchive.cpp:
+	.text       start:0x80128924 end:0x8012925C
+
+revolution/hbm/nw4hbm/snd/snd_RemoteSpeaker.cpp:
+	.text       start:0x8012925C end:0x8012976C
+
+revolution/hbm/nw4hbm/snd/snd_RemoteSpeakerManager.cpp:
+	.text       start:0x8012976C end:0x80129A44
+
+revolution/hbm/nw4hbm/snd/snd_SeqFile.cpp:
+	.text       start:0x80129A44 end:0x80129BF8
+
+revolution/hbm/nw4hbm/snd/snd_SeqPlayer.cpp:
+	.text       start:0x80129BF8 end:0x8012B558
+	.ctors      start:0x8016A704 end:0x8016A708
+
+revolution/hbm/nw4hbm/snd/snd_SeqSound.cpp:
+	.text       start:0x8012B558 end:0x8012BBD0
+	.ctors      start:0x8016A708 end:0x8016A70C
+
+revolution/hbm/nw4hbm/snd/snd_SeqSoundHandle.cpp:
+	.text       start:0x8012BBD0 end:0x8012BC08
+
+revolution/hbm/nw4hbm/snd/snd_SeqTrack.cpp:
+	.text       start:0x8012BC08 end:0x8012D444
+
+revolution/hbm/nw4hbm/snd/snd_SoundArchive.cpp:
+	.text       start:0x8012D444 end:0x8012DB48
+
+revolution/hbm/nw4hbm/snd/snd_SoundArchiveFile.cpp:
+	.text       start:0x8012DB48 end:0x8012EEC8
+
 revolution/hbm/nw4hbm/snd/code_8011D104.cpp:
-	.text       start:0x80126324 end:0x8013CD64
-	.ctors      start:0x8016A704 end:0x8016A720
+	.text       start:0x8012EEC8 end:0x8013CD64
+	.ctors      start:0x8016A70C end:0x8016A720
 
 revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp:
 	.text       start:0x8013CD64 end:0x8013CFBC

@@ -2,19 +2,13 @@
 #define NW4R_SND_FX_BASE_H
 #include "revolution/types.h"
 
+#include "revolution/hbm/nw4hbm/snd/global.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
 
 #include "revolution/hbm/ut.hpp"
 
 namespace nw4hbm {
 namespace snd {
-
-enum SampleFormat {
-    SAMPLE_FORMAT_PCM_S32,
-    SAMPLE_FORMAT_PCM_S16,
-    SAMPLE_FORMAT_PCM_S8,
-    SAMPLE_FORMAT_DSP_ADPCM
-};
 
 class FxBase : private ut::NonCopyable {
 	// typedefs
