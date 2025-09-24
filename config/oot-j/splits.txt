@@ -961,11 +961,15 @@ revolution/hbm/nw4hbm/snd/snd_BasicSound.cpp:
 	.sdata2     start:0x8025E788 end:0x8025E798
 
 revolution/hbm/nw4hbm/snd/snd_Channel.cpp:
-	.text       start:0x801245A0 end:0x80125680
+	.text       start:0x801245A0 end:0x80125834
+	.ctors      start:0x8016A700 end:0x8016A704
+	.data       start:0x80198AF8 end:0x80198D30
+	.bss        start:0x8024B578 end:0x8024F090
+	.sbss       start:0x8025DC30 end:0x8025DC38
+	.sdata2     start:0x8025E798 end:0x8025E7C0
 
 revolution/hbm/nw4hbm/snd/code_80125680.cpp:
-	.text       start:0x80125680 end:0x80125D14
-	.ctors      start:0x8016A700 end:0x8016A704
+	.text       start:0x80125834 end:0x80125D14
 
 revolution/hbm/nw4hbm/snd/snd_EnvGenerator.cpp:
 	.text       start:0x80125D14 end:0x80126324
