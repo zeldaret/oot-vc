@@ -11,8 +11,6 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-// NW4R_UT_LINKLIST_TYPEDEF_FORCE(FxBase);
-
 u8 AxManager::sZeroBuffer[AxManager::ZERO_BUFFER_SIZE];
 
 AxManager::AxManager()
@@ -488,36 +486,6 @@ void AxManager::AuxCallbackFunc(void* chans, void* context) {
         }
     }
 }
-
-// void AxManager::PrepareReset() {
-//     if (mOldAidCallback != nullptrptr) {
-//         return;
-//     }
-
-//     mVolumeForReset.SetTarget(0.0f, 3);
-//     mResetReadyCounter = -1;
-//     mOldAidCallback = AIRegisterDMACallback(AiDmaCallbackFunc);
-// }
-
-// void AxManager::AiDmaCallbackFunc() {
-//     static bool finishedFlag = false;
-
-//     AxManager& r = GetInstance();
-//     r.mOldAidCallback();
-
-//     if (finishedFlag) {
-//         if (r.mResetReadyCounter < 0) {
-//             AXSetMaxDspCycles(0);
-//             r.mResetReadyCounter = AUX_CALLBACK_WAIT_FRAME;
-//         }
-//     } else if (r.mVolumeForReset.GetValue() == 0.0f) {
-//         finishedFlag = true;
-//     }
-
-//     if (r.mResetReadyCounter > 0) {
-//         r.mResetReadyCounter--;
-//     }
-// }
 
 } // namespace detail
 } // namespace snd

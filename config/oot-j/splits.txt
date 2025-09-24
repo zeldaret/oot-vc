@@ -933,6 +933,10 @@ revolution/hbm/nw4hbm/math/math_triangular.cpp:
 
 revolution/hbm/nw4hbm/snd/snd_AxManager.cpp:
 	.text       start:0x8011D104 end:0x8011EE24
+	.data       start:0x80198190 end:0x801983B8
+	.bss        start:0x80244760 end:0x8024B578
+	.sbss       start:0x8025DC20 end:0x8025DC28
+	.sdata2     start:0x8025E6F8 end:0x8025E710
 
 revolution/hbm/nw4hbm/snd/snd_AxVoice.cpp:
 	.text       start:0x8011EE24 end:0x80121C00
