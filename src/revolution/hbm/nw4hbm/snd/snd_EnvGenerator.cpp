@@ -1,8 +1,5 @@
 #include "revolution/hbm/snd.hpp"
 
-//! TODO: remove when documented
-extern "C" f32 fn_80139708(f32);
-
 namespace nw4hbm {
 namespace snd {
 namespace detail {
@@ -61,10 +58,10 @@ void EnvGenerator::Reset() {
 
 f32 EnvGenerator::GetValue() const {
     if (mStatus == STATUS_ATTACK && mAttack == 0.0f) {
-        return fn_80139708(0.0f);
+        return Util::CalcVolumeRatio(0.0f);
     }
 
-    return fn_80139708(mValue / 10.0f);
+    return Util::CalcVolumeRatio(mValue / 10.0f);
 }
 
 void EnvGenerator::Update(int msec) {
