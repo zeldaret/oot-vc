@@ -5,6 +5,7 @@
 namespace nw4hbm {
 namespace snd {
 namespace detail {
+NW4R_UT_GET_RUNTIME_TYPEINFO(BasicSound);
 
 BasicSound::BasicSound()
     : mHeap(nullptr), mGeneralHandle(nullptr), mTempGeneralHandle(nullptr), mSoundPlayer(nullptr),
@@ -86,7 +87,8 @@ void BasicSound::Pause(bool flag, int frames) {
 
         mPauseFadeVolume.SetTarget(0.0f, t);
     } else {
-        if (mPauseFlag != flag) {
+        // what
+        if ((mPauseFlag != false) != flag) {
             rPlayer.Pause(false);
         }
 
@@ -109,15 +111,15 @@ void BasicSound::SetAutoStopCounter(int count) {
 }
 
 void BasicSound::FadeIn(int frames) {
-    if (mFadeOutFlag) {
-        return;
+    if (!mFadeOutFlag) {
+        int t = frames * (1.0f - mFadeVolume.GetValue());
+        mFadeVolume.SetTarget(1.0f, t);
     }
-
-    int t = frames * (1.0f - mFadeVolume.GetValue());
-    mFadeVolume.SetTarget(1.0f, t);
 }
 
-bool BasicSound::IsPause() const { return mPauseFlag; }
+bool BasicSound::IsPrepared() const { return GetBasicPlayer().IsPrepared(); }
+
+bool BasicSound::IsPause() const { return mPauseFlag != false; }
 
 void BasicSound::Update() {
     BasicPlayer& rPlayer = GetBasicPlayer();
@@ -136,11 +138,6 @@ void BasicSound::Update() {
         if (!mStartFlag) {
             return;
         }
-
-        if (!IsPrepared()) {
-            return;
-        }
-
         startPlayer = true;
     }
 
@@ -175,6 +172,8 @@ void BasicSound::Update() {
     f32 volume;
     f32 pan;
     f32 surroundPan;
+    f32 pan2;
+    f32 surroundPan2;
     f32 pitch;
     f32 mainOutVol;
 
@@ -191,14 +190,18 @@ void BasicSound::Update() {
 
     pan = 0.0f;
     pan += GetPan();
-    pan += GetAmbientParam().pan;
-
-    pitch = 1.0f;
-    pitch *= GetPitch();
 
     surroundPan = 0.0f;
     surroundPan += GetSurroundPan();
-    surroundPan += GetAmbientParam().surroundPan;
+
+    pan2 = 0.0f;
+    pan2 += GetAmbientParam().pan;
+
+    surroundPan2 = 0.0f;
+    surroundPan2 += GetAmbientParam().surroundPan;
+
+    pitch = 1.0f;
+    pitch *= GetPitch();
 
     mainOutVol = 1.0f;
     mainOutVol *= mSoundPlayer->detail_GetMainOutVolume();
@@ -213,15 +216,18 @@ void BasicSound::Update() {
     }
 
     f32 remoteOutVol[WPAD_MAX_CONTROLLERS];
-    for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
-        remoteOutVol[i] = 1.0f;
-        remoteOutVol[i] *= mSoundPlayer->detail_GetRemoteOutVolume(i);
-        remoteOutVol[i] *= GetRemoteOutVolume(i);
+    for (int remoteIndex = 0; remoteIndex < WPAD_MAX_CONTROLLERS; remoteIndex++) {
+        remoteOutVol[remoteIndex] = 1.0f;
+        remoteOutVol[remoteIndex] *= mSoundPlayer->detail_GetRemoteOutVolume(remoteIndex);
+        NW4HBMAssertHeaderClampedLValue_Line(remoteIndex, 0, 4, 887);
+        remoteOutVol[remoteIndex] *= GetRemoteOutVolume(remoteIndex);
     }
 
     rPlayer.SetVolume(volume);
     rPlayer.SetPan(pan);
     rPlayer.SetSurroundPan(surroundPan);
+    rPlayer.SetPan2(pan2);
+    rPlayer.SetSurroundPan2(surroundPan2);
     rPlayer.SetPitch(pitch);
     rPlayer.SetOutputLine(outputLine);
     rPlayer.SetMainOutVolume(mainOutVol);
@@ -240,7 +246,7 @@ void BasicSound::Update() {
         mPauseFadeFlag = false;
 
         if (mPauseFlag) {
-            rPlayer.Pause(mPauseFlag);
+            rPlayer.Pause(mPauseFlag != false);
         }
     }
 
@@ -296,6 +302,7 @@ void BasicSound::Shutdown() {
 }
 
 void BasicSound::SetPlayerPriority(int priority) {
+    NW4HBMAssertHeaderClampedLRValue_Line(priority, 0, PRIORITY_MAX, 514);
     mPriority = priority;
 
     if (mSoundPlayer != nullptr) {
@@ -304,14 +311,21 @@ void BasicSound::SetPlayerPriority(int priority) {
     }
 }
 
-void BasicSound::SetInitialVolume(f32 vol) { mInitVolume = ut::Clamp(vol, 0.0f, 1.0f); }
+void BasicSound::SetInitialVolume(f32 volume) {
+    NW4HBMAssert_Line(volume >= 0.0f, 534);
+    mInitVolume = volume;
+}
 
-void BasicSound::SetVolume(f32 vol, int frames) {
-    f32 target = ut::Clamp(vol, 0.0f, 1.0f);
+void BasicSound::SetVolume(f32 volume, int frames) {
+    NW4HBMAssert_Line(volume >= 0.0f, 549);
+    f32 target = volume;
     mExtMoveVolume.SetTarget(target, frames);
 }
 
-void BasicSound::SetPitch(f32 pitch) { mExtPitch = pitch; }
+void BasicSound::SetPitch(f32 pitch) {
+    NW4HBMAssert_Line(pitch >= 0.0f, 564);
+    mExtPitch = pitch;
+}
 
 void BasicSound::SetPan(f32 pan) { mExtPan = pan; }
 
@@ -328,17 +342,13 @@ bool BasicSound::IsEnabledOutputLine() const { return mOutputLineFlagEnable; }
 
 int BasicSound::GetOutputLine() const { return mOutputLineFlag; }
 
-void BasicSound::SetMainOutVolume(f32 vol) { mMainOutVolume = ut::Clamp(vol, 0.0f, 1.0f); }
+void BasicSound::SetMainOutVolume(f32 volume) { mMainOutVolume = ut::Clamp(volume, 0.0f, 1.0f); }
 
-void BasicSound::SetRemoteOutVolume(int remote, f32 vol) { mRemoteOutVolume[remote] = ut::Clamp(vol, 0.0f, 1.0f); }
+void BasicSound::SetRemoteOutVolume(int remote, f32 volume) {
+    mRemoteOutVolume[remote] = ut::Clamp(volume, 0.0f, 1.0f);
+}
 
 void BasicSound::SetFxSend(AuxBus bus, f32 send) { GetBasicPlayer().SetFxSend(bus, send); }
-
-void BasicSound::SetRemoteFilter(int filter) { GetBasicPlayer().SetRemoteFilter(filter); }
-
-void BasicSound::SetPanMode(PanMode mode) { GetBasicPlayer().SetPanMode(mode); }
-
-void BasicSound::SetPanCurve(PanCurve curve) { GetBasicPlayer().SetPanCurve(curve); }
 
 f32 BasicSound::GetInitialVolume() const { return mInitVolume; }
 
@@ -352,13 +362,13 @@ f32 BasicSound::GetMainOutVolume() const { return mMainOutVolume; }
 
 f32 BasicSound::GetRemoteOutVolume(int remote) const { return mRemoteOutVolume[remote]; }
 
-void BasicSound::SetAmbientParamCallback(AmbientParamUpdateCallback* pParamUpdate, AmbientArgUpdateCallback* pArgUpdate,
-                                         AmbientArgAllocaterCallback* pArgAlloc, void* pArg) {
-
-    mAmbientParamUpdateCallback = pParamUpdate;
-    mAmbientArgUpdateCallback = pArgUpdate;
-    mAmbientArgAllocaterCallback = pArgAlloc;
-    mAmbientArg = pArg;
+void BasicSound::SetAmbientParamCallback(AmbientParamUpdateCallback* paramUpdateCallback,
+                                         AmbientArgUpdateCallback* argUpdateCallback,
+                                         AmbientArgAllocaterCallback* argAllocaterCallback, void* arg) {
+    mAmbientParamUpdateCallback = paramUpdateCallback;
+    mAmbientArgUpdateCallback = argUpdateCallback;
+    mAmbientArgAllocaterCallback = argAllocaterCallback;
+    mAmbientArg = arg;
 }
 
 bool BasicSound::IsAttachedGeneralHandle() { return mGeneralHandle != nullptr; }
@@ -373,7 +383,6 @@ void BasicSound::SetId(u32 id) {
     mId = id;
     GetBasicPlayer().SetId(id);
 }
-
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
