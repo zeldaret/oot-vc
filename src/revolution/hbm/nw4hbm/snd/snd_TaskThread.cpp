@@ -1,4 +1,25 @@
-#include "revolution/hbm/snd.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_TaskThread.hpp"
+
+/* Original source:
+ * kiwi515/ogws
+ * src/nw4r/snd/snd_TaskThread.cpp
+ */
+
+/*******************************************************************************
+ * headers
+ */
+
+#include "revolution/types.h"
+
+#include "revolution/hbm/nw4hbm/snd/snd_TaskManager.hpp"
+
+#include "revolution/os/OSThread.h"
+
+#include "revolution/hbm/HBMAssert.hpp"
+
+/*******************************************************************************
+ * functions
+ */
 
 namespace nw4hbm {
 namespace snd {
@@ -12,20 +33,26 @@ TaskThread::~TaskThread() {
     }
 }
 
-bool TaskThread::Create(s32 priority, void* pStack, u32 stackSize) {
+bool TaskThread::Create(s32 priority, void* stack, u32 stackSize) {
+    NW4HBMAssertPointerNonnull_Line(stack, 59);
+    NW4HBMAssertAligned_Line(60, stack, 4);
+
     if (mCreateFlag) {
         Destroy();
     }
 
-    if (!OSCreateThread(&mThread, ThreadFunc, &mThread, static_cast<u8*>(pStack) + stackSize, stackSize, priority, 0)) {
+    BOOL result = OSCreateThread(&mThread, &ThreadFunc, this, static_cast<byte_t*>(stack) + stackSize, stackSize,
+                                 priority, OS_THREAD_NO_FLAGS);
+    if (!result) {
         return false;
     }
 
-    mStackEnd = static_cast<u32*>(pStack);
+    mStackEnd = static_cast<byte4_t*>(stack);
     mFinishFlag = false;
     mCreateFlag = true;
 
     OSResumeThread(&mThread);
+
     return true;
 }
 
@@ -36,19 +63,24 @@ void TaskThread::Destroy() {
 
     mFinishFlag = true;
     TaskManager::GetInstance().CancelWaitTask();
-    OSJoinThread(&mThread, nullptr);
+
+    BOOL result = OSJoinThread(&mThread, nullptr);
+    NW4HBMAssert_Line(result, 105);
+
     mCreateFlag = false;
 }
 
-void* TaskThread::ThreadFunc(void* pArg) {
-    TaskThread* p = static_cast<TaskThread*>(pArg);
-    p->ThreadProc();
+void* TaskThread::ThreadFunc(void* arg) {
+    TaskThread* taskThread = static_cast<TaskThread*>(arg);
+
+    taskThread->ThreadProc();
 
     return nullptr;
 }
 
 void TaskThread::ThreadProc() {
-    while (!mFinishFlag) {
+    while (!mFinishFlag) // TODO: implies volatile?
+    {
         TaskManager::GetInstance().WaitTask();
 
         if (mFinishFlag) {
@@ -56,6 +88,8 @@ void TaskThread::ThreadProc() {
         }
 
         TaskManager::GetInstance().ExecuteTask();
+
+        NW4HBMAssert_Line(*mStackEnd == OS_THREAD_STACK_MAGIC, 160);
     }
 }
 

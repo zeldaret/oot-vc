@@ -13,7 +13,7 @@ AxVoice::AxVoice()
 
 AxVoice::~AxVoice() {}
 
-void AxVoice::Setup(const void* pWave, Format fmt, int rate) {
+void AxVoice::Setup(const void* pWave, SampleFormat fmt, int rate) {
     ut::AutoInterruptLock lock;
 
     mWaveData = pWave;
@@ -155,7 +155,7 @@ void AxVoice::VoiceCallback(void* pArg) {
     AxVoiceManager::GetInstance().ReserveForFreeAxVoice(p);
 }
 
-u32 AxVoice::GetDspAddressBySample(const void* pBase, u32 samples, Format fmt) {
+u32 AxVoice::GetDspAddressBySample(const void* pBase, u32 samples, SampleFormat fmt) {
     if (pBase != nullptr) {
         pBase = OSCachedToPhysical(pBase);
     }
@@ -187,7 +187,7 @@ u32 AxVoice::GetDspAddressBySample(const void* pBase, u32 samples, Format fmt) {
     return addr;
 }
 
-u32 AxVoice::GetSampleByDspAddress(const void* pBase, u32 addr, Format fmt) {
+u32 AxVoice::GetSampleByDspAddress(const void* pBase, u32 addr, SampleFormat fmt) {
     if (pBase != nullptr) {
         pBase = OSCachedToPhysical(pBase);
     }
@@ -219,7 +219,7 @@ u32 AxVoice::GetSampleByDspAddress(const void* pBase, u32 addr, Format fmt) {
     return samples;
 }
 
-u32 AxVoice::GetSampleByByte(u32 addr, Format fmt) {
+u32 AxVoice::GetSampleByByte(u32 addr, SampleFormat fmt) {
     u32 samples = 0;
     u32 frac;
 

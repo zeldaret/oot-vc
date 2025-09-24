@@ -1,20 +1,59 @@
-#include "revolution/hbm/snd.hpp"
-#include "revolution/hbm/ut.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_WaveSound.hpp"
+
+/* Original source:
+ * kiwi515/ogws
+ * src/nw4r/snd/snd_WaveSound.cpp
+ */
+
+/*******************************************************************************
+ * headers
+ */
+
+#include "revolution/types.h"
+
+#include "revolution/hbm/nw4hbm/snd/snd_BasicSound.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_SoundInstanceManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_WaveSoundHandle.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_WsdPlayer.hpp"
+
+#include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp"
+
+#include "revolution/hbm/HBMAssert.hpp"
+
+/*******************************************************************************
+ * variables
+ */
+
+namespace nw4hbm {
+namespace snd {
+namespace detail {
+// .sbss
+ut::detail::RuntimeTypeInfo const WaveSound::typeInfo(&BasicSound::typeInfo);
+} // namespace detail
+} // namespace snd
+} // namespace nw4hbm
+
+/*******************************************************************************
+ * functions
+ */
 
 namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-NW4R_UT_RTTI_DEF_DERIVED(WaveSound, BasicSound);
+WaveSound::WaveSound(SoundInstanceManager<WaveSound>* manager, int priority, int ambientPriority)
+    : BasicSound(priority, ambientPriority), mTempSpecialHandle(nullptr), mManager(manager), mPreparedFlag(false) {}
 
-WaveSound::WaveSound(SoundInstanceManager<WaveSound>* pManager)
-    : mManager(pManager), mTempSpecialHandle(nullptr), mPreparedFlag(false) {}
+bool WaveSound::Prepare(void const* waveSoundBase, s32 waveSoundOffset, WsdPlayer::StartOffsetType startOffsetType,
+                        s32 offset, WsdPlayer::WsdCallback const* callback, register_t callbackData) {
+    NW4HBMAssertPointerNonnull_Line(waveSoundBase, 74);
+    NW4HBMAssertPointerNonnull_Line(callback, 75);
 
-bool WaveSound::Prepare(const void* pWsdData, s32 wsdOffset, WsdPlayer::StartOffsetType startType, s32 startOffset,
-                        int voices, const WsdPlayer::WsdCallback* pCallback, u32 callbackArg) {
     InitParam();
 
-    if (!mWsdPlayer.Prepare(pWsdData, wsdOffset, startType, startOffset, voices, pCallback, callbackArg)) {
+    bool result = mWsdPlayer.Prepare(waveSoundBase, waveSoundOffset, startOffsetType, offset, GetVoiceOutCount(),
+                                     callback, callbackData);
+    if (!result) {
         return false;
     }
 
@@ -24,17 +63,20 @@ bool WaveSound::Prepare(const void* pWsdData, s32 wsdOffset, WsdPlayer::StartOff
 
 void WaveSound::Shutdown() {
     BasicSound::Shutdown();
+
     mManager->Free(this);
 }
 
-void WaveSound::SetChannelPriority(int priority) { mWsdPlayer.SetChannelPriority(priority); }
+void WaveSound::SetChannelPriority(int priority) {
+    // specifically not the source variant
+    NW4HBMAssertHeaderClampedLRValue_Line(priority, BasicSound::PRIORITY_MIN, BasicSound::PRIORITY_MAX, 124);
+
+    mWsdPlayer.SetChannelPriority(priority);
+}
 
 void WaveSound::SetReleasePriorityFix(bool flag) { mWsdPlayer.SetReleasePriorityFix(flag); }
 
-void WaveSound::SetPlayerPriority(int priority) {
-    BasicSound::SetPlayerPriority(priority);
-    mManager->UpdatePriority(this, CalcCurrentPlayerPriority());
-}
+void WaveSound::OnUpdatePlayerPriority() { mManager->UpdatePriority(this, CalcCurrentPlayerPriority()); }
 
 bool WaveSound::IsAttachedTempSpecialHandle() { return mTempSpecialHandle != nullptr; }
 

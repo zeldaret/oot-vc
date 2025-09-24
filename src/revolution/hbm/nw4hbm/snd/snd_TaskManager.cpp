@@ -1,174 +1,212 @@
-#include "revolution/hbm/snd.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_TaskManager.hpp"
 
-namespace nw4hbm {
-namespace snd {
-namespace detail {
+/* Original source:
+ * kiwi515/ogws
+ * src/nw4r/snd/snd_TaskManager.cpp
+ */
 
-TaskManager& TaskManager::GetInstance() {
-    static TaskManager instance;
-    return instance;
+/*******************************************************************************
+ * headers
+ */
+
+#include <decomp.h>
+#include "macros.h" // NW4R_RANGE_FOR_NO_AUTO_INC
+#include "revolution/types.h" // nullptr
+
+#include "revolution/hbm/nw4hbm/snd/snd_Task.hpp"
+
+#include "revolution/hbm/nw4hbm/ut/ut_lock.hpp" // ut::AutoInterruptLock
+
+#include "revolution/os/OSThread.h"
+
+#include "revolution/hbm/HBMAssert.hpp"
+
+/*******************************************************************************
+ * functions
+ */
+
+namespace nw4hbm { namespace snd { namespace detail {
+
+TaskManager &TaskManager::GetInstance()
+{
+	static TaskManager instance;
+
+	return instance;
 }
 
-TaskManager::TaskManager() : mCurrentTask(nullptr), mCancelWaitTaskFlag(false) {
-    OSInitThreadQueue(&mAppendThreadQueue);
-    OSInitThreadQueue(&mDoneThreadQueue);
+TaskManager::TaskManager() :
+	mCurrentTask		(nullptr),
+	mCancelWaitTaskFlag	(false)
+{
+	OSInitThreadQueue(&mAppendThreadQueue);
+	OSInitThreadQueue(&mDoneThreadQueue);
 }
 
-void TaskManager::AppendTask(Task* pTask, TaskPriority priority) {
-    ut::AutoInterruptLock lock;
+void TaskManager::AppendTask(Task *task, TaskPriority priority)
+{
+	// specifically not the source variant
+	NW4HBMAssertHeaderClampedLValue_Line(priority, PRIORITY_LOW,
+	                                   PRIORITY_NUM, 67);
 
-    pTask->mBusyFlag = true;
-    mTaskList[priority].PushBack(pTask);
+	ut::AutoInterruptLock lock;
 
-    OSWakeupThread(&mAppendThreadQueue);
+	task->mBusyFlag = true;
+	mTaskList[priority].PushBack(task);
+
+	OSWakeupThread(&mAppendThreadQueue);
 }
 
-Task* TaskManager::GetNextTask(TaskPriority priority, bool remove) {
-    ut::AutoInterruptLock lock;
+// TaskManager::FindTask, probably
+DECOMP_FORCE_CLASS_METHOD(Task::LinkList::Iterator, operator *());
 
-    if (mTaskList[priority].IsEmpty()) {
-        return nullptr;
-    }
+Task *TaskManager::GetNextTask(TaskPriority priority, bool doRemove)
+{
+	ut::AutoInterruptLock lock;
 
-    Task& rTask = mTaskList[priority].GetFront();
+	if (mTaskList[priority].IsEmpty())
+		return nullptr;
 
-    if (remove) {
-        mTaskList[priority].PopFront();
-    }
+	Task *task = &mTaskList[priority].GetFront();
 
-    return &rTask;
+	if (doRemove)
+		mTaskList[priority].PopFront();
+
+	return task;
 }
 
-Task* TaskManager::PopTask() {
-    ut::AutoInterruptLock lock;
-    Task* pTask;
+Task *TaskManager::PopTask()
+{
+	ut::AutoInterruptLock lock;
 
-    pTask = GetNextTask(PRIORITY_HIGH, true);
-    if (pTask != nullptr) {
-        return pTask;
-    }
+	Task *task;
 
-    pTask = GetNextTask(PRIORITY_MIDDLE, true);
-    if (pTask != nullptr) {
-        return pTask;
-    }
+	if ((task = GetNextTask(PRIORITY_HIGH, true)))
+		return task;
 
-    pTask = GetNextTask(PRIORITY_LOW, true);
-    if (pTask != nullptr) {
-        return pTask;
-    }
+	if ((task = GetNextTask(PRIORITY_MIDDLE, true)))
+		return task;
 
-    return nullptr;
+	if ((task = GetNextTask(PRIORITY_LOW, true)))
+		return task;
+
+	return nullptr;
 }
 
-Task* TaskManager::GetNextTask() {
-    ut::AutoInterruptLock lock;
-    Task* pTask;
+Task *TaskManager::GetNextTask()
+{
+	ut::AutoInterruptLock lock;
 
-    pTask = GetNextTask(PRIORITY_HIGH, false);
-    if (pTask != nullptr) {
-        return pTask;
-    }
+	Task *task;
 
-    pTask = GetNextTask(PRIORITY_MIDDLE, false);
-    if (pTask != nullptr) {
-        return pTask;
-    }
+	if ((task = GetNextTask(PRIORITY_HIGH, false)))
+		return task;
 
-    pTask = GetNextTask(PRIORITY_LOW, false);
-    if (pTask != nullptr) {
-        return pTask;
-    }
+	if ((task = GetNextTask(PRIORITY_MIDDLE, false)))
+		return task;
 
-    return nullptr;
+	if ((task = GetNextTask(PRIORITY_LOW, false)))
+		return task;
+
+	return nullptr;
 }
 
-Task* TaskManager::ExecuteTask() {
-    Task* pTask = PopTask();
-    if (pTask == nullptr) {
-        return nullptr;
-    }
+Task *TaskManager::ExecuteTask()
+{
+	Task *task = PopTask();
+	if (!task)
+		return nullptr;
 
-    mCurrentTask = pTask;
-    {
-        pTask->mBusyFlag = false;
-        pTask->Execute();
-    }
-    mCurrentTask = nullptr;
+	mCurrentTask = task;
 
-    OSWakeupThread(&mDoneThreadQueue);
-    return pTask;
+	task->mBusyFlag = false;
+	task->Execute();
+
+	mCurrentTask = nullptr;
+
+	OSWakeupThread(&mDoneThreadQueue);
+
+	return task;
 }
 
-void TaskManager::CancelTask(Task* pTask) {
-    ut::AutoInterruptLock lock;
+void TaskManager::CancelTask(Task *task)
+{
+	ut::AutoInterruptLock lock;
 
-    if (pTask == mCurrentTask) {
-        pTask->OnCancel();
+	if (task == mCurrentTask)
+	{
+		task->OnCancel();
 
-        while (pTask == mCurrentTask) {
-            OSSleepThread(&mDoneThreadQueue);
-        }
-    } else {
-        for (int i = 0; i < PRIORITY_MAX; i++) {
-            TaskPriority priority = static_cast<TaskPriority>(i);
-            TaskList& rList = mTaskList[priority];
+		while (task == mCurrentTask)
+			OSSleepThread(&mDoneThreadQueue);
+	}
+	else
+	{
+		for (int i = 0; i < PRIORITY_NUM; i++)
+		{
+			TaskPriority priority = static_cast<TaskPriority>(i);
 
-            NW4R_UT_LINKLIST_FOREACH_SAFE(it, rList, {
-                if (&*it == pTask) {
-                    rList.Erase(it);
+			NW4R_RANGE_FOR_NO_AUTO_INC(itr, mTaskList[priority])
+			{
+				DECLTYPE(itr) curItr = itr++;
 
-                    it->mBusyFlag = false;
-                    it->Cancel();
-                    break;
-                }
-            })
-        }
-    }
+				if (&(*curItr) == task)
+				{
+					mTaskList[priority].Erase(curItr);
+
+					curItr->mBusyFlag = false;
+					curItr->Cancel();
+
+					break;
+				}
+			}
+		}
+	}
 }
 
-void TaskManager::CancelAllTask() {
-    ut::AutoInterruptLock lock;
+void TaskManager::CancelAllTask()
+{
+	ut::AutoInterruptLock lock;
 
-    for (int i = 0; i < PRIORITY_MAX; i++) {
-        TaskPriority priority = static_cast<TaskPriority>(i);
-        TaskList& rList = mTaskList[priority];
+	for (int i = 0; i < PRIORITY_NUM; i++)
+	{
+		TaskPriority priority = static_cast<TaskPriority>(i);
 
-        while (!rList.IsEmpty()) {
-            Task& rTask = rList.GetBack();
-            rList.PopBack();
+		Task::LinkList &list = mTaskList[priority];
+		while (!list.IsEmpty())
+		{
+			Task &task = list.GetBack();
+			list.PopBack();
 
-            rTask.mBusyFlag = false;
-            rTask.Cancel();
-        }
-    }
+			task.mBusyFlag = false;
+			task.Cancel();
+		}
+	}
 
-    if (mCurrentTask != nullptr) {
-        mCurrentTask->OnCancel();
+	if (mCurrentTask)
+	{
+		mCurrentTask->OnCancel();
 
-        while (mCurrentTask != nullptr) {
-            OSSleepThread(&mDoneThreadQueue);
-        }
-    }
+		while (mCurrentTask)
+			OSSleepThread(&mDoneThreadQueue);
+	}
 }
 
-void TaskManager::WaitTask() {
-    ut::AutoInterruptLock lock;
+void TaskManager::WaitTask()
+{
+	ut::AutoInterruptLock lockIntr;
 
-    mCancelWaitTaskFlag = false;
+	mCancelWaitTaskFlag = false;
 
-    while (GetNextTask() == nullptr && !mCancelWaitTaskFlag) {
-        OSSleepThread(&mAppendThreadQueue);
-    }
+	while (!GetNextTask() && !mCancelWaitTaskFlag) // TODO: implies volatile?
+		OSSleepThread(&mAppendThreadQueue);
 }
 
-void TaskManager::CancelWaitTask() {
-    ut::AutoInterruptLock lock;
+void TaskManager::CancelWaitTask()
+{
+	ut::AutoInterruptLock lockIntr;
 
-    mCancelWaitTaskFlag = true;
-    OSWakeupThread(&mAppendThreadQueue);
+	mCancelWaitTaskFlag = true;
+	OSWakeupThread(&mAppendThreadQueue);
 }
 
-} // namespace detail
-} // namespace snd
-} // namespace nw4hbm
+}}} // namespace nw4hbm::snd::detail

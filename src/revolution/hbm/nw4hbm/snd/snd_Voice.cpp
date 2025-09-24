@@ -243,7 +243,7 @@ void Voice::Free() {
 }
 
 void Voice::Setup(const WaveInfo& rData, u32 offset) {
-    AxVoice::Format format = WaveFormatToAxFormat(rData.sampleFormat);
+    AxVoice::SampleFormat format = WaveFormatToAxFormat(rData.sampleFormat);
     int sampleRate = rData.sampleRate;
 
     for (int i = 0; i < mChannelCount; i++) {
@@ -325,7 +325,7 @@ void Voice::Pause(bool flag) {
     mSyncFlag |= SYNC_AX_VOICE;
 }
 
-AxVoice::Format Voice::GetFormat() const {
+AxVoice::SampleFormat Voice::GetFormat() const {
     if (IsActive()) {
         return mAxVoice[0][0]->GetFormat();
     }

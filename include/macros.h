@@ -54,6 +54,10 @@ extern "C" {
 # define alignas ATTRIBUTE_ALIGN
 #endif
 
+#ifndef static_assert
+# define static_assert __static_assert
+#endif
+
 #define ATTRIBUTE_MAYBE_UNUSED ATTRIBUTE_UNUSED /* only used in e.g. asserts */
 
 #define __CONCAT(x, y) x##y

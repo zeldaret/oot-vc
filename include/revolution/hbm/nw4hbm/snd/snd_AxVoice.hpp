@@ -4,6 +4,7 @@
 #include "limits.h"
 #include "revolution/ax.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
+#include "revolution/hbm/nw4hbm/snd/global.h"
 #include "revolution/hbm/ut.hpp"
 #include "revolution/types.h"
 
@@ -135,12 +136,6 @@ class AxVoice {
 
     typedef void (*AxVoiceCallback)(AxVoice* pDropVoice, AxVoiceCallbackStatus status, void* pArg);
 
-    enum Format {
-        FORMAT_ADPCM = 0,
-        FORMAT_PCM16 = 10,
-        FORMAT_PCM8 = 25,
-    };
-
     enum VoiceType {
         VOICE_TYPE_NORMAL,
         VOICE_TYPE_STREAM,
@@ -190,13 +185,13 @@ class AxVoice {
     void Stop() { mVpb.SetVoiceStateStop(); }
     void Sync() { mVpb.Sync(); }
 
-    Format GetFormat() const { return mFormat; }
+    SampleFormat GetFormat() const { return mFormat; }
 
     void SetBaseAddress(const void* pBase) { mWaveData = pBase; }
 
     f32 GetDspRatio(f32 ratio) const { return (ratio * mSampleRate) / AX_SAMPLE_RATE; }
 
-    void Setup(const void* pWave, Format fmt, int rate);
+    void Setup(const void* pWave, SampleFormat fmt, int rate);
 
     bool IsPlayFinished() const;
     void SetLoopStart(const void* pBase, u32 samples);
@@ -224,9 +219,9 @@ class AxVoice {
     void SetLpf(u16 freq);
     void SetRemoteFilter(u8 filter);
 
-    static u32 GetDspAddressBySample(const void* pBase, u32 samples, Format fmt);
-    static u32 GetSampleByDspAddress(const void* pBase, u32 addr, Format fmt);
-    static u32 GetSampleByByte(u32 addr, Format fmt);
+    static u32 GetDspAddressBySample(const void* pBase, u32 samples, SampleFormat fmt);
+    static u32 GetSampleByDspAddress(const void* pBase, u32 addr, SampleFormat fmt);
+    static u32 GetSampleByByte(u32 addr, SampleFormat fmt);
 
     static void CalcOffsetAdpcmParam(u16* pPredScale, u16* pYN1, u16* pYN2, u32 offset, const void* pData,
                                      const AdpcmParam& rParam);
@@ -237,7 +232,7 @@ class AxVoice {
   private:
     AxVoiceParamBlock mVpb; // at 0x0
     const void* mWaveData; // at 0x10
-    Format mFormat; // at 0x14
+    SampleFormat mFormat; // at 0x14
     int mSampleRate; // at 0x18
     bool mFirstMixUpdateFlag; // at 0x1C
     bool mReserveForFreeFlag; // at 0x1D

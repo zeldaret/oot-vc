@@ -1063,9 +1063,38 @@ revolution/hbm/nw4hbm/snd/snd_StrmSound.cpp:
 revolution/hbm/nw4hbm/snd/snd_StrmSoundHandle.cpp:
 	.text       start:0x80138B20 end:0x80138B58
 
-revolution/hbm/nw4hbm/snd/code_8011D104.cpp:
-	.text       start:0x80138B58 end:0x8013CD64
-	.ctors      start:0x8016A714 end:0x8016A720
+revolution/hbm/nw4hbm/snd/snd_TaskManager.cpp:
+	.text       start:0x80138B58 end:0x80139438
+
+revolution/hbm/nw4hbm/snd/snd_TaskThread.cpp:
+	.text       start:0x80139438 end:0x80139578
+
+revolution/hbm/nw4hbm/snd/snd_Util.cpp:
+	.text       start:0x80139578 end:0x80139914
+
+revolution/hbm/nw4hbm/snd/snd_WaveFile.cpp:
+	.text       start:0x80139914 end:0x80139B44
+
+revolution/hbm/nw4hbm/snd/snd_WavePlayer.cpp:
+	.text       start:0x80139B44 end:0x8013A708
+	.ctors      start:0x8016A714 end:0x8016A718
+
+revolution/hbm/nw4hbm/snd/snd_WaveSound.cpp:
+	.text       start:0x8013A708 end:0x8013AB8C
+	.ctors      start:0x8016A718 end:0x8016A71C
+
+revolution/hbm/nw4hbm/snd/snd_WaveSoundHandle.cpp:
+	.text       start:0x8013AB8C end:0x8013ABC4
+
+revolution/hbm/nw4hbm/snd/snd_WsdFile.cpp:
+	.text       start:0x8013ABC4 end:0x8013B060
+
+revolution/hbm/nw4hbm/snd/snd_WsdPlayer.cpp:
+	.text       start:0x8013B060 end:0x8013C0E4
+
+revolution/hbm/nw4hbm/snd/snd_WsdTrack.cpp:
+	.text       start:0x8013C0E4 end:0x8013CD64
+	.ctors      start:0x8016A71C end:0x8016A720
 
 revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp:
 	.text       start:0x8013CD64 end:0x8013CFBC
