@@ -954,11 +954,14 @@ revolution/hbm/nw4hbm/snd/snd_BankFile.cpp:
 	.sdata2     start:0x8025E780 end:0x8025E788
 
 revolution/hbm/nw4hbm/snd/snd_BasicSound.cpp:
-	.text       start:0x80123298 end:0x8012454C
+	.text       start:0x80123298 end:0x801245A0
+	.ctors      start:0x8016A6FC end:0x8016A700
+	.data       start:0x801989A0 end:0x80198AF8
+	.sbss       start:0x8025DC28 end:0x8025DC30
+	.sdata2     start:0x8025E788 end:0x8025E798
 
 revolution/hbm/nw4hbm/snd/snd_Channel.cpp:
-	.text       start:0x8012454C end:0x80125680
-	.ctors      start:0x8016A6FC end:0x8016A700
+	.text       start:0x801245A0 end:0x80125680
 
 revolution/hbm/nw4hbm/snd/code_80125680.cpp:
 	.text       start:0x80125680 end:0x80125D14

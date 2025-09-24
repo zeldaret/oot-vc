@@ -669,7 +669,7 @@ config.libs = [
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_Voice.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_Bank.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_BankFile.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_BasicSound.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_BasicSound.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_Channel.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_EnvGenerator.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_FrameHeap.cpp"),
