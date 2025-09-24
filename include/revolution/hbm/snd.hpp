@@ -12,7 +12,7 @@
 #include "revolution/hbm/nw4hbm/snd/BasicSound.h"
 #include "revolution/hbm/nw4hbm/snd/Channel.h"
 #include "revolution/hbm/nw4hbm/snd/ChannelManager.h"
-#include "revolution/hbm/nw4hbm/snd/snd_DisposeCallbackManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h"
 #include "revolution/hbm/nw4hbm/snd/snd_EnvGenerator.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_ExternalSoundPlayer.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_FrameHeap.hpp"

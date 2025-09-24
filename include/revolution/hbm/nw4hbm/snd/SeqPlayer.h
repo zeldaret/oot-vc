@@ -5,7 +5,7 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/BasicPlayer.h"
-#include "revolution/hbm/nw4hbm/snd/snd_DisposeCallbackManager.hpp" // DisposeCallback
+#include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h" // DisposeCallback
 #include "revolution/hbm/nw4hbm/snd/snd_SoundThread.hpp"
 
 namespace nw4hbm {

@@ -968,8 +968,14 @@ revolution/hbm/nw4hbm/snd/snd_Channel.cpp:
 	.sbss       start:0x8025DC30 end:0x8025DC38
 	.sdata2     start:0x8025E798 end:0x8025E7C0
 
-revolution/hbm/nw4hbm/snd/code_80125680.cpp:
-	.text       start:0x80125834 end:0x80125D14
+revolution/hbm/nw4hbm/snd/snd_DisposeCallbackManager.cpp:
+	.text       start:0x80125834 end:0x80125CD4
+	.data       start:0x80198D30 end:0x80198D90
+	.bss        start:0x8024F090 end:0x8024F0A8
+	.sbss       start:0x8025DC38 end:0x8025DC40
+
+revolution/hbm/nw4hbm/snd/snd_DvdSoundArchive.cpp:
+	.text       start:0x80125CD4 end:0x80125D14
 
 revolution/hbm/nw4hbm/snd/snd_EnvGenerator.cpp:
 	.text       start:0x80125D14 end:0x80126324

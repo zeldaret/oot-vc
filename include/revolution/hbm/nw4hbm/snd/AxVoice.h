@@ -5,7 +5,7 @@
 #include "revolution/ax.h"
 #include "revolution/hbm/nw4hbm/snd/global.h"
 #include "revolution/hbm/nw4hbm/snd/BasicSound.h"
-#include "revolution/hbm/nw4hbm/snd/snd_DisposeCallbackManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
 #include "revolution/hbm/ut.hpp"
 #include "revolution/types.h"
