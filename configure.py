@@ -239,7 +239,7 @@ def RevolutionHBMLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/3.0a5",
-        "cflags": [*cflags_base, f"-Cpp_exceptions off", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off", "-lang c++", "-DHBM_ASSERT", "-sym on"],
+        "cflags": [*cflags_base, f"-Cpp_exceptions off", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off", "-lang c++", "-DHBM_ASSERT", "-sym off"],
         "progress_category": "nw4hbm",
         "objects": objects,
     }
@@ -668,7 +668,7 @@ config.libs = [
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_AxVoice.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_Voice.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_Bank.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_BankFile.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_BankFile.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_BasicSound.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_Channel.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_EnvGenerator.cpp"),

@@ -45,6 +45,6 @@
 #include "revolution/hbm/nw4hbm/snd/snd_WaveArchive.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_WaveFile.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_adpcm.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_util.hpp"
+#include "revolution/hbm/nw4hbm/snd/Util.h"
 
 #endif

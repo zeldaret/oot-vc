@@ -949,6 +949,9 @@ revolution/hbm/nw4hbm/snd/snd_Bank.cpp:
 
 revolution/hbm/nw4hbm/snd/snd_BankFile.cpp:
 	.text       start:0x80122C48 end:0x80123298
+	.data       start:0x80198700 end:0x801989A0
+	.sdata      start:0x8025CE68 end:0x8025CE88
+	.sdata2     start:0x8025E780 end:0x8025E788
 
 revolution/hbm/nw4hbm/snd/snd_BasicSound.cpp:
 	.text       start:0x80123298 end:0x8012454C

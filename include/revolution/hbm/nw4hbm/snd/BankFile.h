@@ -3,7 +3,7 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/snd_WaveFile.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_util.hpp"
+#include "revolution/hbm/nw4hbm/snd/Util.h"
 
 #include "revolution/hbm/ut.hpp"
 
@@ -14,6 +14,11 @@ namespace detail {
 inline u8 ReadByte(const void* address) { return *static_cast<const u8*>(address); }
 
 namespace BankFile {
+
+static const u32 SIGNATURE_FILE = 'RBNK';
+static const u32 SIGNATURE_DATA_BLOCK = 'DATA';
+static const u32 SIGNATURE_WAVE_BLOCK = 'WAVE';
+
 typedef struct InstParam {
     s32 waveIndex; // 0x00
 
@@ -88,8 +93,7 @@ typedef struct InstInfo {
 
 class BankFileReader {
   public:
-    static const u32 SIGNATURE = 'RBNK';
-    static const int _VERSION = NW4R_VERSION(1, 1);
+    static const int FILE_VERSION = NW4R_VERSION(1, 1);
 
   public:
     explicit BankFileReader(const void* bankData);
@@ -97,7 +101,7 @@ class BankFileReader {
     bool IsValidFileHeader(const void* bankData);
 
     bool ReadInstInfo(InstInfo* instInfo, int prgNo, int key, int velocity) const;
-    bool ReadWaveParam(WaveData* waveData, int waveIndex, const void* waveDataAddress) const;
+    bool ReadWaveParam(WaveData* waveParam, int waveIndex, const void* waveDataAddress) const;
 
   private:
     const BankFile::DataRegion* GetReferenceToSubRegion(const BankFile::DataRegion* ref, int splitKey) const;
