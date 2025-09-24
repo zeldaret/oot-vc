@@ -1052,9 +1052,20 @@ revolution/hbm/nw4hbm/snd/snd_StrmFile.cpp:
 revolution/hbm/nw4hbm/snd/snd_StrmPlayer.cpp:
 	.text       start:0x80135F48 end:0x801383AC
 
+revolution/hbm/nw4hbm/snd/code_801383AC.cpp:
+	.text       start:0x801383AC end:0x80138844
+	.ctors      start:0x8016A70C end:0x8016A710
+
+revolution/hbm/nw4hbm/snd/snd_StrmSound.cpp:
+	.text       start:0x80138844 end:0x80138B20
+	.ctors      start:0x8016A710 end:0x8016A714
+
+revolution/hbm/nw4hbm/snd/snd_StrmSoundHandle.cpp:
+	.text       start:0x80138B20 end:0x80138B58
+
 revolution/hbm/nw4hbm/snd/code_8011D104.cpp:
-	.text       start:0x801383AC end:0x8013CD64
-	.ctors      start:0x8016A70C end:0x8016A720
+	.text       start:0x80138B58 end:0x8013CD64
+	.ctors      start:0x8016A714 end:0x8016A720
 
 revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp:
 	.text       start:0x8013CD64 end:0x8013CFBC
