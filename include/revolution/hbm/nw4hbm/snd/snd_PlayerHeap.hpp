@@ -1,42 +1,70 @@
 #ifndef NW4R_SND_PLAYER_HEAP_H
 #define NW4R_SND_PLAYER_HEAP_H
-#include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/snd/snd_SoundHeap.hpp"
+/*******************************************************************************
+ * headers
+ */
 
-namespace nw4hbm {
-namespace snd {
+#include "revolution/types.h" // u32
 
-// Forward declarations
-class SoundPlayer;
+#include "revolution/hbm/nw4hbm/snd/snd_SoundMemoryAllocatable.hpp"
 
-namespace detail {
-class BasicSound;
-} // namespace detail
+#include "revolution/hbm/nw4hbm/ut/LinkList.h"
 
-namespace detail {
+/*******************************************************************************
+ * types
+ */
 
-class PlayerHeap : public SoundHeap {
-  public:
-    PlayerHeap() : mSound(nullptr), mPlayer(nullptr) {}
-    virtual ~PlayerHeap() {} // at 0x8
+// forward declarations
+namespace nw4hbm { namespace snd { namespace detail { class BasicSound; }}}
+namespace nw4hbm { namespace snd { class SoundPlayer; }}
 
-    void SetSound(BasicSound* pSound) { mSound = pSound; }
+/*******************************************************************************
+ * classes and functions
+ */
 
-    void SetSoundPlayer(SoundPlayer* pPlayer) { mPlayer = pPlayer; }
+namespace nw4hbm { namespace snd { namespace detail
+{
+	// [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x26e9c
+	class PlayerHeap : public SoundMemoryAllocatable
+	{
+	// typedefs
+	public:
+		typedef ut::LinkList<PlayerHeap, 0x18> LinkList;
 
-  public:
-    NW4R_UT_LINKLIST_NODE_DECL(); // at 0x2C
+	// methods
+	public:
+		// cdtors
+		PlayerHeap();
+		virtual ~PlayerHeap();
 
-  private:
-    BasicSound* mSound; // at 0x34
-    SoundPlayer* mPlayer; // at 0x38
-};
+		// virtual function ordering
+		// vtable SoundMemoryAllocatable
+		virtual void *Alloc(u32 size);
 
-NW4R_UT_LINKLIST_TYPEDEF_DECL(PlayerHeap);
+		// methods
+		bool Create(void *startAddress, u32 size);
+		void Clear();
+		void Destroy();
 
-} // namespace detail
-} // namespace snd
-} // namespace nw4hbm
+		u32 GetFreeSize() const;
 
-#endif
+		void AttachSound(BasicSound *sound);
+		void DetachSound(BasicSound *sound);
+
+		void AttachSoundPlayer(SoundPlayer *player) { mPlayer = player; }
+
+	// members
+	private:
+		/* base SoundMemoryAllocatable */	// size 0x04, offset 0x00
+		BasicSound			*mSound;		// size 0x04, offset 0x04
+		SoundPlayer			*mPlayer;		// size 0x04, offset 0x08
+		void				*mStartAddress;	// size 0x04, offset 0x0c
+		void				*mEndAddress;	// size 0x04, offset 0x10
+		void				*mAllocAddress;	// size 0x04, offset 0x14
+	public:
+		ut::LinkListNode	mLink;			// size 0x08, offset 0x18
+	}; // size 0x20
+}}} // namespace nw4hbm::snd::detail
+
+#endif // NW4R_SND_PLAYER_HEAP_H

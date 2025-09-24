@@ -1031,8 +1031,17 @@ revolution/hbm/nw4hbm/snd/snd_SoundArchivePlayer.cpp:
 revolution/hbm/nw4hbm/snd/snd_SoundHandle.cpp:
 	.text       start:0x80132F3C end:0x80133008
 
+revolution/hbm/nw4hbm/snd/snd_SoundHeap.cpp:
+	.text       start:0x80133008 end:0x80133194
+
+revolution/hbm/nw4hbm/snd/snd_SoundPlayer.cpp:
+	.text       start:0x80133194 end:0x80134E90
+
+revolution/hbm/nw4hbm/snd/snd_SoundStartable.cpp:
+	.text       start:0x80134E90 end:0x80134EFC
+
 revolution/hbm/nw4hbm/snd/code_8011D104.cpp:
-	.text       start:0x80133008 end:0x8013CD64
+	.text       start:0x80134EFC end:0x8013CD64
 	.ctors      start:0x8016A70C end:0x8016A720
 
 revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp:
