@@ -3602,7 +3602,7 @@ RegisterDisposeCallback__Q46nw4hbm3snd6detail22DisposeCallbackManagerFPQ46nw4hbm
 UnregisterDisposeCallback__Q46nw4hbm3snd6detail22DisposeCallbackManagerFPQ46nw4hbm3snd6detail15DisposeCallback = .text:0x801259A8; // type:function size:0x7C
 Dispose__Q46nw4hbm3snd6detail22DisposeCallbackManagerFPvUlPv = .text:0x80125A24; // type:function size:0x158
 DisposeWave__Q46nw4hbm3snd6detail22DisposeCallbackManagerFPvUlPv = .text:0x80125B7C; // type:function size:0x158
-fn_80125CD4 = .text:0x80125CD4; // type:function size:0x40
+Close__Q36nw4hbm3snd15DvdSoundArchiveFv = .text:0x80125CD4; // type:function size:0x40
 __ct__Q46nw4hbm3snd6detail12EnvGeneratorFv = .text:0x80125D14; // type:function size:0x38
 Init__Q46nw4hbm3snd6detail12EnvGeneratorFv = .text:0x80125D4C; // type:function size:0x38
 Reset__Q46nw4hbm3snd6detail12EnvGeneratorFv = .text:0x80125D84; // type:function size:0x14

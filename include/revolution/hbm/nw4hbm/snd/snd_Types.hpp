@@ -2,6 +2,7 @@
 #define NW4R_SND_TYPES_H
 
 #include "revolution/types.h"
+#include "revolution/hbm/nw4hbm/ut/LinkList.h"
 
 namespace nw4hbm {
 namespace snd {
@@ -22,27 +23,47 @@ enum OutputLineFlag {
     OUTPUT_LINE_REMOTE_N = (1 << 1),
 };
 
+class LinkedInstance {
+  public:
+    ut::LinkListNode mInstanceLink; // 0x00
+};
+
 namespace detail {
 
-struct AdpcmParam {
-    u16 coef[16]; // at 0x0
-    u16 gain; // at 0x20
-    u16 pred_scale; // at 0x22
-    u16 yn1; // at 0x24
-    u16 yn2; // at 0x26
-};
+typedef struct AdpcmParam {
+    u16 coef[16]; // 0x00
+    u16 gain; // 0x20
+    u16 pred_scale; // 0x22
+    u16 yn1; // 0x24
+    u16 yn2; // 0x26
+} AdpcmParam;
 
-struct AdpcmLoopParam {
-    u16 loop_pred_scale; // at 0x0
-    u16 loop_yn1; // at 0x2
-    u16 loop_yn2; // at 0x4
-};
+typedef struct AdpcmLoopParam {
+    u16 loop_pred_scale; // 0x00
+    u16 loop_yn1; // 0x02
+    u16 loop_yn2; // 0x04
+} AdpcmLoopParam;
 
-struct AdpcmInfo {
-    AdpcmParam param; // at 0x0
-    AdpcmLoopParam loopParam; // at 0x28
-    u16 PADDING_0x2E; // at 0x2E
-};
+typedef struct AdpcmInfo {
+    AdpcmParam adpcm; // 0x08
+    AdpcmLoopParam adpcmloop; // 0x28
+    u16 padding; // 0x2E
+} AdpcmInfo;
+
+typedef struct VoiceChannelParam {
+    void* waveData; // 0x00
+    AdpcmInfo adpcmInfo; // 0x04
+} VoiceChannelParam;
+
+typedef struct SoundParam {
+    f32 volume; // 0x00
+    f32 pitch; // 0x04
+    f32 pan; // 0x08
+    f32 surroundPan; // 0x0C
+    f32 fxSend; // 0x10
+    f32 lpf; // 0x14
+    s32 priority; // 0x18
+} SoundParam;
 
 } // namespace detail
 } // namespace snd

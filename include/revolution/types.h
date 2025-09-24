@@ -44,6 +44,7 @@ typedef int BOOL;
 #define TRUE 1
 #endif
 
+#define DEFAULT_ALIGN 32
 #ifndef ATTRIBUTE_ALIGN
 #define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
 #endif
