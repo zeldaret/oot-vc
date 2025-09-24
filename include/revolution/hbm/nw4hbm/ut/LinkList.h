@@ -309,7 +309,7 @@ template <typename T, int I> class LinkList : public detail::LinkListImpl {
     }
 
     static const T* GetPointerFromNode(const LinkListNode* p) {
-        NW4HBMAssertPointerNonnull_Line(p, 0);
+        NW4HBMAssertPointerNonnull_Line(p, 578);
         return reinterpret_cast<const T*>(reinterpret_cast<const char*>(p) - I);
     }
 

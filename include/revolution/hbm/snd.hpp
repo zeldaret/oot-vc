@@ -3,8 +3,8 @@
 
 #include "revolution/hbm/nw4hbm/snd/global.h"
 #include "revolution/hbm/nw4hbm/snd/mix.h"
-#include "revolution/hbm/nw4hbm/snd/snd_AxManager.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_AxVoice.hpp"
+#include "revolution/hbm/nw4hbm/snd/AxManager.h"
+#include "revolution/hbm/nw4hbm/snd/AxVoice.h"
 #include "revolution/hbm/nw4hbm/snd/snd_AxVoiceManager.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_Bank.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_BankFile.hpp"
