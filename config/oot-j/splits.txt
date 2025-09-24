@@ -1040,8 +1040,20 @@ revolution/hbm/nw4hbm/snd/snd_SoundPlayer.cpp:
 revolution/hbm/nw4hbm/snd/snd_SoundStartable.cpp:
 	.text       start:0x80134E90 end:0x80134EFC
 
+revolution/hbm/nw4hbm/snd/snd_SoundSystem.cpp:
+	.text       start:0x80134EFC end:0x801350E0
+
+revolution/hbm/nw4hbm/snd/snd_SoundThread.cpp:
+	.text       start:0x801350E0 end:0x80135880
+
+revolution/hbm/nw4hbm/snd/snd_StrmFile.cpp:
+	.text       start:0x80135880 end:0x80135F48
+
+revolution/hbm/nw4hbm/snd/snd_StrmPlayer.cpp:
+	.text       start:0x80135F48 end:0x801383AC
+
 revolution/hbm/nw4hbm/snd/code_8011D104.cpp:
-	.text       start:0x80134EFC end:0x8013CD64
+	.text       start:0x801383AC end:0x8013CD64
 	.ctors      start:0x8016A70C end:0x8016A720
 
 revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp:

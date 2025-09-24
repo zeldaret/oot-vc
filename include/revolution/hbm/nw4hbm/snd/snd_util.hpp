@@ -4,6 +4,8 @@
 
 #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
 
+#include "revolution/hbm/HBMAssert.hpp"
+
 namespace nw4hbm {
 namespace snd {
 namespace detail {

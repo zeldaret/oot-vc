@@ -43,6 +43,7 @@ class EnvGenerator {
 
     void SetStatus(Status status) { mStatus = status; }
     void SetAttack(int attack);
+    void SetHold(int hold);
     void SetDecay(int decay);
     void SetSustain(int sustain);
     void SetRelease(int release);

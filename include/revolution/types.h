@@ -44,7 +44,9 @@ typedef int BOOL;
 #define TRUE 1
 #endif
 
+#ifndef ATTRIBUTE_ALIGN
 #define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
+#endif
 
 typedef int UNKWORD;
 typedef void UNKTYPE;

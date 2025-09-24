@@ -22,6 +22,7 @@ typedef enum {
 } OSThreadState;
 
 typedef enum {
+    OS_THREAD_NO_FLAGS = 0,
     OS_THREAD_DETACHED = (1 << 0)
 } OSThreadFlag;
 

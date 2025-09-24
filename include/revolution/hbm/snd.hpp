@@ -11,7 +11,6 @@
 #include "revolution/hbm/nw4hbm/snd/snd_BasicPlayer.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_BasicSound.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_Channel.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_ChannelManager.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_DisposeCallbackManager.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_EnvGenerator.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_ExternalSoundPlayer.hpp"

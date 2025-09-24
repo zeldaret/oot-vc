@@ -1,48 +1,78 @@
-#include "revolution/hbm/snd.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_SoundSystem.hpp"
 
-#include "revolution/ax.h"
-#include "revolution/os.h"
-#include "revolution/sc.h"
+/* Original source:
+ * kiwi515/ogws
+ * src/nw4r/snd/snd_SoundSystem.cpp
+ */
 
+/*******************************************************************************
+ * headers
+ */
+
+#include "decomp.h"
+#include "macros.h" // STR
+#include "revolution/types.h"
+
+#include "revolution/hbm/nw4hbm/snd/global.h"
+#include "revolution/hbm/nw4hbm/snd/snd_AxManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_AxVoiceManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_Channel.hpp" // ChannelManager
+#include "revolution/hbm/nw4hbm/snd/snd_SeqPlayer.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_SoundThread.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_TaskManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_TaskThread.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_VoiceManager.hpp"
+
+#include "revolution/ax/AXVPB.h" // AXGetMaxVoices
+#include "revolution/os/OS.h" // OSRegisterVersion
+#include "revolution/sc/scapi.h"
+#include "revolution/sc/scsystem.h"
+
+#include "revolution/hbm/HBMAssert.hpp"
+
+/*******************************************************************************
+ * variables
+ */
+
+namespace nw4hbm {
+namespace snd {
+// .bss
+detail::TaskThread SoundSystem::sTaskThread;
+
+// .sbss
 namespace {
+bool sInitialized;
+} // unnamed namespace
 
-NW4R_LIB_VERSION(SND, "Jun  8 2007", "11:17:15", "0x4199_60831");
+int SoundSystem::sMaxVoices;
+} // namespace snd
+} // namespace nw4hbm
 
-static bool sInitialized = false;
-
-} // namespace
+/*******************************************************************************
+ * functions
+ */
 
 namespace nw4hbm {
 namespace snd {
 
-detail::TaskThread SoundSystem::sTaskThread;
+u32 SoundSystem::GetRequiredMemSize(SoundSystemParam const& param) {
+    // could have just used align assert? idk
+    NW4HBMAssert_Line(param.soundThreadStackSize % 8 == 0, 106);
+    NW4HBMAssert_Line(param.dvdThreadStackSize % 8 == 0, 107);
 
-void SoundSystem::InitSoundSystem(s32 soundThreadPriority, s32 dvdThreadPriority) {
-    const int defaultWorkSize = DEFAULT_SOUND_THREAD_STACK_SIZE + DEFAULT_DVD_THREAD_STACK_SIZE +
-                                detail::AxVoiceManager::WORK_SIZE_MAX + detail::VoiceManager::WORK_SIZE_MAX +
-                                detail::ChannelManager::WORK_SIZE_MAX;
+    int maxVoices = AXGetMaxVoices();
 
-    static u8 defaultSoundSystemWork[defaultWorkSize] ALIGN(32);
-
-    OSRegisterVersion(NW4R_SND_Version_);
-
-    SoundSystemParam param;
-    param.soundThreadPriority = soundThreadPriority;
-    param.dvdThreadPriority = dvdThreadPriority;
-
-    // @bug This function ignores the specified buffer size
-    InitSoundSystem(param, defaultSoundSystemWork, sizeof(defaultSoundSystemWork));
+    return param.soundThreadStackSize + param.dvdThreadStackSize +
+           detail::AxVoiceManager::GetInstance().GetRequiredMemSize(maxVoices) +
+           detail::VoiceManager::GetInstance().GetRequiredMemSize(maxVoices) +
+           detail::ChannelManager::GetInstance().GetRequiredMemSize(maxVoices);
 }
 
-u32 SoundSystem::GetRequiredMemSize(const SoundSystemParam& rParam) {
-    return rParam.soundThreadStackSize + rParam.dvdThreadStackSize +
-           detail::AxVoiceManager::GetInstance().GetRequiredMemSize() +
-           detail::VoiceManager::GetInstance().GetRequiredMemSize() +
-           detail::ChannelManager::GetInstance().GetRequiredMemSize();
-}
+void SoundSystem::InitSoundSystem(SoundSystemParam const& param, void* workMem, u32 workMemSize) {
+    bool result; // presumably up here
 
-void SoundSystem::InitSoundSystem(const SoundSystemParam& rParam, void* pWork, u32 workSize) {
-#pragma unused(workSize)
+    NW4HBMAssertAligned_Line(144, workMem, 32);
+    NW4HBMAssert_Line(workMemSize >= GetRequiredMemSize(param), 145);
 
     if (sInitialized) {
         return;
@@ -50,14 +80,21 @@ void SoundSystem::InitSoundSystem(const SoundSystemParam& rParam, void* pWork, u
 
     sInitialized = true;
 
+    // OSRegisterVersion(NW4R_SND_Version_);
+
     detail::AxManager::GetInstance().Init();
 
     SCInit();
-    while (SCCheckStatus() == SC_STATUS_BUSY) {
-        ;
-    }
 
-    switch (SCGetSoundMode()) {
+    SCStatus initStatus;
+    do {
+        initStatus = (SCStatus)SCCheckStatus();
+    } while (initStatus == SC_STATUS_BUSY);
+
+    NW4HBMAssert_Line(initStatus == SC_STATUS_READY, 171);
+
+    SCSoundMode soundMode = (SCSoundMode)SCGetSoundMode();
+    switch (soundMode) {
         case SC_SND_MONO:
             detail::AxManager::GetInstance().SetOutputMode(OUTPUT_MODE_MONO);
             break;
@@ -75,37 +112,44 @@ void SoundSystem::InitSoundSystem(const SoundSystemParam& rParam, void* pWork, u
             break;
     }
 
-    detail::RemoteSpeakerManager::GetInstance().Setup();
+    byte_t* ptr = static_cast<byte_t*>(workMem);
 
-    u8* pPtr = static_cast<u8*>(pWork);
+    void* dvdThreadStack = ptr;
+    ptr += param.dvdThreadStackSize;
 
-    void* pDvdThreadStack = pPtr;
-    pPtr += rParam.dvdThreadStackSize;
+    void* soundThreadStack = ptr;
+    ptr += param.soundThreadStackSize;
 
-    void* pSoundThreadStack = pPtr;
-    pPtr += rParam.soundThreadStackSize;
+    sMaxVoices = AXGetMaxVoices();
 
-    void* pAxVoiceWork = pPtr;
-    pPtr += detail::AxVoiceManager::GetInstance().GetRequiredMemSize();
+    void* axVoiceWork = ptr;
+    ptr += detail::AxVoiceManager::GetInstance().GetRequiredMemSize(sMaxVoices);
 
-    detail::AxVoiceManager::GetInstance().Setup(pAxVoiceWork,
-                                                detail::AxVoiceManager::GetInstance().GetRequiredMemSize());
+    detail::AxVoiceManager::GetInstance().Setup(axVoiceWork,
+                                                detail::AxVoiceManager::GetInstance().GetRequiredMemSize(sMaxVoices));
 
-    void* pVoiceWork = pPtr;
-    pPtr += detail::VoiceManager::GetInstance().GetRequiredMemSize();
+    void* voiceWork = ptr;
+    ptr += detail::VoiceManager::GetInstance().GetRequiredMemSize(sMaxVoices);
 
-    detail::VoiceManager::GetInstance().Setup(pVoiceWork, detail::VoiceManager::GetInstance().GetRequiredMemSize());
+    detail::VoiceManager::GetInstance().Setup(voiceWork,
+                                              detail::VoiceManager::GetInstance().GetRequiredMemSize(sMaxVoices));
 
-    void* pChannelWork = pPtr;
-    pPtr += detail::ChannelManager::GetInstance().GetRequiredMemSize();
+    void* channelWork = ptr;
+    ptr += detail::ChannelManager::GetInstance().GetRequiredMemSize(sMaxVoices);
 
-    detail::ChannelManager::GetInstance().Setup(pChannelWork,
-                                                detail::ChannelManager::GetInstance().GetRequiredMemSize());
+    detail::ChannelManager::GetInstance().Setup(channelWork,
+                                                detail::ChannelManager::GetInstance().GetRequiredMemSize(sMaxVoices));
 
-    sTaskThread.Create(rParam.dvdThreadPriority, pDvdThreadStack, rParam.dvdThreadStackSize);
+    detail::SeqPlayer::InitSeqPlayer();
 
-    detail::SoundThread::GetInstance().Create(rParam.soundThreadPriority, pSoundThreadStack,
-                                              rParam.soundThreadStackSize);
+    result = sTaskThread.Create(param.dvdThreadPriority, dvdThreadStack, param.dvdThreadStackSize);
+    NW4HBMAssert_Line(result, 247);
+
+    result = detail::SoundThread::GetInstance().Create(param.soundThreadPriority, soundThreadStack,
+                                                       param.soundThreadStackSize);
+    NW4HBMAssert_Line(result, 255);
+
+    NW4HBMAssert_Line(ptr <= reinterpret_cast<u8*>(workMem) + workMemSize, 257);
 }
 
 void SoundSystem::ShutdownSoundSystem() {
@@ -114,10 +158,10 @@ void SoundSystem::ShutdownSoundSystem() {
     }
 
     detail::SoundThread::GetInstance().Shutdown();
+
     detail::TaskManager::GetInstance().CancelAllTask();
     sTaskThread.Destroy();
 
-    detail::RemoteSpeakerManager::GetInstance().Shutdown();
     detail::ChannelManager::GetInstance().Shutdown();
     detail::VoiceManager::GetInstance().Shutdown();
     detail::AxVoiceManager::GetInstance().Shutdown();
@@ -126,19 +170,10 @@ void SoundSystem::ShutdownSoundSystem() {
     sInitialized = false;
 }
 
-void SoundSystem::WaitForResetReady() {
-    if (!sInitialized) {
-        return;
-    }
+bool SoundSystem::IsInitializedSoundSystem() { return sInitialized; }
 
-    u32 start = OSGetTick();
-
-    while (!detail::AxManager::GetInstance().IsResetReady()) {
-        if (OS_TICKS_TO_SEC(OSGetTick() - start) > 0) {
-            break;
-        }
-    }
-}
+// SoundSystem::WaitForResetReady ([R89JEL]:/bin/RVL/Debug/mainD.MAP:14493)
+DECOMP_FORCE("SoundSystem::WaitForResetReady is TIME OUT.\n");
 
 } // namespace snd
 } // namespace nw4hbm

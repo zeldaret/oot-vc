@@ -36,10 +36,22 @@ extern "C" {
 #define NO_INLINE __attribute__((never_inline))
 #define ATTRIBUTE_UNUSED __attribute__((unused))
 #define ATTRIBUTE_FALLTHROUGH __attribute__((fallthrough))
+
+#ifndef ATTRIBUTE_ALIGN
+#define ATTRIBUTE_ALIGN(x) __attribute__((aligned(x)))
+#endif
 #else
 #define NO_INLINE
 #define ATTRIBUTE_UNUSED
 #define ATTRIBUTE_FALLTHROUGH
+
+#ifndef ATTRIBUTE_ALIGN
+#define ATTRIBUTE_ALIGN(x)
+#endif
+#endif
+
+#ifndef alignas
+# define alignas ATTRIBUTE_ALIGN
 #endif
 
 #define ATTRIBUTE_MAYBE_UNUSED ATTRIBUTE_UNUSED /* only used in e.g. asserts */
