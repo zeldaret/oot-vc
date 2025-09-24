@@ -945,6 +945,7 @@ revolution/hbm/nw4hbm/snd/snd_AxVoice.cpp:
 
 revolution/hbm/nw4hbm/snd/snd_Bank.cpp:
 	.text       start:0x80122A20 end:0x80122C48
+	.sdata2     start:0x8025E760 end:0x8025E780
 
 revolution/hbm/nw4hbm/snd/snd_BankFile.cpp:
 	.text       start:0x80122C48 end:0x80123298

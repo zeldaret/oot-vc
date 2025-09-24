@@ -5,50 +5,51 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-Bank::Bank(const void* pBankBin) : mBankReader(pBankBin), mWaveDataAddress(nullptr) {}
+Bank::Bank(const void* bankData) : mBankReader(bankData), mWaveDataAddress(nullptr) {}
 
 Bank::~Bank() {}
 
-Channel* Bank::NoteOn(const NoteOnInfo& rInfo) const {
+Channel* Bank::NoteOn(const NoteOnInfo& noteOnInfo) const {
     InstInfo instInfo;
-    if (!mBankReader.ReadInstInfo(&instInfo, rInfo.prgNo, rInfo.key, rInfo.velocity)) {
+    if (!mBankReader.ReadInstInfo(&instInfo, noteOnInfo.prgNo, noteOnInfo.key, noteOnInfo.velocity)) {
         return nullptr;
     }
 
-    WaveInfo waveData;
-    if (!mBankReader.ReadWaveInfo(&waveData, instInfo.waveDataLocation.index, mWaveDataAddress)) {
+    WaveData waveData;
+    if (!mBankReader.ReadWaveParam(&waveData, instInfo.waveIndex, mWaveDataAddress)) {
         return nullptr;
     }
 
-    Channel* pChannel = Channel::AllocChannel(ut::Min<int>(waveData.numChannels, CHANNEL_MAX), rInfo.voiceOutCount,
-                                              rInfo.priority, rInfo.channelCallback, rInfo.channelCallbackData);
+    Channel* channel =
+        Channel::AllocChannel(ut::Min<int>(waveData.numChannels, CHANNEL_MAX), noteOnInfo.voiceOutCount,
+                              noteOnInfo.priority, noteOnInfo.channelCallback, noteOnInfo.channelCallbackData);
 
-    if (pChannel == nullptr) {
+    if (channel == nullptr) {
         return nullptr;
     }
 
-    pChannel->SetKey(rInfo.key);
-    pChannel->SetOriginalKey(instInfo.originalKey);
+    channel->SetKey(noteOnInfo.key);
+    channel->SetOriginalKey(instInfo.originalKey);
 
-    f32 initVolume = rInfo.velocity / 127.0f;
+    f32 initVolume = noteOnInfo.velocity / 127.0f;
     initVolume *= initVolume;
     initVolume *= instInfo.volume / 127.0f;
-    pChannel->SetInitVolume(initVolume);
+    channel->SetInitVolume(initVolume);
 
-    pChannel->SetTune(instInfo.tune);
-    pChannel->SetAttack(instInfo.attack);
-    pChannel->SetDecay(instInfo.decay);
-    pChannel->SetSustain(instInfo.sustain);
-    pChannel->SetRelease(instInfo.release);
+    channel->SetTune(instInfo.tune);
+    channel->SetAttack(instInfo.attack);
+    channel->SetDecay(instInfo.decay);
+    channel->SetSustain(instInfo.sustain);
+    channel->SetRelease(instInfo.release);
 
     f32 initPan = (instInfo.pan - 64) / 63.0f;
-    initPan += rInfo.initPan / 63.0f;
-    pChannel->SetInitPan(initPan);
+    initPan += noteOnInfo.initPan / 63.0f;
+    channel->SetInitPan(initPan);
 
-    pChannel->SetInitSurroundPan(0.0f);
-    pChannel->Start(waveData, rInfo.length);
+    channel->SetInitSurroundPan(0.0f);
+    channel->Start(waveData, noteOnInfo.length);
 
-    return pChannel;
+    return channel;
 }
 
 } // namespace detail
