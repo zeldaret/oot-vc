@@ -60,6 +60,7 @@ class LinkListImpl : private NonCopyable {
         // methods
       public:
         // cdtors
+        Iterator() : mPointer(nullptr) {}
         Iterator(LinkListNode* pNode) : mPointer(pNode) {}
 
         // operators
@@ -132,7 +133,7 @@ class LinkListImpl : private NonCopyable {
     Iterator Erase(Iterator itFirst, Iterator itLast);
 
     void Clear();
-    bool IsEmpty() const { return mSize != 0; };
+    bool IsEmpty() const { return mSize == 0; };
     void SetPrev(LinkListNode* p, LinkListNode* pPrev);
     void SetNext(LinkListNode* p, LinkListNode* pNext);
     u32 GetSize() const { return mSize; }
@@ -167,6 +168,7 @@ template <typename T, int I> class LinkList : public detail::LinkListImpl {
         // methods
       public:
         // cdtors
+        Iterator() : it_(nullptr) {}
         Iterator(detail::LinkListImpl::Iterator it) : it_(it) {}
 
         // operators
@@ -270,7 +272,7 @@ template <typename T, int I> class LinkList : public detail::LinkListImpl {
     Iterator Insert(Iterator it, T* p) { return LinkListImpl::Insert(it.it_, GetNodeFromPointer(p)); }
 
     T& GetFront() {
-        NW4HBMAssert_Line(!IsEmpty(), 0);
+        NW4HBMAssert_Line(!IsEmpty(), 497);
         return *GetBeginIter();
     }
 

@@ -16,18 +16,18 @@ namespace detail {
 u8 AxManager::sZeroBuffer[AxManager::ZERO_BUFFER_SIZE];
 
 AxManager::AxManager()
-    : mOutputMode(OUTPUT_MODE_STEREO), mZeroBufferAddress(nullptr), mInitialized(false), mUpdateVoicePrioFlag(true),
-      mOldAidCallback(nullptr), mResetReadyCounter(-1), mDiskError(false) {
-
-    mMainOutVolume.InitValue(1.0f);
+    : mOutputMode(OUTPUT_MODE_STEREO), mZeroBufferAddress(nullptr), mCallbackList(), mPrioVoiceList(), mFreeVoiceList(),
+      mVoices(), mInitialized(false), mUpdateVoicePrioFlag(true), mHomeButtonMuteFlag(false), mDiskErrorFlag(false),
+      mHomeButtonMenuVolume(), mMasterVolume(), mVolumeForReset(), mOldAidCallback(nullptr), mResetReadyCounter(-1),
+      mAuxUserVolume(), mFxList() {
+    mHomeButtonMenuVolume.InitValue(1.0f);
     mMasterVolume.InitValue(1.0f);
     mVolumeForReset.InitValue(1.0f);
-
     for (int i = 0; i < AUX_BUS_NUM; i++) {
         mAuxFadeVolume[i].InitValue(1.0f);
         mAuxUserVolume[i].InitValue(1.0f);
         mAuxCallback[i] = nullptr;
-        mAuxCallbackContext[i] = 0;
+        mAuxCallbackContext[i] = nullptr;
     }
 }
 
@@ -36,22 +36,19 @@ AxManager& AxManager::GetInstance() {
     return instance;
 }
 
-#pragma ppc_iro_level 0
-
+#pragma ppc_iro_level 0 // uh
 void AxManager::Init() {
-    s32 i;
-
     if (mInitialized) {
         return;
     }
 
     NW4HBMAssertMessage_Line(AICheckInit(), 110, "not initialized AI \n");
 
-    for (i = 0; i < ARRAY_COUNT(this->unk_14); i++) {
-        this->unk_10.PushBack(&this->unk_14[i]);
+    for (int i = 0; i < AX_VOICE_MAX; i++) {
+        mFreeVoiceList.PushBack(&mVoices[i]);
     }
 
-    std::memset(sZeroBuffer, 0, sizeof(sZeroBuffer));
+    memset(sZeroBuffer, 0, sizeof(sZeroBuffer));
     DCFlushRange(sZeroBuffer, sizeof(sZeroBuffer));
     mZeroBufferAddress = sZeroBuffer;
 
@@ -66,15 +63,11 @@ void AxManager::Init() {
     AXRegisterAuxCCallback(nullptr, nullptr);
 
     mNextAxRegisterCallback = AXRegisterCallback(AxCallbackFunc);
-
     mInitialized = true;
 }
-
 #pragma ppc_iro_level reset
 
 void AxManager::Shutdown() {
-    s32 i;
-
     if (!mInitialized) {
         return;
     }
@@ -96,35 +89,43 @@ void AxManager::Shutdown() {
 
     mZeroBufferAddress = nullptr;
 
-    // fake?
-    while (&this->unk_14[0]) {
-        AxVoice& front = this->unk_10.GetFront();
+    while (!mPrioVoiceList.IsEmpty()) {
+        AxVoice& rVoice = mPrioVoiceList.GetFront();
+
+        rVoice.Stop();
+        rVoice.Free();
+
+        if (rVoice.mCallback != nullptr) {
+            rVoice.mCallback(&rVoice, AxVoice::CALLBACK_STATUS_DROP_VOICE, rVoice.mCallbackData);
+        }
     }
 
-    // fake
-    // while (this->mMasterVolume.GetTarget() != 0) {
-    // }
+    while (!mFreeVoiceList.IsEmpty()) {
+        mFreeVoiceList.Erase(mFreeVoiceList.GetBeginIter());
+    }
 
     mInitialized = false;
 }
 
 f32 AxManager::GetOutputVolume() const {
-    f32 result = mMasterVolume.GetValue() * mVolumeForReset.GetValue();
-    return result * mMainOutVolume.GetValue();
+    f32 volume = mMasterVolume.GetValue();
+    volume *= mVolumeForReset.GetValue();
+    volume *= mHomeButtonMenuVolume.GetValue();
+    return volume;
 }
 
 void AxManager::Update() {
     s32 status = DVDGetDriveStatus();
 
-    if (status == DVD_STATE_IDLE || status == DVD_STATE_BUSY) {
-        if (mDiskError) {
-            mDiskError = false;
-            VoiceManager::GetInstance().UpdateAllVoicesSync(Voice::SYNC_AX_VOICE);
+    if (status == DVD_STATE_IDLE) {
+        if (mDiskErrorFlag) {
+            mDiskErrorFlag = false;
+            UpdateAllVoicesSync(AxVoice::SYNC_AX_VOICE);
         }
-    } else {
-        if (!mDiskError) {
-            mDiskError = true;
-            VoiceManager::GetInstance().UpdateAllVoicesSync(Voice::SYNC_AX_VOICE);
+    } else if (status != DVD_STATE_BUSY) {
+        if (!mDiskErrorFlag) {
+            mDiskErrorFlag = true;
+            UpdateAllVoicesSync(AxVoice::SYNC_AX_VOICE);
         }
     }
 
@@ -153,41 +154,44 @@ void AxManager::Update() {
             u16 volume = static_cast<u16>(AX_MAX_VOLUME * ratio);
 
             switch (i) {
-                case AUX_A: {
+                case 0: {
+                    AXSetMasterVolume(volume);
+                    break;
+                }
+
+                case 1: {
                     AXSetAuxAReturnVolume(volume);
                     break;
                 }
 
-                case AUX_B: {
+                case 2: {
                     AXSetAuxBReturnVolume(volume);
-                    break;
-                }
-
-                case AUX_C: {
-                    AXSetAuxCReturnVolume(volume);
                     break;
                 }
             }
         }
     }
 
+    bool update = false;
+
     if (!mMasterVolume.IsFinished()) {
         mMasterVolume.Update();
-        VoiceManager::GetInstance().UpdateAllVoicesSync(Voice::SYNC_AX_VE);
+        update = true;
     }
 
     if (!mVolumeForReset.IsFinished()) {
         mVolumeForReset.Update();
+        update = true;
     }
 
-    if (!mMainOutVolume.IsFinished()) {
-        mMainOutVolume.Update();
+    if (!mHomeButtonMenuVolume.IsFinished()) {
+        mHomeButtonMenuVolume.Update();
+        update = true;
     }
 
-    f32 masterRatio = mMainOutVolume.GetValue();
-    masterRatio *= mVolumeForReset.GetValue();
-    masterRatio = ut::Clamp(masterRatio, 0.0f, 1.0f);
-    AXSetMasterVolume(static_cast<u16>(AX_MAX_VOLUME * masterRatio));
+    if (update) {
+        UpdateAllVoicesSync(AxVoice::SYNC_AX_VE);
+    }
 }
 
 void* AxManager::GetZeroBufferAddress() {
@@ -195,89 +199,167 @@ void* AxManager::GetZeroBufferAddress() {
     return mZeroBufferAddress;
 }
 
-void AxManager::RegisterCallback(CallbackListNode* pNode, AXOutCallback pCallback) {
+void AxManager::RegisterCallback(CallbackListNode* node, AXOutCallback callback) {
     ut::AutoInterruptLock lock;
-    pNode->callback = pCallback;
-    mCallbackList.PushBack(pNode);
+    node->callback = callback;
+    mCallbackList.PushBack(node);
 }
 
-void AxManager::UnregisterCallback(CallbackListNode* pNode) {
+void AxManager::UnregisterCallback(CallbackListNode* node) {
     ut::AutoInterruptLock lock;
-    mCallbackList.Erase(pNode);
+    mCallbackList.Erase(node);
 }
 
 void AxManager::SetOutputMode(OutputMode mode) {
-    mOutputMode = mode;
+    if (mOutputMode != mode) {
+        mOutputMode = mode;
 
-    switch (mode) {
-        case OUTPUT_MODE_STEREO: {
-            AXSetMode(AX_OUTPUT_STEREO);
-            break;
+        switch (mode) {
+            case OUTPUT_MODE_STEREO: {
+                AXSetMode(AX_OUTPUT_STEREO);
+                break;
+            }
+            case OUTPUT_MODE_SURROUND: {
+                AXSetMode(AX_OUTPUT_SURROUND);
+                break;
+            }
+            case OUTPUT_MODE_DPL2: {
+                AXSetMode(AX_OUTPUT_DPL2);
+                break;
+            }
+            case OUTPUT_MODE_MONO: {
+                AXSetMode(AX_OUTPUT_STEREO);
+                break;
+            }
         }
 
-        case OUTPUT_MODE_SURROUND: {
-            AXSetMode(AX_OUTPUT_SURROUND);
-            break;
-        }
-
-        case OUTPUT_MODE_DPL2: {
-            AXSetMode(AX_OUTPUT_DPL2);
-            break;
-        }
-
-        case OUTPUT_MODE_MONO: {
-            AXSetMode(AX_OUTPUT_STEREO);
-            break;
-        }
+        UpdateAllVoicesSync(AxVoice::SYNC_AX_MIX);
     }
-
-    // ut::AutoInterruptLock lock;
-    VoiceManager::GetInstance().UpdateAllVoicesSync(Voice::SYNC_AX_MIX);
 }
 
 OutputMode AxManager::GetOutputMode() { return mOutputMode; }
 
+void AxManager::AppendVoiceList(AxVoice* voice) {
+    ut::AutoInterruptLock lock;
+
+    mFreeVoiceList.Erase(voice);
+
+    AxVoiceList::Iterator it;
+    for (it = mPrioVoiceList.GetBeginIter(); it != mPrioVoiceList.GetEndIter(); it++) {
+        if (it->GetPriority() > voice->GetPriority()) {
+            break;
+        }
+    }
+
+    mPrioVoiceList.Insert(it, voice);
+}
+
+void AxManager::RemoveVoiceList(AxVoice* voice) {
+    ut::AutoInterruptLock lock;
+    mPrioVoiceList.Erase(voice);
+    mFreeVoiceList.PushBack(voice);
+}
+
+AxVoice* AxManager::AllocVoice(int channels, int voices, int priority, AxVoice::AxVoiceCallback callback,
+                               void* callbackArg) {
+    ut::AutoInterruptLock lock;
+
+    if (mFreeVoiceList.IsEmpty() && DropLowestPriorityVoice(priority) == 0) {
+        return nullptr;
+    }
+
+    AxVoice& rVoice = mFreeVoiceList.GetFront();
+    if (!rVoice.Acquire(channels, voices, priority, callback, callbackArg)) {
+        NW4HBMWarningMessage_Line(497, "Voice Acquisition failed!\n");
+        return nullptr;
+    }
+
+    rVoice.mPriority = priority & AxVoice::PRIORITY_MAX;
+    AppendVoiceList(&rVoice);
+    if (mUpdateVoicePrioFlag) {
+        UpdateAllVoicesPriority();
+    }
+
+    return &rVoice;
+}
+
+void AxManager::FreeVoice(AxVoice* voice) {
+    NW4HBMAssertPointerNonnull_Line(voice, 541);
+    ut::AutoInterruptLock lock;
+    RemoveVoiceList(voice);
+}
+
+void AxManager::ChangeVoicePriority(AxVoice* voice) {
+    ut::AutoInterruptLock lock;
+    RemoveVoiceList(voice);
+    AppendVoiceList(voice);
+    if (mUpdateVoicePrioFlag) {
+        UpdateAllVoicesPriority();
+    }
+}
+
+void AxManager::LockUpdateVoicePriority() {
+    ut::AutoInterruptLock lock;
+    mUpdateVoicePrioFlag = false;
+}
+
+void AxManager::UnlockUpdateVoicePriority() {
+    ut::AutoInterruptLock lock;
+    mUpdateVoicePrioFlag = true;
+    UpdateAllVoicesPriority();
+}
+
+void AxManager::UpdateAllVoicesSync(u32 syncFlag) {
+    ut::AutoInterruptLock lock;
+
+    for (AxVoiceList::Iterator it = mPrioVoiceList.GetBeginIter(); it != mPrioVoiceList.GetEndIter();) {
+        AxVoiceList::Iterator currIt = it++;
+        if (currIt->mActiveFlag) {
+            currIt->mSyncFlag |= syncFlag;
+        }
+    }
+}
+
+void AxManager::UpdateAllVoices() {
+    ut::AutoInterruptLock lock;
+
+    for (AxVoiceList::Iterator it = mPrioVoiceList.GetBeginIter(); it != mPrioVoiceList.GetEndIter();) {
+        AxVoiceList::Iterator currIt = it++;
+        currIt->Update();
+    }
+}
+
+void AxManager::UpdateAllVoicesPriority() {
+    for (AxVoiceList::Iterator it = mPrioVoiceList.GetBeginIter(); it != mPrioVoiceList.GetEndIter(); it++) {
+        if (it->GetPriority() == AxVoice::PRIORITY_MAX) {
+            continue;
+        }
+        it->SetAxParam(AXSetVoicePriority, (u32)16);
+    }
+}
+
 void AxManager::SetMasterVolume(f32 volume, int frame) {
-    mMasterVolume.SetTarget(ut::Clamp(volume, 0.0f, 1.0f), (frame + 2) / 3);
+    mMasterVolume.SetTarget(volume, (frame + 2) / 3);
 
     if (frame == 0) {
-        VoiceManager::GetInstance().UpdateAllVoicesSync(Voice::SYNC_AX_VE);
+        UpdateAllVoicesSync(AxVoice::SYNC_AX_VE);
     }
 }
 
 void AxManager::AxCallbackFunc() {
-    NW4R_UT_LINKLIST_FOREACH_SAFE(it, GetInstance().mCallbackList, { it->callback(); });
+    for (CallbackList::Iterator it = GetInstance().mCallbackList.GetBeginIter();
+         it != GetInstance().mCallbackList.GetEndIter();) {
+        CallbackList::Iterator currIt = it++;
+        currIt->callback();
+    }
 
     if (GetInstance().mNextAxRegisterCallback != nullptr) {
         GetInstance().mNextAxRegisterCallback();
     }
 }
 
-bool AxManager::AppendEffect(AuxBus bus, FxBase* pFx) {
-    if (!mAuxFadeVolume[bus].IsFinished()) {
-        ShutdownEffect(bus);
-    }
-
-    mAuxFadeVolume[bus].SetTarget(1.0f, 0);
-
-    switch (bus) {
-        case AUX_A: {
-            AXSetAuxAReturnVolume(AX_MAX_VOLUME);
-            break;
-        }
-
-        case AUX_B: {
-            AXSetAuxBReturnVolume(AX_MAX_VOLUME);
-            break;
-        }
-
-        case AUX_C: {
-            AXSetAuxCReturnVolume(AX_MAX_VOLUME);
-            break;
-        }
-    }
-
-    if (!pFx->StartUp()) {
+bool AxManager::AppendEffect(AuxBus bus, FxBase* fx) {
+    if (!fx->StartUp()) {
         return false;
     }
 
@@ -289,14 +371,15 @@ bool AxManager::AppendEffect(AuxBus bus, FxBase* pFx) {
                 AXRegisterAuxACallback(AuxCallbackFunc, reinterpret_cast<void*>(bus));
                 break;
             }
-
             case AUX_B: {
                 AXRegisterAuxBCallback(AuxCallbackFunc, reinterpret_cast<void*>(bus));
                 break;
             }
-
             case AUX_C: {
                 AXRegisterAuxCCallback(AuxCallbackFunc, reinterpret_cast<void*>(bus));
+                break;
+            }
+            default: {
                 break;
             }
         }
@@ -304,58 +387,72 @@ bool AxManager::AppendEffect(AuxBus bus, FxBase* pFx) {
         mAuxCallbackWaitCounter[bus] = 2;
     }
 
-    GetEffectList(bus).PushBack(pFx);
+    GetEffectList(bus).PushBack(fx);
     return true;
 }
 
-void AxManager::ClearEffect(AuxBus bus, int frame) {
-    if (frame == 0) {
-        ShutdownEffect(bus);
-        return;
-    }
-
-    mAuxFadeVolume[bus].SetTarget(0.0f, (frame + 2) / 3);
-}
+void AxManager::ClearEffect(AuxBus bus, int frame) { ShutdownEffect(bus); }
 
 void AxManager::ShutdownEffect(AuxBus bus) {
     ut::AutoInterruptLock lock;
 
-    FxBase::LinkList& list = GetEffectList(bus);
-
-    if (!list.IsEmpty()) {
+    FxList& fxList = GetEffectList(bus);
+    if (fxList.IsEmpty()) {
         return;
     }
-
-    for (FxBase::LinkList::Iterator it = list.GetBeginIter(); it != list.GetEndIter(); ++it) {
+    for (FxList::Iterator it = fxList.GetBeginIter(); it != fxList.GetEndIter(); it++) {
         it->Shutdown();
     }
-
-    list.Clear();
+    fxList.Clear();
 
     switch (bus) {
         case AUX_A: {
             AXRegisterAuxACallback(nullptr, nullptr);
             break;
         }
-
         case AUX_B: {
             AXRegisterAuxBCallback(nullptr, nullptr);
             break;
         }
-
         case AUX_C: {
             AXRegisterAuxCCallback(nullptr, nullptr);
+            break;
+        }
+        default: {
             break;
         }
     }
 }
 
-void AxManager::AuxCallbackFunc(void* pChans, void* pContext) {
+int AxManager::DropLowestPriorityVoice(int priority) {
+    int dropped = 0;
+
+    if (mFreeVoiceList.IsEmpty()) {
+        AxVoice& rVoice = mPrioVoiceList.GetFront();
+
+        if (rVoice.GetPriority() > priority) {
+            return 0;
+        }
+
+        dropped = rVoice.GetAxVoiceCount();
+
+        rVoice.Stop();
+        rVoice.Free();
+
+        if (rVoice.mCallback != nullptr) {
+            rVoice.mCallback(&rVoice, AxVoice::CALLBACK_STATUS_DROP_VOICE, rVoice.mCallbackData);
+        }
+    }
+
+    return dropped;
+}
+
+void AxManager::AuxCallbackFunc(void* chans, void* context) {
     int num;
     void* buffer[AX_DPL2_MAX];
 
-    void** ppChans = static_cast<void**>(pChans);
-    AuxBus bus = static_cast<AuxBus>(reinterpret_cast<u32>(pContext));
+    void** ppChans = static_cast<void**>(chans);
+    AuxBus bus = static_cast<AuxBus>(reinterpret_cast<u32>(context));
 
     if (GetInstance().GetOutputMode() == OUTPUT_MODE_DPL2) {
         num = AX_DPL2_MAX;
@@ -376,15 +473,15 @@ void AxManager::AuxCallbackFunc(void* pChans, void* pContext) {
         GetInstance().mAuxCallbackWaitCounter[bus]--;
 
         for (int i = 0; i < num; i++) {
-            std::memset(buffer[i], 0, FX_BUFFER_SIZE);
+            memset(buffer[i], 0, FX_BUFFER_SIZE);
         }
     } else if (GetInstance().GetEffectList(bus).IsEmpty()) {
         for (int i = 0; i < num; i++) {
-            std::memset(buffer[i], 0, FX_BUFFER_SIZE);
+            memset(buffer[i], 0, FX_BUFFER_SIZE);
         }
     } else {
-        for (FxBase::LinkList::Iterator it = GetInstance().GetEffectList(bus).GetBeginIter();
-             it != GetInstance().GetEffectList(bus).GetEndIter(); ++it) {
+        for (FxList::Iterator it = GetInstance().GetEffectList(bus).GetBeginIter();
+             it != GetInstance().GetEffectList(bus).GetEndIter(); it++) {
 
             it->UpdateBuffer(num, buffer, FX_BUFFER_SIZE, FX_SAMPLE_FORMAT, FX_SAMPLE_RATE,
                              GetInstance().GetOutputMode());
@@ -392,35 +489,35 @@ void AxManager::AuxCallbackFunc(void* pChans, void* pContext) {
     }
 }
 
-void AxManager::PrepareReset() {
-    if (mOldAidCallback != nullptr) {
-        return;
-    }
+// void AxManager::PrepareReset() {
+//     if (mOldAidCallback != nullptrptr) {
+//         return;
+//     }
 
-    mVolumeForReset.SetTarget(0.0f, 3);
-    mResetReadyCounter = -1;
-    mOldAidCallback = AIRegisterDMACallback(AiDmaCallbackFunc);
-}
+//     mVolumeForReset.SetTarget(0.0f, 3);
+//     mResetReadyCounter = -1;
+//     mOldAidCallback = AIRegisterDMACallback(AiDmaCallbackFunc);
+// }
 
-void AxManager::AiDmaCallbackFunc() {
-    static bool finishedFlag = false;
+// void AxManager::AiDmaCallbackFunc() {
+//     static bool finishedFlag = false;
 
-    AxManager& r = GetInstance();
-    r.mOldAidCallback();
+//     AxManager& r = GetInstance();
+//     r.mOldAidCallback();
 
-    if (finishedFlag) {
-        if (r.mResetReadyCounter < 0) {
-            AXSetMaxDspCycles(0);
-            r.mResetReadyCounter = AUX_CALLBACK_WAIT_FRAME;
-        }
-    } else if (r.mVolumeForReset.GetValue() == 0.0f) {
-        finishedFlag = true;
-    }
+//     if (finishedFlag) {
+//         if (r.mResetReadyCounter < 0) {
+//             AXSetMaxDspCycles(0);
+//             r.mResetReadyCounter = AUX_CALLBACK_WAIT_FRAME;
+//         }
+//     } else if (r.mVolumeForReset.GetValue() == 0.0f) {
+//         finishedFlag = true;
+//     }
 
-    if (r.mResetReadyCounter > 0) {
-        r.mResetReadyCounter--;
-    }
-}
+//     if (r.mResetReadyCounter > 0) {
+//         r.mResetReadyCounter--;
+//     }
+// }
 
 } // namespace detail
 } // namespace snd
