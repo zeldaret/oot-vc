@@ -2,12 +2,11 @@
 #define NW4R_SND_EXTERNAL_SOUND_PLAYER_H
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/snd/snd_BasicSound.hpp"
+#include "revolution/hbm/nw4hbm/snd/BasicSound.h"
 
 namespace nw4hbm {
 namespace snd {
 namespace detail {
-
 class ExternalSoundPlayer {
   public:
     ExternalSoundPlayer();
@@ -21,13 +20,10 @@ class ExternalSoundPlayer {
     f32 detail_GetVolume() const { return mVolume; }
     BasicSound* GetLowestPrioritySound();
 
-    void InsertSoundList(BasicSound* pSound);
-    void RemoveSoundList(BasicSound* pSound);
+    void InsertSoundList(BasicSound* sound);
+    void RemoveSoundList(BasicSound* sound);
 
-    bool detail_CanPlaySound(int startPriority);
-    bool AppendSound(BasicSound *sound);
-
-    template <typename TForEachFunc> TForEachFunc ForEachSound(TForEachFunc pFunc, bool reverse) {
+    template <typename TForEachFunc> TForEachFunc ForEachSound(TForEachFunc func, bool reverse) {
         if (reverse) {
             BasicSoundExtPlayList::RevIterator it = mSoundList.GetBeginReverseIter();
 
@@ -36,29 +32,29 @@ class ExternalSoundPlayer {
 
                 SoundHandle handle;
                 handle.detail_AttachSoundAsTempHandle(&*curr);
-                pFunc(handle);
+                func(handle);
 
                 if (handle.IsAttachedSound()) {
-                    ++it;
+                    it++;
                 }
             }
         } else {
-            NW4R_UT_LINKLIST_FOREACH_SAFE(it, mSoundList, {
+            for (BasicSoundExtPlayList::Iterator itr = mSoundList.GetBeginIter(); itr != mSoundList.GetEndIter();) {
+                BasicSoundExtPlayList::Iterator curr = itr++;
                 SoundHandle handle;
-                handle.detail_AttachSoundAsTempHandle(&*it);
-                pFunc(handle);
-            });
+                handle.detail_AttachSoundAsTempHandle(&*curr);
+                func(handle);
+            }
         }
 
-        return pFunc;
+        return func;
     }
 
   private:
-    BasicSound::ExtSoundPlayerPlayLinkList mSoundList; // at 0x0
-    u16 mPlayableCount; // at 0xC
-    f32 mVolume; // at 0x10
+    BasicSoundExtPlayList mSoundList; // 0x00
+    u16 mPlayableCount; // 0x0C
+    f32 mVolume; // 0x10
 };
-
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm

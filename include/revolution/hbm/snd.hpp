@@ -15,7 +15,7 @@
 #include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h"
 #include "revolution/hbm/nw4hbm/snd/DvdSoundArchive.h"
 #include "revolution/hbm/nw4hbm/snd/snd_EnvGenerator.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_ExternalSoundPlayer.hpp"
+#include "revolution/hbm/nw4hbm/snd/ExternalSoundPlayer.h"
 #include "revolution/hbm/nw4hbm/snd/snd_FrameHeap.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_FxBase.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_InstancePool.hpp"
