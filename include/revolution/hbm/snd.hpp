@@ -18,7 +18,7 @@
 #include "revolution/hbm/nw4hbm/snd/ExternalSoundPlayer.h"
 #include "revolution/hbm/nw4hbm/snd/FrameHeap.h"
 #include "revolution/hbm/nw4hbm/snd/snd_FxBase.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_InstancePool.hpp"
+#include "revolution/hbm/nw4hbm/snd/InstancePool.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Lfo.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_MemorySoundArchive.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_MmlParser.hpp"

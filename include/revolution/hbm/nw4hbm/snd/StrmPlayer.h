@@ -5,7 +5,7 @@
 
 #include "revolution/hbm/nw4hbm/snd/BasicPlayer.h"
 #include "revolution/hbm/nw4hbm/snd/global.h"
-#include "revolution/hbm/nw4hbm/snd/snd_InstancePool.hpp"
+#include "revolution/hbm/nw4hbm/snd/InstancePool.h"
 #include "revolution/hbm/nw4hbm/snd/snd_SoundThread.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_StrmChannel.hpp"
 #include "revolution/hbm/nw4hbm/snd/StrmFile.h"

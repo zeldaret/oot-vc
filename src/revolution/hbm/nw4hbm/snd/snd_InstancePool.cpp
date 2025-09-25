@@ -5,14 +5,14 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-u32 PoolImpl::CreateImpl(void* pBuffer, u32 size, u32 stride) {
+u32 PoolImpl::CreateImpl(void* buffer, u32 size, u32 stride) {
+    NW4HBMAssertPointerNonnull_Line(buffer, 38);
     ut::AutoInterruptLock lock;
 
-    u8* pPtr = static_cast<u8*>(ut::RoundUp(pBuffer, 4));
+    u8* pPtr = static_cast<u8*>(ut::RoundUp(buffer, 4));
     stride = ut::RoundUp(stride, 4);
 
-    // Account for the aligned buffer address
-    u32 length = (size - ut::GetOffsetFromPtr(pBuffer, pPtr)) / stride;
+    u32 length = (size - ut::GetOffsetFromPtr(buffer, pPtr)) / stride;
 
     for (u32 i = 0; i < length; i++, pPtr += stride) {
         PoolImpl* pHead = reinterpret_cast<PoolImpl*>(pPtr);
@@ -23,20 +23,21 @@ u32 PoolImpl::CreateImpl(void* pBuffer, u32 size, u32 stride) {
     return length;
 }
 
-void PoolImpl::DestroyImpl(void* pBuffer, u32 size) {
+void PoolImpl::DestroyImpl(void* buffer, u32 size) {
+    NW4HBMAssertPointerNonnull_Line(buffer, 68);
     ut::AutoInterruptLock lock;
 
-    void* pBegin = pBuffer;
-    void* pEnd = static_cast<u8*>(pBegin) + size;
+    void* begin = buffer;
+    void* end = static_cast<u8*>(begin) + size;
 
-    PoolImpl* pIt = mNext;
+    PoolImpl* it = mNext;
     PoolImpl* pPrev = this;
 
-    for (; pIt != nullptr; pIt = pIt->mNext) {
-        if (pBegin <= pIt && pIt < pEnd) {
-            pPrev->mNext = pIt->mNext;
+    for (; it != NULL; it = it->mNext) {
+        if (begin <= it && it < end) {
+            pPrev->mNext = it->mNext;
         } else {
-            pPrev = pIt;
+            pPrev = it;
         }
     }
 }
@@ -46,7 +47,7 @@ int PoolImpl::CountImpl() const {
 
     int num = 0;
 
-    for (PoolImpl* pIt = mNext; pIt != nullptr; pIt = pIt->mNext) {
+    for (PoolImpl* it = mNext; it != NULL; it = it->mNext) {
         num++;
     }
 
@@ -56,8 +57,8 @@ int PoolImpl::CountImpl() const {
 void* PoolImpl::AllocImpl() {
     ut::AutoInterruptLock lock;
 
-    if (mNext == nullptr) {
-        return nullptr;
+    if (mNext == NULL) {
+        return NULL;
     }
 
     PoolImpl* pHead = mNext;
@@ -73,7 +74,6 @@ void PoolImpl::FreeImpl(void* pElem) {
     pHead->mNext = mNext;
     mNext = pHead;
 }
-
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
