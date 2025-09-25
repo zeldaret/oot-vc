@@ -664,7 +664,7 @@ config.libs = [
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_window.cpp", mw_version="GC/3.0a5.2"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/math/math_triangular.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_AxManager.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_AxVoice.cpp"), # linker issues
+            Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_AxVoice.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_Bank.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_BankFile.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_BasicSound.cpp"),
