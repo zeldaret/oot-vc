@@ -282,7 +282,7 @@ template <typename T, int I> class LinkList : public detail::LinkListImpl {
     }
 
     T& GetBack() {
-        NW4HBMAssert_Line(!IsEmpty(), 0);
+        NW4HBMAssert_Line(!IsEmpty(), 507);
         return *--GetEndIter();
     }
 

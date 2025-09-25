@@ -1,8 +1,13 @@
+#include "decomp.h"
 #include "revolution/hbm/nw4hbm/snd/ExternalSoundPlayer.h"
 
 namespace nw4hbm {
 namespace snd {
 namespace detail {
+
+// not sure which one uses this exactly, maybe StopAllSound?
+DECOMP_FORCE_CLASS_METHOD(BasicSoundExtPlayList, GetPointerFromNode(static_cast<ut::LinkListNode*>(nullptr)));
+
 void ExternalSoundPlayer::InsertSoundList(BasicSound* sound) {
     mSoundList.PushBack(sound);
     sound->SetExternalSoundPlayer(this);
