@@ -1002,10 +1002,10 @@ revolution/hbm/nw4hbm/snd/snd_Lfo.cpp:
 	.sdata2     start:0x8025E7F0 end:0x8025E820
 
 revolution/hbm/nw4hbm/snd/snd_MemorySoundArchive.cpp:
-	.text       start:0x80127454 end:0x8012753C
+	.text       start:0x80127454 end:0x80127500
 
 revolution/hbm/nw4hbm/snd/code_80127500.cpp:
-	.text       start:0x8012753C end:0x801275DC
+	.text       start:0x80127500 end:0x801275DC
 
 revolution/hbm/nw4hbm/snd/snd_MmlParser.cpp:
 	.text       start:0x801275DC end:0x80128710
