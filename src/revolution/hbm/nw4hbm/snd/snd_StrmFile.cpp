@@ -15,7 +15,7 @@
 #include "revolution/hbm/nw4hbm/snd/snd_adpcm.hpp"
 #include "revolution/hbm/nw4hbm/snd/global.h"
 #include "revolution/hbm/nw4hbm/snd/Util.h"
-#include "revolution/hbm/nw4hbm/snd/snd_WaveFile.hpp"
+#include "revolution/hbm/nw4hbm/snd/WaveFile.h"
 
 #include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_FileStream.hpp"

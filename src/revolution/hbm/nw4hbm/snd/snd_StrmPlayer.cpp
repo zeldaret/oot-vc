@@ -28,7 +28,7 @@
 #include "revolution/hbm/nw4hbm/snd/TaskManager.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_VoiceManager.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_WaveFile.hpp"
+#include "revolution/hbm/nw4hbm/snd/WaveFile.h"
 #include "revolution/hbm/nw4hbm/snd/snd_adpcm.hpp"
 
 #include "revolution/hbm/nw4hbm/ut/ut_DvdFileStream.hpp"

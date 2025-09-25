@@ -17,7 +17,7 @@
 #include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h"
 #include "revolution/hbm/nw4hbm/snd/SoundThread.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_WaveFile.hpp"
+#include "revolution/hbm/nw4hbm/snd/WaveFile.h"
 
 #include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp" // ut::Min
 

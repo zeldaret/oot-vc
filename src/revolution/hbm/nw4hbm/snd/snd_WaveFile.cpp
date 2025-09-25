@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_WaveFile.hpp"
+#include "revolution/hbm/nw4hbm/snd/WaveFile.h"
 
 /* Original source:
  * kiwi515/ogws
