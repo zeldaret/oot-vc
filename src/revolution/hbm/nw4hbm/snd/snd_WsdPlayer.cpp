@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_WsdPlayer.hpp"
+#include "revolution/hbm/nw4hbm/snd/WsdPlayer.h"
 
 /* Original source:
  * kiwi515/ogws
@@ -12,10 +12,10 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/global.h"
-#include "revolution/hbm/nw4hbm/snd/snd_BasicPlayer.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_Channel.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_DisposeCallbackManager.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_SoundThread.hpp"
+#include "revolution/hbm/nw4hbm/snd/BasicPlayer.h"
+#include "revolution/hbm/nw4hbm/snd/Channel.h"
+#include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h"
+#include "revolution/hbm/nw4hbm/snd/SoundThread.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_WaveFile.hpp"
 

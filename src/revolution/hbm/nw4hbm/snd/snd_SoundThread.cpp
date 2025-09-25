@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_SoundThread.hpp"
+#include "revolution/hbm/nw4hbm/snd/SoundThread.h"
 
 /* Original source:
  * kiwi515/ogws
@@ -13,11 +13,11 @@
 #include "macros.h"
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/snd/snd_AxManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/AxManager.h"
 #include "revolution/hbm/nw4hbm/snd/snd_AxVoiceManager.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_Channel.hpp" // ChannelManager
+#include "revolution/hbm/nw4hbm/snd/Channel.h" // ChannelManager
 #include "revolution/hbm/nw4hbm/snd/snd_VoiceManager.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_util.hpp" // Util::CalcRandom
+#include "revolution/hbm/nw4hbm/snd/Util.h" // Util::CalcRandom
 
 #include "revolution/hbm/nw4hbm/ut/ut_lock.hpp" // ut::detail::AutoLock
 

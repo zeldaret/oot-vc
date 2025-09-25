@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_WaveSound.hpp"
+#include "revolution/hbm/nw4hbm/snd/WaveSound.h"
 
 /* Original source:
  * kiwi515/ogws
@@ -11,10 +11,10 @@
 
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/snd/snd_BasicSound.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_SoundInstanceManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/BasicSound.h"
+#include "revolution/hbm/nw4hbm/snd/SoundInstanceManager.h"
 #include "revolution/hbm/nw4hbm/snd/snd_WaveSoundHandle.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_WsdPlayer.hpp"
+#include "revolution/hbm/nw4hbm/snd/WsdPlayer.h"
 
 #include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp"
 

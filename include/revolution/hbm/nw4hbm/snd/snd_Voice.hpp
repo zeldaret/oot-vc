@@ -8,9 +8,9 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/snd_adpcm.hpp" // AdpcmLoopParam
-#include "revolution/hbm/nw4hbm/snd/snd_AxVoice.hpp"
+#include "revolution/hbm/nw4hbm/snd/AxVoice.h"
 #include "revolution/hbm/nw4hbm/snd/global.h"
-#include "revolution/hbm/nw4hbm/snd/snd_DisposeCallbackManager.hpp" // DisposeCallback
+#include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h" // DisposeCallback
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
 
@@ -133,9 +133,9 @@ namespace nw4hbm { namespace snd { namespace detail
 		void CalcAxBiquadFilter();
 		void CalcAxRemoteFilter();
 
-		void CalcMixParam(int channelIndex, int voiceOutIndex,
-		                  AxVoice::MixParam *mix,
-		                  AxVoice::RemoteMixParam *rmtmix);
+		// void CalcMixParam(int channelIndex, int voiceOutIndex,
+		//                   AxVoice::MixParam *mix,
+		//                   AxVoice::RemoteMixParam *rmtmix);
 
 		void Update();
 		void UpdateVoicesPriority();
@@ -145,9 +145,9 @@ namespace nw4hbm { namespace snd { namespace detail
 		void TransformDpl2Pan(f32 *outPan, f32 *outSurroundPan, f32 inPan,
 		                      f32 inSurroundPan);
 
-		static void AxVoiceCallbackFunc(AxVoice *dropVoice,
-		                                AxVoice::AxVoiceCallbackStatus status,
-		                                void *callbackData);
+		// static void AxVoiceCallbackFunc(AxVoice *dropVoice,
+		//                                 AxVoice::AxVoiceCallbackStatus status,
+		//                                 void *callbackData);
 
 	// static members
 	public:

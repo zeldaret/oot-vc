@@ -10,6 +10,9 @@ namespace snd {
 static const int CHANNEL_MIN = 1;
 static const int CHANNEL_MAX = 2;
 
+static const int THREAD_STACK_SIZE = 1024;
+static const int STREAM_BUFFER_SIZE = 512;
+
 static const int REMOTE_FILTER_MAX = 127;
 
 // Volume in range [-90.4db, 6.0db]

@@ -11,7 +11,7 @@
 
 #include "revolution/types.h" // nullptr
 
-#include "revolution/hbm/nw4hbm/snd/snd_StrmSound.hpp"
+#include "revolution/hbm/nw4hbm/snd/StrmSound.h"
 
 /*******************************************************************************
  * functions

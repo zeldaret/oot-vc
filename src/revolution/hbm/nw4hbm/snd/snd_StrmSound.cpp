@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_StrmSound.hpp"
+#include "revolution/hbm/nw4hbm/snd/StrmSound.h"
 
 /* Original source:
  * kiwi515/ogws
@@ -12,9 +12,9 @@
 #include "macros.h" // ARRAY_COUNT
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/snd/snd_BasicSound.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_SoundInstanceManager.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_StrmPlayer.hpp"
+#include "revolution/hbm/nw4hbm/snd/BasicSound.h"
+#include "revolution/hbm/nw4hbm/snd/SoundInstanceManager.h"
+#include "revolution/hbm/nw4hbm/snd/StrmPlayer.h"
 #include "revolution/hbm/nw4hbm/snd/snd_StrmSoundHandle.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_MoveValue.hpp"
 

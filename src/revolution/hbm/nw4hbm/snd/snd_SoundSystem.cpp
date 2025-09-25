@@ -14,13 +14,13 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/global.h"
-#include "revolution/hbm/nw4hbm/snd/snd_AxManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/AxManager.h"
 #include "revolution/hbm/nw4hbm/snd/snd_AxVoiceManager.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_Channel.hpp" // ChannelManager
-#include "revolution/hbm/nw4hbm/snd/snd_SeqPlayer.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_SoundThread.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_TaskManager.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_TaskThread.hpp"
+#include "revolution/hbm/nw4hbm/snd/Channel.h" // ChannelManager
+#include "revolution/hbm/nw4hbm/snd/SeqPlayer.h"
+#include "revolution/hbm/nw4hbm/snd/SoundThread.h"
+#include "revolution/hbm/nw4hbm/snd/TaskManager.h"
+#include "revolution/hbm/nw4hbm/snd/TaskThread.h"
 #include "revolution/hbm/nw4hbm/snd/snd_VoiceManager.hpp"
 
 #include "revolution/ax/AXVPB.h" // AXGetMaxVoices

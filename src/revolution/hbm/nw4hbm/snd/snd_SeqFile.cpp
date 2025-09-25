@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_SeqFile.hpp"
+#include "revolution/hbm/nw4hbm/snd/SeqFile.h"
 
 /* Original source:
  * kiwi515/ogws
@@ -14,7 +14,7 @@
 #include "macros.h" // NW4HBM_VERSION
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/snd/snd_util.hpp"
+#include "revolution/hbm/nw4hbm/snd/Util.h"
 
 #include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp" // ut::AddOffsetToPtr

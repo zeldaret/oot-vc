@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_StrmPlayer.hpp"
+#include "revolution/hbm/nw4hbm/snd/StrmPlayer.h"
 
 /* Original source:
  * kiwi515/ogws
@@ -17,15 +17,15 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/global.h"
-#include "revolution/hbm/nw4hbm/snd/snd_AxVoice.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_BasicPlayer.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_Channel.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_InstancePool.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_SoundThread.hpp"
+#include "revolution/hbm/nw4hbm/snd/AxVoice.h"
+#include "revolution/hbm/nw4hbm/snd/BasicPlayer.h"
+#include "revolution/hbm/nw4hbm/snd/Channel.h"
+#include "revolution/hbm/nw4hbm/snd/InstancePool.h"
+#include "revolution/hbm/nw4hbm/snd/SoundThread.h"
 #include "revolution/hbm/nw4hbm/snd/snd_StrmChannel.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_StrmFile.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_StrmSound.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_TaskManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/StrmFile.h"
+#include "revolution/hbm/nw4hbm/snd/StrmSound.h"
+#include "revolution/hbm/nw4hbm/snd/TaskManager.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_VoiceManager.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_WaveFile.hpp"

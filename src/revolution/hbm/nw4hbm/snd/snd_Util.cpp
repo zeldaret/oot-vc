@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_util.hpp"
+#include "revolution/hbm/nw4hbm/snd/Util.h"
 
 /* Original source:
  * kiwi515/ogws

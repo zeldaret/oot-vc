@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_SoundHandle.hpp"
+#include "revolution/hbm/nw4hbm/snd/SoundHandle.h"
 
 /* Original source:
  * kiwi515/ogws
@@ -11,7 +11,7 @@
 
 #include "revolution/types.h" // nullptr
 
-#include "revolution/hbm/nw4hbm/snd/snd_BasicSound.hpp"
+#include "revolution/hbm/nw4hbm/snd/BasicSound.h"
 
 #include "revolution/hbm/HBMAssert.hpp"
 

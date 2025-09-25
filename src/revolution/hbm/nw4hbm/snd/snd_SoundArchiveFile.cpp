@@ -30,7 +30,7 @@ bool SoundArchiveFileReader::IsValidFileHeader(const void* pSoundArchiveBin) {
         return false;
     }
 
-    if (pFileHeader->version > VERSION) {
+    if (pFileHeader->version > FILE_VERSION) {
         return false;
     }
 

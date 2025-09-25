@@ -272,7 +272,12 @@ typedef struct _AXPB {
     /* 0x07E */ AXPBADPCM adpcm;
     /* 0x0A6 */ AXPBSRC src;
     /* 0x0B4 */ AXPBADPCMLOOP adpcmLoop;
+
+    //! TODO: figure this out
+#ifdef INCLUDE_LPF
     /* 0x0BA */ AXPBLPF lpf;
+#endif
+
     /* 0x0C2 */ AXPBBIQUAD biquad;
     /* 0x0DA */ AXPBRMTMIX rmtMix;
     /* 0x0FA */ AXPBRMTDPOP rmtDpop;

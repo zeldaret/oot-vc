@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_TaskThread.hpp"
+#include "revolution/hbm/nw4hbm/snd/TaskThread.h"
 
 /* Original source:
  * kiwi515/ogws
@@ -11,7 +11,7 @@
 
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/snd/snd_TaskManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/TaskManager.h"
 
 #include "revolution/os/OSThread.h"
 

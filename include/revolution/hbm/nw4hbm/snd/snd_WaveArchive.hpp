@@ -8,7 +8,7 @@
 #include "macros.h"
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/snd/snd_util.hpp"
+#include "revolution/hbm/nw4hbm/snd/Util.h"
 #include "revolution/hbm/nw4hbm/snd/snd_WaveFile.hpp"
 
 #include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
@@ -37,7 +37,7 @@ struct WaveArchive {
 
     // [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x2b289b
     struct TableItem {
-        Util::DataRef<WaveFile::FileHeader> waveFileRef; // size 0x08, offset 0x00
+        // Util::DataRef<WaveFile::FileHeader> waveFileRef; // size 0x08, offset 0x00
         u32 waveFileSize; // size 0x04, offset 0x08
     }; // size 0x0c
 
@@ -85,7 +85,7 @@ class WaveArchiveReader {
     WaveArchiveReader(void const* waveArc);
 
     // methods
-    WaveFile::FileHeader const* GetWaveFile(int index) const;
+    // WaveFile::FileHeader const* GetWaveFile(int index) const;
 
   private:
     bool VerifyFileHeader(void const* waveArc);

@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_WsdFile.hpp"
+#include "revolution/hbm/nw4hbm/snd/WsdFile.h"
 
 /* Original source:
  * kiwi515/ogws
@@ -12,7 +12,7 @@
 #include "macros.h" // NW4HBM_VERSION
 #include "revolution/types.h" // nullptr
 
-#include "revolution/hbm/nw4hbm/snd/snd_util.hpp" // Util::GetDataRefAddress0
+#include "revolution/hbm/nw4hbm/snd/Util.h" // Util::GetDataRefAddress0
 #include "revolution/hbm/nw4hbm/snd/snd_WaveFile.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_WaveArchive.hpp" // WaveArchiveReader
 

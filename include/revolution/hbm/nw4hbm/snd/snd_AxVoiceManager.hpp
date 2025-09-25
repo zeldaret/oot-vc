@@ -2,7 +2,7 @@
 #define NW4R_SND_AX_VOICE_MANAGER_H
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/snd/snd_AxVoice.hpp"
+#include "revolution/hbm/nw4hbm/snd/AxVoice.h"
 
 namespace nw4hbm {
 namespace snd {

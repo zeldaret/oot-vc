@@ -3,7 +3,7 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/AxVoice.h"
-#include "revolution/hbm/nw4hbm/snd/snd_FxBase.hpp"
+#include "revolution/hbm/nw4hbm/snd/FxBase.h"
 #include "revolution/hbm/nw4hbm/snd/snd_MoveValue.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
 

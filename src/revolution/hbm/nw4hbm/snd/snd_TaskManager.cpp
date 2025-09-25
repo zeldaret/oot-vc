@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_TaskManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/TaskManager.h"
 
 /* Original source:
  * kiwi515/ogws
@@ -13,7 +13,7 @@
 #include "macros.h" // NW4R_RANGE_FOR_NO_AUTO_INC
 #include "revolution/types.h" // nullptr
 
-#include "revolution/hbm/nw4hbm/snd/snd_Task.hpp"
+#include "revolution/hbm/nw4hbm/snd/Task.h"
 
 #include "revolution/hbm/nw4hbm/ut/ut_lock.hpp" // ut::AutoInterruptLock
 

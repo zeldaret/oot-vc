@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_SoundPlayer.hpp"
+#include "revolution/hbm/nw4hbm/snd/SoundPlayer.h"
 
 /* Original source:
  * kiwi515/ogws
@@ -15,10 +15,10 @@
 #include "macros.h"
 #include "revolution/types.h" // nullptr
 
-#include "revolution/hbm/nw4hbm/snd/snd_BasicSound.hpp"
+#include "revolution/hbm/nw4hbm/snd/BasicSound.h"
 #include "revolution/hbm/nw4hbm/snd/global.h" // AUX_BUS_NUM
-#include "revolution/hbm/nw4hbm/snd/snd_PlayerHeap.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_SoundThread.hpp"
+#include "revolution/hbm/nw4hbm/snd/PlayerHeap.h"
+#include "revolution/hbm/nw4hbm/snd/SoundThread.h"
 
 #include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp" // ut::Clamp
 

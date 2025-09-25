@@ -12,8 +12,8 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/global.h"
-#include "revolution/hbm/nw4hbm/snd/snd_AxVoice.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_Channel.hpp"
+#include "revolution/hbm/nw4hbm/snd/AxVoice.h"
+#include "revolution/hbm/nw4hbm/snd/Channel.h"
 
 #include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp" // ut::AddOffsetToPtr

@@ -1,6 +1,9 @@
 #ifndef _REVOLUTION_HBM_NW4HBM_SND_HPP
 #define _REVOLUTION_HBM_NW4HBM_SND_HPP
 
+//! TODO: figure this out
+#define INCLUDE_LPF
+
 #include "revolution/hbm/nw4hbm/snd/global.h"
 #include "revolution/hbm/nw4hbm/snd/mix.h"
 #include "revolution/hbm/nw4hbm/snd/AxManager.h"
@@ -17,7 +20,7 @@
 #include "revolution/hbm/nw4hbm/snd/snd_EnvGenerator.hpp"
 #include "revolution/hbm/nw4hbm/snd/ExternalSoundPlayer.h"
 #include "revolution/hbm/nw4hbm/snd/FrameHeap.h"
-#include "revolution/hbm/nw4hbm/snd/snd_FxBase.hpp"
+#include "revolution/hbm/nw4hbm/snd/FxBase.h"
 #include "revolution/hbm/nw4hbm/snd/InstancePool.h"
 #include "revolution/hbm/nw4hbm/snd/Lfo.h"
 #include "revolution/hbm/nw4hbm/snd/MemorySoundArchive.h"

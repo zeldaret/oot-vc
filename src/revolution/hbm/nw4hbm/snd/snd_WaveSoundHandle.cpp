@@ -11,9 +11,9 @@
 
 #include "revolution/types.h" // nullptr
 
-#include "revolution/hbm/nw4hbm/snd/snd_BasicSound.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_SoundHandle.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_WaveSound.hpp"
+#include "revolution/hbm/nw4hbm/snd/BasicSound.h"
+#include "revolution/hbm/nw4hbm/snd/SoundHandle.h"
+#include "revolution/hbm/nw4hbm/snd/WaveSound.h"
 
 #include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp" // ut::DynamicCast
 

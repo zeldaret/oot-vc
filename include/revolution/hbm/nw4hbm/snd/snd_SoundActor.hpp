@@ -7,9 +7,9 @@
 
 #include "revolution/types.h" // nullptr
 
-#include "revolution/hbm/nw4hbm/snd/snd_BasicSound.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_ExternalSoundPlayer.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_SoundStartable.hpp"
+#include "revolution/hbm/nw4hbm/snd/BasicSound.h"
+#include "revolution/hbm/nw4hbm/snd/ExternalSoundPlayer.h"
+#include "revolution/hbm/nw4hbm/snd/SoundStartable.h"
 
 /*******************************************************************************
  * types

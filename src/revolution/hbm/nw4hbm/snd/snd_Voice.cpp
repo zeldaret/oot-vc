@@ -256,7 +256,7 @@ void Voice::Setup(const WaveInfo& rData, u32 offset) {
         const AdpcmInfo& rInfo = rData.channelParam[i].adpcmInfo;
 
         AdpcmParam param;
-        if (format == AxVoice::FORMAT_ADPCM) {
+        if (format == AxVoice::SAMPLE_FORMAT_DSP_ADPCM) {
             param = rInfo.param;
             AxVoice::CalcOffsetAdpcmParam(&param.pred_scale, &param.yn1, &param.yn2, offset, pAddr, param);
         }
@@ -270,7 +270,7 @@ void Voice::Setup(const WaveInfo& rData, u32 offset) {
             pAxVoice->Setup(rData.channelParam[i].dataAddr, format, sampleRate);
             pAxVoice->SetAddr(rData.loopFlag, pAddr, offset, rData.loopStart, rData.loopEnd);
 
-            if (format == AxVoice::FORMAT_ADPCM) {
+            if (format == AxVoice::SAMPLE_FORMAT_DSP_ADPCM) {
                 pAxVoice->SetAdpcm(&param);
                 pAxVoice->SetAdpcmLoop(&rInfo.loopParam);
             }
@@ -330,7 +330,7 @@ AxVoice::SampleFormat Voice::GetFormat() const {
         return mAxVoice[0][0]->GetFormat();
     }
 
-    return AxVoice::FORMAT_PCM16;
+    return AxVoice::SAMPLE_FORMAT_PCM_S16;
 }
 
 void Voice::SetVolume(f32 volume) {

@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_StrmFile.hpp"
+#include "revolution/hbm/nw4hbm/snd/StrmFile.h"
 
 /* Original source:
  * kiwi515/ogws
@@ -14,7 +14,7 @@
 
 #include "revolution/hbm/nw4hbm/snd/snd_adpcm.hpp"
 #include "revolution/hbm/nw4hbm/snd/global.h"
-#include "revolution/hbm/nw4hbm/snd/snd_util.hpp"
+#include "revolution/hbm/nw4hbm/snd/Util.h"
 #include "revolution/hbm/nw4hbm/snd/snd_WaveFile.hpp"
 
 #include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
