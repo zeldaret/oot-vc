@@ -2,7 +2,7 @@
 #define NW4R_SND_PLAYER_HEAP_H
 
 #include "revolution/hbm/nw4hbm/snd/snd_SoundMemoryAllocatable.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_SoundHeap.hpp"
+#include "revolution/hbm/nw4hbm/snd/SoundHeap.h"
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
 #include "revolution/types.h" // u32
 

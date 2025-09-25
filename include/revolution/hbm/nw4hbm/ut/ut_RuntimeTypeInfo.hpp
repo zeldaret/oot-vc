@@ -32,11 +32,11 @@ template <typename T> inline const RuntimeTypeInfo* GetTypeInfoFromPtr_(T* pPtr)
 } // namespace detail
 
 template <typename TDerived, typename TBase> inline TDerived DynamicCast(TBase* pPtr) {
-    const detail::RuntimeTypeInfo* pDerivedTypeInfo = detail::GetTypeInfoFromPtr_(static_cast<TDerived>(NULL));
+    const detail::RuntimeTypeInfo* pDerivedTypeInfo = detail::GetTypeInfoFromPtr_(static_cast<TDerived>(nullptr));
     if (pPtr->GetRuntimeTypeInfo()->IsDerivedFrom(pDerivedTypeInfo)) {
         return static_cast<TDerived>(pPtr);
     }
-    return NULL;
+    return nullptr;
 }
 } // namespace ut
 } // namespace nw4hbm

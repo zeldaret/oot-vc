@@ -10,19 +10,9 @@ namespace nw4hbm {
 namespace ut {
 namespace detail {
 
-/******************************************************************************
- *
- * Mutex lock functions
- *
- ******************************************************************************/
 inline void Lock(OSMutex& rMutex) { OSLockMutex(&rMutex); }
 inline void Unlock(OSMutex& rMutex) { OSUnlockMutex(&rMutex); }
 
-/******************************************************************************
- *
- * AutoLock
- *
- ******************************************************************************/
 template <typename T> class AutoLock : private NonCopyable {
   public:
     explicit AutoLock(T& rLockObj) : mLockObj(rLockObj) { Lock(mLockObj); }
@@ -34,11 +24,8 @@ template <typename T> class AutoLock : private NonCopyable {
 
 } // namespace detail
 
-/******************************************************************************
- *
- * AutoInterruptLock
- *
- ******************************************************************************/
+typedef detail::AutoLock<OSMutex>   AutoMutexLock;
+
 class AutoInterruptLock : private NonCopyable {
   public:
     AutoInterruptLock() : mOldState(OSDisableInterrupts()) {}

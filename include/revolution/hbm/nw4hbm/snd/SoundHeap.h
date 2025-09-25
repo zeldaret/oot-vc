@@ -2,7 +2,7 @@
 #define NW4R_SND_SOUND_HEAP_H
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/snd/snd_FrameHeap.hpp"
+#include "revolution/hbm/nw4hbm/snd/FrameHeap.h"
 #include "revolution/hbm/nw4hbm/snd/snd_SoundMemoryAllocatable.hpp"
 
 #include "revolution/hbm/ut.hpp"
@@ -15,16 +15,18 @@ namespace snd {
 class SoundHeap : public SoundMemoryAllocatable {
   public:
     SoundHeap();
-    virtual ~SoundHeap(); // at 0x8
+    virtual ~SoundHeap(); // 0x08
 
-    virtual void* Alloc(u32 size); // at 0xC
+    virtual void* Alloc(u32 size); // 0x0C
+    void* Alloc(u32 size, detail::FrameHeap::FreeCallback callback, void* callbackArg);
 
-    void* Alloc(u32 size, detail::FrameHeap::FreeCallback pCallback, void* pCallbackArg);
-
-    bool Create(void* pBase, u32 size);
+    bool Create(void* base, u32 size);
     void Destroy();
 
-    void Clear();
+    void Clear() {
+        ut::AutoMutexLock lock(mMutex);
+        mFrameHeap.Clear();
+    }
 
     int SaveState();
     void LoadState(int id);
@@ -42,11 +44,10 @@ class SoundHeap : public SoundMemoryAllocatable {
     }
 
   private:
-    static void DisposeCallbackFunc(void* pBuffer, u32 size, void* pCallbackArg);
+    static void DisposeCallbackFunc(void* buffer, u32 size, void* callbackArg);
 
-  private:
-    mutable OSMutex mMutex; // at 0x0
-    detail::FrameHeap mFrameHeap; // at 0x1C
+    mutable OSMutex mMutex; // 0x00
+    detail::FrameHeap mFrameHeap; // 0x1C
 };
 
 } // namespace snd

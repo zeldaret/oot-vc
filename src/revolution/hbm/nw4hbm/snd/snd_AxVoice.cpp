@@ -2,6 +2,7 @@
 #include "revolution/hbm/ut.hpp"
 
 #include "cstring.hpp"
+#include "decomp.h"
 
 namespace nw4hbm {
 namespace snd {
@@ -453,6 +454,8 @@ void AxVoice::SetFxSend(AuxBus bus, f32 send) {
     }
 }
 
+DECOMP_FORCE("voiceOutIndex is out of bounds(%d)\n%d <= voiceOutIndex <= %d not satisfied.");
+
 void AxVoice::SetRemoteSend(int remoteIndex, f32 send) {
     NW4HBMAssertHeaderClampedLValue_Line(remoteIndex, 0, 4, 741);
     send += 1.0f;
@@ -511,6 +514,8 @@ void AxVoice::SetBaseAddress(int channelIndex, const void* baseAddress) {
     mVoiceChannelParam[channelIndex].waveData = (void*)baseAddress;
 }
 
+DECOMP_FORCE(NW4HBMAssert_String(channelIndex < CHANNEL_MAX));
+
 bool AxVoice::IsPlayFinished() const {
     ut::AutoInterruptLock lock;
 
@@ -539,7 +544,7 @@ bool AxVoice::IsPlayFinished() const {
         }
 
         default:
-            NW4HBMPanicMessage_Line(866, "Invalid format!\n");
+            NW4HBMPanicMessage_Line(866, "Invalid format\n");
             break;
     }
 
@@ -767,7 +772,7 @@ bool AxVoice::UpdateAxVe() {
             }
 
             pbVe.currentVolume = initVol;
-            pbVe.currentDelta = (targetVol - initVol) / AX_VOICE_MAX;
+            pbVe.currentDelta = (targetVol - initVol) / AX_VOICE_MAX_2;
             AXSetVoiceVe(mVpb[j][i], &pbVe);
 
             if (targetVol != initVol) {
@@ -823,7 +828,7 @@ void AxVoice::UpdateAxLpf() {
         } else {
             u16 a0, b0;
 
-            if (mVpb[0][0]->pb.rmtIIR.lpf.on == TRUE) {
+            if (mVpb[0][0]->pb.lpf.on == TRUE) {
                 AXGetLpfCoefs(freq, &a0, &b0);
 
                 for (int j = 0; j < mChannelCount; j++) {
@@ -899,7 +904,7 @@ u32 AxVoice::GetDspAddressBySample(const void* base, u32 samples, Format fmt) {
         }
 
         default:
-            NW4HBMPanicMessage_Line(1377, "Invalid format!\n");
+            NW4HBMPanicMessage_Line(1377, "Invalid format\n");
             break;
     }
 
@@ -932,7 +937,7 @@ u32 AxVoice::GetSampleByDspAddress(const void* base, u32 addr, Format fmt) {
         }
 
         default:
-            NW4HBMPanicMessage_Line(1411, "Invalid format!\n");
+            NW4HBMPanicMessage_Line(1411, "Invalid format\n");
             break;
     }
 
@@ -962,7 +967,7 @@ u32 AxVoice::GetSampleByByte(u32 addr, Format fmt) {
         }
 
         default:
-            NW4HBMPanicMessage_Line(1444, "Invalid format!\n");
+            NW4HBMPanicMessage_Line(1444, "Invalid format\n");
             break;
     }
 

@@ -6,7 +6,7 @@
 #include "revolution/hbm/nw4hbm/snd/BasicSound.h"
 #include "revolution/hbm/nw4hbm/snd/debug.h"
 #include "revolution/hbm/nw4hbm/snd/SeqPlayer.h"
-#include "revolution/hbm/nw4hbm/snd/snd_Task.hpp"
+#include "revolution/hbm/nw4hbm/snd/Task.h"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
 

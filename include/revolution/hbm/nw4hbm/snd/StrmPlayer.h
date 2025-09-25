@@ -9,7 +9,7 @@
 #include "revolution/hbm/nw4hbm/snd/snd_SoundThread.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_StrmChannel.hpp"
 #include "revolution/hbm/nw4hbm/snd/StrmFile.h"
-#include "revolution/hbm/nw4hbm/snd/snd_Task.hpp"
+#include "revolution/hbm/nw4hbm/snd/Task.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"

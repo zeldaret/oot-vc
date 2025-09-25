@@ -83,7 +83,7 @@ class Controller {
     void clearCallback();
 
     static RemoteSpk* GetInstance() { return sPInstance; }
-    static RemoteSpk* SetInstance(RemoteSpk* p) { sPInstance = p; }
+    static void SetInstance(RemoteSpk* p) { sPInstance = p; }
 
     // static methods
   private:

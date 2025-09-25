@@ -4,7 +4,7 @@
 #include "revolution/types.h" // u32
 
 #include "revolution/hbm/nw4hbm/snd/InstancePool.h"
-#include "revolution/hbm/nw4hbm/snd/snd_SeqTrackAllocator.hpp"
+#include "revolution/hbm/nw4hbm/snd/SeqTrackAllocator.h"
 
 namespace nw4hbm {
 namespace snd {

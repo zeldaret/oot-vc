@@ -10,6 +10,7 @@ extern "C" {
 
 #define AX_SAMPLE_RATE 32000
 #define AX_VOICE_MAX 64
+#define AX_VOICE_MAX_2 96
 
 typedef enum {
     AX_PBSYNC_SELECT = (1 << 0),

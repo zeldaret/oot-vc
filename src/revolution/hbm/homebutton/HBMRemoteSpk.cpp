@@ -112,7 +112,7 @@ RemoteSpk::RemoteSpk(void* spkSeBuf) {
     SetInstance(this);
 
     if (spkSeBuf) {
-        available = ARCInitHandle(spkSeBuf, &handle) ? true : false;
+        available = ARCInitHandle(spkSeBuf, &handle) ? TRUE : FALSE;
     } else {
         available = false;
     }
