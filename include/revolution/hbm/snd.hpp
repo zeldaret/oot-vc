@@ -31,7 +31,7 @@
 #include "revolution/hbm/nw4hbm/snd/snd_RemoteSpeakerManager.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_SeqFile.hpp"
 #include "revolution/hbm/nw4hbm/snd/SeqPlayer.h"
-#include "revolution/hbm/nw4hbm/snd/snd_SeqTrack.hpp"
+#include "revolution/hbm/nw4hbm/snd/SeqTrack.h"
 #include "revolution/hbm/nw4hbm/snd/SoundArchive.h"
 #include "revolution/hbm/nw4hbm/snd/SoundArchiveFile.h"
 #include "revolution/hbm/nw4hbm/snd/snd_SoundArchiveLoader.hpp"

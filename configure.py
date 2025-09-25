@@ -679,6 +679,8 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_InstancePool.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_Lfo.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_MemorySoundArchive.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_MidiSeqPlayer.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_MidiSeqTrack.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_MmlParser.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_MmlSeqTrack.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_MmlSeqTrackAllocator.cpp"),
