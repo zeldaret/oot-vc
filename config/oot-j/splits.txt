@@ -1009,9 +1009,14 @@ revolution/hbm/nw4hbm/snd/snd_MidiSeqPlayer.cpp:
 
 revolution/hbm/nw4hbm/snd/snd_MidiSeqTrack.cpp:
 	.text       start:0x8012759C end:0x801275DC
+	.data       start:0x801992F8 end:0x80199308
 
 revolution/hbm/nw4hbm/snd/snd_MmlParser.cpp:
 	.text       start:0x801275DC end:0x80128710
+	.data       start:0x80199308 end:0x80199800
+	.sdata      start:0x8025CE88 end:0x8025CE98
+	.sbss       start:0x8025DC40 end:0x8025DC48
+	.sdata2     start:0x8025E820 end:0x8025E840
 
 revolution/hbm/nw4hbm/snd/snd_MmlSeqTrack.cpp:
 	.text       start:0x80128710 end:0x801287DC
