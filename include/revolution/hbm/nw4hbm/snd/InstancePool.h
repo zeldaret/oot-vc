@@ -33,15 +33,15 @@ template <typename T> class InstancePool : private PoolImpl {
 
     T* Alloc() {
         void* ptr = AllocImpl();
-        if (ptr == NULL) {
-            return NULL;
+        if (ptr == nullptr) {
+            return nullptr;
         }
 
         return new (ptr) T;
     }
 
     void Free(T* obj) {
-        if (obj != NULL) {
+        if (obj != nullptr) {
             obj->~T();
             FreeImpl(obj);
         }

@@ -1,27 +1,18 @@
-#include "revolution/hbm/nw4hbm/snd/snd_MmlSeqTrack.hpp"
-
-/* Original source:
- * kiwi515/ogws
- * src/nw4r/snd/snd_MmlSeqTrack.cpp
- */
-
-/*******************************************************************************
- * headers
- */
-
-#include "revolution/hbm/nw4hbm/snd/snd_MmlParser.hpp"
-
-/*******************************************************************************
- * functions
- */
+#include "revolution/hbm/nw4hbm/snd/MmlSeqTrack.h"
+#include "revolution/hbm/nw4hbm/snd/MmlParser.h"
 
 namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-MmlSeqTrack::MmlSeqTrack() {}
+MmlSeqTrack::MmlSeqTrack() {
+    mMmlParserParam.noteWaitFlag = true;
+    mMmlParserParam.tieFlag = false;
+    mMmlParserParam.cmpFlag = true;
+    mMmlParserParam.callStackDepth = 0;
+}
 
-MmlSeqTrack::ParseResult MmlSeqTrack::Parse(bool doNoteOn) { return mParser->Parse(this, doNoteOn); }
+ParseResult MmlSeqTrack::Parse(bool doNoteOn) { return mParser->Parse(this, doNoteOn); }
 
 } // namespace detail
 } // namespace snd

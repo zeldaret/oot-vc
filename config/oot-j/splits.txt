@@ -1020,9 +1020,11 @@ revolution/hbm/nw4hbm/snd/snd_MmlParser.cpp:
 
 revolution/hbm/nw4hbm/snd/snd_MmlSeqTrack.cpp:
 	.text       start:0x80128710 end:0x801287DC
+	.data       start:0x80199800 end:0x80199810
 
 revolution/hbm/nw4hbm/snd/snd_MmlSeqTrackAllocator.cpp:
 	.text       start:0x801287DC end:0x80128924
+	.data       start:0x80199810 end:0x80199870
 
 revolution/hbm/nw4hbm/snd/snd_NandSoundArchive.cpp:
 	.text       start:0x80128924 end:0x8012925C

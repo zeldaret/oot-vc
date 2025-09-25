@@ -1,34 +1,22 @@
-#include "revolution/hbm/nw4hbm/snd/snd_MmlSeqTrackAllocator.hpp"
-
-/* Original source:
- * kiwi515/ogws
- * src/nw4r/snd/snd_MmlSeqTrackAllocator.cpp
- */
-
-/*******************************************************************************
- * headers
- */
+#include "revolution/hbm/nw4hbm/snd/MmlSeqTrackAllocator.h"
 
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/snd/snd_InstancePool.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_MmlSeqTrack.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_SeqTrack.hpp"
+#include "revolution/hbm/nw4hbm/snd/InstancePool.h"
+#include "revolution/hbm/nw4hbm/snd/MmlSeqTrack.h"
+#include "revolution/hbm/nw4hbm/snd/SeqTrack.h"
 
 #include "revolution/hbm/HBMAssert.hpp"
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-SeqTrack* MmlSeqTrackAllocator::AllocTrack(SeqPlayer* player) {
+SeqTrack* MmlSeqTrackAllocator::AllocTrack(SeqPlayer* seqPlayer) {
     MmlSeqTrack* track = mTrackPool.Alloc();
-    if (track) {
-        track->SetSeqPlayer(player);
+
+    if (track != NULL) {
+        track->SetSeqPlayer(seqPlayer);
         track->SetMmlParser(mParser);
     }
 
@@ -37,7 +25,6 @@ SeqTrack* MmlSeqTrackAllocator::AllocTrack(SeqPlayer* player) {
 
 void MmlSeqTrackAllocator::FreeTrack(SeqTrack* track) {
     NW4HBMAssertPointerNonnull_Line(track, 59);
-
     track->SetSeqPlayer(nullptr);
     mTrackPool.Free(static_cast<MmlSeqTrack*>(track));
 }
