@@ -24,7 +24,7 @@
 #include "revolution/hbm/nw4hbm/snd/MmlParser.h"
 #include "revolution/hbm/nw4hbm/snd/MmlSeqTrack.h"
 #include "revolution/hbm/nw4hbm/snd/snd_MoveValue.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_NandSoundArchive.hpp"
+#include "revolution/hbm/nw4hbm/snd/NandSoundArchive.h"
 #include "revolution/hbm/nw4hbm/snd/NoteOnCallback.h"
 #include "revolution/hbm/nw4hbm/snd/PlayerHeap.h"
 #include "revolution/hbm/nw4hbm/snd/snd_RemoteSpeaker.hpp"

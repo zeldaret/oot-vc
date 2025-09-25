@@ -239,7 +239,7 @@ def RevolutionHBMLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/3.0a5",
-        "cflags": [*cflags_base, f"-Cpp_exceptions off", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off", "-lang c++", "-DHBM_ASSERT", "-sym off"],
+        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off", "-lang c++", "-DHBM_ASSERT", "-sym off"],
         "progress_category": "nw4hbm",
         "objects": objects,
     }
@@ -684,7 +684,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_MmlParser.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_MmlSeqTrack.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_MmlSeqTrackAllocator.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_NandSoundArchive.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_NandSoundArchive.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_RemoteSpeaker.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_RemoteSpeakerManager.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_SeqFile.cpp"),
