@@ -6,26 +6,23 @@
 // WARNING: DO NOT REORDER these #include directives, data pooling depends on it
 
 // clang-format off
-// #include "revolution/hbm/nw4hbm/snd/BasicSound.h"
-#include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h" // detail::DisposeCallback
+#include "revolution/hbm/nw4hbm/snd/BasicSound.h" // needed for SoundStartable
+#include "revolution/hbm/nw4hbm/snd/PlayerHeap.h" // PlayerHeap needs to be before DisposeCallbackManager
+#include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h" // DisposeCallbackManager needs to be before MmlSeqTrackAllocator
+#include "revolution/hbm/nw4hbm/snd/MmlSeqTrackAllocator.h" // MmlSeqTrackAllocator needs to be before NoteOnCallback
+#include "revolution/hbm/nw4hbm/snd/NoteOnCallback.h"
 #include "revolution/hbm/nw4hbm/snd/MmlParser.h"
-#include "revolution/hbm/nw4hbm/snd/NoteOnCallback.h" // NoteOnCallback needs to be
-#include "revolution/hbm/nw4hbm/snd/MmlSeqTrackAllocator.h" // before MmlSeqTrackAllocator
-// #include "revolution/hbm/nw4hbm/snd/SeqPlayer.h"
+
+#include "revolution/hbm/nw4hbm/snd/SeqPlayer.h"
 #include "revolution/hbm/nw4hbm/snd/SeqSound.h"
 #include "revolution/hbm/nw4hbm/snd/SoundArchive.h"
-#include "revolution/hbm/nw4hbm/snd/SoundHeap.h"
 #include "revolution/hbm/nw4hbm/snd/SoundInstanceManager.h"
-#include "revolution/hbm/nw4hbm/snd/WsdPlayer.h" // and WsdPlayer needs to be
-#include "revolution/hbm/nw4hbm/snd/snd_SoundStartable.hpp" // before SoundStartable
-#include "revolution/hbm/nw4hbm/snd/snd_StrmChannel.hpp" // detail::StrmBufferPool
-#include "revolution/hbm/nw4hbm/snd/StrmSound.h"
-#include "revolution/hbm/nw4hbm/snd/PlayerHeap.h"
-#include "revolution/hbm/nw4hbm/snd/Task.h"
-#include "revolution/hbm/nw4hbm/snd/Util.h" // Util::Table
-// #include "revolution/hbm/nw4hbm/snd/snd_WaveFile.hpp"
+#include "revolution/hbm/nw4hbm/snd/SoundStartable.h"
+#include "revolution/hbm/nw4hbm/snd/WsdTrack.h"
 #include "revolution/hbm/nw4hbm/snd/WaveSound.h"
-#include "revolution/hbm/nw4hbm/snd/WavePlayer.h"
+
+#include "revolution/hbm/nw4hbm/snd/StrmSound.h" // StrmSound needs to be before Task
+#include "revolution/hbm/nw4hbm/snd/Task.h"
 // clang-format on
 
 #include "revolution/hbm/HBMAssert.hpp"
@@ -61,43 +58,44 @@ class SoundArchivePlayer : public detail::DisposeCallback, public SoundStartable
                                           const StartInfo* startInfo); // 0x28
 
     virtual u32 detail_ConvertLabelStringToSoundId(const char* label) {
+        NW4HBMAssertPointerNonnull_Line(mSoundArchive, 355);
         return mSoundArchive->ConvertLabelStringToSoundId(label);
     } // 0x2C
 
     bool IsAvailable() const;
 
-    bool Setup(const SoundArchive* soundArchive, void* mramBuffer, u32 mramBufferSize, void* strmBuffer,
+    bool Setup(const SoundArchive* arc, void* buffer, u32 mramBufferSize, void* strmBuffer,
                u32 strmBufferSize);
 
     void Shutdown();
 
-    u32 GetRequiredMemSize(const SoundArchive* soundArchive);
-    u32 GetRequiredStrmBufferSize(const SoundArchive* soundArchive);
+    u32 GetRequiredMemSize(const SoundArchive* arc);
+    u32 GetRequiredStrmBufferSize(const SoundArchive* arc);
 
     void Update();
 
     const SoundArchive& GetSoundArchive() const;
 
-    SoundPlayer& GetSoundPlayer(u32 idx);
-    SoundPlayer& GetSoundPlayer(int idx) { return GetSoundPlayer(static_cast<u32>(idx)); }
+    SoundPlayer& GetSoundPlayer(u32 playerId);
+    SoundPlayer& GetSoundPlayer(int playerId) { return GetSoundPlayer(static_cast<u32>(playerId)); }
 
     const void* detail_GetFileAddress(u32 id) const;
     const void* detail_GetFileWaveDataAddress(u32 id) const;
 
-    const void* GetGroupAddress(u32 id) const;
-    void SetGroupAddress(u32 id, const void* addr);
+    const void* GetGroupAddress(u32 groupId) const;
+    void SetGroupAddress(u32 groupId, const void* addr);
 
-    const void* GetGroupWaveDataAddress(u32 id) const;
-    void SetGroupWaveDataAddress(u32 id, const void* addr);
+    const void* GetGroupWaveDataAddress(u32 groupId) const;
+    void SetGroupWaveDataAddress(u32 groupId, const void* addr);
 
-    bool LoadGroup(u32 id, SoundMemoryAllocatable* allocatable, u32 blockSize);
-    bool LoadGroup(const char* label, SoundMemoryAllocatable* allocatable, u32 blockSize);
+    bool LoadGroup(u32 id, SoundMemoryAllocatable* allocatable, u32 loadBlockSize);
+    bool LoadGroup(const char* label, SoundMemoryAllocatable* allocatable, u32 loadBlockSize);
 
-    bool LoadGroup(int id, SoundMemoryAllocatable* allocatable, u32 blockSize) {
-        return LoadGroup(static_cast<u32>(id), allocatable, blockSize);
+    bool LoadGroup(int id, SoundMemoryAllocatable* allocatable, u32 loadBlockSize) {
+        return LoadGroup(static_cast<u32>(id), allocatable, loadBlockSize);
     }
-    bool LoadGroup(u32 id, SoundMemoryAllocatable* allocatable, unsigned int blockSize) {
-        return LoadGroup(static_cast<u32>(id), allocatable, blockSize);
+    bool LoadGroup(u32 id, SoundMemoryAllocatable* allocatable, unsigned int loadBlockSize) {
+        return LoadGroup(static_cast<u32>(id), allocatable, loadBlockSize);
     }
 
     u32 GetSoundPlayerCount() const { return mSoundPlayerCount; }
@@ -226,19 +224,19 @@ class SoundArchivePlayer : public detail::DisposeCallback, public SoundStartable
         OSMutex& mMutex; // 0x3C
     };
 
-    bool SetupMram(const SoundArchive* soundArchive, void* buffer, u32 bufferSize);
+    bool SetupMram(const SoundArchive* arc, void* buffer, u32 size);
 
     detail::PlayerHeap* CreatePlayerHeap(void* buffer, u32 bufferSize);
 
-    bool SetupSoundPlayer(const SoundArchive* soundArchive, void** buffer, void* end);
+    bool SetupSoundPlayer(const SoundArchive* arc, void** buffer, void* end);
 
-    bool CreateGroupAddressTable(const SoundArchive* soundArchive, void** buffer, void* end);
+    bool CreateGroupAddressTable(const SoundArchive* arc, void** buffer, void* end);
 
-    bool SetupSeqSound(const SoundArchive* soundArchive, int sounds, void** buffer, void* end);
-    bool SetupWaveSound(const SoundArchive* soundArchive, int sounds, void** buffer, void* end);
-    bool SetupStrmSound(const SoundArchive* soundArchive, int sounds, void** buffer, void* end);
-    bool SetupSeqTrack(const SoundArchive* soundArchive, int tracks, void** buffer, void* end);
-    bool SetupStrmBuffer(const SoundArchive* soundArchive, void* buffer, u32 bufferSize);
+    bool SetupSeqSound(const SoundArchive* arc, int sounds, void** buffer, void* end);
+    bool SetupWaveSound(const SoundArchive* arc, int sounds, void** buffer, void* end);
+    bool SetupStrmSound(const SoundArchive* arc, int sounds, void** buffer, void* end);
+    bool SetupSeqTrack(const SoundArchive* arc, int tracks, void** buffer, void* end);
+    bool SetupStrmBuffer(const SoundArchive* arc, void* buffer, u32 bufferSize);
 
     StartResult PrepareSeqImpl(detail::SeqSound* sound, const SoundArchive::SoundInfo* soundInfo,
                                const SoundArchive::SeqSoundInfo* seqSoundInfo, int voices);

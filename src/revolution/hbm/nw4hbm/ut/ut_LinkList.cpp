@@ -66,7 +66,7 @@ LinkListImpl::Iterator LinkListImpl::Insert(Iterator it, LinkListNode* p) {
 
 LinkListImpl::Iterator LinkListImpl::Erase(LinkListNode* p) {
     // clang-format off
-    NW4HBMAssert2_Line(!IsEmpty(), 96);
+    NW4HBMAssert_Line(!IsEmpty(), 96);
     NW4HBMAssertPointerNonnull_Line(p, 97);
     NW4HBMAssert_Line(p!=&mNode, 98);
     // clang-format on

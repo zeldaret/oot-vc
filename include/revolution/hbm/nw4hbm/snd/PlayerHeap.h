@@ -3,8 +3,6 @@
 
 #include "revolution/hbm/nw4hbm/snd/snd_SoundMemoryAllocatable.hpp"
 #include "revolution/hbm/nw4hbm/snd/SoundHeap.h"
-#include "revolution/hbm/nw4hbm/ut/LinkList.h"
-#include "revolution/types.h" // u32
 
 // forward declarations
 namespace nw4hbm {

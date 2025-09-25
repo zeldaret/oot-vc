@@ -7,7 +7,7 @@
 
 #include "revolution/hbm/homebutton/HBMCommon.hpp"
 #include "revolution/hbm/homebutton/HBMRemoteSpk.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_SoundHandle.hpp"
+#include "revolution/hbm/nw4hbm/snd/SoundHandle.h"
 #include "revolution/mtx/mtx.h" // Vec2
 #include "revolution/os/OSAlarm.h"
 #include "revolution/os/OSTime.h"

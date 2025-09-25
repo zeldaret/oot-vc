@@ -21,9 +21,15 @@ namespace detail {
 
 template <typename T> class SoundInstanceManager {
   public:
-    u32 Create(void* buffer, u32 size) { return mPool.Create(buffer, size); }
+    u32 Create(void* buffer, u32 size) {
+        NW4HBMAssertPointerNonnull_Line(buffer, 59);
+        return mPool.Create(buffer, size);
+    }
 
-    void Destroy(void* buffer, u32 size) { mPool.Destroy(buffer, size); }
+    void Destroy(void* buffer, u32 size) {
+        NW4HBMAssertPointerNonnull_Line(buffer, 76);
+        mPool.Destroy(buffer, size);
+    }
 
     T* Alloc(int priority) {
         ut::AutoInterruptLock lock;

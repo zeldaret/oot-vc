@@ -6,10 +6,9 @@
 #include "revolution/hbm/nw4hbm/snd/BasicPlayer.h"
 #include "revolution/hbm/nw4hbm/snd/global.h"
 #include "revolution/hbm/nw4hbm/snd/InstancePool.h"
-#include "revolution/hbm/nw4hbm/snd/snd_SoundThread.hpp"
+#include "revolution/hbm/nw4hbm/snd/SoundThread.h"
 #include "revolution/hbm/nw4hbm/snd/snd_StrmChannel.hpp"
 #include "revolution/hbm/nw4hbm/snd/StrmFile.h"
-#include "revolution/hbm/nw4hbm/snd/Task.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"

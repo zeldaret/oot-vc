@@ -19,7 +19,10 @@ class Bank {
 
     Channel* NoteOn(const NoteOnInfo& noteOnInfo) const;
 
-    void SetWaveDataAddress(const void* waveData) { mWaveDataAddress = waveData; }
+    void SetWaveDataAddress(const void* waveData) {
+        NW4HBMAssertPointerNonnull_Line(waveData, 47);
+        mWaveDataAddress = waveData;
+    }
 
   private:
     BankFileReader mBankReader; // 0x00

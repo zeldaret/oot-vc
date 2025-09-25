@@ -6,7 +6,7 @@
 
 #include "revolution/hbm/nw4hbm/snd/BasicPlayer.h"
 #include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h" // DisposeCallback
-#include "revolution/hbm/nw4hbm/snd/snd_SoundThread.hpp"
+#include "revolution/hbm/nw4hbm/snd/SoundThread.h"
 
 namespace nw4hbm {
 namespace snd {

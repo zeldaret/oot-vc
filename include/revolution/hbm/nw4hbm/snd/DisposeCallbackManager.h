@@ -2,8 +2,6 @@
 #define NW4R_SND_DISPOSE_CALLBACK_MANAGER_H
 
 #include "revolution/hbm/nw4hbm/snd/DisposeCallback.h"
-#include "revolution/hbm/nw4hbm/ut/LinkList.h"
-#include "revolution/types.h" // u32
 
 namespace nw4hbm {
 namespace snd {

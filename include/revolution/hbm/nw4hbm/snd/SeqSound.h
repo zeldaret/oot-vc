@@ -3,10 +3,8 @@
 
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/snd/BasicSound.h"
 #include "revolution/hbm/nw4hbm/snd/debug.h"
-#include "revolution/hbm/nw4hbm/snd/SeqPlayer.h"
-#include "revolution/hbm/nw4hbm/snd/Task.h"
+// #include "revolution/hbm/nw4hbm/snd/Task.h"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
 
@@ -18,6 +16,8 @@ class SeqSoundHandle;
 namespace detail {
 class NoteOnCallback;
 class SeqTrackAllocator;
+class SeqPlayer;
+class BasicSound;
 template <typename T> class SoundInstanceManager;
 } // namespace detail
 
