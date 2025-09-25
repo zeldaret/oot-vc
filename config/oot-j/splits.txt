@@ -575,13 +575,6 @@ revolution/ax/AX.c:
 	.data       start:0x80186758 end:0x801867A0
 	.sdata      start:0x8025CA78 end:0x8025CA80
 
-revolution/ax/AXComp.c:
-	.data       start:0x80186820 end:0x801877E0
-
-revolution/ax/DSPCode.c:
-	.data       start:0x801877E0 end:0x801897E0
-	.sdata      start:0x8025CA80 end:0x8025CA88
-
 revolution/ax/AXAlloc.c:
 	.text       start:0x800ABDB0 end:0x800AC318
 	.bss        start:0x801E33D0 end:0x801E34E0
@@ -609,6 +602,17 @@ revolution/ax/AXSPB.c:
 
 revolution/ax/AXVPB.c:
 	.text       start:0x800ADFCC end:0x800AF598
+	.data       start:0x801867A0 end:0x80186820
+	.bss        start:0x801EB1A0 end:0x801FDFA0
+	.sbss       start:0x8025D9C8 end:0x8025D9D8
+	.sdata2     start:0x8025E418 end:0x8025E438
+
+revolution/ax/AXComp.c:
+	.data       start:0x80186820 end:0x801877E0
+
+revolution/ax/DSPCode.c:
+	.data       start:0x801877E0 end:0x801897E0
+	.sdata      start:0x8025CA80 end:0x8025CA88
 
 revolution/ax/AXProf.c:
 	.text       start:0x800AF598 end:0x800AF5D8
