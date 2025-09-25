@@ -23,6 +23,12 @@
 #include "revolution/vi.h"
 #include "string.h"
 
+//! TODO: cleanup
+extern void update_sound__Q210homebutton10HomeButtonFv();
+extern HBMSelectBtnNum getSelectBtnNum__Q210homebutton10HomeButtonFv();
+extern void draw__Q310homebutton10HomeButton10BlackFaderFv();
+extern void deleteInstance__Q210homebutton10HomeButtonFv();
+
 //! TODO: move to the proper headers when documented properly
 extern char* fn_800887C8(void*, char*, u8);
 extern s32 fn_8008882C(void**, u32, MEMAllocator*, MEMAllocator*);
@@ -866,22 +872,22 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
                 case_4:
                 case 4:
                     helpMenuUnknownControllerInline();
-                    fn_80100E40();
+                    update_sound__Q210homebutton10HomeButtonFv();
                     if (fn_80100948(&lbl_801CA670) == -1) {
                         break;
                     }
 
-                    switch (fn_80100AB8()) {
-                        case 1:
+                    switch (getSelectBtnNum__Q210homebutton10HomeButtonFv()) {
+                        case HBM_SELECT_BTN1:
                             VISetBlack(true);
                             VIFlush();
                             fn_8000A830(gpSystem, 0x1004, NULL);
                             OSReturnToMenu();
-                        case 2:
+                        case HBM_SELECT_BTN2:
                             lbl_8025D110 = 0;
                             lbl_8025D0EC = true;
                             goto case_9;
-                        case 3:
+                        case HBM_SELECT_BTN3:
                             lbl_8025D118 = 6;
                             fn_80088660();
                             fn_8005F7E4_UnknownInline();
@@ -903,7 +909,7 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
                             lbl_8025D114 = -3;
                             lbl_8025D118 = 8;
                             goto case_8;
-                        case 0:
+                        case HBM_SELECT_HOMEBTN:
                             lbl_8025D118 = 8;
                             goto case_8;
                     }
@@ -957,7 +963,7 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
             GXSetBlendMode(GX_BM_NONE, GX_BL_ZERO, GX_BL_ZERO, GX_LO_CLEAR);
             GXSetZMode(GX_ENABLE, GX_LEQUAL, GX_ENABLE);
             GXSetCurrentMtx(3);
-            fn_8010098C();
+            draw__Q310homebutton10HomeButton10BlackFaderFv();
             lbl_8025D0FC ^= 1;
             GXCopyDisp(lbl_8025D100[lbl_8025D0FC], GX_TRUE);
             GXDrawDone();
@@ -974,7 +980,7 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
         lbl_8025D0C8 = NULL;
 
         fn_80100E0C();
-        fn_801008F8();
+        deleteInstance__Q210homebutton10HomeButtonFv();
         fn_80083154();
         AXQuit();
         fn_800B1B80();
