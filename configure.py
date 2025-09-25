@@ -463,7 +463,7 @@ config.libs = [
         [
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AX.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXAlloc.c"),
-            Object(NotLinked, "revolution/ax/AXAux.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXAux.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXCL.c"),
             Object(NotLinked, "revolution/ax/AXOut.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXSPB.c"),
