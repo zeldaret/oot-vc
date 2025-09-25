@@ -4,8 +4,8 @@
 #include "revolution/gx/GXRegs.h"
 #include "revolution/os.h"
 
-static __GXFifoObj CPUFifo;
-static __GXFifoObj GPFifo;
+static GXFifoObjImpl CPUFifo;
+static GXFifoObjImpl GPFifo;
 
 static OSThread* __GXCurrentThread;
 static bool GXOverflowSuspendInProgress;
@@ -22,7 +22,7 @@ void GXInitFifoLimits(GXFifoObj* fifo, u32 highWatermark, u32 lowWatermark);
 
 static void __GXFifoLink(GXBool en);
 static void __GXWriteFifoIntEnable(GXBool hi, GXBool lo);
-static void __GXWriteFifoIntReset(GXBool hiWatermarkClr, GXBool loWatermarkClr);
+static void __GXWriteFifoIntReset(GXBool highWatermarkClr, GXBool lowWatermarkClr);
 static void __GXFifoReadEnable(void);
 static void __GXFifoReadDisable(void);
 
@@ -73,7 +73,7 @@ void GXCPInterruptHandler(s16 p1, OSContext* context) {
 }
 
 void GXInitFifoBase(GXFifoObj* fifo, void* base, u32 size) {
-    GXFifoObjPriv* pFifo = (GXFifoObjPriv*)fifo;
+    GXFifoObjImpl* pFifo = (GXFifoObjImpl*)fifo;
     pFifo->base = base;
     pFifo->end = (void*)((u32)base + size - 4);
     pFifo->size = size;
@@ -83,7 +83,7 @@ void GXInitFifoBase(GXFifoObj* fifo, void* base, u32 size) {
 }
 
 void GXInitFifoPtrs(GXFifoObj* fifo, void* readPtr, void* writePtr) {
-    GXFifoObjPriv* pFifo = (GXFifoObjPriv*)fifo;
+    GXFifoObjImpl* pFifo = (GXFifoObjImpl*)fifo;
     int interrupts = OSDisableInterrupts();
     pFifo->readPtr = readPtr;
     pFifo->writePtr = writePtr;
@@ -95,7 +95,7 @@ void GXInitFifoPtrs(GXFifoObj* fifo, void* readPtr, void* writePtr) {
 }
 
 void GXInitFifoLimits(GXFifoObj* fifo, u32 highWatermark, u32 lowWatermark) {
-    GXFifoObjPriv* pFifo = (GXFifoObjPriv*)fifo;
+    GXFifoObjImpl* pFifo = (GXFifoObjImpl*)fifo;
     pFifo->highWatermark = highWatermark;
     pFifo->lowWatermark = lowWatermark;
 }
@@ -115,8 +115,8 @@ void __GXFifoInit(void) {
     __OSUnmaskInterrupts(0x4000);
     __GXCurrentThread = OSGetCurrentThread();
     GXOverflowSuspendInProgress = 0;
-    memset(&CPUFifo, 0, sizeof(__GXFifoObj));
-    memset(&GPFifo, 0, sizeof(__GXFifoObj));
+    memset(&CPUFifo, 0, sizeof(GXFifoObjImpl));
+    memset(&GPFifo, 0, sizeof(GXFifoObjImpl));
     CPGPLinked = false;
     GPFifoReady = false;
 }
@@ -132,9 +132,9 @@ static void __GXWriteFifoIntEnable(GXBool hi, GXBool lo) {
     GX_CP_REG_WRITE_U16(1, gx->cpEnable);
 }
 
-static void __GXWriteFifoIntReset(GXBool hiWatermarkClr, GXBool loWatermarkClr) {
-    FAST_FLAG_SET(gx->cpClr, hiWatermarkClr, 0, 1);
-    FAST_FLAG_SET(gx->cpClr, loWatermarkClr, 1, 1);
+static void __GXWriteFifoIntReset(GXBool highWatermarkClr, GXBool lowWatermarkClr) {
+    FAST_FLAG_SET(gx->cpClr, highWatermarkClr, 0, 1);
+    FAST_FLAG_SET(gx->cpClr, lowWatermarkClr, 1, 1);
     GX_CP_REG_WRITE_U16(2, (u16)gx->cpClr);
 }
 
@@ -159,26 +159,26 @@ void __GXCleanGPFifo(void) {
     __GXFifoReadDisable();
     __GXWriteFifoIntEnable(GX_FALSE, GX_FALSE);
 
-    GPFifo.rdPtr = GPFifo.wrPtr;
-    GPFifo.count = 0;
+    GPFifo.readPtr = GPFifo.writePtr;
+    GPFifo.rwDistance = 0;
 
-    GX_CP_REG_WRITE_U16(0x18, GPFifo.count);
-    GX_CP_REG_WRITE_U16(0x1A, TOPHYSICAL(GPFifo.wrPtr));
-    GX_CP_REG_WRITE_U16(0x1C, TOPHYSICAL(GPFifo.rdPtr));
+    GX_CP_REG_WRITE_U16(0x18, GPFifo.rwDistance);
+    GX_CP_REG_WRITE_U16(0x1A, TOPHYSICAL(GPFifo.writePtr));
+    GX_CP_REG_WRITE_U16(0x1C, TOPHYSICAL(GPFifo.readPtr));
 
-    GX_CP_REG_WRITE_U16(0x19, GPFifo.count >> 16);
-    GX_CP_REG_WRITE_U16(0x1B, TOPHYSICAL(GPFifo.wrPtr) >> 16);
-    GX_CP_REG_WRITE_U16(0x1D, TOPHYSICAL(GPFifo.rdPtr) >> 16);
+    GX_CP_REG_WRITE_U16(0x19, GPFifo.rwDistance >> 16);
+    GX_CP_REG_WRITE_U16(0x1B, TOPHYSICAL(GPFifo.writePtr) >> 16);
+    GX_CP_REG_WRITE_U16(0x1D, TOPHYSICAL(GPFifo.readPtr) >> 16);
 
     PPCSync();
 
     if (CPGPLinked) {
         u32 reg = 0;
-        CPUFifo.rdPtr = GPFifo.rdPtr;
-        CPUFifo.wrPtr = GPFifo.wrPtr;
-        CPUFifo.count = GPFifo.count;
+        CPUFifo.readPtr = GPFifo.readPtr;
+        CPUFifo.writePtr = GPFifo.writePtr;
+        CPUFifo.rwDistance = GPFifo.rwDistance;
 
-        FAST_FLAG_SET(reg, (GX_PHY_ADDR(TOPHYSICAL(CPUFifo.wrPtr)) >> 5), 5, 24);
+        FAST_FLAG_SET(reg, (GX_PHY_ADDR(TOPHYSICAL(CPUFifo.writePtr)) >> 5), 5, 24);
         GX_PI_REG_WRITE_U32(0x14, reg);
 
         __GXWriteFifoIntEnable(GX_TRUE, GX_FALSE);
