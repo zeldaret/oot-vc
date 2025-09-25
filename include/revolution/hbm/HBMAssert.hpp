@@ -83,9 +83,9 @@
 #define NW4HBMWarningMessage_Line(line_, ...)             NW4HBMCheckMessage_FileLine(__FILE__,   line_ , false, __VA_ARGS__)
 #define NW4HBMWarningMessage(...)                         NW4HBMCheckMessage_FileLine(__FILE__, __LINE__, false, __VA_ARGS__)
 
-#define NW4HBMAssertWarningMessage_FileLine(file_, line_, expr_,  ...)  NW4HBMCheckMessage_FileLine(  file_ ,   line_ , expr_, __VA_ARGS__)
-#define NW4HBMAssertWarningMessage_File(file_, expr_,  ...)             NW4HBMCheckMessage_FileLine(  file_ , __LINE__, expr_, __VA_ARGS__)
-#define NW4HBMAssertWarningMessage_Line(line_, expr_,  ...)             NW4HBMCheckMessage_FileLine(__FILE__,   line_ , expr_, __VA_ARGS__)
+#define NW4HBMAssertWarningMessage_FileLine(expr_, file_, line_, ...)  NW4HBMCheckMessage_FileLine(  file_ ,   line_ , expr_, __VA_ARGS__)
+#define NW4HBMAssertWarningMessage_File(expr_, file_,  ...)             NW4HBMCheckMessage_FileLine(  file_ , __LINE__, expr_, __VA_ARGS__)
+#define NW4HBMAssertWarningMessage_Line(expr_, line_,  ...)             NW4HBMCheckMessage_FileLine(__FILE__,   line_ , expr_, __VA_ARGS__)
 #define NW4HBMAssertWarningMessage(expr_, ...)                          NW4HBMCheckMessage_FileLine(__FILE__, __LINE__, expr_, __VA_ARGS__)
 
 #define NW4HBMWarning_FileLine(file_, line_)              NW4HBMCheck_FileLine(  file_ ,   line_ , false)

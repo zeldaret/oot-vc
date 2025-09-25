@@ -1,7 +1,9 @@
-#include "revolution/hbm/snd.hpp"
+#include "revolution/hbm/nw4hbm/snd/RemoteSpeakerManager.h"
 
 #include "revolution/ax.h"
+#include "revolution/hbm/HBMAssert.hpp"
 #include "revolution/os.h"
+#include "decomp.h"
 
 namespace nw4hbm {
 namespace snd {
@@ -18,16 +20,22 @@ RemoteSpeakerManager::RemoteSpeakerManager() : mInitialized(false) {
     }
 }
 
-RemoteSpeaker& RemoteSpeakerManager::GetRemoteSpeaker(int idx) { return mSpeaker[idx]; }
+RemoteSpeaker& RemoteSpeakerManager::GetRemoteSpeaker(int channelIndex) {
+    NW4HBMAssertHeaderClampedLValue(channelIndex, 0, 4);
+    return mSpeaker[channelIndex];
+}
 
 void RemoteSpeakerManager::Setup() {
     if (mInitialized) {
         return;
     }
 
-    OSCreateAlarm(&mRemoteSpeakerAlarm);
+    for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
+        mSpeaker[i].InitParam();
+    }
 
-    OSSetPeriodicAlarm(&mRemoteSpeakerAlarm, OSGetTime(), OS_NSEC_TO_TICKS(SPEAKER_ALARM_PERIOD_NSEC),
+    OSCreateAlarm(&mRemoteSpeakerAlarm);
+    OSSetPeriodicAlarm(&mRemoteSpeakerAlarm, OSGetTime(), OSNanosecondsToTicks(SPEAKER_ALARM_PERIOD_NSEC),
                        RemoteSpeakerAlarmProc);
 
     mInitialized = true;
@@ -42,11 +50,9 @@ void RemoteSpeakerManager::Shutdown() {
     mInitialized = false;
 }
 
-void RemoteSpeakerManager::RemoteSpeakerAlarmProc(OSAlarm* pAlarm, OSContext* pCtx) {
-#pragma unused(pAlarm)
-#pragma unused(pCtx)
-
-    RemoteSpeakerManager& r = GetInstance();
+void RemoteSpeakerManager::RemoteSpeakerAlarmProc(OSAlarm* alarm, OSContext* context) {
+    RemoteSpeakerManager& manager = GetInstance();
+    NW4HBMAssert_Line(&manager.mRemoteSpeakerAlarm == alarm, 141);
 
     s16 samples[RemoteSpeaker::SAMPLES_PER_AUDIO_PACKET];
     if (AXRmtGetSamplesLeft() < RemoteSpeaker::SAMPLES_PER_AUDIO_PACKET) {
@@ -54,13 +60,12 @@ void RemoteSpeakerManager::RemoteSpeakerAlarmProc(OSAlarm* pAlarm, OSContext* pC
     }
 
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
-        if (r.mSpeaker[i].IsAvailable()) {
-            AXRmtGetSamples(i, samples, RemoteSpeaker::SAMPLES_PER_AUDIO_PACKET);
-
-            r.mSpeaker[i].UpdateStreamData(samples);
+        if (manager.mSpeaker[i].IsAvailable()) {
+            s32 sampleSize = AXRmtGetSamples(i, samples, RemoteSpeaker::SAMPLES_PER_AUDIO_PACKET);
+            NW4HBMAssertWarningMessage_Line(sampleSize == RemoteSpeaker::SAMPLES_PER_AUDIO_PACKET, 157,
+                                            "wrong remote sample size");
+            manager.mSpeaker[i].Update(samples);
         }
-
-        r.mSpeaker[i].Update();
     }
 
     AXRmtAdvancePtr(RemoteSpeaker::SAMPLES_PER_AUDIO_PACKET);

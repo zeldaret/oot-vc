@@ -181,7 +181,7 @@ typedef WUDAllocFunc WPADAllocFunc;
 typedef WUDFreeFunc WPADFreeFunc;
 
 typedef void (*WPADSamplingCallback)(WPADChannel chan);
-typedef void WPADCallback(WPADChannel chan, WPADResult result);
+typedef void (*WPADCallback)(WPADChannel chan, WPADResult result);
 typedef void WPADConnectCallback(WPADChannel chan, WPADResult result);
 typedef void WPADExtensionCallback(WPADChannel chan, s32 devType);
 
