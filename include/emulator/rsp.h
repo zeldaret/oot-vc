@@ -10,8 +10,8 @@
 extern "C" {
 #endif
 
-#define SP_IMEM_SIZE 0x1000
 #define SP_DMEM_SIZE 0x1000
+#define SP_IMEM_SIZE 0x1000
 
 #define SP_DMEM_START 0x04000000
 #define SP_IMEM_START 0x04001000

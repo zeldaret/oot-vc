@@ -1212,12 +1212,10 @@ static bool rspParseGBI_F3DEX2(Rsp* pRSP, u64** ppnGBI, bool* pbDone) {
 
                         xlHeapCopy((u8*)pRSP->pDMEM + nDestAdrs, &destVtx, sizeof(zVtxDest));
 
-                        nSrcAdrs += 6;
-                        nDestAdrs += 16;
-                        iCount++;
                         if (pRSP->nNumZSortVertices > 127) {
                             return false;
                         }
+                        break;
                     }
                 }
             }
@@ -1489,7 +1487,7 @@ static bool rspParseGBI_F3DEX2(Rsp* pRSP, u64** ppnGBI, bool* pbDone) {
                         }
                     } else {
                         if ((pFrame->bPauseThisFrame || pFrame->nLastFrameZSets == 0) && !pFrame->bUsingLens) {
-                            u8 cTempAlpha = pFrame->cBlurAlpha;
+                            s8 cTempAlpha = pFrame->cBlurAlpha;
 
                             pFrame->cBlurAlpha = 220;
                             ZeldaDrawFrame(pFrame, pFrame->nCopyBuffer);
@@ -1521,7 +1519,7 @@ static bool rspParseGBI_F3DEX2(Rsp* pRSP, u64** ppnGBI, bool* pbDone) {
                         }
                     } else {
                         if ((pFrame->bPauseThisFrame || pFrame->nLastFrameZSets == 0) && !pFrame->bUsingLens) {
-                            u8 cTempAlpha = pFrame->cBlurAlpha;
+                            s8 cTempAlpha = pFrame->cBlurAlpha;
 
                             pFrame->cBlurAlpha = 220;
                             ZeldaDrawFrame(pFrame, pFrame->nCopyBuffer);

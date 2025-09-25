@@ -372,13 +372,15 @@ static inline void rspUndoZigzagData(Rsp* pRSP, u8** databuf, int n, int* preDc)
     int i;
     int z;
 
-    Dc = (*(*databuf)++ << 8) | *(*databuf)++;
+    Dc = (*(*databuf)++ << 8);
+    Dc |= *(*databuf)++;
     pRSP->dctBuf[n * 64] = Dc + preDc[0];
     preDc[0] += Dc;
 
     for (z = 1; z < 64; z++) {
         i = pRSP->Zigzag[z];
-        Ac = ((*(*databuf)++ & 0xFF) << 8) | *(*databuf)++;
+        Ac = ((*(*databuf)++ & 0xFF) << 8);
+        Ac |= *(*databuf)++;
         pRSP->dctBuf[n * 64 + (i & 7) * 8 + (i >> 3)] = Ac;
     }
 }
@@ -421,7 +423,7 @@ void rspUndoQuantize(Rsp* pRSP, s32 scale) {
 void rspUndoDCT(Rsp* pRSP) {
     s32 c;
     s32 i;
-    s32 j;
+    u32 j;
     s32 k;
     s32 dd;
     s16 t[8][8];
@@ -758,73 +760,73 @@ static void rspQuantizeZ(Rsp* pRSP, s16* dataBuf) {
 }
 
 void rspZigzagDataZ(Rsp* pRSP, s16* dataBuf) {
-    s32 c;
+    int c;
 
-    for (c = 0; c < 6; c++, dataBuf += 0x40) {
-        dataBuf[0] = pRSP->dctBuf[c * 0x40 + 0];
-        dataBuf[1] = pRSP->dctBuf[c * 0x40 + 8];
-        dataBuf[2] = pRSP->dctBuf[c * 0x40 + 1];
-        dataBuf[3] = pRSP->dctBuf[c * 0x40 + 2];
-        dataBuf[4] = pRSP->dctBuf[c * 0x40 + 9];
-        dataBuf[5] = pRSP->dctBuf[c * 0x40 + 16];
-        dataBuf[6] = pRSP->dctBuf[c * 0x40 + 24];
-        dataBuf[7] = pRSP->dctBuf[c * 0x40 + 17];
-        dataBuf[8] = pRSP->dctBuf[c * 0x40 + 10];
-        dataBuf[9] = pRSP->dctBuf[c * 0x40 + 3];
-        dataBuf[10] = pRSP->dctBuf[c * 0x40 + 4];
-        dataBuf[11] = pRSP->dctBuf[c * 0x40 + 11];
-        dataBuf[12] = pRSP->dctBuf[c * 0x40 + 18];
-        dataBuf[13] = pRSP->dctBuf[c * 0x40 + 25];
-        dataBuf[14] = pRSP->dctBuf[c * 0x40 + 32];
-        dataBuf[15] = pRSP->dctBuf[c * 0x40 + 40];
-        dataBuf[16] = pRSP->dctBuf[c * 0x40 + 33];
-        dataBuf[17] = pRSP->dctBuf[c * 0x40 + 26];
-        dataBuf[18] = pRSP->dctBuf[c * 0x40 + 19];
-        dataBuf[19] = pRSP->dctBuf[c * 0x40 + 12];
-        dataBuf[20] = pRSP->dctBuf[c * 0x40 + 5];
-        dataBuf[21] = pRSP->dctBuf[c * 0x40 + 6];
-        dataBuf[22] = pRSP->dctBuf[c * 0x40 + 13];
-        dataBuf[23] = pRSP->dctBuf[c * 0x40 + 20];
-        dataBuf[24] = pRSP->dctBuf[c * 0x40 + 27];
-        dataBuf[25] = pRSP->dctBuf[c * 0x40 + 34];
-        dataBuf[26] = pRSP->dctBuf[c * 0x40 + 41];
-        dataBuf[27] = pRSP->dctBuf[c * 0x40 + 48];
-        dataBuf[28] = pRSP->dctBuf[c * 0x40 + 56];
-        dataBuf[29] = pRSP->dctBuf[c * 0x40 + 49];
-        dataBuf[30] = pRSP->dctBuf[c * 0x40 + 42];
-        dataBuf[31] = pRSP->dctBuf[c * 0x40 + 35];
-        dataBuf[32] = pRSP->dctBuf[c * 0x40 + 28];
-        dataBuf[33] = pRSP->dctBuf[c * 0x40 + 21];
-        dataBuf[34] = pRSP->dctBuf[c * 0x40 + 14];
-        dataBuf[35] = pRSP->dctBuf[c * 0x40 + 7];
-        dataBuf[36] = pRSP->dctBuf[c * 0x40 + 15];
-        dataBuf[37] = pRSP->dctBuf[c * 0x40 + 22];
-        dataBuf[38] = pRSP->dctBuf[c * 0x40 + 29];
-        dataBuf[39] = pRSP->dctBuf[c * 0x40 + 36];
-        dataBuf[40] = pRSP->dctBuf[c * 0x40 + 43];
-        dataBuf[41] = pRSP->dctBuf[c * 0x40 + 50];
-        dataBuf[42] = pRSP->dctBuf[c * 0x40 + 57];
-        dataBuf[43] = pRSP->dctBuf[c * 0x40 + 58];
-        dataBuf[44] = pRSP->dctBuf[c * 0x40 + 51];
-        dataBuf[45] = pRSP->dctBuf[c * 0x40 + 44];
-        dataBuf[46] = pRSP->dctBuf[c * 0x40 + 37];
-        dataBuf[47] = pRSP->dctBuf[c * 0x40 + 30];
-        dataBuf[48] = pRSP->dctBuf[c * 0x40 + 23];
-        dataBuf[49] = pRSP->dctBuf[c * 0x40 + 31];
-        dataBuf[50] = pRSP->dctBuf[c * 0x40 + 38];
-        dataBuf[51] = pRSP->dctBuf[c * 0x40 + 45];
-        dataBuf[52] = pRSP->dctBuf[c * 0x40 + 52];
-        dataBuf[53] = pRSP->dctBuf[c * 0x40 + 59];
-        dataBuf[54] = pRSP->dctBuf[c * 0x40 + 60];
-        dataBuf[55] = pRSP->dctBuf[c * 0x40 + 53];
-        dataBuf[56] = pRSP->dctBuf[c * 0x40 + 46];
-        dataBuf[57] = pRSP->dctBuf[c * 0x40 + 39];
-        dataBuf[58] = pRSP->dctBuf[c * 0x40 + 47];
-        dataBuf[59] = pRSP->dctBuf[c * 0x40 + 54];
-        dataBuf[60] = pRSP->dctBuf[c * 0x40 + 61];
-        dataBuf[61] = pRSP->dctBuf[c * 0x40 + 62];
-        dataBuf[62] = pRSP->dctBuf[c * 0x40 + 55];
-        dataBuf[63] = pRSP->dctBuf[c * 0x40 + 63];
+    for (c = 0; c < 6; c++) {
+        dataBuf[c * 0x40 + 0] = pRSP->dctBuf[c * 0x40 + 0];
+        dataBuf[c * 0x40 + 1] = pRSP->dctBuf[c * 0x40 + 8];
+        dataBuf[c * 0x40 + 2] = pRSP->dctBuf[c * 0x40 + 1];
+        dataBuf[c * 0x40 + 3] = pRSP->dctBuf[c * 0x40 + 2];
+        dataBuf[c * 0x40 + 4] = pRSP->dctBuf[c * 0x40 + 9];
+        dataBuf[c * 0x40 + 5] = pRSP->dctBuf[c * 0x40 + 16];
+        dataBuf[c * 0x40 + 6] = pRSP->dctBuf[c * 0x40 + 24];
+        dataBuf[c * 0x40 + 7] = pRSP->dctBuf[c * 0x40 + 17];
+        dataBuf[c * 0x40 + 8] = pRSP->dctBuf[c * 0x40 + 10];
+        dataBuf[c * 0x40 + 9] = pRSP->dctBuf[c * 0x40 + 3];
+        dataBuf[c * 0x40 + 10] = pRSP->dctBuf[c * 0x40 + 4];
+        dataBuf[c * 0x40 + 11] = pRSP->dctBuf[c * 0x40 + 11];
+        dataBuf[c * 0x40 + 12] = pRSP->dctBuf[c * 0x40 + 18];
+        dataBuf[c * 0x40 + 13] = pRSP->dctBuf[c * 0x40 + 25];
+        dataBuf[c * 0x40 + 14] = pRSP->dctBuf[c * 0x40 + 32];
+        dataBuf[c * 0x40 + 15] = pRSP->dctBuf[c * 0x40 + 40];
+        dataBuf[c * 0x40 + 16] = pRSP->dctBuf[c * 0x40 + 33];
+        dataBuf[c * 0x40 + 17] = pRSP->dctBuf[c * 0x40 + 26];
+        dataBuf[c * 0x40 + 18] = pRSP->dctBuf[c * 0x40 + 19];
+        dataBuf[c * 0x40 + 19] = pRSP->dctBuf[c * 0x40 + 12];
+        dataBuf[c * 0x40 + 20] = pRSP->dctBuf[c * 0x40 + 5];
+        dataBuf[c * 0x40 + 21] = pRSP->dctBuf[c * 0x40 + 6];
+        dataBuf[c * 0x40 + 22] = pRSP->dctBuf[c * 0x40 + 13];
+        dataBuf[c * 0x40 + 23] = pRSP->dctBuf[c * 0x40 + 20];
+        dataBuf[c * 0x40 + 24] = pRSP->dctBuf[c * 0x40 + 27];
+        dataBuf[c * 0x40 + 25] = pRSP->dctBuf[c * 0x40 + 34];
+        dataBuf[c * 0x40 + 26] = pRSP->dctBuf[c * 0x40 + 41];
+        dataBuf[c * 0x40 + 27] = pRSP->dctBuf[c * 0x40 + 48];
+        dataBuf[c * 0x40 + 28] = pRSP->dctBuf[c * 0x40 + 56];
+        dataBuf[c * 0x40 + 29] = pRSP->dctBuf[c * 0x40 + 49];
+        dataBuf[c * 0x40 + 30] = pRSP->dctBuf[c * 0x40 + 42];
+        dataBuf[c * 0x40 + 31] = pRSP->dctBuf[c * 0x40 + 35];
+        dataBuf[c * 0x40 + 32] = pRSP->dctBuf[c * 0x40 + 28];
+        dataBuf[c * 0x40 + 33] = pRSP->dctBuf[c * 0x40 + 21];
+        dataBuf[c * 0x40 + 34] = pRSP->dctBuf[c * 0x40 + 14];
+        dataBuf[c * 0x40 + 35] = pRSP->dctBuf[c * 0x40 + 7];
+        dataBuf[c * 0x40 + 36] = pRSP->dctBuf[c * 0x40 + 15];
+        dataBuf[c * 0x40 + 37] = pRSP->dctBuf[c * 0x40 + 22];
+        dataBuf[c * 0x40 + 38] = pRSP->dctBuf[c * 0x40 + 29];
+        dataBuf[c * 0x40 + 39] = pRSP->dctBuf[c * 0x40 + 36];
+        dataBuf[c * 0x40 + 40] = pRSP->dctBuf[c * 0x40 + 43];
+        dataBuf[c * 0x40 + 41] = pRSP->dctBuf[c * 0x40 + 50];
+        dataBuf[c * 0x40 + 42] = pRSP->dctBuf[c * 0x40 + 57];
+        dataBuf[c * 0x40 + 43] = pRSP->dctBuf[c * 0x40 + 58];
+        dataBuf[c * 0x40 + 44] = pRSP->dctBuf[c * 0x40 + 51];
+        dataBuf[c * 0x40 + 45] = pRSP->dctBuf[c * 0x40 + 44];
+        dataBuf[c * 0x40 + 46] = pRSP->dctBuf[c * 0x40 + 37];
+        dataBuf[c * 0x40 + 47] = pRSP->dctBuf[c * 0x40 + 30];
+        dataBuf[c * 0x40 + 48] = pRSP->dctBuf[c * 0x40 + 23];
+        dataBuf[c * 0x40 + 49] = pRSP->dctBuf[c * 0x40 + 31];
+        dataBuf[c * 0x40 + 50] = pRSP->dctBuf[c * 0x40 + 38];
+        dataBuf[c * 0x40 + 51] = pRSP->dctBuf[c * 0x40 + 45];
+        dataBuf[c * 0x40 + 52] = pRSP->dctBuf[c * 0x40 + 52];
+        dataBuf[c * 0x40 + 53] = pRSP->dctBuf[c * 0x40 + 59];
+        dataBuf[c * 0x40 + 54] = pRSP->dctBuf[c * 0x40 + 60];
+        dataBuf[c * 0x40 + 55] = pRSP->dctBuf[c * 0x40 + 53];
+        dataBuf[c * 0x40 + 56] = pRSP->dctBuf[c * 0x40 + 46];
+        dataBuf[c * 0x40 + 57] = pRSP->dctBuf[c * 0x40 + 39];
+        dataBuf[c * 0x40 + 58] = pRSP->dctBuf[c * 0x40 + 47];
+        dataBuf[c * 0x40 + 59] = pRSP->dctBuf[c * 0x40 + 54];
+        dataBuf[c * 0x40 + 60] = pRSP->dctBuf[c * 0x40 + 61];
+        dataBuf[c * 0x40 + 61] = pRSP->dctBuf[c * 0x40 + 62];
+        dataBuf[c * 0x40 + 62] = pRSP->dctBuf[c * 0x40 + 55];
+        dataBuf[c * 0x40 + 63] = pRSP->dctBuf[c * 0x40 + 63];
     }
 }
 
@@ -856,85 +858,85 @@ void rspUndoQuantizeZ(Rsp* pRSP, s16* dataBuf) {
 }
 
 void rspUndoZigzagDataZ(Rsp* pRSP, s16* dataBuf) {
-    s32 c;
+    int c;
 
-    for (c = 0; c < 6; c++, dataBuf += 0x40) {
-        pRSP->dctBuf[c * 0x40 + 0] = dataBuf[0];
-        pRSP->dctBuf[c * 0x40 + 8] = dataBuf[1];
-        pRSP->dctBuf[c * 0x40 + 1] = dataBuf[2];
-        pRSP->dctBuf[c * 0x40 + 2] = dataBuf[3];
-        pRSP->dctBuf[c * 0x40 + 9] = dataBuf[4];
-        pRSP->dctBuf[c * 0x40 + 16] = dataBuf[5];
-        pRSP->dctBuf[c * 0x40 + 24] = dataBuf[6];
-        pRSP->dctBuf[c * 0x40 + 17] = dataBuf[7];
-        pRSP->dctBuf[c * 0x40 + 10] = dataBuf[8];
-        pRSP->dctBuf[c * 0x40 + 3] = dataBuf[9];
-        pRSP->dctBuf[c * 0x40 + 4] = dataBuf[10];
-        pRSP->dctBuf[c * 0x40 + 11] = dataBuf[11];
-        pRSP->dctBuf[c * 0x40 + 18] = dataBuf[12];
-        pRSP->dctBuf[c * 0x40 + 25] = dataBuf[13];
-        pRSP->dctBuf[c * 0x40 + 32] = dataBuf[14];
-        pRSP->dctBuf[c * 0x40 + 40] = dataBuf[15];
-        pRSP->dctBuf[c * 0x40 + 33] = dataBuf[16];
-        pRSP->dctBuf[c * 0x40 + 26] = dataBuf[17];
-        pRSP->dctBuf[c * 0x40 + 19] = dataBuf[18];
-        pRSP->dctBuf[c * 0x40 + 12] = dataBuf[19];
-        pRSP->dctBuf[c * 0x40 + 5] = dataBuf[20];
-        pRSP->dctBuf[c * 0x40 + 6] = dataBuf[21];
-        pRSP->dctBuf[c * 0x40 + 13] = dataBuf[22];
-        pRSP->dctBuf[c * 0x40 + 20] = dataBuf[23];
-        pRSP->dctBuf[c * 0x40 + 27] = dataBuf[24];
-        pRSP->dctBuf[c * 0x40 + 34] = dataBuf[25];
-        pRSP->dctBuf[c * 0x40 + 41] = dataBuf[26];
-        pRSP->dctBuf[c * 0x40 + 48] = dataBuf[27];
-        pRSP->dctBuf[c * 0x40 + 56] = dataBuf[28];
-        pRSP->dctBuf[c * 0x40 + 49] = dataBuf[29];
-        pRSP->dctBuf[c * 0x40 + 42] = dataBuf[30];
-        pRSP->dctBuf[c * 0x40 + 35] = dataBuf[31];
-        pRSP->dctBuf[c * 0x40 + 28] = dataBuf[32];
-        pRSP->dctBuf[c * 0x40 + 21] = dataBuf[33];
-        pRSP->dctBuf[c * 0x40 + 14] = dataBuf[34];
-        pRSP->dctBuf[c * 0x40 + 7] = dataBuf[35];
-        pRSP->dctBuf[c * 0x40 + 15] = dataBuf[36];
-        pRSP->dctBuf[c * 0x40 + 22] = dataBuf[37];
-        pRSP->dctBuf[c * 0x40 + 29] = dataBuf[38];
-        pRSP->dctBuf[c * 0x40 + 36] = dataBuf[39];
-        pRSP->dctBuf[c * 0x40 + 43] = dataBuf[40];
-        pRSP->dctBuf[c * 0x40 + 50] = dataBuf[41];
-        pRSP->dctBuf[c * 0x40 + 57] = dataBuf[42];
-        pRSP->dctBuf[c * 0x40 + 58] = dataBuf[43];
-        pRSP->dctBuf[c * 0x40 + 51] = dataBuf[44];
-        pRSP->dctBuf[c * 0x40 + 44] = dataBuf[45];
-        pRSP->dctBuf[c * 0x40 + 37] = dataBuf[46];
-        pRSP->dctBuf[c * 0x40 + 30] = dataBuf[47];
-        pRSP->dctBuf[c * 0x40 + 23] = dataBuf[48];
-        pRSP->dctBuf[c * 0x40 + 31] = dataBuf[49];
-        pRSP->dctBuf[c * 0x40 + 38] = dataBuf[50];
-        pRSP->dctBuf[c * 0x40 + 45] = dataBuf[51];
-        pRSP->dctBuf[c * 0x40 + 52] = dataBuf[52];
-        pRSP->dctBuf[c * 0x40 + 59] = dataBuf[53];
-        pRSP->dctBuf[c * 0x40 + 60] = dataBuf[54];
-        pRSP->dctBuf[c * 0x40 + 53] = dataBuf[55];
-        pRSP->dctBuf[c * 0x40 + 46] = dataBuf[56];
-        pRSP->dctBuf[c * 0x40 + 39] = dataBuf[57];
-        pRSP->dctBuf[c * 0x40 + 47] = dataBuf[58];
-        pRSP->dctBuf[c * 0x40 + 54] = dataBuf[59];
-        pRSP->dctBuf[c * 0x40 + 61] = dataBuf[60];
-        pRSP->dctBuf[c * 0x40 + 62] = dataBuf[61];
-        pRSP->dctBuf[c * 0x40 + 55] = dataBuf[62];
-        pRSP->dctBuf[c * 0x40 + 63] = dataBuf[63];
+    for (c = 0; c < 6; c++) {
+        pRSP->dctBuf[c * 0x40 + 0] = dataBuf[c * 0x40 + 0];
+        pRSP->dctBuf[c * 0x40 + 8] = dataBuf[c * 0x40 + 1];
+        pRSP->dctBuf[c * 0x40 + 1] = dataBuf[c * 0x40 + 2];
+        pRSP->dctBuf[c * 0x40 + 2] = dataBuf[c * 0x40 + 3];
+        pRSP->dctBuf[c * 0x40 + 9] = dataBuf[c * 0x40 + 4];
+        pRSP->dctBuf[c * 0x40 + 16] = dataBuf[c * 0x40 + 5];
+        pRSP->dctBuf[c * 0x40 + 24] = dataBuf[c * 0x40 + 6];
+        pRSP->dctBuf[c * 0x40 + 17] = dataBuf[c * 0x40 + 7];
+        pRSP->dctBuf[c * 0x40 + 10] = dataBuf[c * 0x40 + 8];
+        pRSP->dctBuf[c * 0x40 + 3] = dataBuf[c * 0x40 + 9];
+        pRSP->dctBuf[c * 0x40 + 4] = dataBuf[c * 0x40 + 10];
+        pRSP->dctBuf[c * 0x40 + 11] = dataBuf[c * 0x40 + 11];
+        pRSP->dctBuf[c * 0x40 + 18] = dataBuf[c * 0x40 + 12];
+        pRSP->dctBuf[c * 0x40 + 25] = dataBuf[c * 0x40 + 13];
+        pRSP->dctBuf[c * 0x40 + 32] = dataBuf[c * 0x40 + 14];
+        pRSP->dctBuf[c * 0x40 + 40] = dataBuf[c * 0x40 + 15];
+        pRSP->dctBuf[c * 0x40 + 33] = dataBuf[c * 0x40 + 16];
+        pRSP->dctBuf[c * 0x40 + 26] = dataBuf[c * 0x40 + 17];
+        pRSP->dctBuf[c * 0x40 + 19] = dataBuf[c * 0x40 + 18];
+        pRSP->dctBuf[c * 0x40 + 12] = dataBuf[c * 0x40 + 19];
+        pRSP->dctBuf[c * 0x40 + 5] = dataBuf[c * 0x40 + 20];
+        pRSP->dctBuf[c * 0x40 + 6] = dataBuf[c * 0x40 + 21];
+        pRSP->dctBuf[c * 0x40 + 13] = dataBuf[c * 0x40 + 22];
+        pRSP->dctBuf[c * 0x40 + 20] = dataBuf[c * 0x40 + 23];
+        pRSP->dctBuf[c * 0x40 + 27] = dataBuf[c * 0x40 + 24];
+        pRSP->dctBuf[c * 0x40 + 34] = dataBuf[c * 0x40 + 25];
+        pRSP->dctBuf[c * 0x40 + 41] = dataBuf[c * 0x40 + 26];
+        pRSP->dctBuf[c * 0x40 + 48] = dataBuf[c * 0x40 + 27];
+        pRSP->dctBuf[c * 0x40 + 56] = dataBuf[c * 0x40 + 28];
+        pRSP->dctBuf[c * 0x40 + 49] = dataBuf[c * 0x40 + 29];
+        pRSP->dctBuf[c * 0x40 + 42] = dataBuf[c * 0x40 + 30];
+        pRSP->dctBuf[c * 0x40 + 35] = dataBuf[c * 0x40 + 31];
+        pRSP->dctBuf[c * 0x40 + 28] = dataBuf[c * 0x40 + 32];
+        pRSP->dctBuf[c * 0x40 + 21] = dataBuf[c * 0x40 + 33];
+        pRSP->dctBuf[c * 0x40 + 14] = dataBuf[c * 0x40 + 34];
+        pRSP->dctBuf[c * 0x40 + 7] = dataBuf[c * 0x40 + 35];
+        pRSP->dctBuf[c * 0x40 + 15] = dataBuf[c * 0x40 + 36];
+        pRSP->dctBuf[c * 0x40 + 22] = dataBuf[c * 0x40 + 37];
+        pRSP->dctBuf[c * 0x40 + 29] = dataBuf[c * 0x40 + 38];
+        pRSP->dctBuf[c * 0x40 + 36] = dataBuf[c * 0x40 + 39];
+        pRSP->dctBuf[c * 0x40 + 43] = dataBuf[c * 0x40 + 40];
+        pRSP->dctBuf[c * 0x40 + 50] = dataBuf[c * 0x40 + 41];
+        pRSP->dctBuf[c * 0x40 + 57] = dataBuf[c * 0x40 + 42];
+        pRSP->dctBuf[c * 0x40 + 58] = dataBuf[c * 0x40 + 43];
+        pRSP->dctBuf[c * 0x40 + 51] = dataBuf[c * 0x40 + 44];
+        pRSP->dctBuf[c * 0x40 + 44] = dataBuf[c * 0x40 + 45];
+        pRSP->dctBuf[c * 0x40 + 37] = dataBuf[c * 0x40 + 46];
+        pRSP->dctBuf[c * 0x40 + 30] = dataBuf[c * 0x40 + 47];
+        pRSP->dctBuf[c * 0x40 + 23] = dataBuf[c * 0x40 + 48];
+        pRSP->dctBuf[c * 0x40 + 31] = dataBuf[c * 0x40 + 49];
+        pRSP->dctBuf[c * 0x40 + 38] = dataBuf[c * 0x40 + 50];
+        pRSP->dctBuf[c * 0x40 + 45] = dataBuf[c * 0x40 + 51];
+        pRSP->dctBuf[c * 0x40 + 52] = dataBuf[c * 0x40 + 52];
+        pRSP->dctBuf[c * 0x40 + 59] = dataBuf[c * 0x40 + 53];
+        pRSP->dctBuf[c * 0x40 + 60] = dataBuf[c * 0x40 + 54];
+        pRSP->dctBuf[c * 0x40 + 53] = dataBuf[c * 0x40 + 55];
+        pRSP->dctBuf[c * 0x40 + 46] = dataBuf[c * 0x40 + 56];
+        pRSP->dctBuf[c * 0x40 + 39] = dataBuf[c * 0x40 + 57];
+        pRSP->dctBuf[c * 0x40 + 47] = dataBuf[c * 0x40 + 58];
+        pRSP->dctBuf[c * 0x40 + 54] = dataBuf[c * 0x40 + 59];
+        pRSP->dctBuf[c * 0x40 + 61] = dataBuf[c * 0x40 + 60];
+        pRSP->dctBuf[c * 0x40 + 62] = dataBuf[c * 0x40 + 61];
+        pRSP->dctBuf[c * 0x40 + 55] = dataBuf[c * 0x40 + 62];
+        pRSP->dctBuf[c * 0x40 + 63] = dataBuf[c * 0x40 + 63];
     }
 }
 
 void rspUndoDCTZ(Rsp* pRSP) {
-    s32 c;
+    u32 c;
     s32 i;
-    s32 j;
+    u32 j;
     s32 k;
     s32 dd;
     s16 t[8][8];
 
-    for (c = 0; c < 6; c++) {
+    for (c = 0; (int)c < 6; c++) {
         for (i = 0; i < 8; i++) {
             for (j = 0; j < 8; j++) {
                 dd = 0;
