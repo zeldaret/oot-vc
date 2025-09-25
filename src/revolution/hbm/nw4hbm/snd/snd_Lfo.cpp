@@ -31,24 +31,26 @@ void Lfo::Update(int msec) {
     mCounter -= static_cast<int>(mCounter);
 }
 
-s8 Lfo::GetSinIdx(int idx) {
-    static const u8 sinTable[TABLE_SIZE + 1] = {0,   6,   12,  19,  25,  31,  37,  43,  49,  54,  60,
-                                                65,  71,  76,  81,  85,  90,  94,  98,  102, 106, 109,
-                                                112, 115, 117, 120, 122, 123, 125, 126, 126, 127, 127};
+s8 Lfo::GetSinIdx(int index) {
+    NW4HBMAssertHeaderClampedLValue_Line(index, 0, 128, 123);
+    static const u8 sinTable[TABLE_SIZE + 1] = {
+        0,  6,  12,  19,  25,  31,  37,  43,  49,  54,  60,  65,  71,  76,  81,  85,  90,
+        94, 98, 102, 106, 109, 112, 115, 117, 120, 122, 123, 125, 126, 126, 127, 127,
+    };
 
-    if (idx < TABLE_SIZE) {
-        return sinTable[idx];
+    if (index < TABLE_SIZE) {
+        return sinTable[index];
     }
 
-    if (idx < TABLE_SIZE * 2) {
-        return sinTable[TABLE_SIZE - (idx - TABLE_SIZE)];
+    if (index < TABLE_SIZE * 2) {
+        return sinTable[TABLE_SIZE - (index - TABLE_SIZE)];
     }
 
-    if (idx < TABLE_SIZE * 3) {
-        return -sinTable[idx - TABLE_SIZE * 2];
+    if (index < TABLE_SIZE * 3) {
+        return -sinTable[index - TABLE_SIZE * 2];
     }
 
-    return -sinTable[TABLE_SIZE - (idx - TABLE_SIZE * 3)];
+    return -sinTable[TABLE_SIZE - (index - TABLE_SIZE * 3)];
 }
 
 f32 Lfo::GetValue() const {
@@ -60,7 +62,7 @@ f32 Lfo::GetValue() const {
         return 0.0f;
     }
 
-    f32 value = GetSinIdx(4 * (TABLE_SIZE * mCounter)) / static_cast<float>(TABLE_SIZE * 4 - 1);
+    f32 value = GetSinIdx(4 * (TABLE_SIZE * mCounter)) / static_cast<f32>(TABLE_SIZE * 4 - 1);
 
     value *= mParam.depth;
     value *= mParam.range;

@@ -13,7 +13,7 @@
 #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_EnvGenerator.hpp"
 #include "revolution/hbm/nw4hbm/snd/InstancePool.h"
-#include "revolution/hbm/nw4hbm/snd/snd_Lfo.hpp"
+#include "revolution/hbm/nw4hbm/snd/Lfo.h"
 #include "revolution/hbm/nw4hbm/snd/snd_MoveValue.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
 
