@@ -37,7 +37,9 @@ typedef struct _GXFifoObjImpl {
     /* 0x14 */ void* readPtr;
     /* 0x18 */ void* writePtr;
     /* 0x1C */ s32 rwDistance;
-    /* 0x20 */ u8 wrap;
+    /* 0x20 */ GXBool wrap;
+    /* 0x21 */ GXBool bindCPU;
+    /* 0x22 */ GXBool bindGP;
 } GXFifoObjImpl;
 
 typedef struct _GXLightObjImpl {
