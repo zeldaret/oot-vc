@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-void* malloc(size_t) throw();
-void free(void*) throw();
+void* malloc(size_t);
+void free(void*);
 
 #ifdef __cplusplus
 }
