@@ -552,8 +552,8 @@ config.libs = [
     RevolutionLib(
         "pad",
         [
-            Object(NotLinked, "revolution/pad/Padclamp.c"),
-            Object(NotLinked, "revolution/pad/Pad.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/pad/Padclamp.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/pad/Pad.c"),
         ]
     ),
     RevolutionLib(

@@ -732,6 +732,7 @@ revolution/fs/fs.c:
 
 revolution/pad/Padclamp.c:
 	.text       start:0x800BB2E8 end:0x800BB4EC
+	.sdata2     start:0x8025E718 end:0x8025E720
 
 revolution/pad/Pad.c:
 	.text       start:0x800BB4EC end:0x800BCCCC
