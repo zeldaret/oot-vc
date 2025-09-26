@@ -14,6 +14,12 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 namespace SoundArchiveFile {
+
+static const u32 SIGNATURE_FILE = 'RSAR';
+static const u32 SIGNATURE_INFO_BLOCK = 'INFO';
+static const u32 SIGNATURE_SYMB_BLOCK = 'SYMB';
+static const int FILE_VERSION = NW4R_VERSION(1, 1);
+
 typedef struct StringTreeNode {
     u16 flags; // 0x00
     u16 bit; // 0x02
@@ -190,17 +196,13 @@ static const int HEADER_AREA_SIZE = OSRoundUp32B(sizeof(Header)) + 40;
 
 class SoundArchiveFileReader {
   public:
-    static const u32 SIGNATURE = 'RSAR';
-    static const int FILE_VERSION = NW4R_VERSION(1, 1);
-
-  public:
     SoundArchiveFileReader();
 
     void Init(const void* soundArchiveData);
     bool IsValidFileHeader(const void* soundArchiveData);
 
-    void SetStringChunk(const void* chunk, u32 size);
-    void SetInfoChunk(const void* chunk, u32 size);
+    void SetStringChunk(const void* stringChunk, u32 size);
+    void SetInfoChunk(const void* infoChunk, u32 size);
 
     SoundType GetSoundType(u32 id) const;
 
@@ -218,6 +220,7 @@ class SoundArchiveFileReader {
     u32 GetSoundStringId(u32 id) const;
     u32 GetPlayerCount() const;
     u32 GetGroupCount() const;
+    u32 GetFileCount() const;
 
     const char* GetSoundLabelString(u32 id) const;
     u32 GetSoundUserParam(u32 id) const;
