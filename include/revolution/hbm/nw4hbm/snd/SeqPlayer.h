@@ -1,11 +1,17 @@
 #ifndef NW4R_SND_SEQ_PLAYER_H
 #define NW4R_SND_SEQ_PLAYER_H
 
+
 #include "macros.h" // ATTRIBUTE_UNUSED
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/BasicPlayer.h"
+
+//! TODO: find a way to remove this hack
+#define DISPOSECALLBACK_DTOR_ZERO
 #include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h" // DisposeCallback
+#undef DISPOSECALLBACK_DTOR_ZERO
+
 #include "revolution/hbm/nw4hbm/snd/SoundThread.h"
 
 namespace nw4hbm {

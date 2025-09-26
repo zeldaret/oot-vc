@@ -11,8 +11,14 @@ class DisposeCallback {
   public:
     ut::LinkListNode mDisposeLink; // 0x00
 
-    // unfortunately required
-    virtual ~DisposeCallback() = 0 {}; // 0x08
+    virtual ~DisposeCallback()
+
+    //! TODO: required to match snd_SeqPlayer.cpp
+#ifdef DISPOSECALLBACK_DTOR_ZERO
+    = 0
+#endif
+
+    {}; // 0x08
 
     virtual void InvalidateData(const void* start, const void* end) = 0; // 0x0C
     virtual void InvalidateWaveData(const void* start, const void* end) = 0; // 0x10
