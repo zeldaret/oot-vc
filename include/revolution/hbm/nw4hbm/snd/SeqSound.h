@@ -61,7 +61,7 @@ class SeqSound : public BasicSound {
     SeqPlayer::SetupResult Setup(SeqTrackAllocator* trackAllocator, u32 allocTrackFlags, int voices,
                                  NoteOnCallback* callback);
 
-    void Prepare(const void* base, s32 seqOffset);
+    void Prepare(const void* seqBase, s32 seqOffset);
     void Prepare(const SeqLoadCallback* callback, u32 callbackData);
 
     void SetChannelPriority(int priority);

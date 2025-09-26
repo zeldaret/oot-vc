@@ -63,6 +63,7 @@ template <typename T> class SoundInstanceManager {
     }
 
     void Free(T* sound) {
+        NW4HBMAssertPointerNonnull_Line(sound, 134);
         ut::AutoInterruptLock lock;
 
         if (mPriorityList.IsEmpty()) {
