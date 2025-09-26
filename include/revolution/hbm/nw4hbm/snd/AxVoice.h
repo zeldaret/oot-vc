@@ -33,10 +33,6 @@ class AxVoiceParamBlock {
 
     bool IsRun() const { return IsAvailable() && mVpb->pb.state == AX_VOICE_RUN; }
 
-    bool IsLpfEnable() const { return IsAvailable() && mVpb->pb.rmtIIR.lpf.on == AX_PB_LPF_ON; }
-
-    bool IsBiquadEnable() const { return IsAvailable() && mVpb->pb.biquad.on == AX_PB_BIQUAD_ON; }
-
     u32 GetCurrentAddress() const {
         if (!IsAvailable()) {
             return 0;

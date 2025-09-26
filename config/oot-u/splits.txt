@@ -597,7 +597,7 @@ revolution/ax/AXCL.c:
 revolution/ax/AXOut.c:
 	.text       start:0x800AD394 end:0x800ADBB4
 	.bss        start:0x801E6460 end:0x801EB220
-	.sbss       start:0x8025DA34 end:0x8025DA70
+	.sbss       start:0x8025DA34 end:0x8025DA78
 
 revolution/ax/AXSPB.c:
 	.text       start:0x800ADBB4 end:0x800ADFD8

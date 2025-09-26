@@ -252,6 +252,21 @@ typedef union __AXPBRMTIIR {
     AXPBBIQUAD biquad;
 } AXPBRMTIIR;
 
+typedef struct _struct_052 {
+    u16 unk0;
+    u16 unk2;
+    u16 unk4;
+    u16 unk6;
+    u16 unk8;
+} struct_052;
+
+typedef struct _struct_0CC {
+    u16 unk0;
+    u16 unk2;
+    u16 unk4;
+    u16 unk6;
+} struct_0CC;
+
 typedef struct _AXPB {
     /* 0x000 */ u16 nextHi;
     /* 0x002 */ u16 nextLo;
@@ -264,27 +279,22 @@ typedef struct _AXPB {
     /* 0x012 */ u16 type;
     /* 0x014 */ AXPBMIX mix;
     /* 0x044 */ AXPBITD itd;
-    /* 0x052 */ u32 remote;
-    /* 0x054 */ u32 rmtMixerCtrl;
-    /* 0x056 */ AXPBDPOP dpop;
-    /* 0x06A */ AXPBVE ve;
-    /* 0x06E */ AXPBADDR addr;
-    /* 0x07E */ AXPBADPCM adpcm;
-    /* 0x0A6 */ AXPBSRC src;
-    /* 0x0B4 */ AXPBADPCMLOOP adpcmLoop;
-
-    //! TODO: figure this out
-#ifdef INCLUDE_LPF
-    /* 0x0BA */ AXPBLPF lpf;
-#endif
-
-    /* 0x0C2 */ AXPBBIQUAD biquad;
-    /* 0x0DA */ AXPBRMTMIX rmtMix;
-    /* 0x0FA */ AXPBRMTDPOP rmtDpop;
-    /* 0x10A */ AXPBRMTSRC rmtSrc;
-    /* 0x114 */ AXPBRMTIIR rmtIIR;
-    /* 0x128 */ u8 padding[0x140 - 0x128];
-} AXPB;
+    /* 0x052 */ struct_052 unk052; // TODO
+    /* 0x05C */ AXPBDPOP dpop;
+    /* 0x074 */ AXPBVE ve;
+    /* 0x078 */ AXPBADDR addr;
+    /* 0x088 */ AXPBADPCM adpcm;
+    /* 0x0B0 */ AXPBSRC src;
+    /* 0x0BE */ AXPBADPCMLOOP adpcmLoop;
+    /* 0x0C4 */ AXPBLPF lpf;
+    /* 0x0CC */ struct_0CC unk0CC; // TODO (biquad?)
+    /* 0x0D4 */ u16 remote;
+    /* 0x0D6 */ u16 rmtMixerCtrl;
+    /* 0x0D8 */ AXPBRMTMIX rmtMix;
+    /* 0x0F8 */ AXPBRMTDPOP rmtDpop;
+    /* 0x108 */ AXPBRMTSRC rmtSrc;
+    /* 0x112 */ u8 pad3[0xE]; // TODO
+} AXPB; // size = 0x120
 
 #ifdef __cplusplus
 }
