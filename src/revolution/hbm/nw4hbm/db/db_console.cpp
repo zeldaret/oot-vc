@@ -33,7 +33,7 @@ static inline u8* GetTextPtr_(detail::ConsoleHead* console, u16 line, u16 xPos) 
 static inline u32 CodeWidth_(u8 const* p) { return *p >= 0x81 ? sizeof(wchar_t) : sizeof(char); }
 
 static inline u32 GetTabSize_(detail::ConsoleHead* console) {
-    s32 tab = (console->attr & /* REGISTER16_BITFIELD(12, 13) */ 1) >> 2;
+    s32 tab = (console->attr & /* REGISTER16_BITFIELD(12, 13) */ 0xC) >> 2;
     // EXTRACT_BIT_FIELD does not generate srawi
 
     return static_cast<u32>(2 << tab);
@@ -64,7 +64,7 @@ static inline u16 GetRingUsedLines_(detail::ConsoleHead* console) {
 static inline u16 GetActiveLines_(detail::ConsoleHead* console) {
     u16 lines = GetRingUsedLines_(console);
 
-    if (console->printXPos) {
+    if (console->printLineHasText) {
         lines++;
     }
 
@@ -115,8 +115,9 @@ static u8* NextLine_(detail::ConsoleHead* console) {
     *GetTextPtr_(console, console->printTop, console->printXPos) = '\0';
     console->printXPos = 0;
     console->printTop++;
+    console->printLineHasText = 0;
 
-    if (console->printTop == console->height && !(console->attr & /* FLAG_BIT(1) */ 1)) {
+    if (console->printTop == console->height && !(console->attr & /* FLAG_BIT(1) */ 2)) {
         console->printTop = 0;
     }
 
@@ -152,7 +153,7 @@ static u32 PutChar_(detail::ConsoleHead* console, u8 const* str, u8* dstPtr) {
 
     ensure(console->printXPos + codeWidth <= console->width, 0);
 
-    console->printXPos += static_cast<u16>(codeWidth);
+    console->printXPos += codeWidth;
 
     for (cnt = codeWidth; cnt; cnt--) {
         *dstPtr++ = *str++;
@@ -202,7 +203,7 @@ static void DoDrawConsole_(detail::ConsoleHead* console, ut::TextWriterBase<char
     }
 
     while (true) {
-        if (line == console->printTop && console->printXPos == 0) {
+        if (line == console->printTop && console->printLineHasText == 0) {
             break;
         }
 
@@ -270,10 +271,12 @@ static void PrintToBuffer_(detail::ConsoleHead* console, u8 const* str) {
             if (*str == '\t') {
                 str++;
                 storePtr = PutTab_(console, storePtr);
+                console->printLineHasText = 1;
             } else {
                 u32 bytes = PutChar_(console, str, storePtr);
 
                 if (bytes) {
+                    console->printLineHasText = 1;
                     str += bytes;
                     storePtr += bytes;
                 } else {

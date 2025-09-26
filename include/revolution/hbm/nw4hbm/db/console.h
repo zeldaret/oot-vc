@@ -34,17 +34,15 @@ struct ConsoleHead {
     u16 priority; // size 0x02, offset 0x08
     u16 attr; // size 0x02, offset 0x0a
     u16 printTop; // size 0x02, offset 0x0c
-    u16 pad1;
     u16 printXPos; // size 0x02, offset 0x0e
-    u16 ringTop; // size 0x02, offset 0x10
-    /* 2 bytes padding */
+    u16 printLineHasText; // size 0x02, offset 0x10
+    u16 ringTop; // size 0x02, offset 0x12
     s32 ringTopLineCnt; // size 0x04, offset 0x14
     s32 viewTopLine; // size 0x04, offset 0x18
     s16 viewPosX; // size 0x02, offset 0x1c
     s16 viewPosY; // size 0x02, offset 0x1e
     u16 viewLines; // size 0x02, offset 0x20
     bool isVisible; // size 0x01, offset 0x22
-    byte_t padding_[1];
     ut::TextWriterBase<char>* writer; // size 0x04, offset 0x24
     ConsoleHead* next; // size 0x04, offset 0x28
 }; // size 0x2c
