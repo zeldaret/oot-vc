@@ -32,30 +32,32 @@ template <typename T> class SoundInstanceManager {
     }
 
     T* Alloc(int priority) {
+        NW4HBMAssertHeaderClampedLRValue_Line(priority, 0, 127, 92);
         ut::AutoInterruptLock lock;
         T* sound;
 
-        void* buffer = mPool.Alloc();
+        void* ptr = mPool.Alloc();
 
-        if (buffer != NULL) {
-            sound = new (buffer) T(this);
+        if (ptr != NULL) {
+            sound = new (ptr) T(this);
         } else {
             if (mPriorityList.IsEmpty()) {
-                return NULL;
+                return nullptr;
             }
             sound = &mPriorityList.GetFront();
 
             if (sound == NULL) {
-                return NULL;
+                return nullptr;
             }
 
             if (priority < sound->CalcCurrentPlayerPriority()) {
-                return NULL;
+                return nullptr;
             }
             sound->Stop();
 
-            buffer = mPool.Alloc();
-            sound = new (buffer) T(this);
+            ptr = mPool.Alloc();
+            NW4HBMAssertPointerNonnull_Line(ptr, 114);
+            sound = new (ptr) T(this);
         }
 
         InsertPriorityList(sound, priority);
@@ -81,7 +83,7 @@ template <typename T> class SoundInstanceManager {
 
     T* GetLowestPrioritySound() {
         if (mPriorityList.IsEmpty()) {
-            return NULL;
+            return nullptr;
         }
 
         return static_cast<T*>(&mPriorityList.GetFront());

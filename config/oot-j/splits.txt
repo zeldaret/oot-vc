@@ -1102,6 +1102,8 @@ revolution/hbm/nw4hbm/snd/snd_SoundHeap.cpp:
 
 revolution/hbm/nw4hbm/snd/snd_SoundPlayer.cpp:
 	.text       start:0x80133194 end:0x80134E90
+	.data       start:0x8019BFD8 end:0x8019C740
+	.sdata2     start:0x8025E890 end:0x8025E898
 
 revolution/hbm/nw4hbm/snd/snd_SoundStartable.cpp:
 	.text       start:0x80134E90 end:0x80134EFC

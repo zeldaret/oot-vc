@@ -63,8 +63,8 @@
 #define NW4HBMPanic()                                     NW4HBMAssert_FileLine(__FILE__, __LINE__, false)
 
 // NW4HBMCheck family
-#define NW4HBMCheckMessage_File(file_, expr_, ...)        NW4HBMCheckMessage_FileLine(  file_ , __LINE__, expr_, __VA_ARGS__)
-#define NW4HBMCheckMessage_Line(line_, expr_, ...)        NW4HBMCheckMessage_FileLine(__FILE__,   line_ , expr_, __VA_ARGS__)
+#define NW4HBMCheckMessage_File(expr_, file_, ...)        NW4HBMCheckMessage_FileLine(  file_ , __LINE__, expr_, __VA_ARGS__)
+#define NW4HBMCheckMessage_Line(expr_, line_, ...)        NW4HBMCheckMessage_FileLine(__FILE__,   line_ , expr_, __VA_ARGS__)
 #define NW4HBMCheckMessage(expr_, ...)                    NW4HBMCheckMessage_FileLine(__FILE__, __LINE__, expr_, __VA_ARGS__)
 
 #define NW4HBMCheck_FileLine(file_, line_, expr_)         NW4HBMCheckMessage_FileLine(  file_ ,   line_ , expr_, "NW4HBM:Failed check " #expr_)

@@ -33,7 +33,7 @@ class SoundPlayer {
     int detail_GetOutputLine() const;
     bool detail_IsEnabledOutputLine() const;
 
-    f32 detail_GetRemoteOutVolume(int idx) const;
+    f32 detail_GetRemoteOutVolume(int remoteIndex) const;
 
     void detail_InsertSoundList(detail::BasicSound* sound);
     void detail_RemoveSoundList(detail::BasicSound* sound);
@@ -68,8 +68,11 @@ class SoundPlayer {
     bool CheckPlayableSoundCount(int startPriority, detail::ExternalSoundPlayer* extPlayer);
 
     void detail_AppendPlayerHeap(detail::PlayerHeap* pHeap);
+    void detail_AppendPlayerHeap2(detail::PlayerHeap* pHeap);
     detail::PlayerHeap* detail_AllocPlayerHeap(detail::BasicSound* sound);
     void detail_FreePlayerHeap(detail::BasicSound* sound);
+
+    bool detail_AppendSound(detail::BasicSound* sound);
 
     int GetPlayingSoundCount() const { return mSoundList.GetSize(); }
     int GetPlayableSoundCount() const { return mPlayableCount; }
