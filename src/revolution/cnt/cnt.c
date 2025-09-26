@@ -151,9 +151,7 @@ static inline CNTResult contentConvertErrorCode(s32 error) {
     return -5063;
 }
 
-void contentInit() {
-    ESP_InitLib();
-}
+void contentInit() { ESP_InitLib(); }
 
 s32 contentInitHandleNAND(s32 contentNum, CNTHandleNAND* handle, MEMAllocator* memAlloc) {
     int error;
