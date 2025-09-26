@@ -107,6 +107,15 @@ class SeqTrack {
     void SetVolume(f32 volume);
     void SetPitch(f32 pitch);
 
+    void SetSilence(bool, int);
+    void SetPan(f32);
+		void SetSurroundPan(f32);
+    void SetLpfFreq(f32);
+    void SetBiquadFilter(int, f32);
+    void SetPanRange(f32);
+    void SetModDepth(f32);
+		void SetModSpeed(f32);
+
     ParserTrackParam& GetParserTrackParam() { return mParserTrackParam; }
 
     vs16* GetVariablePtr(int idx);

@@ -107,7 +107,7 @@ class SeqPlayer : public BasicPlayer, public DisposeCallback {
     void SetTrackPitch(u32 trackFlags, f32 pitch);
 
     SeqTrack* GetPlayerTrack(int trackNo);
-    vs16* GetVariablePtr(int trackNo);
+    vs16* GetVariablePtr(int varNo);
     void Update();
 
     Channel* NoteOn(int bankNo, const NoteOnInfo& noteOnInfo);

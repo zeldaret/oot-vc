@@ -63,39 +63,6 @@ const void* SeqFileReader::GetBaseAddress() const {
     return ut::AddOffsetToPtr(mDataBlock, Util::ReadBigEndian(mDataBlock->baseOffset));
 }
 
-// bool SeqFileReader::ReadOffsetByLabel(char const* labelName, u32* offsetPtr) const {
-//     NW4HBMAssertPointerNonnull_Line(offsetPtr, 117);
-
-//     // NOTE: reinterpret_cast necessary instead of static_cast for regalloc(???)
-//     SeqFile::LabelBlock const* labelBlock = reinterpret_cast<SeqFile::LabelBlock const*>(
-//         ut::AddOffsetToPtr(mHeader, Util::ReadBigEndian(mHeader->labelBlockOffset)));
-
-//     if (!labelBlock) {
-//         return false;
-//     }
-
-//     u32 labelNameLen = std::strlen(labelName);
-
-//     for (int index = 0; index < Util::ReadBigEndian(labelBlock->labelInfoTable.count); ++index) {
-//         u32 ofs = labelBlock->labelInfoTable.items[index];
-
-//         // NOTE: reinterpret_cast necessary here too
-//         SeqFile::LabelInfo const* labelInfo =
-//             reinterpret_cast<SeqFile::LabelInfo const*>(ut::AddOffsetToPtr(labelBlock, Util::ReadBigEndian(ofs) +
-//             8));
-
-//         NW4HBMAssertPointerNonnull_Line(labelInfo, 133);
-
-//         if (labelNameLen == Util::ReadBigEndian(labelInfo->nameLen) &&
-//             std::strncmp(labelName, labelInfo->name, labelNameLen) == 0) {
-//             *offsetPtr = Util::ReadBigEndian(labelInfo->offset);
-//             return true;
-//         }
-//     }
-
-//     return false;
-// }
-
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
