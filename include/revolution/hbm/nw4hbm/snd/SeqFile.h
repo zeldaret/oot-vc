@@ -24,13 +24,15 @@ typedef struct DataBlock {
     ut::BinaryBlockHeader blockHeader; // 0x00
     u32 baseOffset; // 0x08
 } DataBlock;
+
+static const u32 SIGNATURE_DATA_BLOCK = 'DATA';
+static const u32 SIGNATURE_FILE = 'RSEQ';
+static const int FILE_VERSION = NW4R_VERSION(1, 0);
+static const int SUPPORTED_FILE_VERSION = NW4HBM_VERSION(1, 1);
 } // namespace SeqFile
 
 class SeqFileReader {
   public:
-    static const u32 SIGNATURE = 'RSEQ';
-    static const int FILE_VERSION = NW4R_VERSION(1, 0);
-
     explicit SeqFileReader(const void* seqData);
 
     bool IsValidFileHeader(const void* seqData);
