@@ -3,6 +3,52 @@
 #include "revolution/ipc.h"
 #include "revolution/nand.h"
 
+s32 ESP_InitLib(void) {
+    s32 ret = 0;
+
+    if (__esFd < 0) {
+        __esFd = IOS_Open("/dev/es", 0);
+
+        if (__esFd < 0) {
+            ret = __esFd;
+        }
+    }
+
+    return ret;
+}
+
+s32 ESP_OpenContentFile(s32 fd) {
+    u8 WORK[256] ATTRIBUTE_ALIGN(32);
+
+    IPCIOVector* vecWork = (IPCIOVector*)(WORK + 0xD8);
+    s32* fdWork = (s32*)(WORK + 0x00);
+
+    if (__esFd < 0) {
+        return -1017;
+    }
+
+    *fdWork = fd;
+    vecWork->base = fdWork;
+    vecWork->length = 4;
+    return IOS_Ioctlv(__esFd, ES_IOCTLV_OPEN_CONTENT_FILE, 1, 0, vecWork);
+}
+
+s32 ESP_CloseContentFile(s32 fd) {
+    u8 WORK[256] ATTRIBUTE_ALIGN(32);
+
+    IPCIOVector* vecWork = (IPCIOVector*)(WORK + 0xD8);
+    s32* fdWork = (s32*)(WORK + 0x00);
+
+    if (__esFd < 0 || fd < 0) {
+        return -1017;
+    }
+
+    *fdWork = fd;
+    vecWork->base = fdWork;
+    vecWork->length = 4;
+    return IOS_Ioctlv(__esFd, ES_IOCTLV_CLOSE_CONTENT_FILE, 1, 0, vecWork);
+}
+
 static inline CNTResult contentConvertErrorCode(s32 error) {
     int i;
 
@@ -105,18 +151,55 @@ static inline CNTResult contentConvertErrorCode(s32 error) {
     return -5063;
 }
 
-// fixes section order
-static char path[] = "/dev/es";
-
-void fn_800FEFB8(void) {
-
-    if (__esFd < 0) {
-        __esFd = IOS_Open(path, IPC_OPEN_NONE);
-    }
+void contentInit() {
+    ESP_InitLib();
 }
 
 s32 contentInitHandleNAND(s32 contentNum, CNTHandleNAND* handle, MEMAllocator* memAlloc) {
-    // TODO
+    int error;
+    int fd;
+    ARCHandle arcHandle;
+    void* buffer;
+    int len;
+
+    fd = ESP_OpenContentFile(contentNum);
+    if (fd < 0) {
+        return -5002;
+    }
+
+    buffer = MEMAllocFromAllocator(memAlloc, sizeof(ARCHeader));
+    if (buffer == NULL) {
+        return -5001;
+    }
+
+    if (ESP_ReadContentFile(fd, buffer, sizeof(ARCHeader)) < 0) {
+        MEMFreeToAllocator(memAlloc, buffer);
+        return -5003;
+    }
+
+    len = OSRoundUp32B(((ARCHeader*)buffer)->files.offset);
+    MEMFreeToAllocator(memAlloc, buffer);
+    if (ESP_SeekContentFile(fd, 0, 0) < 0) {
+        return -5004;
+    }
+
+    buffer = MEMAllocFromAllocator(memAlloc, OSRoundUp32B(len));
+    if (buffer == NULL) {
+        return -5001;
+    }
+
+    if (ESP_ReadContentFile(fd, buffer, len) < 0) {
+        MEMFreeToAllocator(memAlloc, buffer);
+        return -5003;
+    }
+
+    ARCInitHandle(buffer, &arcHandle);
+
+    handle->arcHandle = arcHandle;
+    handle->fd = fd;
+    handle->memAlloc = memAlloc;
+
+    return 0;
 }
 
 CNTResult contentOpenNAND(CNTHandleNAND* handle, const char* path, CNTFileInfoNAND* info) {
@@ -196,7 +279,11 @@ CNTResult contentReadNAND(CNTFileInfoNAND* info, void* dst, u32 len, s32 offset)
 CNTResult contentCloseNAND(CNTFileInfoNAND* info) { return 0; }
 
 CNTResult contentReleaseHandleNAND(CNTHandleNAND* handle) {
-    // TODO
+    int error;
+
+    MEMFreeToAllocator(handle->memAlloc, (void*)handle->arcHandle.header);
+    error = ESP_CloseContentFile(handle->fd);
+    return contentConvertErrorCode(error);
 }
 
 bool contentOpenDirNAND(CNTHandleNAND* handle, const char* path, ARCDir* dir) {

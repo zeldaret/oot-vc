@@ -151,7 +151,7 @@ int main(int nCount, char** aszArgument) {
         xlExit();
     }
 
-    fn_800FEFB8();
+    contentInit();
     VIInit();
     xlCoreInitRenderMode(NULL);
     VIConfigure(rmode);
