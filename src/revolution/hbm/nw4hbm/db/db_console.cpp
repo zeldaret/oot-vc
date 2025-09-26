@@ -20,6 +20,8 @@
 #include "revolution/hbm/HBMAssert.hpp"
 #include "revolution/hbm/nw4hbm/ut/Color.hpp"
 
+#include "decomp.h"
+
 /*******************************************************************************
  * local function declarations
  */
@@ -244,6 +246,11 @@ void Console_DrawDirect(detail::ConsoleHead* console) {
         UnlockMutex_(&sMutex);
     }
 }
+
+DECOMP_FORCE(NW4HBMAssertPointerNonnull_String(pConsole));
+DECOMP_FORCE("illegal console handle");
+DECOMP_FORCE(NW4HBMAssertPointerNonnull_String(buffer));
+DECOMP_FORCE(NW4HBMAssertAligned_String(buffer, 4));
 
 static void PrintToBuffer_(detail::ConsoleHead* console, u8 const* str) {
     u8* storePtr;

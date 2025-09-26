@@ -227,6 +227,9 @@
 #define NW4HBMAssertClampedLRValue_String(var_)			"NW4HBM:" #var_ " is out of bounds(%d)\n%d <= " #var_ " <= %d not satisfied."
 #define NW4HBMAssertHeaderClampedLRValue_String(var_)		        #var_ " is out of bounds(%d)\n%d <= " #var_ " <= %d not satisfied."
 
+#define NW4HBMAssertAligned_String(val_, align_) "NW4HBM:Alignment Error(0x%x)\n" #val_ " must be aligned to " #align_ " bytes boundary."
+#define NW4HBMAssertHeaderAligned_String(val_, align_) "Alignment Error(0x%x)\n" #val_ " must be aligned to " #align_ " bytes boundary."
+
 /*******************************************************************************
  * Declarations
  */
