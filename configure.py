@@ -689,7 +689,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_SeqPlayer.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_SeqSound.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_SeqSoundHandle.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_SeqTrack.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_SeqTrack.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_SoundArchive.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_SoundArchiveFile.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_SoundArchiveLoader.cpp"),

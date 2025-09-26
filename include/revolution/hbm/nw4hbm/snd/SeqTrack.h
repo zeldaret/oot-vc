@@ -82,7 +82,7 @@ class SeqTrack {
 
     virtual ParseResult Parse(bool doNoteOn) = 0; // 0x0C
 
-    void SetPlayerTrackNo(int no);
+    void SetPlayerTrackNo(int playerTrackNo);
     u8 GetPlayerTrackNo() const { return mPlayerTrackNo; }
 
     void InitParam();
@@ -107,7 +107,7 @@ class SeqTrack {
     void SetVolume(f32 volume);
     void SetPitch(f32 pitch);
 
-    void SetSilence(bool param1, int param2);
+    void SetSilence(bool silence, int fadeTime);
     void SetPan(f32 param1);
     void SetSurroundPan(f32 param1);
     void SetLpfFreq(f32 param1);
@@ -122,14 +122,14 @@ class SeqTrack {
 
     ParserTrackParam& GetParserTrackParam() { return mParserTrackParam; }
 
-    vs16* GetVariablePtr(int idx);
+    vs16* GetVariablePtr(int varNo);
 
     SeqPlayer* GetSeqPlayer() { return mSeqPlayer; }
     void SetSeqPlayer(SeqPlayer* seqPlayer) { mSeqPlayer = seqPlayer; }
 
     Channel* GetLastChannel() const { return mChannelList; }
 
-    Channel* NoteOn(int key, int velocity, s32 length, bool tie);
+    Channel* NoteOn(int key, int velocity, s32 portatime, bool tie);
 
   private:
     static const int DEFAULT_PRIORITY = 64;

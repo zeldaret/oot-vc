@@ -1,11 +1,15 @@
 #include "revolution/hbm/snd.hpp"
 #include "revolution/hbm/ut.hpp"
+#include "decomp.h"
 
 namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-void SeqTrack::SetPlayerTrackNo(int no) { mPlayerTrackNo = no; }
+void SeqTrack::SetPlayerTrackNo(int playerTrackNo) {
+    NW4HBMAssertHeaderClampedLRValue_Line(playerTrackNo, 0, 16, 37);
+    mPlayerTrackNo = playerTrackNo;
+}
 
 void SeqTrack::InitParam() {
     mExtVolume = 1.0f;
@@ -148,6 +152,7 @@ void SeqTrack::ReleaseAllChannel(int release) {
 
         if (it->IsActive()) {
             if (release >= 0) {
+                NW4HBMAssertHeaderClampedLRValue_Line(release, 0, 127, 270);
                 it->SetRelease(static_cast<u8>(release));
             }
 
@@ -280,7 +285,9 @@ void SeqTrack::FreeAllChannel() {
 }
 
 void SeqTrack::ChannelCallbackFunc(Channel* dropChannel, Channel::ChannelCallbackStatus status, u32 arg) {
-    SeqTrack* p = reinterpret_cast<SeqTrack*>(arg);
+    SeqTrack* track = reinterpret_cast<SeqTrack*>(arg);
+    NW4HBMAssertPointerNonnull_Line(dropChannel, 521);
+    NW4HBMAssertPointerNonnull_Line(track, 522);
 
     switch (status) {
         case Channel::CALLBACK_STATUS_STOPPED:
@@ -290,23 +297,28 @@ void SeqTrack::ChannelCallbackFunc(Channel* dropChannel, Channel::ChannelCallbac
         }
     }
 
-    if (p->mSeqPlayer != nullptr) {
-        p->mSeqPlayer->ChannelCallback(dropChannel);
+    if (track->mSeqPlayer != nullptr) {
+        track->mSeqPlayer->ChannelCallback(dropChannel);
     }
 
     ut::AutoInterruptLock lock;
-    if (p->mChannelList == dropChannel) {
-        p->mChannelList = dropChannel->GetNextTrackChannel();
+    if (track->mChannelList == dropChannel) {
+        track->mChannelList = dropChannel->GetNextTrackChannel();
         return;
     }
 
-    for (Channel* it = p->mChannelList; it->GetNextTrackChannel() != nullptr; it = it->GetNextTrackChannel()) {
-
-        if (it->GetNextTrackChannel() == dropChannel) {
-            it->SetNextTrackChannel(dropChannel->GetNextTrackChannel());
+    Channel* channel = track->mChannelList;
+    NW4HBMAssertPointerNonnull_Line(channel, 544);
+    while (channel->GetNextTrackChannel() != nullptr) {
+        if (channel->GetNextTrackChannel() == dropChannel) {
+            channel->SetNextTrackChannel(dropChannel->GetNextTrackChannel());
             return;
         }
+
+        channel = channel->GetNextTrackChannel();
     }
+
+    NW4HBMAssert_Line(false, 553);
 }
 void SeqTrack::SetMute(SeqMute mute) {
     ut::AutoInterruptLock lock;
@@ -333,8 +345,13 @@ void SeqTrack::SetMute(SeqMute mute) {
     }
 }
 
-void SeqTrack::SetSilence(bool param1, int param2) {
+void SeqTrack::SetSilence(bool silence, int fadeTime) {
+    mParserTrackParam.silenceFlag = silence;
+
     ut::AutoInterruptLock lock;
+    for (Channel* it = mChannelList; it != nullptr; it = it->GetNextTrackChannel()) {
+        it->SetSilence(silence, (fadeTime + 2) / 3);
+    }
 }
 
 void SeqTrack::SetVolume(f32 volume) {
@@ -384,32 +401,39 @@ void SeqTrack::SetMainSend(f32 param1) {
 }
 
 void SeqTrack::SetFxSend(AuxBus bus, f32 param2) {
-    NW4HBMAssertClampedLValue_Line(661, bus, AUX_A, AUX_BUS_NUM);
+    NW4HBMAssertHeaderClampedLValue_Line(bus, AUX_A, AUX_BUS_NUM, 661);
     ut::AutoInterruptLock lock;
     mExtFxSend[bus] = param2;
 }
 
 void SeqTrack::SetRemoteSend(WPADChannel remoteIndex, f32 param2) {
-    NW4HBMAssertClampedLValue_Line(675, remoteIndex, 0, 4);
+    NW4HBMAssertHeaderClampedLValue_Line(remoteIndex, 0, 4, 675);
     ut::AutoInterruptLock lock;
     mExtRemoteSend[remoteIndex] = param2;
 }
 
 void SeqTrack::SetRemoteFxSend(WPADChannel remoteIndex, f32 param2) {
-    NW4HBMAssertClampedLValue_Line(688, remoteIndex, 0, 4);
+    NW4HBMAssertHeaderClampedLValue_Line(remoteIndex, 0, 4, 688);
     ut::AutoInterruptLock lock;
     mExtRemoteFxSend[remoteIndex] = param2;
 }
 
-vs16* SeqTrack::GetVariablePtr(int idx) {
-    if (idx < VARIABLE_NUM) {
-        return &mTrackVariable[idx];
+DECOMP_FORCE(NW4HBMAssertHeaderClampedLValue_String(varNo));
+
+vs16* SeqTrack::GetVariablePtr(int varNo) {
+    NW4HBMAssertHeaderClampedLRValue_Line(varNo, 0, 16, 747);
+
+    if (varNo < VARIABLE_NUM) {
+        return &mTrackVariable[varNo];
     }
 
     return nullptr;
 }
 
-Channel* SeqTrack::NoteOn(int key, int velocity, s32 length, bool tie) {
+Channel* SeqTrack::NoteOn(int key, int velocity, s32 portatime, bool tie) {
+    NW4HBMAssertHeaderClampedLRValue_Line(key, 0, 127, 778);
+    NW4HBMAssertHeaderClampedLRValue_Line(velocity, 0, 127, 779);
+
     SeqPlayer* seqPlayer = GetSeqPlayer();
     Channel* channel = nullptr;
 
@@ -428,7 +452,7 @@ Channel* SeqTrack::NoteOn(int key, int velocity, s32 length, bool tie) {
             mParserTrackParam.prgNo, // prgNo
             key, // key
             velocity, // velocity
-            tie ? -1 : length, // length
+            tie ? -1 : portatime, // length
             mParserTrackParam.initPan, // initPan
             seqPlayer->GetParserPlayerParam().priority + // priority
                 GetParserTrackParam().priority,
@@ -464,7 +488,8 @@ Channel* SeqTrack::NoteOn(int key, int velocity, s32 length, bool tie) {
     }
 
     if (mParserTrackParam.portaTime == 0) {
-        channel->SetSweepParam(sweepPitch, length, false);
+        NW4HBMAssertWarningMessage_Line(portatime != 0, 856, "portatime zero is invalid.");
+        channel->SetSweepParam(sweepPitch, portatime, false);
     } else {
         int time = mParserTrackParam.portaTime;
         time *= time;

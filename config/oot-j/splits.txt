@@ -1067,6 +1067,9 @@ revolution/hbm/nw4hbm/snd/snd_SeqSoundHandle.cpp:
 
 revolution/hbm/nw4hbm/snd/snd_SeqTrack.cpp:
 	.text       start:0x8012BC08 end:0x8012D444
+	.rodata     start:0x8016CBF8 end:0x8016CC20
+	.data       start:0x8019A6E8 end:0x8019AB38
+	.sdata2     start:0x8025E850 end:0x8025E880
 
 revolution/hbm/nw4hbm/snd/snd_SoundArchive.cpp:
 	.text       start:0x8012D444 end:0x8012DB48

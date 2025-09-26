@@ -9,12 +9,12 @@
 
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/snd/global.h"
-#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_EnvGenerator.hpp"
 #include "revolution/hbm/nw4hbm/snd/InstancePool.h"
 #include "revolution/hbm/nw4hbm/snd/Lfo.h"
+#include "revolution/hbm/nw4hbm/snd/global.h"
+#include "revolution/hbm/nw4hbm/snd/snd_EnvGenerator.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_MoveValue.hpp"
+#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
 #include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
@@ -85,9 +85,25 @@ class Channel : public LinkedInstance {
     void SetMainSend(f32 send) { mMainSend = send; }
     void SetFxSend(AuxBus bus, f32 send) { mFxSend[bus] = send; }
 
-    void SetRemoteOutVolume(int remote, f32 volume) { mRemoteOutVolume[remote] = volume; }
-    void SetRemoteSend(int remote, f32 send) { mRemoteSend[remote] = send; }
-    void SetRemoteFxSend(int remote, f32 send) { mRemoteFxSend[remote] = send; }
+    void SetSilence(bool silence, int fadeTimes) {
+        NW4HBMAssertHeaderClampedLRValue_Line(fadeTimes, 0, 0xFFFF, 124);
+        mSilenceVolume.SetTarget(silence ? 0 : SILENCE_VOLUME_MAX, fadeTimes);
+    }
+
+    void SetRemoteOutVolume(int remoteIndex, f32 volume) {
+        NW4HBMAssertHeaderClampedLValue_Line(remoteIndex, 0, 4, 165);
+        mRemoteOutVolume[remoteIndex] = volume;
+    }
+
+    void SetRemoteSend(int remoteIndex, f32 send) {
+        NW4HBMAssertHeaderClampedLValue_Line(remoteIndex, 0, 4, 170);
+        mRemoteSend[remoteIndex] = send;
+    }
+
+    void SetRemoteFxSend(int remoteIndex, f32 send) {
+        NW4HBMAssertHeaderClampedLValue_Line(remoteIndex, 0, 4, 175);
+        mRemoteFxSend[remoteIndex] = send;
+    }
 
     void UpdateSweep(int count);
     void SetSweepParam(f32 pitch, int time, bool autoUpdate);
@@ -97,9 +113,6 @@ class Channel : public LinkedInstance {
     void SetInitPan(f32 pan) { mInitPan = pan; }
     void SetInitSurroundPan(f32 pan) { mInitSurroundPan = pan; }
     void SetTune(f32 tune) { mTune = tune; }
-    void SetSilence(bool silence, int fadeTime) {
-        mSilenceVolume.SetTarget(silence ? 0 : SILENCE_VOLUME_MAX, fadeTime);
-    }
 
     void SetKey(int key) { mKey = key; }
     void SetOriginalKey(int key) { mOriginalKey = key; }
