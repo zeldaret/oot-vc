@@ -419,7 +419,7 @@ config.libs = [
         "gx",
         [
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXInit.c"),
-            Object(NotLinked, "revolution/gx/GXFifo.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXFifo.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXAttr.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXMisc.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXGeometry.c"),
@@ -463,9 +463,9 @@ config.libs = [
         [
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AX.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXAlloc.c"),
-            Object(NotLinked, "revolution/ax/AXAux.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXAux.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXCL.c"),
-            Object(NotLinked, "revolution/ax/AXOut.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXOut.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXSPB.c"),
             Object(NotLinked, "revolution/ax/AXVPB.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXComp.c"),

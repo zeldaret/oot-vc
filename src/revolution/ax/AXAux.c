@@ -46,9 +46,9 @@ static u8 __clearAuxA[AUX_RING_MAX];
 static u8 __clearAuxB[AUX_RING_MAX];
 static u8 __clearAuxC[AUX_RING_MAX];
 
-static AXAuxCallback __AXCallbackAuxC;
-static AXAuxCallback __AXCallbackAuxB;
 static AXAuxCallback __AXCallbackAuxA;
+static AXAuxCallback __AXCallbackAuxB;
+static AXAuxCallback __AXCallbackAuxC;
 
 static void* __AXContextAuxA;
 static void* __AXContextAuxB;
@@ -161,7 +161,7 @@ void __AXProcessAux(void) {
             chans[AX_DPL2_L]  = &__AXBufferAuxA[__AXAuxCpuReadWritePosition][DPL2_SAMPLE_L_BEGIN];
             chans[AX_DPL2_R]  = &__AXBufferAuxA[__AXAuxCpuReadWritePosition][DPL2_SAMPLE_R_BEGIN];
             chans[AX_DPL2_LS] = &__AXBufferAuxA[__AXAuxCpuReadWritePosition][DPL2_SAMPLE_LS_BEGIN];
-            chans[AX_DPL2_RS] = &__AXBufferAuxA[__AXAuxCpuReadWritePosition][DPL2_SAMPLE_RS_BEGIN];
+            chans[AX_DPL2_RS] = &__AXBufferAuxC[__AXAuxCpuReadWritePosition][DPL2_SAMPLE_R_BEGIN];
             // clang-format on
 
             DCInvalidateRange(chans[0], 0x480);
@@ -190,10 +190,10 @@ void __AXProcessAux(void) {
             chans[AX_DPL2_L]  = &__AXBufferAuxB[__AXAuxCpuReadWritePosition][DPL2_SAMPLE_L_BEGIN];
             chans[AX_DPL2_R]  = &__AXBufferAuxB[__AXAuxCpuReadWritePosition][DPL2_SAMPLE_R_BEGIN];
             chans[AX_DPL2_LS] = &__AXBufferAuxB[__AXAuxCpuReadWritePosition][DPL2_SAMPLE_LS_BEGIN];
-            chans[AX_DPL2_RS] = &__AXBufferAuxB[__AXAuxCpuReadWritePosition][DPL2_SAMPLE_RS_BEGIN];
+            chans[AX_DPL2_RS] = &__AXBufferAuxC[__AXAuxCpuReadWritePosition][DPL2_SAMPLE_RS_BEGIN];
             // clang-format on
 
-            DCInvalidateRange(chans[0], 0x300);
+            DCInvalidateRange(chans[0], 0x480);
             DCInvalidateRange(chans[3], 0x180);
             __AXCallbackAuxB(chans, __AXContextAuxB);
             DCFlushRangeNoSync(chans[0], 0x480);
