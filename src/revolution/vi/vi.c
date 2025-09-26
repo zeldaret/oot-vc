@@ -1313,7 +1313,7 @@ bool fn_8009AA34(void) {
     return true;
 }
 
-bool fn_8009AA44(void) {
+bool __VIResetSIIdle(void) {
     __VIDimmingFlag_SI_IDLE = 0;
     return true;
 }
