@@ -115,7 +115,7 @@ class SoundArchive {
 
     bool IsAvailable() const;
 
-    void Setup(detail::SoundArchiveFileReader* pReader);
+    void Setup(detail::SoundArchiveFileReader* fileReader);
     void Shutdown();
 
     u32 GetPlayerCount() const;
