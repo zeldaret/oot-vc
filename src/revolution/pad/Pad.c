@@ -16,7 +16,7 @@ static bool OnReset(bool final, u32 event);
 static u32 Type[SI_MAX_CHAN];
 static PADStatus Origin[SI_MAX_CHAN];
 static u32 CmdProbeDevice[SI_MAX_CHAN];
-static PADStatus lbl_802090E0[SI_MAX_CHAN];
+static PADStatus PrevStatus[SI_MAX_CHAN];
 
 static s32 ResettingChan = 32;
 static u32 XPatchBits = PAD_CHAN0_BIT | PAD_CHAN1_BIT | PAD_CHAN2_BIT | PAD_CHAN3_BIT;
@@ -39,10 +39,10 @@ static u32 CheckingBits;
 static u32 PendingBits;
 static u32 BarrelBits;
 
-static void (*SamplingCallback)(void);
-
 // global symbols
 u32 __PADSpec;
+
+static void (*SamplingCallback)(void);
 
 static inline void PADEnable(s32 chan) {
     u32 cmd;
@@ -574,8 +574,6 @@ static void SPEC2_MakeStatus(s32 chan, PADStatus* status, u32 data[2]) {
     PADStatus* origin;
     u32 type;
 
-    // origin = &Origin[chan];
-
     status->button = (u16)((data[0] >> 16) & PAD_ALL);
     status->stickX = (s8)(data[0] >> 8);
     status->stickY = (s8)(data[0]);
@@ -644,26 +642,26 @@ static void SPEC2_MakeStatus(s32 chan, PADStatus* status, u32 data[2]) {
         BarrelBits &= ~(PAD_CHAN0_BIT >> chan);
     }
 
-    status->stickX = ClampS8(status->stickX, Origin[chan].stickX);
-    status->stickY = ClampS8(status->stickY, Origin[chan].stickY);
-    status->substickX = ClampS8(status->substickX, Origin[chan].substickX);
-    status->substickY = ClampS8(status->substickY, Origin[chan].substickY);
-    status->triggerLeft = ClampU8(status->triggerLeft, Origin[chan].triggerLeft);
-    status->triggerRight = ClampU8(status->triggerRight, Origin[chan].triggerRight);
+    origin = &Origin[chan];
 
-#define UNK(squared) ((squared ^ (squared >> 31)) - (squared) >= 9)
+    status->stickX = ClampS8(status->stickX, origin->stickX);
+    status->stickY = ClampS8(status->stickY, origin->stickY);
+    status->substickX = ClampS8(status->substickX, origin->substickX);
+    status->substickY = ClampS8(status->substickY, origin->substickY);
+    status->triggerLeft = ClampU8(status->triggerLeft, origin->triggerLeft);
+    status->triggerRight = ClampU8(status->triggerRight, origin->triggerRight);
 
-    if (UNK(SQ(status->stickX) - SQ(lbl_802090E0[chan].stickX)) ||
-        UNK(SQ(status->stickY) - SQ(lbl_802090E0[chan].stickY)) ||
-        UNK(SQ(status->substickX) - SQ(lbl_802090E0[chan].substickX)) ||
-        UNK(SQ(status->substickY) - SQ(lbl_802090E0[chan].substickY)) ||
-        UNK(SQ(status->triggerLeft) - SQ(lbl_802090E0[chan].triggerLeft)) ||
-        UNK(SQ(status->triggerRight) - SQ(lbl_802090E0[chan].triggerRight)) ||
-        status->button != lbl_802090E0[chan].button) {
-        fn_8009AA44();
+    if (__abs(SQ(status->stickX) - SQ(PrevStatus[chan].stickX)) >= 9 ||
+        __abs(SQ(status->stickY) - SQ(PrevStatus[chan].stickY)) >= 9 ||
+        __abs(SQ(status->substickX) - SQ(PrevStatus[chan].substickX)) >= 9 ||
+        __abs(SQ(status->substickY) - SQ(PrevStatus[chan].substickY)) >= 9 ||
+        __abs(SQ(status->triggerLeft) - SQ(PrevStatus[chan].triggerLeft)) >= 9 ||
+        __abs(SQ(status->triggerRight) - SQ(PrevStatus[chan].triggerRight)) >= 9 ||
+        status->button != PrevStatus[chan].button) {
+        __VIResetSIIdle();
     }
 
-    memcpy(&lbl_802090E0[chan], status, sizeof(PADStatus));
+    memcpy(&PrevStatus[chan], status, sizeof(PADStatus));
 }
 
 inline bool PADSync(void) { return ResettingBits == 0 && ResettingChan == 32 && !SIBusy(); }
