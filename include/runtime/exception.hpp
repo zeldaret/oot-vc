@@ -6,7 +6,7 @@ class exception {
   public:
     exception() {}
     virtual ~exception() {}
-    virtual const char* what() const { return "exception"; }
+    virtual const char* what() const;
 };
 
 class bad_exception : public exception {

@@ -5,56 +5,45 @@
 #include "stddef.h"
 
 namespace std {
+
 class bad_alloc : public exception {
   public:
     virtual ~bad_alloc() {}
     virtual const char* what() const { return "bad_alloc"; }
 };
 
-struct nothrow_t {
-    explicit nothrow_t() {}
-};
-extern const nothrow_t nothrow;
-
 typedef void (*new_handler)();
-new_handler set_new_handler(new_handler new_p) throw();
+new_handler nhandler;
+
 } // namespace std
 
-typedef void (*Test)();
-extern "C" void* malloc(size_t);
-extern "C" void fn_80154E68(u32*, void*, void*);
-extern "C" Test lbl_8025DCE0;
-extern "C" u32* lbl_801A0060;
-extern "C" u32 lbl_8016E39C;
+// TODO: malloc/free calls below should not generate __unexpected() calls (wrong compiler?)
 
-void* operator new(size_t size, void* ptr) {
-    void* new_ptr;
+void* operator new(size_t size) throw(std::bad_alloc) {
+    void* ptr;
 
-    try {
-        while (new_ptr == NULL) {
-            new_ptr = malloc(size);
+    if (size == 0) {
+        size = 4;
+    }
+
+    for (;;) {
+        ptr = malloc(size);
+        if (ptr != NULL) {
+            break;
         }
-    } catch (std::bad_alloc e) { new_ptr = NULL; }
 
-    return new_ptr;
-}
-
-void* operator new[](size_t count, void* p) {
-    if (count > 0 && p != NULL) {
-        delete p;
+        if (std::nhandler != NULL) {
+            std::nhandler();
+        } else {
+            throw std::bad_alloc();
+        }
     }
 
-    return p;
+    return ptr;
 }
 
-#pragma exceptions off
-
-void operator delete(void* p) throw() {
-    if (p != 0) {
-        free(p);
+void operator delete(void* ptr) throw() {
+    if (ptr != NULL) {
+        free(ptr);
     }
 }
-
-#pragma exceptions on
-
-void operator delete[](void* p, size_t count) throw(std::bad_alloc) {}
