@@ -1,67 +1,36 @@
 #include "revolution/hbm/nw4hbm/snd/SoundThread.h"
 
-/* Original source:
- * kiwi515/ogws
- * src/nw4r/snd/snd_SoundThread.cpp
- */
+#include "revolution/hbm/nw4hbm/snd/SeqPlayer.h"
+#include "revolution/hbm/nw4hbm/snd/StrmPlayer.h"
+#include "revolution/hbm/nw4hbm/snd/WavePlayer.h"
+#include "revolution/hbm/nw4hbm/snd/WsdPlayer.h"
 
-/*******************************************************************************
- * headers
- */
-
-#include "decomp.h"
-#include "macros.h"
-#include "revolution/types.h"
-
-#include "revolution/hbm/nw4hbm/snd/AxManager.h"
-#include "revolution/hbm/nw4hbm/snd/snd_AxVoiceManager.hpp"
-#include "revolution/hbm/nw4hbm/snd/Channel.h" // ChannelManager
-#include "revolution/hbm/nw4hbm/snd/snd_VoiceManager.hpp"
-#include "revolution/hbm/nw4hbm/snd/Util.h" // Util::CalcRandom
-
-#include "revolution/hbm/nw4hbm/ut/ut_lock.hpp" // ut::detail::AutoLock
-
-#include "revolution/os/OSMessage.h"
-#include "revolution/os/OSMutex.h"
-#include "revolution/os/OSThread.h"
-#include "revolution/os/OSTime.h"
+#include "revolution/os.h"
 
 #include "revolution/hbm/HBMAssert.hpp"
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-SoundThread::SoundThread() : mStackEnd(nullptr), mCreateFlag(false) {
-    OSInitMessageQueue(&mMsgQueue, mMsgBuffer, THREAD_MESSAGE_BUFSIZE);
-    OSInitThreadQueue(&mThreadQueue);
-    OSInitMutex(&mMutex);
-}
-
 SoundThread& SoundThread::GetInstance() {
     static SoundThread instance;
-
     return instance;
 }
 
-bool SoundThread::Create(s32 priority, void* stack, u32 stackSize) {
-    NW4HBMAssertMessage_Line(AxManager::GetInstance().CheckInit(), 78, "not initialized nw4r::AxManager.\n");
-    NW4HBMAssertPointerNonnull_Line(stack, 79);
-    NW4HBMAssertAligned_Line(80, stack, 4);
-
+bool SoundThread::Create(s32 priority) {
     if (mCreateFlag) {
         return true;
     }
 
     mCreateFlag = true;
-    mStackEnd = static_cast<byte4_t*>(stack);
+    NW4HBMAssertMessage_Line(AxManager::GetInstance().CheckInit(), 68, "not initialized nw4hbm::AxManager.\n");
 
-    BOOL result = OSCreateThread(&mThread, &SoundThreadFunc, &GetInstance(), static_cast<byte_t*>(stack) + stackSize,
-                                 stackSize, priority, OS_THREAD_NO_FLAGS);
+    OSInitThreadQueue(&mThreadQueue);
+    OSInitMutex(&mMutex);
+
+    BOOL result = OSCreateThread(&mThread, SoundThreadFunc, &GetInstance(), mThreadStack + THREAD_STACK_SIZE,
+                                  THREAD_STACK_SIZE * 8, priority, 0);
 
     if (result) {
         OSResumeThread(&mThread);
@@ -70,123 +39,86 @@ bool SoundThread::Create(s32 priority, void* stack, u32 stackSize) {
     return result;
 }
 
-void SoundThread::Shutdown() {
+BOOL SoundThread::Shutdown() {
     if (!mCreateFlag) {
-        return;
+        return FALSE;
     }
 
-    BOOL result = OSJamMessageAny(&GetInstance().mMsgQueue, MESSAGE_SHUTDOWN, OS_MESSAGE_FLAG_PERSISTENT);
-    NW4HBMAssert_Line(result, 124);
+    if (!OSSendMessageAny(&GetInstance().mMsgQueue, MSG_SHUTDOWN, OS_MESSAGE_NO_FLAGS)) {
+        return FALSE;
+    }
 
-    result = OSJoinThread(&mThread, nullptr);
-    NW4HBMAssert_Line(result, 128);
+    BOOL result = OSJoinThread(&mThread, nullptr);
+    NW4HBMAssert_Line(result != 0, 112);
 
     mCreateFlag = false;
+    return TRUE;
 }
 
-void SoundThread::AxCallbackFunc() {
-    SoundThread* soundThread = &GetInstance();
+void SoundThread::AxCallback() {
+    BOOL result = OSSendMessage(&GetInstance().mMsgQueue, reinterpret_cast<OSMessage>(MSG_AX_CALLBACK), 0);
 
-    soundThread->AxCallbackProc();
-}
-
-void SoundThread::AxCallbackProc() {
-    BOOL result ATTRIBUTE_UNUSED = OSSendMessageAny(&mMsgQueue, MESSAGE_AX_CALLBACK, OS_MESSAGE_NO_FLAGS);
-
-    NW4R_RANGE_FOR_NO_AUTO_INC(itr, mPlayerCallbackList) {
-        DECLTYPE(itr) curItr = itr++;
-
-        curItr->OnUpdateVoiceSoundThread();
-    }
-
-    VoiceManager::GetInstance().NotifyVoiceUpdate();
+    WavePlayer::detail_UpdateBufferAllPlayers();
+    StrmPlayer::UpdateBufferAllPlayers();
 }
 
 void* SoundThread::SoundThreadFunc(void* arg) {
-    SoundThread* th = static_cast<SoundThread*>(arg);
+    SoundThread* thread = static_cast<SoundThread*>(arg);
 
-    AxManager::GetInstance().RegisterCallback(&th->mAxCallbackNode, &AxCallbackFunc);
+    OSInitMessageQueue(&thread->mMsgQueue, thread->mMsgBuffer, MSG_QUEUE_CAPACITY);
 
-    th->SoundThreadProc();
+    AxManager::GetInstance().RegisterCallback(&thread->mAxCallbackNode, AxCallback);
+    thread->SoundThreadProc();
+    AxManager::GetInstance().UnregisterCallback(&thread->mAxCallbackNode);
 
-    AxManager::GetInstance().UnregisterCallback(&th->mAxCallbackNode);
-
-    return nullptr;
-}
-
-/* SoundThread::RegisterSoundFrameCallback
- * ([R89JEL]:/bin/RVL/Debug/mainD.MAP:14509)
- */
-DECOMP_FORCE_CLASS_METHOD(SoundThread::SoundFrameCallback::LinkList, PushBack(nullptr));
-
-/* SoundThread::UnregisterSoundFrameCallback
- * ([R89JEL]:/bin/RVL/Debug/mainD.MAP:14510)
- */
-DECOMP_FORCE_CLASS_METHOD(SoundThread::SoundFrameCallback::LinkList, Erase(nullptr));
-
-void SoundThread::RegisterPlayerCallback(PlayerCallback* callback) {
-    ut::detail::AutoLock<OSMutex> lock(mMutex);
-
-    mPlayerCallbackList.PushBack(callback);
-}
-
-void SoundThread::UnregisterPlayerCallback(PlayerCallback* callback) {
-    ut::detail::AutoLock<OSMutex> lock(mMutex);
-
-    mPlayerCallbackList.Erase(callback);
+    return NULL;
 }
 
 void SoundThread::SoundThreadProc() {
     OSMessage message;
 
     while (true) {
-        OSReceiveMessage(&mMsgQueue, &message, OS_MESSAGE_FLAG_PERSISTENT);
+        OSReceiveMessage(&mMsgQueue, &message, 1);
 
-        if (reinterpret_cast<register_t>(message) == MESSAGE_AX_CALLBACK) {
-            ut::detail::AutoLock<OSMutex> lock(mMutex);
+        if (reinterpret_cast<u32>(message) == MSG_AX_CALLBACK) {
+            ut::AutoMutexLock autoMutex(mMutex);
 
-            NW4R_RANGE_FOR_NO_AUTO_INC(itr, mSoundFrameCallbackList) {
-                DECLTYPE(itr) curItr = itr++;
-
-                curItr->at_0x0c();
-            }
-
-            OSTick tick = OSGetTick();
-
+            OSTick start = OSGetTick();
             {
-                // Sound frame
-                AxVoiceManager::GetInstance().FreeAllReservedAxVoice();
                 AxManager::GetInstance().Update();
 
-                NW4R_RANGE_FOR_NO_AUTO_INC(itr, mPlayerCallbackList) {
-                    DECLTYPE(itr) curItr = itr++;
+                SeqPlayer::UpdateAllPlayers();
+                WsdPlayer::UpdateAllPlayers();
+                StrmPlayer::UpdateAllPlayers();
+                WavePlayer::detail_UpdateAllPlayers();
 
-                    curItr->OnUpdateFrameSoundThread();
+                for (CallbackList::Iterator it = mCallbackList.GetBeginIter(); it != mCallbackList.GetEndIter();) {
+                    CallbackList::Iterator currIt = it++;
+                    currIt->UpdatePlayer();
                 }
 
-                ChannelManager::GetInstance().UpdateAllChannel();
-                (void)Util::CalcRandom(); // ?
-                VoiceManager::GetInstance().UpdateAllVoices();
+                Channel::UpdateAllChannel();
+                Util::CalcRandom();
+
+                {
+                    ut::AutoInterruptLock lock;
+                    AxManager::GetInstance().UpdateAllVoices();
+                }
             }
+            mProcessTick = OSDiffTick(OSGetTick(), start);
 
-            mProcessTick = OSGetTick() - tick;
-
-            NW4R_RANGE_FOR_NO_AUTO_INC(itr, mSoundFrameCallbackList) {
-                DECLTYPE(itr) curItr = itr++;
-
-                curItr->at_0x10();
+            for (CallbackList::Iterator it = mCallbackList.GetBeginIter(); it != mCallbackList.GetEndIter();) {
+                CallbackList::Iterator currIt = it++;
+                currIt->EndSoundFrame();
             }
-        } else if (reinterpret_cast<register_t>(message) == MESSAGE_SHUTDOWN) {
+        } else if (reinterpret_cast<u32>(message) == MSG_SHUTDOWN) {
+            SeqPlayer::StopAllPlayers();
+            WsdPlayer::StopAllPlayers();
+            StrmPlayer::StopAllPlayers();
+            WavePlayer::detail_StopAllPlayers();
+
             break;
         }
-
-        NW4HBMAssert_Line(313, *mStackEnd == OS_THREAD_STACK_MAGIC);
-    }
-
-    NW4R_RANGE_FOR_NO_AUTO_INC(itr, mPlayerCallbackList) {
-        DECLTYPE(itr) curItr = itr++;
-
-        curItr->OnShutdownSoundThread();
     }
 }
 
