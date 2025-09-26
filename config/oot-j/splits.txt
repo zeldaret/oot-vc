@@ -1122,6 +1122,7 @@ revolution/hbm/nw4hbm/snd/snd_SoundThread.cpp:
 
 revolution/hbm/nw4hbm/snd/snd_StrmChannel.cpp:
 	.text       start:0x80135638 end:0x80135880
+	.data       start:0x8019C868 end:0x8019C8A0
 
 revolution/hbm/nw4hbm/snd/snd_StrmFile.cpp:
 	.text       start:0x80135880 end:0x80135F48

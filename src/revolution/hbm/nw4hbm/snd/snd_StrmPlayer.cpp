@@ -22,7 +22,7 @@
 #include "revolution/hbm/nw4hbm/snd/Channel.h"
 #include "revolution/hbm/nw4hbm/snd/InstancePool.h"
 #include "revolution/hbm/nw4hbm/snd/SoundThread.h"
-#include "revolution/hbm/nw4hbm/snd/snd_StrmChannel.hpp"
+#include "revolution/hbm/nw4hbm/snd/StrmChannel.h"
 #include "revolution/hbm/nw4hbm/snd/StrmFile.h"
 #include "revolution/hbm/nw4hbm/snd/StrmSound.h"
 #include "revolution/hbm/nw4hbm/snd/TaskManager.h"

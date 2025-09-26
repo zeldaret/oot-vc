@@ -7,27 +7,28 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-void StrmBufferPool::Setup(void* pBase, u32 size, int count) {
+void StrmBufferPool::Setup(void* base, u32 size, int count) {
     if (count == 0) {
         return;
     }
 
     ut::AutoInterruptLock lock;
 
-    mBuffer = pBase;
+    mBuffer = base;
     mBufferSize = size;
 
     mBlockSize = size / count;
     mBlockCount = count;
 
     mAllocCount = 0;
-    std::memset(&mAllocFlags, 0, sizeof(mAllocFlags));
+    memset(&mAllocFlags, 0, sizeof(mAllocFlags));
+    NW4HBMAssertMessage_Line(mBlockCount <= 0x20, 42, "Too large stream buffer size.");
 }
 
 void StrmBufferPool::Shutdown() {
     ut::AutoInterruptLock lock;
 
-    mBuffer = nullptr;
+    mBuffer = NULL;
     mBufferSize = 0;
 
     mBlockSize = 0;
@@ -38,7 +39,7 @@ void* StrmBufferPool::Alloc() {
     ut::AutoInterruptLock lock;
 
     if (mAllocCount >= mBlockCount) {
-        return nullptr;
+        return NULL;
     }
 
     int usableFlags = ut::RoundUp(mBlockCount, BITS_PER_BYTE) / BITS_PER_BYTE;
@@ -66,13 +67,13 @@ void* StrmBufferPool::Alloc() {
         }
     }
 
-    return nullptr;
+    return NULL;
 }
 
-void StrmBufferPool::Free(void* pBuffer) {
+void StrmBufferPool::Free(void* buffer) {
     ut::AutoInterruptLock lock;
 
-    s32 offset = ut::GetOffsetFromPtr(mBuffer, pBuffer);
+    s32 offset = ut::GetOffsetFromPtr(mBuffer, buffer);
     u32 block = offset / mBlockSize;
 
     u32 byte = block / BITS_PER_BYTE;

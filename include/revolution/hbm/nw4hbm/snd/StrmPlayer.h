@@ -7,7 +7,7 @@
 #include "revolution/hbm/nw4hbm/snd/global.h"
 #include "revolution/hbm/nw4hbm/snd/InstancePool.h"
 #include "revolution/hbm/nw4hbm/snd/SoundThread.h"
-#include "revolution/hbm/nw4hbm/snd/snd_StrmChannel.hpp"
+#include "revolution/hbm/nw4hbm/snd/StrmChannel.h"
 #include "revolution/hbm/nw4hbm/snd/StrmFile.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
 
