@@ -686,7 +686,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_RemoteSpeaker.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_RemoteSpeakerManager.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_SeqFile.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_SeqPlayer.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_SeqPlayer.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_SeqSound.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_SeqSoundHandle.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_SeqTrack.cpp"),

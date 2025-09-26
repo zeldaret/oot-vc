@@ -7,10 +7,6 @@ namespace detail {
 
 void SeqTrack::SetPlayerTrackNo(int no) { mPlayerTrackNo = no; }
 
-SeqTrack::SeqTrack() : mOpenFlag(false), mPlayer(nullptr), mChannelList(nullptr) { InitParam(); }
-
-SeqTrack::~SeqTrack() { Close(); }
-
 void SeqTrack::InitParam() {
     mExtVolume = 1.0f;
     mExtPitch = 1.0f;
@@ -41,7 +37,6 @@ void SeqTrack::InitParam() {
     mParserTrackParam.silenceFlag = false;
     mParserTrackParam.noteFinishWait = false;
     mParserTrackParam.portaFlag = false;
-    mParserTrackParam.damperFlag = false;
 
     mParserTrackParam.volume = 127;
     mParserTrackParam.volume2 = 127;
@@ -74,74 +69,50 @@ void SeqTrack::InitParam() {
     mParserTrackParam.lfoParam.Init();
     mParserTrackParam.lfoTarget = Channel::LFO_TARGET_PITCH;
 
+    mChannelList = nullptr;
+
     for (int i = 0; i < VARIABLE_NUM; i++) {
         mTrackVariable[i] = DEFAULT_VARIABLE_VALUE;
     }
 }
 
-void SeqTrack::SetSeqData(const void* pBase, s32 offset) {
-    mParserTrackParam.baseAddr = static_cast<const u8*>(pBase);
+void SeqTrack::SetSeqData(const void* base, s32 offset) {
+    mParserTrackParam.baseAddr = static_cast<const u8*>(base);
     mParserTrackParam.currentAddr = mParserTrackParam.baseAddr + offset;
 }
 
-void SeqTrack::Open() { mOpenFlag = true; }
-
 void SeqTrack::Close() {
-    SoundThread::AutoLock lock;
-
     ReleaseAllChannel(-1);
     FreeAllChannel();
-
-    mOpenFlag = false;
 }
 
 void SeqTrack::UpdateChannelLength() {
-    SoundThread::AutoLock lock;
+    for (Channel* it = mChannelList; it != nullptr; it = it->GetNextTrackChannel()) {
 
-    if (!mOpenFlag) {
-        return;
-    }
-
-    for (Channel* pIt = mChannelList; pIt != nullptr; pIt = pIt->GetNextTrackChannel()) {
-
-        if (pIt->GetLength() > 0) {
-            pIt->SetLength(pIt->GetLength() - 1);
+        if (it->GetLength() > 0) {
+            it->SetLength(it->GetLength() - 1);
+            if (it->GetLength() == 0) {
+                it->Release();
+            }
         }
 
-        UpdateChannelRelease(pIt);
-
-        if (!pIt->IsAutoUpdateSweep()) {
-            pIt->UpdateSweep(1);
+        if (!it->IsAutoUpdateSweep()) {
+            it->UpdateSweep(1);
         }
-    }
-}
-
-void SeqTrack::UpdateChannelRelease(Channel* pChannel) {
-    SoundThread::AutoLock lock;
-
-    if (pChannel->GetLength() == 0 && !pChannel->IsRelease() && !mParserTrackParam.damperFlag) {
-
-        pChannel->Release();
     }
 }
 
 int SeqTrack::ParseNextTick(bool doNoteOn) {
-    SoundThread::AutoLock lock;
-
-    if (!mOpenFlag) {
-        return 0;
-    }
-
     if (mParserTrackParam.noteFinishWait) {
         if (mChannelList != nullptr) {
-            return 1;
+            return 0;
         }
 
         mParserTrackParam.noteFinishWait = false;
     }
 
     if (mParserTrackParam.wait > 0 && --mParserTrackParam.wait > 0) {
-        return 1;
+        return 0;
     }
 
     if (mParserTrackParam.currentAddr != nullptr) {
@@ -153,217 +124,208 @@ int SeqTrack::ParseNextTick(bool doNoteOn) {
         }
     }
 
-    return 1;
+    return 0;
 }
 
 void SeqTrack::StopAllChannel() {
-    SoundThread::AutoLock lock;
+    ut::AutoInterruptLock lock;
+    for (Channel* it = mChannelList; it != nullptr; it = it->GetNextTrackChannel()) {
 
-    for (Channel* pIt = mChannelList; pIt != nullptr; pIt = pIt->GetNextTrackChannel()) {
-
-        Channel::FreeChannel(pIt);
-        pIt->Stop();
+        Channel::FreeChannel(it);
+        it->Stop();
     }
 
     mChannelList = nullptr;
 }
 
 void SeqTrack::ReleaseAllChannel(int release) {
-    SoundThread::AutoLock lock;
-
     UpdateChannelParam();
 
-    for (Channel* pIt = mChannelList; pIt != nullptr; pIt = pIt->GetNextTrackChannel()) {
+    ut::AutoInterruptLock lock;
+    AxManager::GetInstance().LockUpdateVoicePriority();
 
-        if (pIt->IsActive()) {
+    for (Channel* it = mChannelList; it != nullptr; it = it->GetNextTrackChannel()) {
+
+        if (it->IsActive()) {
             if (release >= 0) {
-                pIt->SetRelease(static_cast<u8>(release));
+                it->SetRelease(static_cast<u8>(release));
             }
 
-            pIt->Release();
+            it->Release();
         }
     }
+
+    AxManager::GetInstance().UnlockUpdateVoicePriority();
 }
 
 void SeqTrack::PauseAllChannel(bool flag) {
-    SoundThread::AutoLock lock;
+    ut::AutoInterruptLock lock;
 
-    for (Channel* pIt = mChannelList; pIt != nullptr; pIt = pIt->GetNextTrackChannel()) {
+    for (Channel* it = mChannelList; it != nullptr; it = it->GetNextTrackChannel()) {
 
-        if (pIt->IsActive() && flag != pIt->IsPause()) {
-            pIt->Pause(flag);
+        if (it->IsActive() && flag != it->IsPause()) {
+            it->Pause(flag);
         }
     }
 }
 
-void SeqTrack::AddChannel(Channel* pChannel) {
-    SoundThread::AutoLock lock;
-
-    pChannel->SetNextTrackChannel(mChannelList);
-    mChannelList = pChannel;
+void SeqTrack::AddChannel(Channel* channel) {
+    ut::AutoInterruptLock lock;
+    channel->SetNextTrackChannel(mChannelList);
+    mChannelList = channel;
 }
 
 void SeqTrack::UpdateChannelParam() {
-    SoundThread::AutoLock lock;
-
-    if (!mOpenFlag) {
-        return;
-    }
-
-    if (mChannelList == nullptr) {
-        return;
-    }
-
     f32 volume = 1.0f;
     f32 parserVolume = mParserTrackParam.volume / 127.0f;
     f32 parserVolume2 = mParserTrackParam.volume2 / 127.0f;
-    f32 parserMainVolume = mPlayer->GetParserPlayerParam().volume / 127.0f;
+    f32 parserMainVolume = mSeqPlayer->GetParserPlayerParam().volume / 127.0f;
 
     volume *= (parserVolume * parserVolume);
     volume *= (parserVolume2 * parserVolume2);
     volume *= (parserMainVolume * parserMainVolume);
     volume *= mExtVolume;
-    volume *= mPlayer->GetVolume();
+    volume *= mSeqPlayer->GetVolume();
 
     f32 pitch = (mParserTrackParam.pitchBend / 128.0f) * mParserTrackParam.bendRange;
 
     f32 pitchRatio = 1.0f;
-    pitchRatio *= mPlayer->GetPitch();
+    pitchRatio *= mSeqPlayer->GetPitch();
     pitchRatio *= mExtPitch;
 
     f32 pan = 0.0f;
     pan += ut::Clamp(mParserTrackParam.pan / 63.0f, -1.0f, 1.0f);
     pan *= mPanRange;
-    pan *= mPlayer->GetPanRange();
+    pan *= mSeqPlayer->GetPanRange();
     pan += mExtPan;
-    pan += mPlayer->GetPan();
+    pan += mSeqPlayer->GetPan();
 
     f32 surroundPan = 0.0f;
     surroundPan += ut::Clamp(mParserTrackParam.surroundPan / 63.0f, 0.0f, 2.0f);
     surroundPan += mExtSurroundPan;
-    surroundPan += mPlayer->GetSurroundPan();
+    surroundPan += mSeqPlayer->GetSurroundPan();
+
+    f32 pan2 = 0.0f;
+    pan2 += mSeqPlayer->GetPan2();
+
+    f32 surroundPan2 = 0.0f;
+    surroundPan2 += mSeqPlayer->GetSurroundPan2();
 
     f32 lpfFreq = 0.0f;
     lpfFreq += (mParserTrackParam.lpfFreq - 64) / 64.0f;
     lpfFreq += mExtLpfFreq;
-    lpfFreq += mPlayer->GetLpfFreq();
-
-    int remoteFilter = 0;
-    remoteFilter += mPlayer->GetRemoteFilter();
+    lpfFreq += mSeqPlayer->GetLpfFreq();
 
     f32 mainSend = 0.0f;
     mainSend += (mParserTrackParam.mainSend / 127.0f) - 1.0f;
     mainSend += mExtMainSend;
-    mainSend += mPlayer->GetMainSend();
+    mainSend += mSeqPlayer->GetMainSend();
 
     f32 fxSend[AUX_BUS_NUM];
     for (int i = 0; i < AUX_BUS_NUM; i++) {
         fxSend[i] = 0.0f;
         fxSend[i] += mParserTrackParam.fxSend[i] / 127.0f;
         fxSend[i] += mExtFxSend[i];
-        fxSend[i] += mPlayer->GetFxSend(static_cast<AuxBus>(i));
+        fxSend[i] += mSeqPlayer->GetFxSend(static_cast<AuxBus>(i));
     }
 
     f32 remoteSend[WPAD_MAX_CONTROLLERS];
     f32 remoteFxSend[WPAD_MAX_CONTROLLERS];
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
         remoteSend[i] = 0.0f;
-        remoteSend[i] += mPlayer->GetRemoteSend(i);
+        remoteSend[i] += mSeqPlayer->GetRemoteSend(i);
 
         remoteFxSend[i] = 0.0f;
-        remoteFxSend[i] += mPlayer->GetRemoteFxSend(i);
+        remoteFxSend[i] += mSeqPlayer->GetRemoteFxSend(i);
     }
 
-    for (Channel* pIt = mChannelList; pIt != nullptr; pIt = pIt->GetNextTrackChannel()) {
+    ut::AutoInterruptLock lock;
+    for (Channel* it = mChannelList; it != nullptr; it = it->GetNextTrackChannel()) {
 
-        pIt->SetUserVolume(volume);
-        pIt->SetUserPitch(pitch);
-        pIt->SetUserPitchRatio(pitchRatio);
-        pIt->SetUserPan(pan);
-        pIt->SetUserSurroundPan(surroundPan);
-        pIt->SetUserLpfFreq(lpfFreq);
-        pIt->SetRemoteFilter(remoteFilter);
-        pIt->SetOutputLine(mPlayer->GetOutputLine());
-        pIt->SetMainOutVolume(mPlayer->GetMainOutVolume());
-        pIt->SetMainSend(mainSend);
+        it->SetUserVolume(volume);
+        it->SetUserPitch(pitch);
+        it->SetUserPitchRatio(pitchRatio);
+        it->SetUserPan(pan);
+        it->SetUserSurroundPan(surroundPan);
+        it->SetUserPan2(pan2);
+        it->SetUserSurroundPan2(surroundPan2);
+        it->SetUserLpfFreq(lpfFreq);
+        it->SetOutputLine(mSeqPlayer->GetOutputLine());
+        it->SetMainOutVolume(mSeqPlayer->GetMainOutVolume());
+        it->SetMainSend(mainSend);
 
         for (int i = 0; i < AUX_BUS_NUM; i++) {
-            pIt->SetFxSend(static_cast<AuxBus>(i), fxSend[i]);
+            it->SetFxSend(static_cast<AuxBus>(i), fxSend[i]);
         }
 
         for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
-            pIt->SetRemoteOutVolume(i, mPlayer->GetRemoteOutVolume(i));
-            pIt->SetRemoteSend(i, remoteSend[i]);
-            pIt->SetRemoteFxSend(i, remoteFxSend[i]);
+            it->SetRemoteOutVolume(i, mSeqPlayer->GetRemoteOutVolume(i));
+            it->SetRemoteSend(i, remoteSend[i]);
+            it->SetRemoteFxSend(i, remoteFxSend[i]);
         }
 
-        pIt->SetLfoParam(mParserTrackParam.lfoParam);
-        pIt->SetLfoTarget(static_cast<Channel::LfoTarget>(mParserTrackParam.lfoTarget));
+        it->SetLfoParam(mParserTrackParam.lfoParam);
+        it->SetLfoTarget(static_cast<Channel::LfoTarget>(mParserTrackParam.lfoTarget));
     }
 }
 
 void SeqTrack::FreeAllChannel() {
-    SoundThread::AutoLock lock;
+    ut::AutoInterruptLock lock;
+    for (Channel* it = mChannelList; it != nullptr; it = it->GetNextTrackChannel()) {
 
-    for (Channel* pIt = mChannelList; pIt != nullptr; pIt = pIt->GetNextTrackChannel()) {
-
-        Channel::FreeChannel(pIt);
+        Channel::FreeChannel(it);
     }
 
     mChannelList = nullptr;
 }
 
-void SeqTrack::ChannelCallbackFunc(Channel* pDropChannel, Channel::ChannelCallbackStatus status, u32 callbackArg) {
-    SoundThread::AutoLock lock;
-    SeqTrack* p = reinterpret_cast<SeqTrack*>(callbackArg);
+void SeqTrack::ChannelCallbackFunc(Channel* dropChannel, Channel::ChannelCallbackStatus status, u32 arg) {
+    SeqTrack* p = reinterpret_cast<SeqTrack*>(arg);
 
     switch (status) {
         case Channel::CALLBACK_STATUS_STOPPED:
-        case Channel::CALLBACK_STATUS_FINISH:
-            Channel::FreeChannel(pDropChannel);
+        case Channel::CALLBACK_STATUS_FINISH: {
+            Channel::FreeChannel(dropChannel);
             break;
+        }
     }
 
-    if (p->mPlayer != nullptr) {
-        p->mPlayer->ChannelCallback(pDropChannel);
+    if (p->mSeqPlayer != nullptr) {
+        p->mSeqPlayer->ChannelCallback(dropChannel);
     }
 
-    if (p->mChannelList == pDropChannel) {
-        p->mChannelList = pDropChannel->GetNextTrackChannel();
+    ut::AutoInterruptLock lock;
+    if (p->mChannelList == dropChannel) {
+        p->mChannelList = dropChannel->GetNextTrackChannel();
         return;
     }
 
-    for (Channel* pIt = p->mChannelList; pIt->GetNextTrackChannel() != nullptr; pIt = pIt->GetNextTrackChannel()) {
+    for (Channel* it = p->mChannelList; it->GetNextTrackChannel() != nullptr; it = it->GetNextTrackChannel()) {
 
-        if (pIt->GetNextTrackChannel() == pDropChannel) {
-            pIt->SetNextTrackChannel(pDropChannel->GetNextTrackChannel());
+        if (it->GetNextTrackChannel() == dropChannel) {
+            it->SetNextTrackChannel(dropChannel->GetNextTrackChannel());
             return;
         }
     }
 }
-
 void SeqTrack::SetMute(SeqMute mute) {
-    SoundThread::AutoLock lock;
-
+    ut::AutoInterruptLock lock;
     switch (mute) {
         case MUTE_OFF: {
             mParserTrackParam.muteFlag = false;
             break;
         }
-
         case MUTE_STOP: {
             StopAllChannel();
             mParserTrackParam.muteFlag = true;
             break;
         }
-
         case MUTE_RELEASE: {
             ReleaseAllChannel(-1);
             FreeAllChannel();
             mParserTrackParam.muteFlag = true;
             break;
         }
-
         case MUTE_NO_STOP: {
             mParserTrackParam.muteFlag = true;
             break;
@@ -371,11 +333,75 @@ void SeqTrack::SetMute(SeqMute mute) {
     }
 }
 
-void SeqTrack::SetVolume(f32 volume) { mExtVolume = volume; }
+void SeqTrack::SetSilence(bool param1, int param2) {
+    ut::AutoInterruptLock lock;
+}
 
-void SeqTrack::SetPitch(f32 pitch) { mExtPitch = pitch; }
+void SeqTrack::SetVolume(f32 volume) {
+    ut::AutoInterruptLock lock;
+    mExtVolume = volume;
+}
 
-volatile s16* SeqTrack::GetVariablePtr(int idx) {
+void SeqTrack::SetPitch(f32 pitch) {
+    NW4HBMAssert_Line(pitch >= 0.0f, 603);
+    ut::AutoInterruptLock lock;
+    mExtPitch = pitch;
+}
+
+void SeqTrack::SetPan(f32 param1) {
+    ut::AutoInterruptLock lock;
+    mExtPan = param1;
+}
+
+void SeqTrack::SetSurroundPan(f32 param1) {
+    ut::AutoInterruptLock lock;
+    mExtSurroundPan = param1;
+}
+
+void SeqTrack::SetPanRange(f32 param1) {
+    ut::AutoInterruptLock lock;
+    mPanRange = param1;
+}
+
+void SeqTrack::SetLpfFreq(f32 param1) {
+    ut::AutoInterruptLock lock;
+    mExtLpfFreq = param1;
+}
+
+void SeqTrack::SetModDepth(f32 param1) {
+    ut::AutoInterruptLock lock;
+    mParserTrackParam.lfoParam.depth = param1;
+}
+
+void SeqTrack::SetModSpeed(f32 param1) {
+    ut::AutoInterruptLock lock;
+    mParserTrackParam.lfoParam.speed = param1;
+}
+
+void SeqTrack::SetMainSend(f32 param1) {
+    ut::AutoInterruptLock lock;
+    mExtMainSend = param1;
+}
+
+void SeqTrack::SetFxSend(AuxBus bus, f32 param2) {
+    NW4HBMAssertClampedLValue_Line(661, bus, AUX_A, AUX_BUS_NUM);
+    ut::AutoInterruptLock lock;
+    mExtFxSend[bus] = param2;
+}
+
+void SeqTrack::SetRemoteSend(WPADChannel remoteIndex, f32 param2) {
+    NW4HBMAssertClampedLValue_Line(675, remoteIndex, 0, 4);
+    ut::AutoInterruptLock lock;
+    mExtRemoteSend[remoteIndex] = param2;
+}
+
+void SeqTrack::SetRemoteFxSend(WPADChannel remoteIndex, f32 param2) {
+    NW4HBMAssertClampedLValue_Line(688, remoteIndex, 0, 4);
+    ut::AutoInterruptLock lock;
+    mExtRemoteFxSend[remoteIndex] = param2;
+}
+
+vs16* SeqTrack::GetVariablePtr(int idx) {
     if (idx < VARIABLE_NUM) {
         return &mTrackVariable[idx];
     }
@@ -384,56 +410,52 @@ volatile s16* SeqTrack::GetVariablePtr(int idx) {
 }
 
 Channel* SeqTrack::NoteOn(int key, int velocity, s32 length, bool tie) {
-    SoundThread::AutoLock lock;
-
-    SeqPlayer* pPlayer = GetSeqPlayer();
-    Channel* pChannel = nullptr;
+    SeqPlayer* seqPlayer = GetSeqPlayer();
+    Channel* channel = nullptr;
 
     if (tie) {
-        pChannel = GetLastChannel();
-        if (pChannel != nullptr) {
-            pChannel->SetKey(static_cast<u8>(key));
+        channel = GetLastChannel();
+        if (channel != nullptr) {
+            channel->SetKey(static_cast<u8>(key));
 
             f32 initVolume = velocity / 127.0f;
-            pChannel->SetInitVolume(initVolume * initVolume);
+            channel->SetInitVolume(initVolume * initVolume);
         }
     }
 
-    if (pChannel == nullptr) {
+    if (channel == nullptr) {
         NoteOnInfo info = {
             mParserTrackParam.prgNo, // prgNo
             key, // key
             velocity, // velocity
             tie ? -1 : length, // length
             mParserTrackParam.initPan, // initPan
-
-            pPlayer->GetParserPlayerParam().priority + // priority
+            seqPlayer->GetParserPlayerParam().priority + // priority
                 GetParserTrackParam().priority,
-
-            mPlayer->GetVoiceOutCount(), // voiceOutCount
+            mSeqPlayer->GetVoiceOutCount(), // voiceOuCount
             ChannelCallbackFunc, // channelCallback
             reinterpret_cast<u32>(this) // channelCallbackData
         };
 
-        pChannel = mPlayer->NoteOn(mParserTrackParam.bankNo, info);
-        if (pChannel == nullptr) {
+        channel = mSeqPlayer->NoteOn(mParserTrackParam.bankNo, info);
+        if (channel == nullptr) {
             return nullptr;
         }
 
-        AddChannel(pChannel);
+        AddChannel(channel);
     }
 
     if (mParserTrackParam.attack != 0xFF) {
-        pChannel->SetAttack(mParserTrackParam.attack);
+        channel->SetAttack(mParserTrackParam.attack);
     }
     if (mParserTrackParam.decay != 0xFF) {
-        pChannel->SetDecay(mParserTrackParam.decay);
+        channel->SetDecay(mParserTrackParam.decay);
     }
     if (mParserTrackParam.sustain != 0xFF) {
-        pChannel->SetSustain(mParserTrackParam.sustain);
+        channel->SetSustain(mParserTrackParam.sustain);
     }
     if (mParserTrackParam.release != 0xFF) {
-        pChannel->SetRelease(mParserTrackParam.release);
+        channel->SetRelease(mParserTrackParam.release);
     }
 
     f32 sweepPitch = mParserTrackParam.sweepPitch;
@@ -442,24 +464,20 @@ Channel* SeqTrack::NoteOn(int key, int velocity, s32 length, bool tie) {
     }
 
     if (mParserTrackParam.portaTime == 0) {
-        pChannel->SetSweepParam(sweepPitch, length, false);
+        channel->SetSweepParam(sweepPitch, length, false);
     } else {
         int time = mParserTrackParam.portaTime;
         time *= time;
         time *= sweepPitch >= 0.0f ? sweepPitch : -sweepPitch;
         time = static_cast<u32>(time >> 5);
         time = static_cast<u32>(time << 2) + time;
-        pChannel->SetSweepParam(sweepPitch, time, true);
+        channel->SetSweepParam(sweepPitch, time, true);
     }
 
     mParserTrackParam.portaKey = key;
+    channel->SetSilence(mParserTrackParam.silenceFlag != 0, 0);
 
-    pChannel->SetSilence(mParserTrackParam.silenceFlag != 0, 0);
-    pChannel->SetReleasePriorityFix(mPlayer->IsReleasePriorityFix());
-    pChannel->SetPanMode(mPlayer->GetPanMode());
-    pChannel->SetPanCurve(mPlayer->GetPanCurve());
-
-    return pChannel;
+    return channel;
 }
 
 } // namespace detail

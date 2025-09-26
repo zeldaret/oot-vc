@@ -1053,7 +1053,7 @@ revolution/hbm/nw4hbm/snd/snd_SeqPlayer.cpp:
 	.text       start:0x80129BF8 end:0x8012B558
 	.ctors      start:0x8016A704 end:0x8016A708
 	.data       start:0x80199E80 end:0x8019A3B8
-	.bss        start:0x8024F360 end:0x8024F3A0
+	.bss        start:0x8024F360 end:0x8024F398
 	.sdata2     start:0x8025E840 end:0x8025E850
 
 revolution/hbm/nw4hbm/snd/snd_SeqSound.cpp:

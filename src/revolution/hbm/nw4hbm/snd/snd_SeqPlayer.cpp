@@ -1,4 +1,7 @@
-#include "revolution/hbm/snd.hpp"
+#include "revolution/hbm/nw4hbm/snd/SeqPlayer.h"
+#include "revolution/hbm/nw4hbm/snd/SeqTrack.h"
+#include "revolution/hbm/nw4hbm/snd/SeqTrackAllocator.h"
+#include "revolution/hbm/nw4hbm/snd/NoteOnCallback.h"
 #include "revolution/hbm/ut.hpp"
 #include "decomp.h"
 
@@ -266,26 +269,22 @@ void SeqPlayer::SetChannelPriority(int prio) {
 }
 
 DECOMP_FORCE(NW4HBMAssertHeaderClampedLValue_String(varNo));
+DECOMP_FORCE(NW4HBMAssert_String(volume >= 0.0f));
+DECOMP_FORCE(NW4HBMAssert_String(pitch >= 0.0f));
 DECOMP_FORCE(&SeqTrack::SetMute);
 DECOMP_FORCE(&SeqTrack::SetSilence);
 DECOMP_FORCE(&SeqTrack::SetVolume);
-DECOMP_FORCE(NW4HBMAssert_String(volume >= 0.0f));
 DECOMP_FORCE(&SeqTrack::SetPitch);
-DECOMP_FORCE(NW4HBMAssert_String(pitch >= 0.0f));
 DECOMP_FORCE(&SeqTrack::SetPan);
 DECOMP_FORCE(&SeqTrack::SetSurroundPan);
 DECOMP_FORCE(&SeqTrack::SetLpfFreq);
-DECOMP_FORCE(&SeqTrack::SetBiquadFilter);
 DECOMP_FORCE(&SeqTrack::SetPanRange);
 DECOMP_FORCE(&SeqTrack::SetModDepth);
 DECOMP_FORCE(&SeqTrack::SetModSpeed);
-
-// fake
-DECOMP_FORCE(&SeqTrack::SetModSpeed);
-DECOMP_FORCE(&SeqTrack::SetModSpeed);
-DECOMP_FORCE(&SeqTrack::SetModSpeed);
-
-DECOMP_FORCE(NW4HBMAssertHeaderClampedLRValue_String(varNo));
+DECOMP_FORCE(&SeqTrack::SetMainSend);
+DECOMP_FORCE(&SeqTrack::SetFxSend);
+DECOMP_FORCE(&SeqTrack::SetRemoteSend);
+DECOMP_FORCE(&SeqTrack::SetRemoteFxSend);
 
 void SeqPlayer::InvalidateData(const void* start, const void* end) {
     ut::AutoInterruptLock lock;
@@ -380,7 +379,7 @@ int SeqPlayer::ParseNextTick(bool doNoteOn) {
 }
 
 vs16* SeqPlayer::GetVariablePtr(int varNo) {
-    NW4HBMAssertHeaderClampedLValue_Line(varNo, 0, 32, 896);
+    NW4HBMAssertHeaderClampedLRValue_Line(varNo, 0, 32, 896);
 
     if (varNo < LOCAL_VARIABLE_NUM) {
         return &mLocalVariable[varNo];

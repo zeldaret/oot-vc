@@ -30,7 +30,7 @@ class SeqTrack {
     static const int VARIABLE_NUM = 16;
     static const int PRGNO_MAX = 0xFFFF;
 
-    typedef struct ParserTrackParam {
+    typedef struct ParserTrackParam { // 50
         const u8* baseAddr; // 0x00
         const u8* currentAddr; // 0x04
 
@@ -107,14 +107,18 @@ class SeqTrack {
     void SetVolume(f32 volume);
     void SetPitch(f32 pitch);
 
-    void SetSilence(bool, int);
-    void SetPan(f32);
-		void SetSurroundPan(f32);
-    void SetLpfFreq(f32);
-    void SetBiquadFilter(int, f32);
-    void SetPanRange(f32);
-    void SetModDepth(f32);
-		void SetModSpeed(f32);
+    void SetSilence(bool param1, int param2);
+    void SetPan(f32 param1);
+    void SetSurroundPan(f32 param1);
+    void SetLpfFreq(f32 param1);
+    void SetBiquadFilter(int param1, f32 param2);
+    void SetPanRange(f32 param1);
+    void SetModDepth(f32 param1);
+    void SetModSpeed(f32 param1);
+    void SetMainSend(f32 param1);
+    void SetFxSend(AuxBus bus, f32 param2);
+    void SetRemoteSend(WPADChannel remoteIndex, f32 param2);
+    void SetRemoteFxSend(WPADChannel remoteIndex, f32 param2);
 
     ParserTrackParam& GetParserTrackParam() { return mParserTrackParam; }
 

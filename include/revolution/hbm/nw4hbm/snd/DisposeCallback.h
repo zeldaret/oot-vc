@@ -6,11 +6,13 @@
 namespace nw4hbm {
 namespace snd {
 namespace detail {
+
 class DisposeCallback {
   public:
     ut::LinkListNode mDisposeLink; // 0x00
 
-    virtual ~DisposeCallback() {} // 0x08
+    // unfortunately required
+    virtual ~DisposeCallback() = 0 {}; // 0x08
 
     virtual void InvalidateData(const void* start, const void* end) = 0; // 0x0C
     virtual void InvalidateWaveData(const void* start, const void* end) = 0; // 0x10
