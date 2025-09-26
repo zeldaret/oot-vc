@@ -32,6 +32,7 @@ class SoundThread {
     static SoundThread& GetInstance();
 
     bool Create(s32 priority);
+    BOOL Shutdown();
 
     OSMutex& GetSoundMutex() { return mMutex; }
 

@@ -13,7 +13,7 @@ class TaskThread {
     TaskThread() : mCreateFlag(false) {}
 
     bool Create(s32 priority);
-    void Destroy();
+    BOOL Destroy();
 
     void SendWakeupMessage();
 
