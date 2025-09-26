@@ -11,22 +11,23 @@ SoundArchiveLoader::SoundArchiveLoader(const SoundArchive& rArchive) : mArc(rArc
 
 SoundArchiveLoader::~SoundArchiveLoader() {}
 
-void* SoundArchiveLoader::LoadGroup(u32 id, SoundMemoryAllocatable* pAllocatable, void** ppWaveBuffer, u32 blockSize) {
-    ut::detail::AutoLock<OSMutex> lock(mMutex);
+void* SoundArchiveLoader::LoadGroup(u32 id, SoundMemoryAllocatable* allocater, void** ppWaveBuffer, u32 blockSize) {
+    NW4HBMAssertPointerNonnull_Line(allocater, 83);
+    ut::AutoMutexLock lock(mMutex);
 
     FileStreamHandle groupHandle(mArc.detail_OpenGroupStream(id, mStreamArea, sizeof(mStreamArea)));
 
     if (!groupHandle) {
-        return nullptr;
+        return NULL;
     }
 
     if (!groupHandle->CanSeek() || !groupHandle->CanRead()) {
-        return nullptr;
+        return NULL;
     }
 
-    void* pGroupBuffer = pAllocatable->Alloc(groupHandle->GetSize());
-    if (pGroupBuffer == nullptr) {
-        return nullptr;
+    void* pGroupBuffer = allocater->Alloc(groupHandle->GetSize());
+    if (pGroupBuffer == NULL) {
+        return NULL;
     }
 
     mStream = groupHandle.GetFileStream();
@@ -34,9 +35,9 @@ void* SoundArchiveLoader::LoadGroup(u32 id, SoundMemoryAllocatable* pAllocatable
     if (blockSize == 0) {
         s32 bytesRead = groupHandle->Read(pGroupBuffer, groupHandle->GetSize());
 
-        if (bytesRead < 0) {
+        if (bytesRead == 0) {
             mStream = nullptr;
-            return nullptr;
+            return NULL;
         }
     } else {
         u8* pReadPtr = static_cast<u8*>(pGroupBuffer);
@@ -45,14 +46,14 @@ void* SoundArchiveLoader::LoadGroup(u32 id, SoundMemoryAllocatable* pAllocatable
         while (bytesLeft) {
             s32 bytesRead = groupHandle->Read(pReadPtr, ut::Min(blockSize, bytesLeft));
 
-            if (bytesRead < 0) {
+            if (bytesRead == 0) {
                 mStream = nullptr;
-                return nullptr;
+                return NULL;
             }
 
-            if (bytesLeft > bytesRead) {
-                bytesLeft -= bytesRead;
-                pReadPtr += bytesRead;
+            if (bytesLeft > blockSize) {
+                bytesLeft -= blockSize;
+                pReadPtr += blockSize;
             } else {
                 bytesLeft = 0;
             }
@@ -63,49 +64,49 @@ void* SoundArchiveLoader::LoadGroup(u32 id, SoundMemoryAllocatable* pAllocatable
 
     SoundArchive::GroupInfo groupInfo;
     if (!mArc.detail_ReadGroupInfo(id, &groupInfo)) {
-        return nullptr;
+        return NULL;
     }
 
     if (groupInfo.waveDataSize != 0) {
         FileStreamHandle waveHandle(mArc.detail_OpenGroupWaveDataStream(id, mStreamArea, sizeof(mStreamArea)));
 
         if (!waveHandle) {
-            return nullptr;
+            return NULL;
         }
 
         if (!waveHandle->CanSeek() || !waveHandle->CanRead()) {
-            return nullptr;
+            return NULL;
         }
 
-        void* pWaveBuffer = pAllocatable->Alloc(waveHandle->GetSize());
-        if (pWaveBuffer == nullptr) {
-            return nullptr;
+        void* waveBuffer = allocater->Alloc(waveHandle->GetSize());
+        if (waveBuffer == NULL) {
+            return NULL;
         }
 
         mStream = waveHandle.GetFileStream();
 
         if (blockSize == 0) {
-            s32 bytesRead = waveHandle->Read(pWaveBuffer, waveHandle->GetSize());
+            s32 bytesRead = waveHandle->Read(waveBuffer, waveHandle->GetSize());
 
-            if (bytesRead < 0) {
+            if (bytesRead == 0) {
                 mStream = nullptr;
-                return nullptr;
+                return NULL;
             }
         } else {
-            u8* pReadPtr = static_cast<u8*>(pWaveBuffer);
+            u8* pReadPtr = static_cast<u8*>(waveBuffer);
             u32 bytesLeft = waveHandle->GetSize();
 
             while (bytesLeft) {
                 s32 bytesRead = waveHandle->Read(pReadPtr, ut::Min(blockSize, bytesLeft));
 
-                if (bytesRead < 0) {
+                if (bytesRead == 0) {
                     mStream = nullptr;
-                    return nullptr;
+                    return NULL;
                 }
 
-                if (bytesLeft > bytesRead) {
-                    bytesLeft -= bytesRead;
-                    pReadPtr += bytesRead;
+                if (bytesLeft > blockSize) {
+                    bytesLeft -= blockSize;
+                    pReadPtr += blockSize;
                 } else {
                     bytesLeft = 0;
                 }
@@ -114,11 +115,11 @@ void* SoundArchiveLoader::LoadGroup(u32 id, SoundMemoryAllocatable* pAllocatable
 
         mStream = nullptr;
 
-        if (ppWaveBuffer != nullptr) {
-            *ppWaveBuffer = pWaveBuffer;
+        if (ppWaveBuffer != NULL) {
+            *ppWaveBuffer = waveBuffer;
         }
-    } else if (ppWaveBuffer != nullptr) {
-        *ppWaveBuffer = nullptr;
+    } else if (ppWaveBuffer != NULL) {
+        *ppWaveBuffer = NULL;
     }
 
     return pGroupBuffer;
@@ -140,14 +141,16 @@ s32 SoundArchiveLoader::ReadFile(u32 id, void* dst, s32 size, s32 offset) {
     mStream = fileHandle.GetFileStream();
     s32 read = mStream->Read(dst, ut::RoundUp(size, 32));
     mStream = nullptr;
-    if (read < 0) {
+    if (read == 0) {
         return -1;
     }
 
     return size;
 }
 
-void* SoundArchiveLoader::LoadFile(u32 id, SoundMemoryAllocatable* pAllocatable) {
+void* SoundArchiveLoader::LoadFile(u32 id, SoundMemoryAllocatable* allocater) {
+    NW4HBMAssertPointerNonnull_Line(allocater, 299);
+
     SoundArchive::FileInfo info;
     if (!mArc.detail_ReadFileInfo(id, &info)) {
         return NULL;
@@ -158,7 +161,7 @@ void* SoundArchiveLoader::LoadFile(u32 id, SoundMemoryAllocatable* pAllocatable)
         return NULL;
     }
 
-    void* buf = pAllocatable->Alloc(size);
+    void* buf = allocater->Alloc(size);
     if (buf == NULL) {
         return NULL;
     }

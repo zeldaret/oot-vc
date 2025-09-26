@@ -36,9 +36,9 @@ class SoundArchiveLoader {
     explicit SoundArchiveLoader(const SoundArchive& soundArchive);
     ~SoundArchiveLoader();
 
-    void* LoadGroup(u32 id, SoundMemoryAllocatable* allocatable, void** waveBuffer, u32 blockSize);
+    void* LoadGroup(u32 id, SoundMemoryAllocatable* allocater, void** waveBuffer, u32 blockSize);
     s32 ReadFile(u32 id, void* dst, s32 size, s32 offset);
-    void* LoadFile(u32 id, SoundMemoryAllocatable* allocatable);
+    void* LoadFile(u32 id, SoundMemoryAllocatable* allocater);
 
     void Cancel();
 
