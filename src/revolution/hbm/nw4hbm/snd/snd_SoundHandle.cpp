@@ -23,7 +23,7 @@ namespace nw4hbm {
 namespace snd {
 
 void SoundHandle::detail_AttachSound(detail::BasicSound* sound) {
-    NW4HBMAssertPointerNonnull_Line(sound, 81);
+    NW4HBMAssertPointerNonnull_Line(sound, 85);
 
     mSound = sound;
 
