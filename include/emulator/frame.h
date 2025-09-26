@@ -263,28 +263,34 @@ typedef struct Rectangle {
 typedef struct Frame {
     /* 0x00000 */ u32 anCIMGAddresses[8];
     /* 0x00020 */ u16 nNumCIMGAddresses;
-    /* 0x00024 */ bool bBlurOn;
-    /* 0x00028 */ bool bHackPause;
-    /* 0x0002C */ s32 nHackCount;
-    /* 0x00030 */ s32 nFrameCounter;
-    /* 0x00034 */ bool bPauseThisFrame;
-    /* 0x00038 */ bool bCameFromBomberNotes;
-    /* 0x0003C */ bool bInBomberNotes;
-    /* 0x00040 */ s32 bShrinking; // bitfield (not a bool)
-    /* 0x00044 */ bool bSnapShot;
-    /* 0x00048 */ u32 bUsingLens; // unsigned (not a bool)
-    /* 0x0004C */ u32 cBlurAlpha;
-    /* 0x00050 */ bool bBlurredThisFrame;
-    /* 0x00054 */ s32 nFrameCIMGCalls;
-    /* 0x00058 */ bool bModifyZBuffer;
-    /* 0x0005C */ bool bOverrideDepth;
-    /* 0x00060 */ s32 nZBufferSets;
-    /* 0x00064 */ s32 nLastFrameZSets;
-    /* 0x00068 */ bool bPauseBGDrawn;
-    /* 0x0006C */ bool bFrameOn;
-    /* 0x00070 */ bool bBackBufferDrawn;
-    /* 0x00074 */ bool bGrabbedFrame;
-    /* 0x00078 */ s32 pad1[7];
+    /* 0x00024 */ s32 unk_24;
+    /* 0x00028 */ s32 unk_28;
+    /* 0x0002C */ s32 unk_2C;
+    /* 0x00030 */ s32 unk_30;
+    /* 0x00034 */ s32 unk_34;
+    /* 0x00038 */ s32 unk_38;
+    /* 0x0003C */ s32 unk_3C;
+    /* 0x00040 */ s32 unk_40;
+    /* 0x00044 */ s32 unk_44;
+    /* 0x00048 */ u32 unk_48;
+    /* 0x0004C */ u32 unk_4C;
+    /* 0x00050 */ bool bBlurOn;
+    /* 0x00054 */ bool bHackPause;
+    /* 0x00058 */ s32 nHackCount;
+    /* 0x0005C */ s32 nFrameCounter;
+    /* 0x00060 */ bool bPauseThisFrame;
+    /* 0x00064 */ bool bCameFromBomberNotes;
+    /* 0x00068 */ bool bInBomberNotes;
+    /* 0x0006C */ s32 bShrinking; // bitfield (not a bool)
+    /* 0x00070 */ s32 bSnapShot; // bitfield (not a bool)
+    /* 0x00074 */ u32 bUsingLens;
+    /* 0x00078 */ u8 cBlurAlpha;
+    /* 0x0007C */ bool bBlurredThisFrame;
+    /* 0x00080 */ s32 nFrameCIMGCalls;
+    /* 0x00084 */ bool bModifyZBuffer;
+    /* 0x00088 */ s32 nZBufferSets;
+    /* 0x0008C */ s32 nLastFrameZSets;
+    /* 0x00090 */ bool bPauseBGDrawn;
     /* 0x00094 */ u64* pnGBI;
     /* 0x00098 */ u32 nFlag;
     /* 0x0009C */ f32 rScaleX;
@@ -346,9 +352,9 @@ typedef struct Frame {
     /* 0x3E7D0 */ Mtx44 matrixProjection;
     /* 0x3E810 */ Mtx44 matrixProjectionExtra;
     /* 0x3E850 */ MatrixHint aMatrixHint[64];
-    /* 0x3F150 */ Mtx44 unknown;
-    /* 0x3F190 */ Mtx44 unknown2;
-    /* 0x3F1D0 */ Mtx44 unknown3;
+    /* 0x3F150 */ Mtx44 unk_3F150;
+    /* 0x3F190 */ Mtx44 unk_3F190;
+    /* 0x3F1D0 */ Mtx44 unk_3F1D0;
     /* 0x3F210 */ f32 unk_3F210; // rNear
     /* 0x3F214 */ f32 unk_3F214; // rFar
     /* 0x3F218 */ u8 primLODmin;

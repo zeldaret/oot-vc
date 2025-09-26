@@ -597,7 +597,7 @@ revolution/ax/AXCL.c:
 revolution/ax/AXOut.c:
 	.text       start:0x800AD394 end:0x800ADBB4
 	.bss        start:0x801E6460 end:0x801EB220
-	.sbss       start:0x8025DA34 end:0x8025DA70
+	.sbss       start:0x8025DA34 end:0x8025DA78
 
 revolution/ax/AXSPB.c:
 	.text       start:0x800ADBB4 end:0x800ADFD8
@@ -856,6 +856,12 @@ libc/alloc.c:
 	extab       start:0x80006770 end:0x800067A8
 	extabindex  start:0x80006CB8 end:0x80006D0C
 	.text       start:0x80155160 end:0x80155F60
+	.rodata     start:0x8016E4B0 end:0x8016E4C8
+	.bss        start:0x80259F18 end:0x80259F50
+	.sbss       start:0x8025DDE8 end:0x8025DDF0
+
+libc/errno.c:
+	.sbss       start:0x8025DDF0 end:0x8025DDF8
 
 libc/ansi_files.c:
 	extab       start:0x800067A8 end:0x800067B8
@@ -871,6 +877,14 @@ libc/ansi_fp.c:
 	.rodata     start:0x8016E4C8 end:0x8016E5A8
 	.data       start:0x801A03C8 end:0x801A0530
 	.sdata2     start:0x8025EA68 end:0x8025EAA0
+
+libc/ctype.c:
+	.rodata     start:0x8016E5A8 end:0x8016E9A8
+
+libc/locale.c:
+	.rodata     start:0x8016E9A8 end:0x8016EAE0
+	.data       start:0x801A0530 end:0x801A0728
+	.sdata2     start:0x8025EAA0 end:0x8025EAB8
 
 libc/arith.c:
 	extab       start:0x800067F0 end:0x80006800
@@ -927,6 +941,9 @@ libc/printf.c:
 	extab       start:0x80006858 end:0x800068C8
 	extabindex  start:0x80006E14 end:0x80006EBC
 	.text       start:0x80158D4C end:0x8015B2A0
+	.data       start:0x801A0728 end:0x801A0978
+	.sdata      start:0x8025D0A8 end:0x8025D0B0
+	.sdata2     start:0x8025EAB8 end:0x8025EAC0
 
 libc/qsort.c:
 	extab       start:0x800068C8 end:0x800068D0
@@ -936,6 +953,9 @@ libc/qsort.c:
 libc/rand.c:
 	.text       start:0x8015B410 end:0x8015B438
 	.sdata      start:0x8025D0B0 end:0x8025D0B8
+
+libc/float.c:
+	.sdata      start:0x8025D0B8 end:0x8025D0C8
 
 libc/scanf.c:
 	extab       start:0x800068D0 end:0x800068E8
@@ -959,6 +979,8 @@ libc/strtold.c:
 	extab       start:0x80006908 end:0x80006910
 	extabindex  start:0x80006F1C end:0x80006F28
 	.text       start:0x8015D000 end:0x8015E3F4
+	.rodata     start:0x8016EB08 end:0x8016EB18
+	.sdata2     start:0x8025EAC0 end:0x8025EAE0
 
 libc/strtoul.c:
 	extab       start:0x80006910 end:0x80006940
@@ -970,6 +992,13 @@ libc/time.c:
 	extab       start:0x80006940 end:0x80006988
 	extabindex  start:0x80006F70 end:0x80006FDC
 	.text       start:0x8015F004 end:0x8016092C
+	.rodata     start:0x8016EB18 end:0x8016EC40
+	.data       start:0x801A0B20 end:0x801A0C78
+	.bss        start:0x8025A270 end:0x8025A2F8
+	.sdata2     start:0x8025EAE0 end:0x8025EB00
+
+libc/wctype.c:
+	.rodata     start:0x8016EC40 end:0x8016F240
 
 libc/wstring.c:
 	.text       start:0x8016092C end:0x8016098C

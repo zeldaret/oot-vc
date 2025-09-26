@@ -1,6 +1,7 @@
 #ifndef _RSP_H
 #define _RSP_H
 
+#include "emulator/vc64_RVL.h"
 #include "emulator/xlList.h"
 #include "emulator/xlObject.h"
 #include "revolution/types.h"
@@ -10,6 +11,7 @@ extern "C" {
 #endif
 
 #define SP_DMEM_SIZE 0x1000
+#define SP_IMEM_SIZE 0x1000
 
 #define SP_DMEM_START 0x04000000
 #define SP_IMEM_START 0x04001000
@@ -39,14 +41,32 @@ extern "C" {
 #define AUDIO_SEGMENT_ADDRESS(pRSP, nOffsetRDRAM) \
     (pRSP->anAudioBaseSegment[((nOffsetRDRAM) >> 24) & 0xF] + ((nOffsetRDRAM) & 0xFFFFFF))
 
-typedef enum __anon_0x581E7 {
+#define G_OBJLT_TXTRBLOCK 0x00001033
+#define G_OBJLT_TXTRTILE 0x00FC1034
+#define G_OBJLT_TLUT 0x00000030
+
+#define G_IM_SIZ_4b 0
+#define G_IM_SIZ_8b 1
+#define G_IM_SIZ_16b 2
+#define G_IM_SIZ_32b 3
+
+#define G_IM_FMT_RGBA 0
+#define G_IM_FMT_YUV 1
+#define G_IM_FMT_CI 2
+#define G_IM_FMT_IA 3
+#define G_IM_FMT_I 4
+
+#define G_TX_WRAP (1 << 0)
+#define G_TX_CLAMP (1 << 1)
+
+typedef enum RspAudioUCodeType {
     RUT_NOCODE = -1,
     RUT_ABI1 = 0,
     RUT_ABI2 = 1,
     RUT_ABI3 = 2,
     RUT_ABI4 = 3,
     RUT_UNKNOWN = 4,
-} __anon_0x581E7;
+} RspAudioUCodeType;
 
 typedef enum RspUCodeType {
     RUT_NONE = -1,
@@ -157,7 +177,7 @@ typedef struct __anon_0x583EE {
     /* 0x4 */ s16 v;
 } __anon_0x583EE; // size = 0x6
 
-typedef struct __anon_0x5B8F2 {
+typedef struct RspUCode {
     /* 0x00 */ s32 nOffsetCode;
     /* 0x04 */ s32 nLengthCode;
     /* 0x08 */ s32 nOffsetData;
@@ -166,108 +186,101 @@ typedef struct __anon_0x5B8F2 {
     /* 0x50 */ u64 nUCodeCheckSum;
     /* 0x58 */ s32 nCountVertex;
     /* 0x5C */ RspUCodeType eType;
-} __anon_0x5B8F2; // size = 0x60
+} RspUCode; // size = 0x60
 
 typedef struct Rsp {
     /* 0x0000 */ s32 nMode;
-    /* 0x0004 */ RspYield yield;
-    /* 0x00DC */ u32 nTickLast;
-    /* 0x00E0 */ s32 (*pfUpdateWaiting)(void);
-    /* 0x00E4 */ u32 n2TriMult;
-    /* 0x00E8 */ s32 aStatus[4];
-    /* 0x00F8 */ f32 aMatrixOrtho[4][4];
-    /* 0x0138 */ u32 nMode2D;
-    /* 0x013C */ struct __anon_0x57AB1 twoDValues;
-    /* 0x015C */ s32 nPass;
-    /* 0x0160 */ u32 nZSortSubDL;
-    /* 0x0164 */ u32 nStatusSubDL;
-    /* 0x0168 */ u32 nNumZSortLights;
-    /* 0x016C */ s32 aLightAddresses[8];
-    /* 0x018C */ s32 nAmbientLightAddress;
-    /* 0x0190 */ struct __anon_0x57BBE aZSortVertex[128];
-    /* 0x0B90 */ struct __anon_0x57CD6 aZSortNormal[128];
-    /* 0x0D10 */ struct __anon_0x57D55 aZSortMaterial[128];
-    /* 0x0F10 */ struct __anon_0x57DF8 aZSortMatrix[128];
-    /* 0x2F10 */ struct __anon_0x57E56 aZSortLight[8];
-    /* 0x2F40 */ s32 aZSortInvW[128];
-    /* 0x3140 */ s16 aZSortWiVal[128];
-    /* 0x3240 */ u32 nNumZSortMatrices;
-    /* 0x3244 */ u32 nNumZSortVertices;
-    /* 0x3248 */ u32 nTotalZSortVertices;
-    /* 0x324C */ u32 nNumZSortNormals;
-    /* 0x3250 */ u32 nNumZSortMaterials;
-    /* 0x3254 */ s32 anAudioBaseSegment[16];
-    /* 0x3294 */ s16* anAudioBuffer;
-    /* 0x3298 */ s16 anADPCMCoef[5][2][8];
-    /* 0x3338 */ u16 nAudioDMOutR[2];
-    /* 0x333C */ u16 nAudioDMauxL[2];
-    /* 0x3340 */ u16 nAudioDMauxR[2];
-    /* 0x3344 */ u16 nAudioCount[2];
-    /* 0x3348 */ u16 nAudioFlags;
-    /* 0x334A */ u16 nAudioDMEMIn[2];
-    /* 0x334E */ u16 nAudioDMEMOut[2];
-    /* 0x3354 */ u32 nAudioLoopAddress;
-    /* 0x3358 */ u32 nAudioDryAmt;
-    /* 0x335C */ u32 nAudioWetAmt;
-    /* 0x3360 */ u32 nAudioVolL;
-    /* 0x3364 */ u32 nAudioVolR;
-    /* 0x3368 */ u32 nAudioVolTGTL;
-    /* 0x336C */ u32 nAudioVolRateLM;
-    /* 0x3370 */ u32 nAudioVolRateLL;
-    /* 0x3374 */ u32 nAudioVolTGTR;
-    /* 0x3378 */ u32 nAudioVolRateRM;
-    /* 0x337C */ u32 nAudioVolRateRL;
-    /* 0x3380 */ struct __anon_0x58107 vParams;
-    /* 0x3390 */ s16 stepF;
-    /* 0x3392 */ s16 stepL;
-    /* 0x3394 */ s16 stepR;
-    /* 0x3398 */ s32 anGenReg[32];
-    /* 0x3418 */ struct __anon_0x58107 aVectorReg[32];
-    /* 0x3618 */ s32 anCP0Reg[32];
-    /* 0x3698 */ struct __anon_0x58107 anCP2Reg[32];
-    /* 0x3898 */ s16 anAcc[24];
-    /* 0x38C8 */ s16 nVCC;
-    /* 0x38CA */ s16 nVC0;
-    /* 0x38CC */ char nVCE;
-    /* 0x38D0 */ __anon_0x581E7 eTypeAudioUCode;
-    /* 0x38D4 */ u16 nAudioMemOffset;
-    /* 0x38D6 */ u16 nAudioADPCMOffset;
-    /* 0x38D8 */ u16 nAudioScratchOffset;
-    /* 0x38DA */ u16 nAudioParBase;
-    /* 0x38DC */ s32 nPC;
-    /* 0x38E0 */ s32 iDL;
-    /* 0x38E4 */ s32 nBIST;
-    /* 0x38E8 */ void* pHost;
-    /* 0x38EC */ void* pDMEM;
-    /* 0x38F0 */ void* pIMEM;
-    /* 0x38F4 */ s32 nStatus;
-    /* 0x38F8 */ s32 nFullDMA;
-    /* 0x38FC */ s32 nBusyDMA;
-    /* 0x3900 */ s32 nSizeGet;
-    /* 0x3904 */ s32 nSizePut;
-    /* 0x3908 */ s32 nSemaphore;
-    /* 0x390C */ s32 nAddressSP;
-    /* 0x3910 */ s32 nGeometryMode;
-    /* 0x3914 */ s32 nAddressRDRAM;
-    /* 0x3918 */ struct tXL_LIST* pListUCode;
-    /* 0x391C */ s32 nCountVertex;
-    /* 0x3920 */ RspUCodeType eTypeUCode;
-    /* 0x3924 */ u32 nVersionUCode;
-    u8 pad[0x2004];
-    /* 0x3928 */ s32 anBaseSegment[16]; // 0x592C
-    /* 0x3968 */ u64* apDL[16];
-    /* 0x39A8 */ s32* Coeff;
-    /* 0x39AC */ s16* QTable;
-    /* 0x39B0 */ s16* QYTable;
-    /* 0x39B4 */ s16* QCbTable;
-    /* 0x39B8 */ s16* QCrTable;
-    /* 0x39BC */ s32* Zigzag;
-    /* 0x39C0 */ struct __anon_0x58360* rgbaBuf;
-    /* 0x39C4 */ struct __anon_0x583EE* yuvBuf;
-    /* 0x39C8 */ s32* dctBuf;
-} Rsp; // size = 0x39CC
+    /* 0x0004 */ s32 nBIST;
+    /* 0x0008 */ s32 nStatus;
+    /* 0x000C */ s32 unk000C;
+    /* 0x0010 */ u8 pIMEM[SP_IMEM_SIZE];
+    /* 0x1010 */ u8 pDMEM[SP_DMEM_SIZE];
+    /* 0x2010 */ s32 nSemaphore;
+    /* 0x2014 */ s32 nFullDMA;
+    /* 0x2018 */ s32 nBusyDMA;
+    /* 0x201C */ s32 nSizeGet;
+    /* 0x2020 */ s32 nSizePut;
+    /* 0x2024 */ s32 nAddressSP;
+    /* 0x2028 */ s32 nAddressRDRAM;
+    /* 0x202C */ s32 nPC;
+    /* 0x2030 */ s32 unk2030;
+    /* 0x2034 */ u8 unk2034[0x2574 - 0x2034];
+    /* 0x2574 */ s32 nGeometryMode;
+    /* 0x2578 */ RspYield yield;
+    /* 0x2650 */ u32 nTickLast;
+    /* 0x2654 */ s32 (*pfUpdateWaiting)(void);
+    /* 0x2658 */ u32 n2TriMult;
+    /* 0x265C */ s32 aStatus[4];
+    /* 0x266C */ f32 aMatrixOrtho[4][4];
+    /* 0x26AC */ u32 nMode2D;
+    /* 0x26B0 */ struct __anon_0x57AB1 twoDValues;
+    /* 0x26D0 */ s32 nPass;
+    /* 0x26D4 */ u32 nZSortSubDL;
+    /* 0x26D8 */ u32 nStatusSubDL;
+    /* 0x26DC */ u32 nNumZSortLights;
+    /* 0x26E0 */ s32 aLightAddresses[8];
+    /* 0x2700 */ s32 nAmbientLightAddress;
+    /* 0x2704 */ struct __anon_0x57BBE aZSortVertex[128];
+    /* 0x3104 */ struct __anon_0x57CD6 aZSortNormal[128];
+    /* 0x3284 */ struct __anon_0x57D55 aZSortMaterial[128];
+    /* 0x3484 */ struct __anon_0x57DF8 aZSortMatrix[128];
+    /* 0x5484 */ struct __anon_0x57E56 aZSortLight[8];
+    /* 0x54B4 */ s32 aZSortInvW[128];
+    /* 0x56B4 */ s16 aZSortWiVal[128];
+    /* 0x57B4 */ u32 nNumZSortMatrices;
+    /* 0x57B8 */ u32 nNumZSortVertices;
+    /* 0x57BC */ u32 nTotalZSortVertices;
+    /* 0x57C0 */ u32 nNumZSortNormals;
+    /* 0x57C4 */ u32 nNumZSortMaterials;
+    /* 0x57C8 */ s32 anAudioBaseSegment[16];
+    /* 0x5808 */ s16* anAudioBuffer;
+    /* 0x580C */ s16 anADPCMCoef[5][2][8];
+    /* 0x58AC */ u16 nAudioDMOutR[2];
+    /* 0x58B0 */ u16 nAudioDMauxL[2];
+    /* 0x58B4 */ u16 nAudioDMauxR[2];
+    /* 0x58B8 */ u16 nAudioCount[2];
+    /* 0x58BC */ u16 nAudioFlags;
+    /* 0x58BE */ u16 nAudioDMEMIn[2];
+    /* 0x58C2 */ u16 nAudioDMEMOut[2];
+    /* 0x58C8 */ u32 nAudioLoopAddress;
+    /* 0x58CC */ u32 nAudioDryAmt;
+    /* 0x58D0 */ u32 nAudioWetAmt;
+    /* 0x58D4 */ u32 nAudioVolL;
+    /* 0x58D8 */ u32 nAudioVolR;
+    /* 0x58DC */ u32 nAudioVolTGTL;
+    /* 0x58E0 */ u32 nAudioVolRateLM;
+    /* 0x58E4 */ u32 nAudioVolRateLL;
+    /* 0x58E8 */ u32 nAudioVolTGTR;
+    /* 0x58EC */ u32 nAudioVolRateRM;
+    /* 0x58F0 */ u32 nAudioVolRateRL;
+    /* 0x58F4 */ struct __anon_0x58107 vParams;
+    /* 0x5904 */ s16 stepF;
+    /* 0x5906 */ s16 stepL;
+    /* 0x5908 */ s16 stepR;
+    /* 0x590A */ u16 nAudioMemOffset;
+    /* 0x590C */ u16 nAudioADPCMOffset;
+    /* 0x590E */ u16 nAudioScratchOffset;
+    /* 0x5910 */ u16 nAudioParBase;
+    /* 0x5914 */ s32 iDL;
+    /* 0x5918 */ s32 nCountVertex;
+    /* 0x591C */ struct tXL_LIST* pListUCode;
+    /* 0x5920 */ RspUCodeType eTypeUCode;
+    /* 0x5924 */ u32 nVersionUCode;
+    /* 0x5928 */ RspAudioUCodeType eTypeAudioUCode;
+    /* 0x592C */ s32 anBaseSegment[16];
+    /* 0x596C */ u64* apDL[16];
+    /* 0x59AC */ s32* Coeff;
+    /* 0x59B0 */ int* dctBuf;
+    /* 0x59B4 */ int* Zigzag;
+    /* 0x59B8 */ s16* QTable;
+    /* 0x59BC */ struct __anon_0x583EE* yuvBuf;
+    /* 0x59C0 */ s16* QYTable;
+    /* 0x59C4 */ s16* QCbTable;
+    /* 0x59C8 */ s16* QCrTable;
+    /* 0x59CC */ struct __anon_0x58360* rgbaBuf;
+} Rsp; // size = 0x59D0
 
-typedef struct __anon_0x5ED4F {
+typedef struct uObjBg_t {
     /* 0x00 */ u16 imageX;
     /* 0x02 */ u16 imageW;
     /* 0x04 */ s16 frameX;
@@ -288,9 +301,9 @@ typedef struct __anon_0x5ED4F {
     /* 0x22 */ u16 tmemLoadTH;
     /* 0x24 */ u16 tmemSizeW;
     /* 0x26 */ u16 tmemSize;
-} __anon_0x5ED4F; // size = 0x28
+} uObjBg_t; // size = 0x28
 
-typedef struct __anon_0x5F05A {
+typedef struct uObjScaleBg_t {
     /* 0x00 */ u16 imageX;
     /* 0x02 */ u16 imageW;
     /* 0x04 */ s16 frameX;
@@ -309,25 +322,98 @@ typedef struct __anon_0x5F05A {
     /* 0x1E */ u16 scaleH;
     /* 0x20 */ s32 imageYorig;
     /* 0x24 */ u8 padding[4];
-} __anon_0x5F05A; // size = 0x28
+} uObjScaleBg_t; // size = 0x28
 
-typedef union __anon_0x5F2FB {
-    /* 0x0 */ struct __anon_0x5ED4F b;
-    /* 0x0 */ struct __anon_0x5F05A s;
-    /* 0x0 */ s64 force_structure_alignment;
-} __anon_0x5F2FB;
+typedef union uObjBg {
+    uObjBg_t b;
+    uObjScaleBg_t s;
+    s64 force_structure_alignment;
+} uObjBg;
 
-bool rspFillObjBgScale(Rsp* pRSP, s32 nAddress, union __anon_0x5F2FB* pBg);
+typedef struct uObjSprite_t {
+    /* 0x00 */ s16 objX;
+    /* 0x02 */ u16 scaleW;
+    /* 0x04 */ u16 imageW;
+    /* 0x06 */ u16 paddingX;
+    /* 0x08 */ s16 objY;
+    /* 0x0A */ u16 scaleH;
+    /* 0x0C */ u16 imageH;
+    /* 0x0E */ u16 paddingY;
+    /* 0x10 */ u16 imageStride;
+    /* 0x12 */ u16 imageAdrs;
+    /* 0x14 */ u8 imageFmt;
+    /* 0x15 */ u8 imageSiz;
+    /* 0x16 */ u8 imagePal;
+    /* 0x17 */ u8 imageFlags;
+} uObjSprite_t; // size = 0x18
+
+typedef union uObjSprite {
+    uObjSprite_t s;
+    s64 force_structure_alignment;
+} uObjSprite;
+
+typedef struct uObjTxtrBlock_t {
+    /* 0x00 */ u32 type;
+    /* 0x04 */ u32 image;
+    /* 0x08 */ u16 tmem;
+    /* 0x0A */ u16 tsize;
+    /* 0x0C */ u16 tline;
+    /* 0x0E */ u16 sid;
+    /* 0x10 */ u32 flag;
+    /* 0x14 */ u32 mask;
+} uObjTxtrBlock_t; // size = 0x18
+
+typedef struct uObjTxtrTile_t {
+    /* 0x00 */ u32 type;
+    /* 0x04 */ u32 image;
+    /* 0x08 */ u16 tmem;
+    /* 0x0A */ u16 twidth;
+    /* 0x0C */ u16 theight;
+    /* 0x0E */ u16 sid;
+    /* 0x10 */ u32 flag;
+    /* 0x14 */ u32 mask;
+} uObjTxtrTile_t; // size = 0x18
+
+typedef struct uObjTxtrTLUT_t {
+    /* 0x00 */ u32 type;
+    /* 0x04 */ u32 image;
+    /* 0x08 */ u16 phead;
+    /* 0x0A */ u16 pnum;
+    /* 0x0C */ u16 zero;
+    /* 0x0E */ u16 sid;
+    /* 0x10 */ u32 flag;
+    /* 0x14 */ u32 mask;
+} uObjTxtrTLUT_t; // size = 0x18
+
+typedef union uObjTxtr {
+    uObjTxtrBlock_t block;
+    uObjTxtrTile_t tile;
+    uObjTxtrTLUT_t tlut;
+    s64 force_structure_alignment;
+} uObjTxtr;
+
+typedef struct zVtxDest {
+    /* 0x0 */ s16 sx;
+    /* 0x2 */ s16 sy;
+    /* 0x4 */ int invw;
+    /* 0x8 */ s16 xi;
+    /* 0xA */ s16 yi;
+    /* 0xC */ u8 cc;
+    /* 0xD */ u8 fog;
+    /* 0xE */ s16 wi;
+} zVtxDest; // size = 0x10
+
+bool rspFillObjBgScale(Rsp* pRSP, s32 nAddress, uObjBg* pBg);
 bool rspPut32(Rsp* pRSP, u32 nAddress, s32* pData);
 bool rspGet32(Rsp* pRSP, u32 nAddress, s32* pData);
 bool rspInvalidateCache(Rsp* pRSP, s32 nOffset0, s32 nOffset1);
 bool rspEnableABI(Rsp* pRSP, bool bFlag);
 bool rspFrameComplete(Rsp* pRSP);
 bool rspUpdate(Rsp* pRSP, RspUpdateMode eMode);
+bool rspGetDMEM(Rsp* pRSP, void** pBuffer, s32 nOffset, u32 nSize);
+bool rspGetIMEM(Rsp* pRSP, void** pBuffer, s32 nOffset, u32 nSize);
+bool rspGetBuffer(Rsp* pRSP, void** pBuffer, s32 nOffset, u32* pnSize);
 bool rspEvent(Rsp* pRSP, s32 nEvent, void* pArgument);
-
-//! TODO: document this
-bool fn_8007D688(Rsp* pRSP, void** pBuffer, s32 unk1, s32 unk2);
 
 extern _XL_OBJECTTYPE gClassRSP;
 
