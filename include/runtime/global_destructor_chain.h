@@ -13,7 +13,8 @@ typedef struct DestructorChain {
     void* object;
 } DestructorChain;
 
-void __destroy_global_chain(void);
+extern void* __register_global_object(void* object, void* destructor, void* registration);
+extern void __destroy_global_chain(void);
 
 #ifdef __cplusplus
 }
