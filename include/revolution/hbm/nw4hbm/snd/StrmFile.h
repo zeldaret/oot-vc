@@ -16,6 +16,11 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 namespace StrmFile {
+
+static const u32 SIGNATURE_FILE = 'RSTM';
+static const u32 SIGNATURE_HEAD_BLOCK = 'HEAD';
+static const int FILE_VERSION = NW4R_VERSION(1, 0);
+
 typedef struct StrmDataInfo {
     u8 format; // 0x00
     u8 loopFlag; // 0x01
@@ -97,10 +102,7 @@ typedef struct StrmInfo {
 } StrmInfo;
 
 class StrmFileReader {
-  public:
-    static const u32 SIGNATURE = 'RSTM';
-    static const int FILE_VERSION = NW4R_VERSION(1, 0);
-
+public:
     StrmFileReader();
 
     bool IsAvailable() const { return mHeader != NULL; }

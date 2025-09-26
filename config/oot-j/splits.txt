@@ -1126,6 +1126,8 @@ revolution/hbm/nw4hbm/snd/snd_StrmChannel.cpp:
 
 revolution/hbm/nw4hbm/snd/snd_StrmFile.cpp:
 	.text       start:0x80135880 end:0x80135F48
+	.data       start:0x8019C8A0 end:0x8019CAF0
+	.sdata      start:0x8025CF30 end:0x8025CF50
 
 revolution/hbm/nw4hbm/snd/snd_StrmPlayer.cpp:
 	.text       start:0x80135F48 end:0x801383AC
