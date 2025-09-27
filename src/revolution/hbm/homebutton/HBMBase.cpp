@@ -35,8 +35,7 @@
 
 #include "revolution/ax.h"
 #include "revolution/axfx.h"
-#include "revolution/mem/mem_allocator.h"
-#include "revolution/mem/mem_expHeap.h"
+#include "revolution/mem.h"
 #include "revolution/os.h"
 #include "revolution/os/OSAlarm.h"
 #include "revolution/os/OSMutex.h"
@@ -146,7 +145,7 @@ static HBMAllocatorType getAllocatorType(const HBMDataInfo* pHBInfo) {
 }
 
 void HBMCreate(const HBMDataInfo* pHBInfo) {
-    MEMiHeapHead* hExpHeap;
+    MEMHeapHandle hExpHeap;
 
     if (getAllocatorType(pHBInfo) == HBM_ALLOCATOR_LOCAL) {
         hExpHeap = MEMCreateExpHeap(pHBInfo->mem, pHBInfo->memSize);

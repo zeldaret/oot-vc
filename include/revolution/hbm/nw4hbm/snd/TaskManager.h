@@ -5,6 +5,8 @@
 
 #include "revolution/mem.h"
 
+#define TASK_NUM 128
+
 namespace nw4hbm {
 namespace snd {
 namespace detail {
@@ -39,7 +41,7 @@ class TaskManager {
     TaskManager();
 
     OSMutex mMutex; // 0x00
-    MEMiHeapHead mHeapHandle; // 0x18
+    MEMHeapHandle mHeapHandle; // 0x18
 
     Task* mCurrentTask; // 0x1C
     TaskList mTaskList[PRIORITY_MAX]; // 0x20

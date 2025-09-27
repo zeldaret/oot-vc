@@ -2,7 +2,7 @@
 #define NW4R_SND_TASK_H
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp" // ut::NonCopyable
+#include "revolution/hbm/ut.hpp"
 
 namespace nw4hbm {
 namespace snd {

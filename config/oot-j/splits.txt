@@ -1146,10 +1146,13 @@ revolution/hbm/nw4hbm/snd/snd_StrmSoundHandle.cpp:
 	.text       start:0x80138B20 end:0x80138B58
 
 revolution/hbm/nw4hbm/snd/snd_TaskManager.cpp:
-	.text       start:0x80138B58 end:0x80139438
+	.text       start:0x80138B58 end:0x80139340
+	.data       start:0x8019D190 end:0x8019D360
+	.bss        start:0x802559A0 end:0x80257A38
+	.sbss       start:0x8025DC88 end:0x8025DC90
 
 revolution/hbm/nw4hbm/snd/snd_TaskThread.cpp:
-	.text       start:0x80139438 end:0x80139578
+	.text       start:0x80139340 end:0x80139578
 
 revolution/hbm/nw4hbm/snd/snd_Util.cpp:
 	.text       start:0x80139578 end:0x80139914

@@ -66,7 +66,7 @@ class FrameHeap {
     static const int BLOCK_BUFFER_SIZE = OSRoundUp32B(sizeof(Block));
     static const int HEAP_ALIGN = 32;
 
-    MEMiHeapHead* mHandle; // 0x00
+    MEMHeapHandle mHandle; // 0x00
     SectionList mSectionList; // 0x04
 };
 } // namespace detail

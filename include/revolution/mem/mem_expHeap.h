@@ -2,6 +2,7 @@
 #define _RVL_SDK_MEM_EXP_HEAP_H
 
 #include "revolution/types.h"
+#include "revolution/mem/mem_heapCommon.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,18 +53,18 @@ typedef struct MEMiExpHeapHead {
     };
 } MEMiExpHeapHead;
 
-struct MEMiHeapHead* MEMCreateExpHeapEx(void* start, u32 size, u16 opt);
-struct MEMiHeapHead* MEMDestroyExpHeap(struct MEMiHeapHead* heap);
-void* MEMAllocFromExpHeapEx(struct MEMiHeapHead* heap, u32 size, s32 align);
-u32 MEMResizeForMBlockExpHeap(struct MEMiHeapHead* heap, void* memBlock, u32 size);
-void MEMFreeToExpHeap(struct MEMiHeapHead* heap, void* memBlock);
-u32 MEMAdjustExpHeap(struct MEMiHeapHead* heap);
+MEMHeapHandle MEMCreateExpHeapEx(void* start, u32 size, u16 opt);
+MEMHeapHandle MEMDestroyExpHeap(MEMHeapHandle heap);
+void* MEMAllocFromExpHeapEx(MEMHeapHandle heap, u32 size, s32 align);
+u32 MEMResizeForMBlockExpHeap(MEMHeapHandle heap, void* memBlock, u32 size);
+void MEMFreeToExpHeap(MEMHeapHandle heap, void* memBlock);
+u32 MEMAdjustExpHeap(MEMHeapHandle heap);
 
-static inline struct MEMiHeapHead* MEMCreateExpHeap(void* start, u32 size) {
+static inline MEMHeapHandle MEMCreateExpHeap(void* start, u32 size) {
     return MEMCreateExpHeapEx(start, size, 0);
 }
 
-static inline void* MEMAllocFromExpHeap(struct MEMiHeapHead* heap, u32 size) {
+static inline void* MEMAllocFromExpHeap(MEMHeapHandle heap, u32 size) {
     return MEMAllocFromExpHeapEx(heap, size, 4);
 }
 

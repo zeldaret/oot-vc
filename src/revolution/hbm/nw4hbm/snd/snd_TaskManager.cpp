@@ -1,212 +1,113 @@
 #include "revolution/hbm/nw4hbm/snd/TaskManager.h"
 
-/* Original source:
- * kiwi515/ogws
- * src/nw4r/snd/snd_TaskManager.cpp
- */
+namespace nw4hbm {
+namespace snd {
+namespace detail {
 
-/*******************************************************************************
- * headers
- */
+u8 TaskManager::mTaskArea[0x2000 + 0x44] alignas(32);
 
-#include <decomp.h>
-#include "macros.h" // NW4R_RANGE_FOR_NO_AUTO_INC
-#include "revolution/types.h" // nullptr
-
-#include "revolution/hbm/nw4hbm/snd/Task.h"
-
-#include "revolution/hbm/nw4hbm/ut/ut_lock.hpp" // ut::AutoInterruptLock
-
-#include "revolution/os/OSThread.h"
-
-#include "revolution/hbm/HBMAssert.hpp"
-
-/*******************************************************************************
- * functions
- */
-
-namespace nw4hbm { namespace snd { namespace detail {
-
-TaskManager &TaskManager::GetInstance()
-{
-	static TaskManager instance;
-
-	return instance;
+TaskManager& TaskManager::GetInstance() {
+    static TaskManager instance;
+    return instance;
 }
 
-TaskManager::TaskManager() :
-	mCurrentTask		(nullptr),
-	mCancelWaitTaskFlag	(false)
-{
-	OSInitThreadQueue(&mAppendThreadQueue);
-	OSInitThreadQueue(&mDoneThreadQueue);
+TaskManager::TaskManager() : mMutex(), mCurrentTask(nullptr), mTaskList() {
+    OSInitMutex(&mMutex);
+    mHeapHandle = MEMCreateUnitHeap(mTaskArea, sizeof(mTaskArea), 64);
+
+    // clang-format off
+    NW4HBMAssert_Line(MEMCountFreeBlockForUnitHeap( mHeapHandle ) >= TASK_NUM, 55);
+    // clang-format on
 }
 
-void TaskManager::AppendTask(Task *task, TaskPriority priority)
-{
-	// specifically not the source variant
-	NW4HBMAssertHeaderClampedLValue_Line(priority, PRIORITY_LOW,
-	                                   PRIORITY_NUM, 67);
+void* TaskManager::Alloc() {
+    void* allocBuf;
 
-	ut::AutoInterruptLock lock;
+    NW4HBMAssert_Line(mHeapHandle != MEM_HEAP_INVALID_HANDLE, 69);
+    ut::AutoInterruptLock lock;
 
-	task->mBusyFlag = true;
-	mTaskList[priority].PushBack(task);
+    allocBuf = MEMAllocFromUnitHeap(mHeapHandle);
 
-	OSWakeupThread(&mAppendThreadQueue);
+    while (allocBuf == nullptr) {
+        bool result = ExecuteSingle();
+        NW4HBMAssert_Line(result, 76);
+        allocBuf = MEMAllocFromUnitHeap(mHeapHandle);
+    }
+
+    return allocBuf;
 }
 
-// TaskManager::FindTask, probably
-DECOMP_FORCE_CLASS_METHOD(Task::LinkList::Iterator, operator *());
-
-Task *TaskManager::GetNextTask(TaskPriority priority, bool doRemove)
-{
-	ut::AutoInterruptLock lock;
-
-	if (mTaskList[priority].IsEmpty())
-		return nullptr;
-
-	Task *task = &mTaskList[priority].GetFront();
-
-	if (doRemove)
-		mTaskList[priority].PopFront();
-
-	return task;
+u32 TaskManager::GetTaskBufferSize() {
+    //! TODO: fake match?
+    return *((u32*)mHeapHandle + 0x10);
 }
 
-Task *TaskManager::PopTask()
-{
-	ut::AutoInterruptLock lock;
-
-	Task *task;
-
-	if ((task = GetNextTask(PRIORITY_HIGH, true)))
-		return task;
-
-	if ((task = GetNextTask(PRIORITY_MIDDLE, true)))
-		return task;
-
-	if ((task = GetNextTask(PRIORITY_LOW, true)))
-		return task;
-
-	return nullptr;
+void TaskManager::Free(void* ptr) {
+    NW4HBMAssert_Line(mHeapHandle != MEM_HEAP_INVALID_HANDLE, 93);
+    ut::AutoInterruptLock lock;
+    MEMFreeToUnitHeap(mHeapHandle, ptr);
 }
 
-Task *TaskManager::GetNextTask()
-{
-	ut::AutoInterruptLock lock;
-
-	Task *task;
-
-	if ((task = GetNextTask(PRIORITY_HIGH, false)))
-		return task;
-
-	if ((task = GetNextTask(PRIORITY_MIDDLE, false)))
-		return task;
-
-	if ((task = GetNextTask(PRIORITY_LOW, false)))
-		return task;
-
-	return nullptr;
+void TaskManager::AppendTask(Task* task, TaskPriority priority) {
+    NW4HBMAssertHeaderClampedLValue_Line(priority, PRIORITY_LOW, PRIORITY_MAX, 125);
+    ut::AutoInterruptLock lock;
+    mTaskList[priority].PushBack(task);
 }
 
-Task *TaskManager::ExecuteTask()
-{
-	Task *task = PopTask();
-	if (!task)
-		return nullptr;
+Task* TaskManager::PopTask(TaskPriority priority) {
+    Task* task;
+    ut::AutoInterruptLock lock;
 
-	mCurrentTask = task;
+    if (mTaskList[priority].IsEmpty()) {
+        return nullptr;
+    }
 
-	task->mBusyFlag = false;
-	task->Execute();
-
-	mCurrentTask = nullptr;
-
-	OSWakeupThread(&mDoneThreadQueue);
-
-	return task;
+    task = &mTaskList[priority].GetFront();
+    mTaskList[priority].PopFront();
+    return task;
 }
 
-void TaskManager::CancelTask(Task *task)
-{
-	ut::AutoInterruptLock lock;
-
-	if (task == mCurrentTask)
-	{
-		task->OnCancel();
-
-		while (task == mCurrentTask)
-			OSSleepThread(&mDoneThreadQueue);
-	}
-	else
-	{
-		for (int i = 0; i < PRIORITY_NUM; i++)
-		{
-			TaskPriority priority = static_cast<TaskPriority>(i);
-
-			NW4R_RANGE_FOR_NO_AUTO_INC(itr, mTaskList[priority])
-			{
-				DECLTYPE(itr) curItr = itr++;
-
-				if (&(*curItr) == task)
-				{
-					mTaskList[priority].Erase(curItr);
-
-					curItr->mBusyFlag = false;
-					curItr->Cancel();
-
-					break;
-				}
-			}
-		}
-	}
+void TaskManager::Execute() {
+    while (ExecuteSingle()) {}
 }
 
-void TaskManager::CancelAllTask()
-{
-	ut::AutoInterruptLock lock;
+bool TaskManager::ExecuteSingle() {
+    ut::AutoMutexLock lock(mMutex);
 
-	for (int i = 0; i < PRIORITY_NUM; i++)
-	{
-		TaskPriority priority = static_cast<TaskPriority>(i);
+    if ((mCurrentTask = PopTask(static_cast<TaskPriority>(PRIORITY_HIGH))) == nullptr) {
+        if ((mCurrentTask = PopTask(static_cast<TaskPriority>(PRIORITY_MIDDLE))) == nullptr) {
+            if ((mCurrentTask = PopTask(static_cast<TaskPriority>(PRIORITY_LOW))) == nullptr) {
+                return false;
+            }
+        }
+    }
 
-		Task::LinkList &list = mTaskList[priority];
-		while (!list.IsEmpty())
-		{
-			Task &task = list.GetBack();
-			list.PopBack();
-
-			task.mBusyFlag = false;
-			task.Cancel();
-		}
-	}
-
-	if (mCurrentTask)
-	{
-		mCurrentTask->OnCancel();
-
-		while (mCurrentTask)
-			OSSleepThread(&mDoneThreadQueue);
-	}
+    mCurrentTask->Execute();
+    Free(mCurrentTask);
+    mCurrentTask = nullptr;
+    return true;
 }
 
-void TaskManager::WaitTask()
-{
-	ut::AutoInterruptLock lockIntr;
+void TaskManager::CancelByTaskId(u32 taskId) {
+    ut::AutoInterruptLock lock;
 
-	mCancelWaitTaskFlag = false;
+    for (int i = 0; i < PRIORITY_MAX; i++) {
+        TaskPriority prio = static_cast<TaskPriority>(i);
 
-	while (!GetNextTask() && !mCancelWaitTaskFlag) // TODO: implies volatile?
-		OSSleepThread(&mAppendThreadQueue);
+        for (TaskList::Iterator it = mTaskList[prio].GetBeginIter(); it != mTaskList[prio].GetEndIter();) {
+            TaskList::Iterator currIt = it++;
+            if (currIt->GetTaskId() == taskId) {
+                mTaskList[prio].Erase(currIt);
+                Free(&*currIt);
+            }
+        }
+    }
+
+    if (mCurrentTask && mCurrentTask->GetTaskId() == taskId) {
+        mCurrentTask->Cancel();
+    }
 }
 
-void TaskManager::CancelWaitTask()
-{
-	ut::AutoInterruptLock lockIntr;
-
-	mCancelWaitTaskFlag = true;
-	OSWakeupThread(&mAppendThreadQueue);
-}
-
-}}} // namespace nw4hbm::snd::detail
+} // namespace detail
+} // namespace snd
+} // namespace nw4hbm
