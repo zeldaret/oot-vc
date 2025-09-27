@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/db/mapFile.hpp"
+#include "revolution/hbm/nw4hbm/db/mapFile.h"
 
 /*******************************************************************************
  * headers

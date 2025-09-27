@@ -10,7 +10,7 @@
 #include "macros.h"
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/db/directPrint.hpp"
+#include "revolution/hbm/nw4hbm/db/directPrint.h"
 
 #include "revolution/os/OSError.h" // OSReport
 #include "revolution/os/OSInterrupt.h"
@@ -18,7 +18,7 @@
 #include "revolution/os/OSThread.h" // OSGetCurrentThread
 
 #include "revolution/hbm/HBMAssert.hpp"
-#include "revolution/hbm/nw4hbm/ut/Color.hpp"
+#include "revolution/hbm/nw4hbm/ut/Color.h"
 
 #include "decomp.h"
 
@@ -66,7 +66,7 @@ static inline u16 GetRingUsedLines_(detail::ConsoleHead* console) {
 static inline u16 GetActiveLines_(detail::ConsoleHead* console) {
     u16 lines = GetRingUsedLines_(console);
 
-    if (console->printLineHasText) {
+    if (console->printTopUsed) {
         lines++;
     }
 
@@ -117,7 +117,7 @@ static u8* NextLine_(detail::ConsoleHead* console) {
     *GetTextPtr_(console, console->printTop, console->printXPos) = '\0';
     console->printXPos = 0;
     console->printTop++;
-    console->printLineHasText = 0;
+    console->printTopUsed = 0;
 
     if (console->printTop == console->height && !(console->attr & /* FLAG_BIT(1) */ 2)) {
         console->printTop = 0;
@@ -205,7 +205,7 @@ static void DoDrawConsole_(detail::ConsoleHead* console, ut::TextWriterBase<char
     }
 
     while (true) {
-        if (line == console->printTop && console->printLineHasText == 0) {
+        if (line == console->printTop && console->printTopUsed == 0) {
             break;
         }
 
@@ -278,12 +278,12 @@ static void PrintToBuffer_(detail::ConsoleHead* console, u8 const* str) {
             if (*str == '\t') {
                 str++;
                 storePtr = PutTab_(console, storePtr);
-                console->printLineHasText = 1;
+                console->printTopUsed = 1;
             } else {
                 u32 bytes = PutChar_(console, str, storePtr);
 
                 if (bytes) {
-                    console->printLineHasText = 1;
+                    console->printTopUsed = 1;
                     str += bytes;
                     storePtr += bytes;
                 } else {

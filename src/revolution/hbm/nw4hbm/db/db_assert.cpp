@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/db/assert.hpp"
+#include "revolution/hbm/nw4hbm/db/assert.h"
 
 /*******************************************************************************
  * headers
@@ -12,8 +12,8 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/db/console.h"
-#include "revolution/hbm/nw4hbm/db/directPrint.hpp"
-#include "revolution/hbm/nw4hbm/db/mapFile.hpp"
+#include "revolution/hbm/nw4hbm/db/directPrint.h"
+#include "revolution/hbm/nw4hbm/db/mapFile.h"
 
 #include "revolution/base/PPCArch.h"
 #include "revolution/os/OSAlarm.h"
@@ -23,6 +23,8 @@
 #include "revolution/os/OSMemory.h"
 #include "revolution/os/OSThread.h"
 #include "revolution/vi/vi.h"
+
+#include "decomp.h"
 
 /*******************************************************************************
  * local function declarations
@@ -180,38 +182,23 @@ WEAK void VPanic(const char* file, int line, const char* fmt, std::va_list vlist
 
 // this is very dumb but it works to make .data match
 
-u16 Console_GetViewHeight(detail::ConsoleHead* console) {
+u16 Console_GetViewHeight(ConsoleHandle console) {
     NW4HBMAssertHeaderPointerNonnull_FileLine(console, "console.h", 434);
-
     return console->viewLines;
 }
 
-bool Console_SetVisible(detail::ConsoleHead* console, bool isVisible) {
+bool Console_SetVisible(ConsoleHandle console, bool isVisible) {
     NW4HBMAssertHeaderPointerNonnull_FileLine(console, "console.h", 497);
-
     bool before = console->isVisible;
     console->isVisible = isVisible;
     return before;
 }
 
-s32 Console_SetViewBaseLine(detail::ConsoleHead* console, s32 line) {
+s32 Console_SetViewBaseLine(ConsoleHandle console, s32 line) {
     NW4HBMAssertHeaderPointerNonnull_FileLine(console, "console.h", 557);
-
     s32 before = console->viewTopLine;
     console->viewTopLine = line;
     return before;
-}
-
-s32 Console_ShowLatestLine(detail::ConsoleHead* console) {
-    s32 baseLine = Console_GetTotalLines(console) - Console_GetViewHeight(console);
-
-    if (baseLine < 0) {
-        baseLine = 0;
-    }
-
-    Console_SetViewBaseLine(console, baseLine);
-
-    return baseLine;
 }
 
 /* --- */

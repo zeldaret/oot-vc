@@ -1,18 +1,12 @@
-#ifndef NW4R_DB_ASSERT_H
-#define NW4R_DB_ASSERT_H
+#ifndef NW4HBM_DB_ASSERT_H
+#define NW4HBM_DB_ASSERT_H
 
-/*******************************************************************************
- * headers
- */
+#include "cstdarg.hpp"
 
-#include "cstdarg.hpp" // std::va_list
+#include "macros.h"
+#include "revolution/types.h"
 
-#include "macros.h" // WEAK
-#include "revolution/types.h" // u32
-
-/*******************************************************************************
- * functions
- */
+#include "revolution/hbm/HBMAssert.hpp"
 
 namespace nw4hbm {
 namespace db {

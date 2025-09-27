@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/db/directPrint.hpp"
+#include "revolution/hbm/nw4hbm/db/directPrint.h"
 
 /*******************************************************************************
  * headers
@@ -23,6 +23,27 @@
 #include "revolution/vi/vi.h"
 
 #include "revolution/hbm/HBMAssert.hpp"
+
+typedef struct FrameBufferInfo {
+    u8*     frameMemory;    // 0x00
+    u32     frameSize;      // 0x04
+    u16     frameWidth;     // 0x08
+    u16     frameHeight;    // 0x0A
+    u16     frameRow;       // 0x0C
+    u16     reserved;       // 0x0E
+} FrameBufferInfo;
+
+typedef struct YUVColorInfo {
+    GXColor colorRGBA;  // 0x00
+    u16     colorY256;  // 0x04
+    u16     colorU;     // 0x06
+    u16     colorU2;    // 0x08
+    u16     colorU4;    // 0x0A
+    u16     colorV;     // 0x0C
+    u16     colorV2;    // 0x0E
+    u16     colorV4;    // 0x10
+    u16     reserved;   // 0x12
+} YUVColorInfo;
 
 /*******************************************************************************
  * local function declarations
