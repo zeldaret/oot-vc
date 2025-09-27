@@ -1159,6 +1159,10 @@ revolution/hbm/nw4hbm/snd/snd_TaskThread.cpp:
 
 revolution/hbm/nw4hbm/snd/snd_Util.cpp:
 	.text       start:0x80139578 end:0x80139914
+	.rodata     start:0x8016CC20 end:0x8016E368
+	.data       start:0x8019D398 end:0x8019D3C8
+	.sdata      start:0x8025CF50 end:0x8025CF58
+	.sdata2     start:0x8025E8A0 end:0x8025E8E8
 
 revolution/hbm/nw4hbm/snd/snd_WaveFile.cpp:
 	.text       start:0x80139914 end:0x80139B44
