@@ -712,7 +712,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_WavePlayer.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_WaveSound.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_WaveSoundHandle.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_WsdFile.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_WsdFile.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_WsdPlayer.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_WsdTrack.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp"),

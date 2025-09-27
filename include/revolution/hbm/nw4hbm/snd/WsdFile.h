@@ -5,8 +5,8 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/Util.h"
-#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
 #include "revolution/hbm/nw4hbm/snd/WaveFile.h"
+#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
 
 #include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
 
@@ -15,6 +15,11 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 namespace WsdFile {
+
+static const u32 SIGNATURE_FILE = 'RWSD';
+static const u32 SIGNATURE_DATA_BLOCK = 'DATA';
+static const u32 SIGNATURE_WAVE_BLOCK = 'WAVE';
+static const int FILE_VERSION = NW4R_VERSION(1, 2);
 
 typedef struct WsdInfo {
     f32 pitch; // 0x00
@@ -117,9 +122,6 @@ typedef struct WaveSoundNoteInfo {
 
 class WsdFileReader {
   public:
-    static const u32 SIGNATURE = 'RWSD';
-    static const int FILE_VERSION = NW4R_VERSION(1, 2);
-
     explicit WsdFileReader(const void* waveData);
 
     bool IsValidFileHeader(const void* waveData);
