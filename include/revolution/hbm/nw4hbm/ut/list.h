@@ -37,7 +37,7 @@ namespace nw4hbm {
             return List_GetPrev(list, NULL);
         }
         
-        static u16 List_GetSize(const List* list) {
+        inline u16 List_GetSize(const List* list) {
             NW4HBMAssertPointerNonnull_Line(list, 207);
             return list->numObjects;
         }
