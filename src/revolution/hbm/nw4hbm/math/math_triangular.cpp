@@ -1,12 +1,5 @@
-#include "revolution/hbm/nw4hbm/math/math_triangular.hpp"
-
-/*******************************************************************************
- * headers
- */
-
+#include "revolution/hbm/nw4hbm/math/arithmetic.h"
 #include "revolution/types.h"
-
-#include "revolution/hbm/nw4hbm/math/math_arithmetic.hpp"
 
 /*******************************************************************************
  * types
