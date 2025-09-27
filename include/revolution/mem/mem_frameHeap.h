@@ -1,8 +1,8 @@
 #ifndef _RVL_SDK_MEM_FRAME_HEAP_H
 #define _RVL_SDK_MEM_FRAME_HEAP_H
 
-#include "revolution/types.h"
 #include "revolution/mem/mem_heapCommon.h"
+#include "revolution/types.h"
 
 #ifdef __cplusplus
 extern "C" {

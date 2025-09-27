@@ -24,8 +24,8 @@
 #include "revolution/hbm/nw4hbm/ut/TextWriter.h"
 #include "revolution/hbm/nw4hbm/ut/WideTextWriter.h"
 
-#include "revolution/hbm/nw4hbm/ut/FileStream.h"
 #include "revolution/hbm/nw4hbm/ut/DvdLockedFileStream.h"
+#include "revolution/hbm/nw4hbm/ut/FileStream.h"
 #include "revolution/hbm/nw4hbm/ut/NandFileStream.h"
 
 #endif // NW4HBM_UT_H

@@ -1,47 +1,43 @@
 #ifndef NW4HBM_UT_LIST_H
 #define NW4HBM_UT_LIST_H
 
-#include "revolution/types.h"
 #include "revolution/hbm/HBMAssert.hpp"
+#include "revolution/types.h"
 
 namespace nw4hbm {
-    namespace ut {
-        typedef struct Link {
-            void*   prevObject; // 0x00
-            void*   nextObject; // 0x04
-        } Link;
-        
-        typedef struct List {
-            void*   headObject; // 0x00
-            void*   tailObject; // 0x04
-            u16     numObjects; // 0x08
+namespace ut {
+typedef struct Link {
+    void* prevObject; // 0x00
+    void* nextObject; // 0x04
+} Link;
 
-            u16     offset;     // 0x0A
-        } List;
-        
-        void List_Init(List* list, u16 offset);
-        void List_Append(List* list, void* object);
-        void List_Prepend(List* list, void* object);
-        void List_Insert(List* list, void* target, void* object);
-        void List_Remove(List* list, void* object);
-        
-        void* List_GetNext(const List* list, const void* object);
-        void* List_GetPrev(const List* list, const void* object);
-        void* List_GetNth(const List* list, u16 index);
+typedef struct List {
+    void* headObject; // 0x00
+    void* tailObject; // 0x04
+    u16 numObjects; // 0x08
 
-        static void* List_GetFirst(const List* list) {
-            return List_GetNext(list, NULL);
-        }
+    u16 offset; // 0x0A
+} List;
 
-        static void* List_GetLast(const List* list) {
-            return List_GetPrev(list, NULL);
-        }
-        
-        inline u16 List_GetSize(const List* list) {
-            NW4HBMAssertPointerNonnull_Line(list, 207);
-            return list->numObjects;
-        }
-    }
+void List_Init(List* list, u16 offset);
+void List_Append(List* list, void* object);
+void List_Prepend(List* list, void* object);
+void List_Insert(List* list, void* target, void* object);
+void List_Remove(List* list, void* object);
+
+void* List_GetNext(const List* list, const void* object);
+void* List_GetPrev(const List* list, const void* object);
+void* List_GetNth(const List* list, u16 index);
+
+static void* List_GetFirst(const List* list) { return List_GetNext(list, NULL); }
+
+static void* List_GetLast(const List* list) { return List_GetPrev(list, NULL); }
+
+inline u16 List_GetSize(const List* list) {
+    NW4HBMAssertPointerNonnull_Line(list, 207);
+    return list->numObjects;
 }
+} // namespace ut
+} // namespace nw4hbm
 
 #endif // NW4HBM_UT_LIST_H

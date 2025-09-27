@@ -11,9 +11,9 @@
 
 #include "revolution/hbm/nw4hbm/lyt/common.h"
 #include "revolution/hbm/nw4hbm/lyt/layout.h"
-#include "revolution/hbm/nw4hbm/lyt/types.h"
 #include "revolution/hbm/nw4hbm/lyt/material.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
+#include "revolution/hbm/nw4hbm/lyt/types.h"
 
 #include "revolution/hbm/nw4hbm/math/types.h"
 #include "revolution/hbm/nw4hbm/ut/Color.h"

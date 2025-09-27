@@ -3,6 +3,6 @@
 
 #include "revolution/hbm/nw4hbm/config.h"
 
-#define NW4HBM_LYT_VERSION    8
+#define NW4HBM_LYT_VERSION 8
 
 #endif // NW4HBM_LYT_CONFIG_H

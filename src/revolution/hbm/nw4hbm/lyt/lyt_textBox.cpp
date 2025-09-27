@@ -15,22 +15,22 @@
 
 #include "revolution/hbm/nw4hbm/lyt/common.h"
 #include "revolution/hbm/nw4hbm/lyt/layout.h"
-#include "revolution/hbm/nw4hbm/lyt/resourceAccessor.h"
-#include "revolution/hbm/nw4hbm/lyt/types.h" // detail::ConvertOffsToPointer
 #include "revolution/hbm/nw4hbm/lyt/material.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
+#include "revolution/hbm/nw4hbm/lyt/resourceAccessor.h"
+#include "revolution/hbm/nw4hbm/lyt/types.h" // detail::ConvertOffsToPointer
 
 #include "revolution/hbm/nw4hbm/db/console.h"
 #include "revolution/hbm/nw4hbm/math/types.h" // math::VEC2
-#include "revolution/hbm/nw4hbm/ut/Color.h"
-#include "revolution/hbm/nw4hbm/ut/Font.h"
-#include "revolution/hbm/nw4hbm/ut/TextWriterBase.h"
 #include "revolution/hbm/nw4hbm/ut/CharStrmReader.h"
 #include "revolution/hbm/nw4hbm/ut/CharWriter.h"
+#include "revolution/hbm/nw4hbm/ut/Color.h"
+#include "revolution/hbm/nw4hbm/ut/Font.h"
 #include "revolution/hbm/nw4hbm/ut/Rect.h"
 #include "revolution/hbm/nw4hbm/ut/ResFont.h"
 #include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
 #include "revolution/hbm/nw4hbm/ut/TagProcessorBase.h"
+#include "revolution/hbm/nw4hbm/ut/TextWriterBase.h"
 #include "revolution/hbm/nw4hbm/ut/inlines.h"
 
 #include "revolution/gx/GXTypes.h"

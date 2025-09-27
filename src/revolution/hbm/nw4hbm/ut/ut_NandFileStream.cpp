@@ -1,7 +1,7 @@
 #include "revolution/hbm/nw4hbm/ut/NandFileStream.h"
 
-#include "revolution/hbm/HBMAssert.hpp"
 #include "macros.h"
+#include "revolution/hbm/HBMAssert.hpp"
 
 namespace nw4hbm {
 namespace ut {

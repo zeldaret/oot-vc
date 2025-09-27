@@ -23,9 +23,9 @@
 #include "revolution/hbm/nw4hbm/lyt/drawInfo.h"
 #include "revolution/hbm/nw4hbm/lyt/group.h"
 #include "revolution/hbm/nw4hbm/lyt/layout.h"
-#include "revolution/hbm/nw4hbm/lyt/textBox.h"
 #include "revolution/hbm/nw4hbm/lyt/material.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
+#include "revolution/hbm/nw4hbm/lyt/textBox.h"
 #include "revolution/hbm/nw4hbm/math/triangular.h" // nw4hbm::math::Atan2Deg
 #include "revolution/hbm/nw4hbm/math/types.h"
 #include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)

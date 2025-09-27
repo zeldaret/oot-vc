@@ -38,8 +38,7 @@ template <typename T> Operation TagProcessorBase<T>::Process(u16 code, PrintCont
     }
 }
 
-template <typename T>
-Operation TagProcessorBase<T>::CalcRect(Rect* pRect, u16 code, PrintContext<T>* context) {
+template <typename T> Operation TagProcessorBase<T>::CalcRect(Rect* pRect, u16 code, PrintContext<T>* context) {
     NW4HBMAssertPointerValid_Line(pRect, 132);
     NW4HBMAssert_Line(code < ' ', 133);
     NW4HBMAssertPointerValid_Line(context, 134);

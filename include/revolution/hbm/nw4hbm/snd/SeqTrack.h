@@ -5,8 +5,8 @@
 
 #include "revolution/hbm/nw4hbm/snd/Channel.h"
 #include "revolution/hbm/nw4hbm/snd/Lfo.h" // LfoParam
-#include "revolution/hbm/nw4hbm/snd/global.h" // AUX_BUS_NUM
 #include "revolution/hbm/nw4hbm/snd/MoveValue.h"
+#include "revolution/hbm/nw4hbm/snd/global.h" // AUX_BUS_NUM
 
 namespace nw4hbm {
 namespace snd {

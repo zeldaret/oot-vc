@@ -12,8 +12,8 @@
 
 #include "revolution/hbm/nw4hbm/lyt/common.h" // detail::EqualsPaneName
 #include "revolution/hbm/nw4hbm/lyt/layout.h"
-#include "revolution/hbm/nw4hbm/lyt/types.h" // detail::ConvertOffsToPtr
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
+#include "revolution/hbm/nw4hbm/lyt/types.h" // detail::ConvertOffsToPtr
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
 

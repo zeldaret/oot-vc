@@ -17,11 +17,11 @@
 #include "revolution/hbm/nw4hbm/lyt/bounding.h"
 #include "revolution/hbm/nw4hbm/lyt/common.h"
 #include "revolution/hbm/nw4hbm/lyt/group.h"
+#include "revolution/hbm/nw4hbm/lyt/pane.h"
 #include "revolution/hbm/nw4hbm/lyt/picture.h"
 #include "revolution/hbm/nw4hbm/lyt/textBox.h"
 #include "revolution/hbm/nw4hbm/lyt/types.h" // detail::ConvertOffsToPtr
 #include "revolution/hbm/nw4hbm/lyt/window.h"
-#include "revolution/hbm/nw4hbm/lyt/pane.h"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
 #include "revolution/hbm/nw4hbm/ut/Rect.h"

@@ -4,8 +4,8 @@
 #include "revolution/types.h"
 #include "revolution/wpad.h"
 
-#include "revolution/hbm/nw4hbm/snd/global.h"
 #include "revolution/hbm/nw4hbm/snd/MoveValue.h"
+#include "revolution/hbm/nw4hbm/snd/global.h"
 #include "revolution/hbm/nw4hbm/snd/types.h"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
