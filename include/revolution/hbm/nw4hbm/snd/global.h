@@ -13,22 +13,6 @@
 
 namespace nw4hbm {
 namespace snd {
-// [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x26bd0
-enum AuxBus {
-    AUX_A,
-    AUX_B,
-    AUX_C,
-    AUX_BUS_NUM
-};
-
-// [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x20f19
-enum OutputMode {
-    OUTPUT_MODE_STEREO,
-    OUTPUT_MODE_SURROUND,
-    OUTPUT_MODE_DPL2,
-    OUTPUT_MODE_MONO,
-};
-
 // [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x25ec5
 enum PanMode {
     PAN_MODE_DUAL,
@@ -48,14 +32,6 @@ enum PanCurve {
     PAN_CURVE_LINEAR,
     PAN_CURVE_LINEAR_0DB,
     PAN_CURVE_LINEAR_0DB_CLAMP,
-};
-
-// [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x20e89
-enum SampleFormat {
-    SAMPLE_FORMAT_PCM_S32,
-    SAMPLE_FORMAT_PCM_S16,
-    SAMPLE_FORMAT_PCM_S8,
-    SAMPLE_FORMAT_DSP_ADPCM,
 };
 
 // [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x273ea

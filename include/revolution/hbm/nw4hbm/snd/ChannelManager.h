@@ -3,7 +3,7 @@
 
 #include "revolution/hbm/nw4hbm/snd/Channel.h"
 #include "revolution/hbm/nw4hbm/snd/InstanceManager.h"
-#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
+#include "revolution/hbm/nw4hbm/snd/types.h"
 
 namespace nw4hbm {
 namespace snd {

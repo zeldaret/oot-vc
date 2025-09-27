@@ -4,7 +4,7 @@
 #include "revolution/hbm/nw4hbm/snd/FxBase.h"
 
 #include "revolution/hbm/nw4hbm/snd/AxVoice.h"
-#include "revolution/hbm/nw4hbm/snd/snd_MoveValue.hpp"
+#include "revolution/hbm/nw4hbm/snd/MoveValue.h"
 
 #include "revolution/ai.h"
 #include "revolution/ax.h"

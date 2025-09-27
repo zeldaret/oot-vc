@@ -5,8 +5,8 @@
 #include "revolution/wpad.h"
 
 #include "revolution/hbm/nw4hbm/snd/global.h"
-#include "revolution/hbm/nw4hbm/snd/snd_MoveValue.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
+#include "revolution/hbm/nw4hbm/snd/MoveValue.h"
+#include "revolution/hbm/nw4hbm/snd/types.h"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
 #include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h" // ut::Clamp

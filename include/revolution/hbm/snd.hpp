@@ -66,14 +66,9 @@
 #include "revolution/hbm/nw4hbm/snd/global.h"
 #include "revolution/hbm/nw4hbm/snd/mix.h"
 // #include "revolution/hbm/nw4hbm/snd/snd_AxVoiceManager.h"
-// #include "revolution/hbm/nw4hbm/snd/snd_EnvGenerator.h"
+// #include "revolution/hbm/nw4hbm/snd/EnvGenerator.h"
 // #include "revolution/hbm/nw4hbm/snd/snd_MoveValue.h"
-// #include "revolution/hbm/nw4hbm/snd/snd_SoundActor.h"
 // #include "revolution/hbm/nw4hbm/snd/snd_SoundMemoryAllocatable.h"
 // #include "revolution/hbm/nw4hbm/snd/types.h"
-// #include "revolution/hbm/nw4hbm/snd/snd_Voice.h"
-// #include "revolution/hbm/nw4hbm/snd/snd_VoiceManager.h"
-// #include "revolution/hbm/nw4hbm/snd/snd_WaveArchive.h"
-// #include "revolution/hbm/nw4hbm/snd/snd_adpcm.h"
 
 #endif

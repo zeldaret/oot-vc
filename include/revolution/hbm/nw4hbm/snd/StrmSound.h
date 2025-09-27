@@ -6,7 +6,7 @@
 #include "revolution/hbm/nw4hbm/snd/BasicSound.h"
 #include "revolution/hbm/nw4hbm/snd/StrmPlayer.h"
 #include "revolution/hbm/nw4hbm/snd/debug.h"
-#include "revolution/hbm/nw4hbm/snd/snd_MoveValue.hpp"
+#include "revolution/hbm/nw4hbm/snd/MoveValue.h"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
 

@@ -3,7 +3,7 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/FrameHeap.h"
-#include "revolution/hbm/nw4hbm/snd/snd_SoundMemoryAllocatable.hpp"
+#include "revolution/hbm/nw4hbm/snd/SoundMemoryAllocatable.h"
 
 #include "revolution/hbm/ut.hpp"
 

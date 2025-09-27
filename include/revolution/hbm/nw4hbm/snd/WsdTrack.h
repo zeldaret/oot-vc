@@ -1,7 +1,7 @@
 #ifndef NW4R_SND_WSD_TRACK_H
 #define NW4R_SND_WSD_TRACK_H
 
-#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
+#include "revolution/hbm/nw4hbm/snd/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/Channel.h"
 #include "revolution/hbm/nw4hbm/snd/Lfo.h"

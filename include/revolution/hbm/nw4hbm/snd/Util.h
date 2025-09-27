@@ -9,7 +9,7 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/HBMAssert.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
+#include "revolution/hbm/nw4hbm/snd/types.h"
 
 /*******************************************************************************
  * classes and functions

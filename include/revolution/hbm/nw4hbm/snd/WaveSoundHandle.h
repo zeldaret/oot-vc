@@ -2,7 +2,7 @@
 #define NW4R_SND_WAVE_SOUND_HANDLE_H
 
 #include "revolution/hbm/nw4hbm/snd/WaveSound.h"
-#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
+#include "revolution/hbm/nw4hbm/snd/types.h"
 #include "revolution/hbm/ut.hpp"
 
 // forward declarations

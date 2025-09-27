@@ -1,7 +1,7 @@
 #ifndef NW4R_SND_STRM_CHANNEL_H
 #define NW4R_SND_STRM_CHANNEL_H
 
-#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
+#include "revolution/hbm/nw4hbm/snd/types.h"
 
 namespace nw4hbm {
 namespace snd {

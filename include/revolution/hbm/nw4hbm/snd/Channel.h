@@ -12,10 +12,10 @@
 #include "revolution/hbm/nw4hbm/snd/InstancePool.h"
 #include "revolution/hbm/nw4hbm/snd/Lfo.h"
 #include "revolution/hbm/nw4hbm/snd/global.h"
-#include "revolution/hbm/nw4hbm/snd/snd_EnvGenerator.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_MoveValue.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
+#include "revolution/hbm/nw4hbm/snd/EnvGenerator.h"
+#include "revolution/hbm/nw4hbm/snd/MoveValue.h"
+#include "revolution/hbm/nw4hbm/snd/types.h"
+#include "revolution/hbm/nw4hbm/snd/WaveFile.h"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
 

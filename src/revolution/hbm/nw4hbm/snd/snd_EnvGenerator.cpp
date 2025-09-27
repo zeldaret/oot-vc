@@ -184,7 +184,7 @@ f32 EnvGenerator::CalcRelease(int release) {
     }
 }
 
-s16 EnvGenerator::CalcDecibelSquare(int scale) {
+int EnvGenerator::CalcDecibelSquare(int scale) {
     // specifically not the source variant
     NW4HBMAssertHeaderClampedLRValue_Line(scale, 0, 127, 321);
     return DecibelSquareTable[scale];

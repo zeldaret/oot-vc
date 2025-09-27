@@ -7,7 +7,6 @@
 
 #include "revolution/hbm/nw4hbm/snd/Util.h" // Util::DataRef
 #include "revolution/hbm/nw4hbm/snd/global.h" // SampleFormat
-#include "revolution/hbm/nw4hbm/snd/snd_adpcm.hpp"
 
 #include "revolution/hbm/nw4hbm/ut/FileStream.h"
 #include "revolution/hbm/nw4hbm/ut/binaryFileFormat.h"

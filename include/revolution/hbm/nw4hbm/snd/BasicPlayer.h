@@ -1,7 +1,7 @@
 #ifndef NW4R_SND_BASIC_PLAYER_H
 #define NW4R_SND_BASIC_PLAYER_H
 
-#include "revolution/hbm/nw4hbm/snd/global.h"
+#include "revolution/hbm/nw4hbm/snd/types.h"
 #include "revolution/types.h"
 
 namespace nw4hbm {

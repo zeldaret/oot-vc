@@ -291,7 +291,7 @@ int SoundPlayer::CalcPriorityReduction(detail::BasicSound::AmbientArgInfo* ambie
     int priority = 0;
 
     if (ambientArgInfo != nullptr) {
-        detail::SoundParam param;
+        SoundParam param;
 
         ambientArgInfo->paramUpdateCallback->detail_Update(
             &param, id, nullptr, ambientArgInfo->arg,

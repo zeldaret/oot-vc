@@ -9,7 +9,7 @@
 #include "revolution/hbm/nw4hbm/snd/InstancePool.h"
 
 #include "revolution/hbm/nw4hbm/ut/inlines.h"
-#include "revolution/hbm/nw4hbm/ut/lock.h"
+#include "revolution/hbm/nw4hbm/ut/Lock.h"
 
 #include "revolution/os/OSMutex.h"
 

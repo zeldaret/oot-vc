@@ -1,7 +1,7 @@
 #ifndef NW4R_SND_SEQ_SOUND_HANDLE_H
 #define NW4R_SND_SEQ_SOUND_HANDLE_H
 
-#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
+#include "revolution/hbm/nw4hbm/snd/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/BasicSound.h"
 #include "revolution/hbm/nw4hbm/snd/SeqPlayer.h"

@@ -1,7 +1,7 @@
 #ifndef NW4R_SND_STRM_PLAYER_H
 #define NW4R_SND_STRM_PLAYER_H
 
-#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
+#include "revolution/hbm/nw4hbm/snd/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/AxVoice.h"
 

@@ -1,7 +1,7 @@
 #ifndef NW4R_SND_DVD_SOUND_ARCHIVE_H
 #define NW4R_SND_DVD_SOUND_ARCHIVE_H
 
-#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
+#include "revolution/hbm/nw4hbm/snd/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/SoundArchive.h"
 #include "revolution/hbm/nw4hbm/snd/SoundArchiveFile.h"
