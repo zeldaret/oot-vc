@@ -1,9 +1,9 @@
 #ifndef NW4R_SND_TASK_THREAD_H
 #define NW4R_SND_TASK_THREAD_H
 
-#include "revolution/os/OSThread.h"
-#include "revolution/types.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
+#include "revolution/hbm/ut.hpp"
+#include "revolution/os.h"
 
 namespace nw4hbm {
 namespace snd {

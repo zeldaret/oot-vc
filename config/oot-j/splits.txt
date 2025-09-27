@@ -1153,6 +1153,9 @@ revolution/hbm/nw4hbm/snd/snd_TaskManager.cpp:
 
 revolution/hbm/nw4hbm/snd/snd_TaskThread.cpp:
 	.text       start:0x80139340 end:0x80139578
+	.data       start:0x8019D360 end:0x8019D398
+	.bss        start:0x80257A38 end:0x80259DA0
+	.sbss       start:0x8025DC90 end:0x8025DC98
 
 revolution/hbm/nw4hbm/snd/snd_Util.cpp:
 	.text       start:0x80139578 end:0x80139914

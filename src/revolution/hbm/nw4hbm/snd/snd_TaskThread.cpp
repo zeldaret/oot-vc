@@ -1,95 +1,71 @@
-#include "revolution/hbm/nw4hbm/snd/TaskThread.h"
-
-/* Original source:
- * kiwi515/ogws
- * src/nw4r/snd/snd_TaskThread.cpp
- */
-
-/*******************************************************************************
- * headers
- */
-
-#include "revolution/types.h"
-
 #include "revolution/hbm/nw4hbm/snd/TaskManager.h"
-
-#include "revolution/os/OSThread.h"
-
-#include "revolution/hbm/HBMAssert.hpp"
-
-/*******************************************************************************
- * functions
- */
+#include "revolution/hbm/nw4hbm/snd/TaskThread.h"
 
 namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-TaskThread::TaskThread() : mStackEnd(nullptr), mFinishFlag(false), mCreateFlag(false) {}
-
-TaskThread::~TaskThread() {
-    if (mCreateFlag) {
-        Destroy();
-    }
+TaskThread& TaskThread::GetInstance() {
+    static TaskThread instance;
+    return instance;
 }
 
-bool TaskThread::Create(s32 priority, void* stack, u32 stackSize) {
-    NW4HBMAssertPointerNonnull_Line(stack, 59);
-    NW4HBMAssertAligned_Line(60, stack, 4);
-
+bool TaskThread::Create(s32 threadPrio) {
     if (mCreateFlag) {
-        Destroy();
+        return true;
     }
 
-    BOOL result = OSCreateThread(&mThread, &ThreadFunc, this, static_cast<byte_t*>(stack) + stackSize, stackSize,
-                                 priority, OS_THREAD_NO_FLAGS);
-    if (!result) {
-        return false;
-    }
-
-    mStackEnd = static_cast<byte4_t*>(stack);
-    mFinishFlag = false;
     mCreateFlag = true;
 
-    OSResumeThread(&mThread);
+    OSInitThreadQueue(&mThreadQueue);
 
-    return true;
-}
-
-void TaskThread::Destroy() {
-    if (!mCreateFlag) {
-        return;
+    BOOL result = OSCreateThread(&mThread, ThreadFunc, &GetInstance(), mThreadStack + THREAD_STACK_SIZE,
+                                 THREAD_STACK_SIZE * 8, threadPrio, 0);
+    if (result) {
+        OSResumeThread(&mThread);
     }
 
-    mFinishFlag = true;
-    TaskManager::GetInstance().CancelWaitTask();
-
-    BOOL result = OSJoinThread(&mThread, nullptr);
-    NW4HBMAssert_Line(result, 105);
-
-    mCreateFlag = false;
+    return result;
 }
 
+BOOL TaskThread::Destroy() {
+    if (!mCreateFlag) {
+        return FALSE;
+    }
+
+    if (!OSSendMessageAny(&GetInstance().mMsgQueue, MSG_DONE, OS_MESSAGE_NO_FLAGS)) {
+        return FALSE;
+    }
+
+    BOOL result = OSJoinThread(&mThread, nullptr);
+    NW4HBMAssert_Line(result != 0, 98);
+
+    mCreateFlag = false;
+    return TRUE;
+}
+
+void TaskThread::SendWakeupMessage() { OSSendMessage(&mMsgQueue, (OSMessage)MSG_EXECUTE, 0); }
+
 void* TaskThread::ThreadFunc(void* arg) {
-    TaskThread* taskThread = static_cast<TaskThread*>(arg);
+    TaskThread* thread = static_cast<TaskThread*>(arg);
+    OSInitMessageQueue(&thread->mMsgQueue, thread->mMsgBuffer, 8);
 
-    taskThread->ThreadProc();
+    thread->ThreadProc();
 
-    return nullptr;
+    return NULL;
 }
 
 void TaskThread::ThreadProc() {
-    while (!mFinishFlag) // TODO: implies volatile?
-    {
-        TaskManager::GetInstance().WaitTask();
+    OSMessage msg;
 
-        if (mFinishFlag) {
-            break;
+    while (true) {
+        OSReceiveMessage(&mMsgQueue, &msg, 1);
+
+        if (reinterpret_cast<u32>(msg) == MSG_EXECUTE) {
+            TaskManager::GetInstance().Execute();
+        } else if (reinterpret_cast<u32>(msg) == MSG_DONE) {
+            return;
         }
-
-        TaskManager::GetInstance().ExecuteTask();
-
-        NW4HBMAssert_Line(*mStackEnd == OS_THREAD_STACK_MAGIC, 160);
     }
 }
 
