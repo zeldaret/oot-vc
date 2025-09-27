@@ -4,7 +4,7 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-u8 TaskManager::mTaskArea[0x2000 + 0x44] alignas(32);
+u8 TaskManager::mTaskArea[0x2000 + 0x44] ATTRIBUTE_ALIGN(32);
 
 TaskManager& TaskManager::GetInstance() {
     static TaskManager instance;

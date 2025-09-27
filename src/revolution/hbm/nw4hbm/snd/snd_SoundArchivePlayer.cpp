@@ -1022,7 +1022,7 @@ SoundArchivePlayer::StrmHeaderLoadTask::StrmHeaderLoadTask(
       mStream(nullptr), mMutex(mutex) {}
 
 void SoundArchivePlayer::StrmHeaderLoadTask::Execute() {
-    static u8 buffer[STREAM_BUFFER_SIZE] alignas(32);
+    static u8 buffer[STREAM_BUFFER_SIZE] ATTRIBUTE_ALIGN(32);
     static OSMutex mutex;
 
     static bool initFlag = false;

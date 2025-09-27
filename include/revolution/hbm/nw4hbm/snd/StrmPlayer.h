@@ -59,7 +59,7 @@ class StrmPlayer : public BasicPlayer {
       public:
         ut::LinkListNode mLinkNode; // 0x14
 
-        static u8 mMramBuf[LOAD_BUFFER_SIZE] alignas(32);
+        static u8 mMramBuf[LOAD_BUFFER_SIZE] ATTRIBUTE_ALIGN(32);
     };
     typedef ut::LinkList<LoadCommand, offsetof(LoadCommand, mLinkNode)> LoadCommandList;
 

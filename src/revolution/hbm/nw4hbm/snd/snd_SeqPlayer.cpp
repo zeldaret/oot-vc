@@ -1,6 +1,7 @@
+#include "revolution/hbm/nw4hbm/snd/SeqPlayer.h"
+
 #include "decomp.h"
 #include "revolution/hbm/nw4hbm/snd/NoteOnCallback.h"
-#include "revolution/hbm/nw4hbm/snd/SeqPlayer.h"
 #include "revolution/hbm/nw4hbm/snd/SeqTrack.h"
 #include "revolution/hbm/nw4hbm/snd/SeqTrackAllocator.h"
 #include "revolution/hbm/ut.hpp"

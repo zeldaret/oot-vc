@@ -18,7 +18,7 @@ namespace {
 StrmPlayerList sPlayerList;
 }
 
-u8 StrmPlayer::LoadCommand::mMramBuf[LOAD_BUFFER_SIZE] alignas(32);
+u8 StrmPlayer::LoadCommand::mMramBuf[LOAD_BUFFER_SIZE] ATTRIBUTE_ALIGN(32);
 
 StrmPlayer::StrmPlayer() : mActiveFlag(false), mVoice(nullptr) {
     for (u32 i = 0; i < 32; i++) {
