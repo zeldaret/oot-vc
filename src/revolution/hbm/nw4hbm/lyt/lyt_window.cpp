@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/lyt/lyt_window.hpp"
+#include "revolution/hbm/nw4hbm/lyt/window.h"
 
 /*******************************************************************************
  * headers
@@ -9,16 +9,16 @@
 #include "macros.h"
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp"
+#include "revolution/hbm/nw4hbm/lyt/common.h"
+#include "revolution/hbm/nw4hbm/lyt/layout.h"
+#include "revolution/hbm/nw4hbm/lyt/types.h"
 #include "revolution/hbm/nw4hbm/lyt/material.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
 
-#include "revolution/hbm/nw4hbm/math/math_types.hpp"
-#include "revolution/hbm/nw4hbm/ut/Color.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
+#include "revolution/hbm/nw4hbm/math/types.h"
+#include "revolution/hbm/nw4hbm/ut/Color.h"
+#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
 
 /*******************************************************************************
  * types
@@ -407,7 +407,7 @@ void Window::SetAnimationEnable(AnimTransform* pAnimTrans, bool bEnable, bool bR
     Pane::SetAnimationEnable(pAnimTrans, bEnable, bRecursive);
 }
 
-const ut::Color Window::GetVtxColor(u32 idx) const {
+ut::Color Window::GetVtxColor(u32 idx) const {
     NW4HBMAssert_Line(idx < VERTEXCOLOR_MAX, 360);
     return mContent.vtxColors[idx];
 }

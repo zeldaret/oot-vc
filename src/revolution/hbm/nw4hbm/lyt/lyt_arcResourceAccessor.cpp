@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/lyt/lyt_arcResourceAccessor.hpp"
+#include "revolution/hbm/nw4hbm/lyt/arcResourceAccessor.h"
 
 /*******************************************************************************
  * headers
@@ -122,7 +122,7 @@ void* GetResourceSub(ARCHandle* pArcHandle, const char* resRootDir, u32 resType,
 namespace nw4hbm {
 namespace lyt {
 
-ut::Font* detail::FindFont(FontRefLink::LinkList* pFontRefList, const char* name) {
+ut::Font* detail::FindFont(FontRefLinkList* pFontRefList, const char* name) {
     NW4HBM_RANGE_FOR(it, *pFontRefList) {
         if (std::strcmp(name, it->GetFontName()) == 0) {
             return it->GetFont();

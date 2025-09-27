@@ -1,198 +1,173 @@
-#ifndef RVL_SDK_HBM_NW4HBM_LYT_PANE_HPP
-#define RVL_SDK_HBM_NW4HBM_LYT_PANE_HPP
+#ifndef NW4HBM_LYT_PANE_H
+#define NW4HBM_LYT_PANE_H
 
-/*******************************************************************************
- * headers
- */
-
-#include "revolution/hbm/HBMAssert.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_animation.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp"
-#include "revolution/hbm/nw4hbm/math/math_types.hpp"
-#include "revolution/hbm/nw4hbm/ut/Color.hpp"
-#include "revolution/hbm/nw4hbm/ut/LinkList.h"
 #include "revolution/types.h"
 
-/*******************************************************************************
- * classes and functions
- */
+#include "revolution/hbm/nw4hbm/ut.h"
 
-// forward declarations
-namespace nw4hbm {
-namespace ut {
-struct Rect;
-}
-} // namespace nw4hbm
-namespace nw4hbm {
-namespace ut {
-namespace detail {
-class RuntimeTypeInfo;
-}
-} // namespace ut
-} // namespace nw4hbm
+#include "revolution/hbm/nw4hbm/db.h"
+
+#include "revolution/hbm/nw4hbm/math/types.h"
+
+#include "revolution/hbm/nw4hbm/lyt/types.h"
+#include "revolution/hbm/nw4hbm/lyt/drawInfo.h"
+#include "revolution/hbm/nw4hbm/lyt/animation.h"
+#include "revolution/hbm/nw4hbm/lyt/material.h"
 
 namespace nw4hbm {
-namespace lyt {
-// forward declarations
-class DrawInfo;
-class Material;
-class Pane;
+    namespace lyt {
+        class Pane;
 
-namespace detail {
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x476226
-struct PaneLink {
-    // typedefs
-  public:
-    typedef ut::LinkList<PaneLink, 0> LinkList;
+        namespace detail {
+            class PaneBase {
+                public:
+                    inline PaneBase() : mLink() {}
+                    virtual ~PaneBase() {}
 
-    // members
-  public:
-    ut::LinkListNode mLink; // size 0x08, offset 0x00
-    Pane* mTarget; // size 0x04, offset 0x08
-}; // size 0x0c
+                    ut::LinkListNode mLink;
+            };
+        }
+        typedef ut::LinkList<Pane, offsetof(detail::PaneBase, mLink)> PaneList;
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x4763c3
-class PaneBase {
-    // methods
-  public:
-    // cdtors
-    PaneBase();
-    virtual ~PaneBase();
+        enum {
+            ANIMOPTION_SKIP_INVISIBLE = (1 << 0),
+        };
 
-    // members
-  private:
-    /* vtable */ // size 0x04, offset 0x00
-    ut::LinkListNode mLink; // size 0x08, offset 0x04
-}; // size 0x0c
-} // namespace detail
+        class Pane : detail::PaneBase {
+            private:
+                enum {
+                    BIT_VISIBLE = 0,
+                    BIT_INFLUENCED_ALPHA,
+                    BIT_LOCATION_ADJUST
+                };
+            public:
+                Pane();
+                Pane(const res::Pane* pBlock);
+                virtual ~Pane();                                                                                                // 0x08
+                
+                NW4HBM_UT_RUNTIME_TYPEINFO;
 
-namespace res {
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x48966f
-struct Pane {
-    DataBlockHeader blockHeader; // size 0x08, offset 0x00
-    u8 flag; // size 0x01, offset 0x08
-    u8 basePosition; // size 0x01, offset 0x09
-    u8 alpha; // size 0x01, offset 0x0a
-    byte1_t padding;
-    char name[16]; // size 0x10, offset 0x0c
-    char userData[8]; // size 0x08, offset 0x1c
-    math::VEC3 translate; // size 0x0c, offset 0x24
-    math::VEC3 rotate; // size 0x0c, offset 0x30
-    math::VEC2 scale; // size 0x08, offset 0x3c
-    Size size; // size 0x08, offset 0x44
-}; // size 0x4c
-} // namespace res
+                virtual void            CalculateMtx(const DrawInfo& drawInfo);                                                 // 0x10
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x47625e
-class Pane : public detail::PaneBase {
-    // typedefs
-  public:
-    typedef ut::LinkList<Pane, 4> LinkList;
+                virtual void            Draw(const DrawInfo& drawInfo);                                                         // 0x14
+                virtual void            DrawSelf(const DrawInfo& drawInfo);                                                     // 0x18
 
-    // methods
-  public:
-    // cdtors
-    Pane(const res::Pane* pBlock);
-    virtual ~Pane();
+                virtual void            Animate(u32 option = 0);                                                                // 0x1C
+                virtual void            AnimateSelf(u32 option = 0);                                                            // 0x20
 
-    // virtual function ordering
-    // vtable Pane
-    virtual const ut::detail::RuntimeTypeInfo* GetRuntimeTypeInfo() const { return &typeInfo; }
-    virtual void CalculateMtx(const DrawInfo& drawInfo);
-    virtual void Draw(const DrawInfo& drawInfo);
-    virtual void DrawSelf(const DrawInfo& drawInfo);
-    virtual void Animate(u32 option);
-    virtual void AnimateSelf(u32 option);
-    virtual const ut::Color GetVtxColor(u32 idx) const;
-    virtual void SetVtxColor(u32 idx, ut::Color value);
-    virtual u8 GetColorElement(u32 idx) const;
-    virtual void SetColorElement(u32 idx, u8 value);
-    virtual u8 GetVtxColorElement(u32 idx) const;
-    virtual void SetVtxColorElement(u32 idx, u8 value);
-    virtual Pane* FindPaneByName(const char* findName, bool bRecursive);
-    virtual Material* FindMaterialByName(const char* findName, bool bRecursive);
-    virtual void BindAnimation(AnimTransform* pAnimTrans, bool bRecursive);
-    virtual void UnbindAnimation(AnimTransform* pAnimTrans, bool bRecursive);
-    virtual void UnbindAllAnimation(bool bRecursive);
-    virtual void UnbindAnimationSelf(AnimTransform* pAnimTrans);
-    virtual AnimationLink* FindAnimationLink(AnimTransform* pAnimTrans);
-    virtual void SetAnimationEnable(AnimTransform* pAnimTrans, bool bEnable, bool bRecursive);
-    virtual Material* GetMaterial() const;
-    virtual void LoadMtx(const DrawInfo& drawInfo);
+                virtual ut::Color       GetVtxColor(u32 idx) const;                                                             // 0x24
+                virtual void            SetVtxColor(u32 idx, ut::Color valuw);                                                  // 0x28
 
-    // methods
-    Pane* GetParent() const { return mpParent; }
-    LinkList& GetChildList() { return mChildList; }
-    const math::VEC3& GetTranslate() const { return mTranslate; }
-    const Size& GetSize() const { return mSize; }
-    const math::MTX34& GetGlobalMtx() const { return mGlbMtx; }
-    bool IsVisible() const { return detail::TestBit(mFlag, 0); }
-    const char* GetName() const { return mName; }
-    bool IsUserAllocated() const { return mbUserAllocated; }
+                virtual u8              GetColorElement(u32 idx) const;                                                         // 0x2c
+                virtual void            SetColorElement(u32 idx, u8 color);                                                     // 0x30
 
-    const ut::Rect GetPaneRect(const DrawInfo& drawInfo) const;
-    math::VEC2 GetVtxPos() const;
+                virtual u8              GetVtxColorElement(u32 idx) const;                                                      // 0x34
+                virtual void            SetVtxColorElement(u32 idx, u8 element);                                                // 0x38
+                
+                virtual Pane*           FindPaneByName(const char* findName, bool bRecursive = true);                           // 0x3C
+                virtual Material*       FindMaterialByName(const char* findName, bool bRecursive = true);                       // 0x40
 
-    void SetRotate(const math::VEC3& value) { mRotate = value; }
-    void SetScale(const math::VEC2& value) { mScale = value; }
-    void SetSRTElement(u32 idx, f32 value) {
-        NW4HBMAssert_Line(idx < ANIMTARGET_PANE_MAX, 250);
+                virtual void            BindAnimation(AnimTransform* animTrans, bool bRecursive = true);                       // 0x44
+                
+                virtual void            UnbindAnimation(AnimTransform* animTrans, bool bRecursive = true);                     // 0x48
+                virtual void            UnbindAllAnimation(bool bRecursive = true);                                             // 0x4C
+                virtual void            UnbindAnimationSelf(AnimTransform* animTrans);                                         // 0x50
+                
+                virtual AnimationLink*  FindAnimationLink(AnimTransform* animTrans);                                           // 0x54
 
-        f32* srtAry = reinterpret_cast<f32*>(&mTranslate);
-        srtAry[idx] = value;
+                virtual void            SetAnimationEnable(AnimTransform* animTrans, bool bEnable, bool bRecursive = true);    // 0x58
+
+                virtual Material*       GetMaterial() const;                                                                    // 0x5C
+
+                virtual void            LoadMtx(const DrawInfo& drawInfo);                                                      // 0x60
+
+                Pane*                   GetParent() const                           { return mpParent; }
+                PaneList&               GetChildList()                              { return mChildList; }
+
+                const math::VEC3&       GetTranslate()                              { return mTranslate; }
+                void                    SetTranslate(const math::VEC3& translate)   { mTranslate = translate; }
+                void                    SetTranslate(const math::VEC2& translate)   { SetTranslate(math::VEC3(translate.x, translate.y, 0.0f)); }
+
+                const math::VEC3&       GetRotate() const                           { return mRotate; }
+                void                    SetRotate(const math::VEC3& rotate)         { mRotate = rotate; }
+
+                const math::VEC2&       GetScale() const                            { return mScale; }
+                void                    SetScale(const math::VEC2& scale)           { mScale = scale; }
+
+                const Size&             GetSize() const                             { return mSize; }
+                void                    SetSize(const Size& size)                   { mSize = size; }
+
+                bool                    IsVisible()                                 { return detail::TestBit(mFlag, BIT_VISIBLE); };
+                void                    SetVisible(bool visible)                    { detail::SetBit(&mFlag, BIT_VISIBLE, visible); };
+
+                bool                    IsInfluencedAlpha()                         { return detail::TestBit(mFlag, BIT_INFLUENCED_ALPHA); };
+                void                    SetInfluencedAlpha(bool visible)            { detail::SetBit(&mFlag, BIT_INFLUENCED_ALPHA, visible); };
+
+                bool                    IsLocationAdjust()                          { return detail::TestBit(mFlag, BIT_LOCATION_ADJUST); };
+                void                    SetLocationAdjust(bool visible)             { detail::SetBit(&mFlag, BIT_LOCATION_ADJUST, visible); };
+
+                const math::MTX34&      GetGlobalMtx() const                        { return mGlbMtx; }
+                void                    SetGlobalMtx(const math::MTX34& mtx)        { mGlbMtx = mtx; }
+
+                const math::MTX34&      GetMtx() const                              { return mMtx; }
+                void                    SetMtx(const math::MTX34& mtx)              { mMtx = mtx; }
+
+                u8                      GetAlpha()                                  { return mAlpha; }
+                void                    SetAlpha(u8 alpha)                          { mAlpha = alpha; }
+
+                const char*             GetName() const                             { return mName; }
+
+                void                    SetSRTElement(u32 idx, f32 value)           { NW4HBMAssert_Line(idx < ANIMTARGET_PANE_MAX, 250); reinterpret_cast<f32*>(&mTranslate)[idx] = value; }
+
+                bool                    IsUserAllocated() const                     { return mbUserAllocated; }
+
+                const ut::Rect          GetPaneRect(const DrawInfo& drawInfo) const;
+                
+                math::VEC2              GetVtxPos() const;
+
+                void                    SetName(const char* name);
+                void                    SetUserData(const char* userData);
+
+                void                    Init();
+
+                void                    InsertChild(PaneList::Iterator next, Pane* pChild);
+                void                    InsertChild(Pane* pNext, Pane* pChild);
+
+                void                    PrependChild(Pane* pChild);
+                void                    AppendChild(Pane* pChild);
+
+                void                    RemoveChild(Pane* pChild);
+
+                void                    CalculateMtxChild(const DrawInfo& drawInfo);
+
+                void                    AddAnimationLink(AnimationLink* animationLink);
+            
+            protected:
+                Pane*                           mpParent;           // 0x0C
+
+                PaneList                        mChildList;         // 0x10
+                AnimationLinkList               mAnimList;          // 0x1C
+
+                Material*                       mpMaterial;         // 0x28
+
+                math::VEC3                      mTranslate;         // 0x2C
+                math::VEC3                      mRotate;            // 0x38
+                math::VEC2                      mScale;             // 0x44
+                Size                            mSize;              // 0x4C
+
+                math::MTX34                     mMtx;               // 0x54
+                math::MTX34                     mGlbMtx;            // 0x84
+                
+                char                            mName[16];          // 0xB4
+                char                            mUserData[8];       // 0xC4
+                
+                u8                              mBasePosition;      // 0xCC
+                u8                              mAlpha;             // 0xCD
+                u8                              mGlbAlpha;          // 0xCE
+                u8                              mFlag;              // 0xCF
+                bool                            mbUserAllocated;    // 0xD0
+        };
     }
+}
 
-    void SetTranslate(const math::VEC2& value) { SetTranslate(math::VEC3(value.x, value.y, 0.0f)); }
-
-    void SetTranslate(const math::VEC3& value) { mTranslate = value; }
-    void SetSize(const Size& value) { mSize = value; }
-    void SetVisible(bool bVisible) { detail::SetBit(&mFlag, 0, bVisible); }
-    void SetAlpha(u8 alpha) { mAlpha = alpha; }
-
-    void SetName(const char* name);
-    void SetUserData(const char* userData);
-
-    void Init();
-
-    void InsertChild(LinkList::Iterator next, Pane* pChild);
-    void AppendChild(Pane* pChild);
-    void CalculateMtxChild(const DrawInfo& drawInfo);
-
-    void DoAlphaThing() {
-        mAlpha = 0xff;
-        detail::SetBit(&mFlag, 1, true);
-    }
-
-    void AddAnimationLink(AnimationLink* pAnimationLink);
-
-    // members
-  protected: // Bounding::DrawSelf
-    /* base PaneBase */ // size 0x0c, offset 0x00
-    Pane* mpParent; // size 0x04, offset 0x0c
-    LinkList mChildList; // size 0x0c, offset 0x10
-    AnimationLink::LinkList mAnimList; // size 0x0c, offset 0x1c
-    Material* mpMaterial; // size 0x04, offset 0x28
-    math::VEC3 mTranslate; // size 0x0c, offset 0x2c
-    math::VEC3 mRotate; // size 0x0c, offset 0x38
-    math::VEC2 mScale; // size 0x08, offset 0x44
-    Size mSize; // size 0x08, offset 0x4c
-    math::MTX34 mMtx; // size 0x30, offset 0x54
-    math::MTX34 mGlbMtx; // size 0x30, offset 0x84
-    char mName[16]; // size 0x10, offset 0xb4
-    char mUserData[8]; // size 0x08, offset 0xc4
-    u8 mBasePosition; // size 0x01, offset 0xcc
-    u8 mAlpha; // size 0x01, offset 0xcd
-    u8 mGlbAlpha; // size 0x01, offset 0xce
-    u8 mFlag; // size 0x01, offset 0xcf
-    bool mbUserAllocated; // size 0x01, offset 0xd0
-    /* 3 bytes padding */
-
-    // static members
-  public:
-    static const ut::detail::RuntimeTypeInfo typeInfo;
-}; // size 0xd4
-} // namespace lyt
-} // namespace nw4hbm
-
-#endif // RVL_SDK_HBM_NW4HBM_LYT_PANE_HPP
+#endif // NW4HBM_LYT_PANE_H

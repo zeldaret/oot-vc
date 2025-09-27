@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/lyt/lyt_picture.hpp"
+#include "revolution/hbm/nw4hbm/lyt/picture.h"
 
 /*******************************************************************************
  * headers
@@ -9,14 +9,14 @@
 #include "macros.h" // ARRAY_COUNT
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp" // detail::ConvertOffsToPtr
+#include "revolution/hbm/nw4hbm/lyt/common.h"
+#include "revolution/hbm/nw4hbm/lyt/layout.h"
+#include "revolution/hbm/nw4hbm/lyt/types.h" // detail::ConvertOffsToPtr
 #include "revolution/hbm/nw4hbm/lyt/material.h"
 
-#include "revolution/hbm/nw4hbm/ut/Color.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp" // ut::Min
+#include "revolution/hbm/nw4hbm/ut/Color.h"
+#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
+#include "revolution/hbm/nw4hbm/ut/inlines.h" // ut::Min
 
 #include "revolution/gx/GXTypes.h"
 #include "revolution/tpl/TPL.h"
@@ -112,7 +112,7 @@ void Picture::ReserveTexCoord(u8 num) { mTexCoordAry.Reserve(num); }
 
 void Picture::SetTexCoordNum(u8 num) { mTexCoordAry.SetSize(num); }
 
-const ut::Color Picture::GetVtxColor(u32 idx) const {
+ut::Color Picture::GetVtxColor(u32 idx) const {
     NW4HBMAssert_Line(idx < VERTEXCOLOR_MAX, 251);
     return mVtxColors[idx];
 }

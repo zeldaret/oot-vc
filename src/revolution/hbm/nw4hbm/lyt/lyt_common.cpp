@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
+#include "revolution/hbm/nw4hbm/lyt/common.h"
 
 /*******************************************************************************
  * headers
@@ -9,11 +9,11 @@
 #include "macros.h"
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
+#include "revolution/hbm/nw4hbm/lyt/layout.h"
 
-#include "revolution/hbm/nw4hbm/math/math_types.hpp"
-#include "revolution/hbm/nw4hbm/ut/Color.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
+#include "revolution/hbm/nw4hbm/math/types.h"
+#include "revolution/hbm/nw4hbm/ut/Color.h"
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
 
 #include "revolution/gx.h"
 #include "revolution/tpl/TPL.h"

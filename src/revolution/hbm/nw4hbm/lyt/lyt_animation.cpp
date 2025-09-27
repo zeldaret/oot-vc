@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/lyt/lyt_animation.hpp"
+#include "revolution/hbm/nw4hbm/lyt/animation.h"
 
 /*******************************************************************************
  * headers
@@ -10,15 +10,15 @@
 #include "macros.h" // NW4HBM_RANGE_FOR
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp"
+#include "revolution/hbm/nw4hbm/lyt/common.h"
+#include "revolution/hbm/nw4hbm/lyt/layout.h"
+#include "revolution/hbm/nw4hbm/lyt/resourceAccessor.h"
+#include "revolution/hbm/nw4hbm/lyt/types.h"
 #include "revolution/hbm/nw4hbm/lyt/material.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
 
 #include "revolution/os/OSFastCast.h"
 
@@ -437,7 +437,7 @@ void AnimTransformBasic::Animate(u32 idx, Material* pMaterial) {
     }
 }
 
-AnimationLink* detail::FindAnimationLink(AnimationLink::LinkList* pAnimList, AnimTransform* pAnimTrans) {
+AnimationLink* detail::FindAnimationLink(AnimationLinkList* pAnimList, AnimTransform* pAnimTrans) {
     NW4HBMAssertPointerNonnull_Line(pAnimList, 559);
     NW4HBMAssertPointerNonnull_Line(pAnimTrans, 560);
     NW4HBM_RANGE_FOR(it, *pAnimList) {

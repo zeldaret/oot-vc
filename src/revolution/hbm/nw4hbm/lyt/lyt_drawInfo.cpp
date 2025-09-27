@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/lyt/lyt_drawInfo.hpp"
+#include "revolution/hbm/nw4hbm/lyt/drawInfo.h"
 
 /*******************************************************************************
  * headers
@@ -6,7 +6,7 @@
 
 #include "cstring.hpp" // memset
 
-#include "revolution/hbm/nw4hbm/math/math_types.hpp" // math::MTX34Identity
+#include "revolution/hbm/nw4hbm/math/types.h" // math::MTX34Identity
 
 /*******************************************************************************
  * functions

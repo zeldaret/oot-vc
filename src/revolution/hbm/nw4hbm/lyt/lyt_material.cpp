@@ -9,16 +9,16 @@
 #include "macros.h"
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.hpp"
+#include "revolution/hbm/nw4hbm/lyt/common.h"
+#include "revolution/hbm/nw4hbm/lyt/layout.h"
+#include "revolution/hbm/nw4hbm/lyt/resourceAccessor.h"
 
-#include "revolution/hbm/nw4hbm/math/math_arithmetic.hpp" // math::FAbs
-#include "revolution/hbm/nw4hbm/math/math_triangular.hpp"
-#include "revolution/hbm/nw4hbm/math/math_types.hpp"
-#include "revolution/hbm/nw4hbm/ut/Color.hpp"
+#include "revolution/hbm/nw4hbm/math/arithmetic.h" // math::FAbs
+#include "revolution/hbm/nw4hbm/math/triangular.h"
+#include "revolution/hbm/nw4hbm/math/types.h"
+#include "revolution/hbm/nw4hbm/ut/Color.h"
 #include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
 
 #include "revolution/gx.h"
 #include "revolution/tpl/TPL.h"
@@ -454,18 +454,6 @@ Material::Material(const res::Material* pRes, const ResBlockSet& resBlockSet) {
     }
 }
 #pragma dont_inline off
-
-u8 MaterialResourceNum::GetTexMapNum() const { return detail::GetBits<>(bits, 0, 4); }
-u8 MaterialResourceNum::GetTexSRTNum() const { return detail::GetBits<>(bits, 4, 4); }
-u8 MaterialResourceNum::GetTexCoordGenNum() const { return detail::GetBits<>(bits, 8, 4); }
-u8 MaterialResourceNum::GetChanCtrlNum() const { return detail::GetBits<>(bits, 25, 1); }
-u8 MaterialResourceNum::GetMatColNum() const { return detail::GetBits<>(bits, 27, 1); }
-bool MaterialResourceNum::HasTevSwapTable() const { return detail::TestBit<>(bits, 12); }
-bool MaterialResourceNum::HasAlphaCompare() const { return detail::TestBit<>(bits, 23); }
-bool MaterialResourceNum::HasBlendMode() const { return detail::TestBit<>(bits, 24); }
-u8 MaterialResourceNum::GetIndTexSRTNum() const { return detail::GetBits<>(bits, 13, 2); }
-u8 MaterialResourceNum::GetIndTexStageNum() const { return detail::GetBits<>(bits, 15, 3); }
-u8 MaterialResourceNum::GetTevStageNum() const { return detail::GetBits<>(bits, 18, 5); }
 
 void Material::Init() {
     mTevCols[0] = DefaultBlackColor;

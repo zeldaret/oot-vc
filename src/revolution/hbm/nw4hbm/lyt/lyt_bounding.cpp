@@ -1,15 +1,15 @@
-#include "revolution/hbm/nw4hbm/lyt/lyt_bounding.hpp"
+#include "revolution/hbm/nw4hbm/lyt/bounding.h"
 
 /*******************************************************************************
  * headers
  */
 
-#include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_drawInfo.hpp"
+#include "revolution/hbm/nw4hbm/lyt/common.h"
+#include "revolution/hbm/nw4hbm/lyt/drawInfo.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
 
-#include "revolution/hbm/nw4hbm/ut/Color.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp"
+#include "revolution/hbm/nw4hbm/ut/Color.h"
+#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
 
 /*******************************************************************************
  * variables
@@ -38,8 +38,6 @@ void Bounding::DrawSelf(const DrawInfo& drawInfo) {
         detail::DrawLine(GetVtxPos(), mSize, ut::Color(0x00ff00ff));
     }
 }
-
-const ut::detail::RuntimeTypeInfo* Bounding::GetRuntimeTypeInfo() const { return &typeInfo; }
 
 } // namespace lyt
 } // namespace nw4hbm

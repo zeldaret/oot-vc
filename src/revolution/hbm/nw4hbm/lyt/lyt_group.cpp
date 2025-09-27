@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/lyt/lyt_group.hpp"
+#include "revolution/hbm/nw4hbm/lyt/group.h"
 
 /*******************************************************************************
  * headers
@@ -10,9 +10,9 @@
 #include "macros.h"
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp" // detail::EqualsPaneName
-#include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp" // detail::ConvertOffsToPtr
+#include "revolution/hbm/nw4hbm/lyt/common.h" // detail::EqualsPaneName
+#include "revolution/hbm/nw4hbm/lyt/layout.h"
+#include "revolution/hbm/nw4hbm/lyt/types.h" // detail::ConvertOffsToPtr
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)

@@ -6,6 +6,7 @@
 #include "revolution/hbm/nw4hbm/ut/inlines.h"
 
 #include "stddef.h"
+#include "revolution/hbm/HBMAssert.hpp"
 
 namespace nw4hbm {
     namespace ut {

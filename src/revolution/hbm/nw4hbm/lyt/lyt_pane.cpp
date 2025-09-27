@@ -9,17 +9,17 @@
 #include "macros.h"
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/lyt/lyt_animation.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_drawInfo.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
+#include "revolution/hbm/nw4hbm/lyt/animation.h"
+#include "revolution/hbm/nw4hbm/lyt/common.h"
+#include "revolution/hbm/nw4hbm/lyt/drawInfo.h"
+#include "revolution/hbm/nw4hbm/lyt/layout.h"
 #include "revolution/hbm/nw4hbm/lyt/material.h"
 
-#include "revolution/hbm/nw4hbm/math/math_types.hpp"
-#include "revolution/hbm/nw4hbm/ut/Color.hpp"
+#include "revolution/hbm/nw4hbm/math/types.h"
+#include "revolution/hbm/nw4hbm/ut/Color.h"
 #include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
-#include "revolution/hbm/nw4hbm/ut/ut_Rect.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp"
+#include "revolution/hbm/nw4hbm/ut/Rect.h"
+#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
 
 #include "revolution/gx/GXTransform.h"
 #include "revolution/mtx/mtx.h"
@@ -63,9 +63,6 @@ void ReverseYAxis(math::MTX34* pMtx) {
 namespace nw4hbm {
 namespace lyt {
 
-detail::PaneBase::PaneBase() {}
-detail::PaneBase::~PaneBase() {}
-
 extern void __deadstrip1();
 extern void __deadstrip1() {
     (void)0.0f;
@@ -96,7 +93,7 @@ void Pane::Init() {
 
 Pane::~Pane() {
     NW4HBM_RANGE_FOR_NO_AUTO_INC(it, mChildList) {
-        LinkList::Iterator currIt = it++;
+        PaneList::Iterator currIt = it++;
         mChildList.Erase(currIt);
 
         if (!currIt->IsUserAllocated()) {
@@ -120,9 +117,9 @@ void Pane::SetUserData(const char* userData) { std::strncpy(mUserData, userData,
 void Pane::AppendChild(Pane* pChild) { InsertChild(mChildList.GetEndIter(), pChild); }
 
 extern void _deadstrip2();
-extern void _deadstrip2() { Pane::LinkList::GetNodeFromPointer(nullptr); }
+extern void _deadstrip2() { PaneList::GetNodeFromPointer(nullptr); }
 
-void Pane::InsertChild(LinkList::Iterator next, Pane* pChild) {
+void Pane::InsertChild(PaneList::Iterator next, Pane* pChild) {
     NW4HBMAssertPointerNonnull_Line(pChild, 253);
     NW4HBMAssert_Line(pChild->mpParent == 0, 254);
     mChildList.Insert(next, pChild);
@@ -154,7 +151,7 @@ const ut::Rect Pane::GetPaneRect(const DrawInfo& drawInfo) const {
 
 #pragma ppc_iro_level reset
 
-const ut::Color Pane::GetVtxColor(u32) const { return ut::Color(0xffffffff); }
+ut::Color Pane::GetVtxColor(u32) const { return ut::Color(0xFFFFFFFF); }
 
 void Pane::SetVtxColor(u32, ut::Color) { /* ... */ }
 

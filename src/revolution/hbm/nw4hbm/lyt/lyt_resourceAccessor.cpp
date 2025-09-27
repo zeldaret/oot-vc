@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.hpp"
+#include "revolution/hbm/nw4hbm/lyt/resourceAccessor.h"
 
 /*******************************************************************************
  * functions

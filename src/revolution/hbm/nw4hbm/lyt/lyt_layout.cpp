@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
+#include "revolution/hbm/nw4hbm/lyt/layout.h"
 
 /* TODO: clean up CONVERT_OFFSET_TO_PTR macros, use constexpr variables instead
  * of macros and loose constants
@@ -13,19 +13,19 @@
 #include "macros.h"
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/lyt/lyt_animation.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_bounding.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_group.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_picture.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_textBox.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp" // detail::ConvertOffsToPtr
-#include "revolution/hbm/nw4hbm/lyt/lyt_window.hpp"
+#include "revolution/hbm/nw4hbm/lyt/animation.h"
+#include "revolution/hbm/nw4hbm/lyt/bounding.h"
+#include "revolution/hbm/nw4hbm/lyt/common.h"
+#include "revolution/hbm/nw4hbm/lyt/group.h"
+#include "revolution/hbm/nw4hbm/lyt/picture.h"
+#include "revolution/hbm/nw4hbm/lyt/textBox.h"
+#include "revolution/hbm/nw4hbm/lyt/types.h" // detail::ConvertOffsToPtr
+#include "revolution/hbm/nw4hbm/lyt/window.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
-#include "revolution/hbm/nw4hbm/ut/ut_Rect.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp"
+#include "revolution/hbm/nw4hbm/ut/Rect.h"
+#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
 
 #include "revolution/mem/mem_allocator.h"
 
@@ -140,7 +140,7 @@ bool Layout::Build(const void* lytResBuf, ResourceAccessor* pResAcsr) {
 
     const res::BinaryFileHeader* fileHead = static_cast<const res::BinaryFileHeader*>(lytResBuf);
 
-    if (!detail::TestFileHeader(*fileHead, FILE_HEADER_SIGNATURE_LAYOUT)) {
+    if (!detail::TestFileHeader(*fileHead, res::FILE_HEADER_SIGNATURE_LAYOUT)) {
         return false;
     }
 
@@ -330,7 +330,7 @@ void Layout::Animate(u32 option) {
     }
 }
 
-ut::Rect Layout::GetLayoutRect() const {
+const ut::Rect Layout::GetLayoutRect() const {
     if (mOriginType == 1) {
         return ut::Rect(-mLayoutSize.width / 2.0f, mLayoutSize.height / 2.0f, mLayoutSize.width / 2.0f,
                         -mLayoutSize.height / 2.0f);
@@ -345,33 +345,33 @@ void Layout::SetTagProcessor(ut::TagProcessorBase<wchar_t>* pTagProcessor) {
 
 Pane* Layout::BuildPaneObj(s32 kind, const void* dataPtr, const ResBlockSet& resBlockSet) {
     switch (kind) {
-        case OBJECT_KIND_PANE: {
+        case res::OBJECT_SIGNATURE_PANE: {
             const res::Pane* pResPane = static_cast<const res::Pane*>(dataPtr);
 
             return CreateObject<Pane>(pResPane);
         }
 
-        case OBJECT_KIND_PICTURE: {
+        case res::OBJECT_SIGNATURE_PICTURE: {
             const res::Picture* pResPic = static_cast<const res::Picture*>(dataPtr);
 
             return CreateObject<Picture>(pResPic, resBlockSet);
         }
 
-        case OBJECT_KIND_TEXT_BOX: {
+        case res::OBJECT_SIGNATURE_TEXT_BOX: {
             // block?
             const res::TextBox* pBlock = static_cast<const res::TextBox*>(dataPtr);
 
             return CreateObject<TextBox>(pBlock, resBlockSet);
         }
 
-        case OBJECT_KIND_WINDOW: {
+        case res::OBJECT_SIGNATURE_WINDOW: {
             // block?
             const res::Window* pBlock = static_cast<const res::Window*>(dataPtr);
 
             return CreateObject<Window>(pBlock, resBlockSet);
         }
 
-        case OBJECT_KIND_BOUNDING: {
+        case res::OBJECT_SIGNATURE_BOUNDING: {
             const res::Bounding* pResBounding = static_cast<const res::Bounding*>(dataPtr);
 
             return CreateObject<Bounding>(pResBounding, resBlockSet);

@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/lyt/lyt_textBox.hpp"
+#include "revolution/hbm/nw4hbm/lyt/textBox.h"
 
 /*******************************************************************************
  * headers
@@ -13,25 +13,25 @@
 
 #include "revolution/hbm/HBMAssert.hpp"
 
-#include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_types.hpp" // detail::ConvertOffsToPointer
+#include "revolution/hbm/nw4hbm/lyt/common.h"
+#include "revolution/hbm/nw4hbm/lyt/layout.h"
+#include "revolution/hbm/nw4hbm/lyt/resourceAccessor.h"
+#include "revolution/hbm/nw4hbm/lyt/types.h" // detail::ConvertOffsToPointer
 #include "revolution/hbm/nw4hbm/lyt/material.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
 
 #include "revolution/hbm/nw4hbm/db/console.h"
-#include "revolution/hbm/nw4hbm/math/math_types.hpp" // math::VEC2
-#include "revolution/hbm/nw4hbm/ut/Color.hpp"
+#include "revolution/hbm/nw4hbm/math/types.h" // math::VEC2
+#include "revolution/hbm/nw4hbm/ut/Color.h"
 #include "revolution/hbm/nw4hbm/ut/Font.h"
-#include "revolution/hbm/nw4hbm/ut/TextWriterBase.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_CharStrmReader.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_CharWriter.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_Rect.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_ResFont.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_TagProcessorBase.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
+#include "revolution/hbm/nw4hbm/ut/TextWriterBase.h"
+#include "revolution/hbm/nw4hbm/ut/CharStrmReader.h"
+#include "revolution/hbm/nw4hbm/ut/CharWriter.h"
+#include "revolution/hbm/nw4hbm/ut/Rect.h"
+#include "revolution/hbm/nw4hbm/ut/ResFont.h"
+#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
+#include "revolution/hbm/nw4hbm/ut/TagProcessorBase.h"
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
 
 #include "revolution/gx/GXTypes.h"
 
@@ -453,7 +453,7 @@ TextBox::~TextBox() {
     FreeStringBuffer();
 }
 
-const ut::Color TextBox::GetVtxColor(u32 idx) const {
+ut::Color TextBox::GetVtxColor(u32 idx) const {
     NW4HBMAssert_Line(idx < VERTEXCOLOR_MAX, 467);
     return GetTextColor(idx / 2);
 }
@@ -463,7 +463,7 @@ void TextBox::SetVtxColor(u32 idx, ut::Color value) {
     SetTextColor(idx / 2, value);
 }
 
-void TextBox::SetTextColor(u32 type, ut::Color value) { __SetTextColor(type, value); }
+// void TextBox::SetTextColor(u32 type, ut::Color value) { __SetTextColor(type, value); }
 
 u8 TextBox::GetVtxColorElement(u32 idx) const {
     NW4HBMAssert_Line(idx < ANIMTARGET_VERTEXCOLOR_MAX, 486);
@@ -613,7 +613,7 @@ void TextBox::SetFont(const ut::Font* pFont) {
     }
 }
 
-ut::Rect TextBox::GetTextDrawRect(ut::TextWriterBase<wchar_t>* pWriter) const {
+const ut::Rect TextBox::GetTextDrawRect(ut::TextWriterBase<wchar_t>* pWriter) const {
     ut::Rect textRect;
 
     pWriter->SetCursor(0.0f, 0.0f);
