@@ -18,7 +18,13 @@
 namespace nw4hbm {
 namespace snd {
 namespace detail {
-class StrmPlayer : public BasicPlayer {
+
+class BasicStrmPlayer : public BasicPlayer {
+public:
+    virtual ~BasicStrmPlayer() = 0 {};
+};
+
+class StrmPlayer : public BasicStrmPlayer {
   public:
     typedef enum StartOffsetType {
         START_OFFSET_TYPE_SAMPLE = 0,
@@ -243,7 +249,9 @@ class StrmPlayer : public BasicPlayer {
     StrmChannel mChannels[CHANNEL_MAX]; // 0x4A8
     u16 mAdpcmPredScale[CHANNEL_MAX]; // 0x518
 };
+
 typedef ut::LinkList<StrmPlayer, offsetof(StrmPlayer, mPlayerLink)> StrmPlayerList;
+
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm

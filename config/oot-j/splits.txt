@@ -1130,14 +1130,14 @@ revolution/hbm/nw4hbm/snd/snd_StrmFile.cpp:
 	.sdata      start:0x8025CF30 end:0x8025CF50
 
 revolution/hbm/nw4hbm/snd/snd_StrmPlayer.cpp:
-	.text       start:0x80135F48 end:0x801383AC
-
-revolution/hbm/nw4hbm/snd/code_801383AC.cpp:
-	.text       start:0x801383AC end:0x80138844
+	.text       start:0x80135F48 end:0x80138718
 	.ctors      start:0x8016A70C end:0x8016A710
+	.data       start:0x8019CAF0 end:0x8019D010
+	.bss        start:0x80251960 end:0x802559A0
+	.sdata2     start:0x8025E898 end:0x8025E8A0
 
 revolution/hbm/nw4hbm/snd/snd_StrmSound.cpp:
-	.text       start:0x80138844 end:0x80138B20
+	.text       start:0x80138718 end:0x80138B20
 	.ctors      start:0x8016A710 end:0x8016A714
 
 revolution/hbm/nw4hbm/snd/snd_StrmSoundHandle.cpp:
