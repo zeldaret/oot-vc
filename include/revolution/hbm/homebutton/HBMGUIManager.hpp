@@ -240,9 +240,9 @@ class PaneManager : public Manager {
     virtual const nw4hbm::lyt::DrawInfo* getDrawInfo() { return mpDrawInfo; }
     virtual void setDrawInfo(const nw4hbm::lyt::DrawInfo* pDrawInfo) { mpDrawInfo = pDrawInfo; }
     virtual void setAllBoundingBoxComponentTriggerTarget(bool b);
-    virtual void walkInChildren(nw4hbm::lyt::Pane::LinkList& rPaneList);
+    virtual void walkInChildren(nw4hbm::lyt::PaneList& rPaneList);
 
-    /* virtual */ void walkInChildrenDel(nw4hbm::lyt::Pane::LinkList& rPaneList);
+    /* virtual */ void walkInChildrenDel(nw4hbm::lyt::PaneList& rPaneList);
     /* virtual */ void delLayoutScene(const nw4hbm::lyt::Layout& rLayout);
     /* virtual */ void addLayoutScene(const nw4hbm::lyt::Layout& rLayout);
 

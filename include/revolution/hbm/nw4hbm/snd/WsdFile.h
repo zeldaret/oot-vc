@@ -8,7 +8,9 @@
 #include "revolution/hbm/nw4hbm/snd/WaveFile.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
 
-#include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
+#include "revolution/hbm/nw4hbm/ut/binaryFileFormat.h"
+
+#include "revolution/hbm/nw4hbm/config.h"
 
 // forward declarations
 namespace nw4hbm {

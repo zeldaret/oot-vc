@@ -5,7 +5,7 @@
 namespace nw4hbm {
 namespace snd {
 namespace detail {
-NW4R_UT_GET_RUNTIME_TYPEINFO(BasicSound);
+NW4HBM_UT_GET_RUNTIME_TYPEINFO(BasicSound);
 
 BasicSound::BasicSound()
     : mHeap(nullptr), mGeneralHandle(nullptr), mTempGeneralHandle(nullptr), mSoundPlayer(nullptr),

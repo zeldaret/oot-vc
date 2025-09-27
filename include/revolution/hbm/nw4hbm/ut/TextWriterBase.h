@@ -93,11 +93,11 @@ template <typename T> class TextWriterBase : public CharWriter {
     static T* GetBuffer();
 
     static int VSNPrintf(T* buffer, u32 count, const T* format, va_list arg) {
-        return sizeof(T) == sizeof(char) ? vsnprintf((char*)buffer, count, (const char*)format, arg)
-                                         : vswprintf((wchar_t*)buffer, count, (const wchar_t*)format, arg);
+        return sizeof(T) == sizeof(char) ? std::vsnprintf((char*)buffer, count, (const char*)format, arg)
+                                         : std::vswprintf((wchar_t*)buffer, count, (const wchar_t*)format, arg);
     }
     static int StrLen(const T* str) {
-        return sizeof(T) == sizeof(char) ? strlen((const char*)str) : wcslen((const wchar_t*)str);
+        return sizeof(T) == sizeof(char) ? std::strlen((const char*)str) : std::wcslen((const wchar_t*)str);
     }
 
     void ut_TextWriterBase_unused1(Rect* pRect, const T* str, int length);

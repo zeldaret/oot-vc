@@ -1,5 +1,5 @@
 #include "revolution/hbm/nw4hbm/snd/DvdSoundArchive.h"
-#include "revolution/hbm/ut.hpp"
+#include "revolution/hbm/nw4hbm/ut.h"
 
 #include <cstring.hpp>
 

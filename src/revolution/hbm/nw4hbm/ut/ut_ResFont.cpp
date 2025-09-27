@@ -4,7 +4,7 @@
  * headers
  */
 
-#include "macros.h" // NW4HBM_VERSION
+#include "revolution/hbm/nw4hbm/config.h"
 #include "revolution/hbm/nw4hbm/db/console.h"
 
 #include "revolution/hbm/HBMAssert.hpp"

@@ -8,9 +8,9 @@
 #include "revolution/hbm/nw4hbm/snd/SoundArchive.h"
 #include "revolution/hbm/nw4hbm/snd/SoundArchiveFile.h" // SoundArchiveFileReader
 
-#include "revolution/hbm/nw4hbm/ut/ut_FileStream.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp" // IWYU pragma: keep (need the complete type)
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
+#include "revolution/hbm/nw4hbm/ut/FileStream.h"
+#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h" // IWYU pragma: keep (need the complete type)
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
 
 #include "revolution/hbm/HBMAssert.hpp"
 

@@ -135,13 +135,13 @@ namespace nw4hbm {
                 AnimTransform();
                 virtual ~AnimTransform();
 
-                virtual void    SetResource(const res::AnimationBlock* pRes, ResourceAccessor* pResAccessor);
+                virtual void    SetResource(const res::AnimationBlock* pRes, ResourceAccessor* pResAccessor) = 0;
 
-                virtual void    Bind(Pane* pane, bool bRecursive);
-                virtual void    Bind(Material* pMaterial);
+                virtual void    Bind(Pane* pane, bool bRecursive) = 0;
+                virtual void    Bind(Material* pMaterial) = 0;
 
-                virtual void    Animate(u32 idx, Pane* pane);
-                virtual void    Animate(u32 idx, Material* pMaterial);
+                virtual void    Animate(u32 idx, Pane* pane) = 0;
+                virtual void    Animate(u32 idx, Material* pMaterial) = 0;
 
                 f32             GetFrameMax() const { return GetFrameSize(); }
                 u16             GetFrameSize() const;

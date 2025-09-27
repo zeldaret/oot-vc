@@ -2,7 +2,7 @@
 #define NW4R_SND_STRM_SOUND_HANDLE_H
 
 #include "revolution/hbm/nw4hbm/snd/StrmSound.h"
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
 #include "revolution/types.h"
 
 namespace nw4hbm {

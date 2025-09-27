@@ -8,8 +8,8 @@
 
 #include "revolution/hbm/nw4hbm/snd/InstancePool.h"
 
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_lock.hpp"
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
+#include "revolution/hbm/nw4hbm/ut/lock.h"
 
 #include "revolution/os/OSMutex.h"
 

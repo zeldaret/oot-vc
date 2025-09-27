@@ -9,8 +9,8 @@
 #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
-#include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp" // ut::Clamp
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp" // ut::Clamp
+#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h" // ut::Clamp
+#include "revolution/hbm/nw4hbm/ut/inlines.h" // ut::Clamp
 
 // forward declarations
 namespace nw4hbm {
@@ -30,7 +30,7 @@ class PlayerHeap;
 namespace detail {
 class BasicSound {
   public:
-    NW4R_UT_RUNTIME_TYPEINFO;
+    NW4HBM_UT_RUNTIME_TYPEINFO;
 
     typedef struct AmbientParamUpdateCallback {
         typedef enum ParamUpdateFlags {

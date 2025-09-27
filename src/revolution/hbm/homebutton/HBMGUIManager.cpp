@@ -7,17 +7,17 @@
 #include "macros.h"
 #include "new.hpp" // IWYU pragma: keep (placement new)
 #include "revolution/gx.h"
-#include "revolution/hbm/nw4hbm/lyt/lyt_bounding.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp" // nw4hbm::lyt::Size
-#include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_picture.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_window.hpp"
+#include "revolution/hbm/nw4hbm/lyt/bounding.h"
+#include "revolution/hbm/nw4hbm/lyt/common.h" // nw4hbm::lyt::Size
+#include "revolution/hbm/nw4hbm/lyt/layout.h"
+#include "revolution/hbm/nw4hbm/lyt/picture.h"
+#include "revolution/hbm/nw4hbm/lyt/window.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
-#include "revolution/hbm/nw4hbm/math/math_types.hpp"
+#include "revolution/hbm/nw4hbm/math/types.h"
 #include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
 #include "revolution/hbm/nw4hbm/ut/list.h"
-#include "revolution/hbm/nw4hbm/ut/ut_Rect.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp" // nw4hbm::ut::DynamicCast
+#include "revolution/hbm/nw4hbm/ut/Rect.h"
+#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h" // nw4hbm::ut::DynamicCast
 #include "revolution/mem/mem_allocator.h"
 #include "revolution/mtx/mtx.h"
 #include "revolution/mtx/vec.h"
@@ -133,7 +133,7 @@ Manager::~Manager() {
 
 void Manager::init() {
     for (u32 i = 0; i < nw4hbm::ut::List_GetSize(&mIDToComponent); i++) {
-        const IDToComponent* p = static_cast<const IDToComponent*>(nw4hbm::ut::List_GetNthConst(&mIDToComponent, i));
+        const IDToComponent* p = static_cast<const IDToComponent*>(nw4hbm::ut::List_GetNth(&mIDToComponent, i));
 
         p->mpComponent->init();
     }
@@ -172,7 +172,7 @@ void Manager::delComponent(Component* pComponent) {
 }
 
 Component* Manager::getComponent(u32 uID) {
-    const IDToComponent* p = static_cast<const IDToComponent*>(nw4hbm::ut::List_GetNthConst(&mIDToComponent, uID));
+    const IDToComponent* p = static_cast<const IDToComponent*>(nw4hbm::ut::List_GetNth(&mIDToComponent, uID));
 
     return p->mpComponent;
 }
@@ -182,7 +182,7 @@ bool Manager::update(int i, f32 x, f32 y, u32 uTrigFlag, u32 uHoldFlag, u32 uRel
     Component* pLastContainedComponent = nullptr;
 
     for (u32 n = 0; n < nw4hbm::ut::List_GetSize(&mIDToComponent); n++) {
-        const IDToComponent* p = static_cast<const IDToComponent*>(nw4hbm::ut::List_GetNthConst(&mIDToComponent, n));
+        const IDToComponent* p = static_cast<const IDToComponent*>(nw4hbm::ut::List_GetNth(&mIDToComponent, n));
 
         if (p->mpComponent->update(i, x, y, uTrigFlag, uHoldFlag, uReleaseFlag, pData)) {
             if (p->mpComponent->isTriggerTarger()) {
@@ -214,7 +214,7 @@ bool Manager::update(int i, f32 x, f32 y, u32 uTrigFlag, u32 uHoldFlag, u32 uRel
 
 void Manager::calc() {
     for (u32 i = 0; i < nw4hbm::ut::List_GetSize(&mIDToComponent); i++) {
-        const IDToComponent* p = static_cast<const IDToComponent*>(nw4hbm::ut::List_GetNthConst(&mIDToComponent, i));
+        const IDToComponent* p = static_cast<const IDToComponent*>(nw4hbm::ut::List_GetNth(&mIDToComponent, i));
 
         p->mpComponent->calc();
     }
@@ -222,7 +222,7 @@ void Manager::calc() {
 
 void Manager::draw() {
     for (u32 i = 0; i < nw4hbm::ut::List_GetSize(&mIDToComponent); i++) {
-        const IDToComponent* p = static_cast<const IDToComponent*>(nw4hbm::ut::List_GetNthConst(&mIDToComponent, i));
+        const IDToComponent* p = static_cast<const IDToComponent*>(nw4hbm::ut::List_GetNth(&mIDToComponent, i));
 
         p->mpComponent->draw();
     }
@@ -230,7 +230,7 @@ void Manager::draw() {
 
 void Manager::setAllComponentTriggerTarget(bool b) {
     for (u32 i = 0; i < nw4hbm::ut::List_GetSize(&mIDToComponent); i++) {
-        const IDToComponent* p = static_cast<const IDToComponent*>(nw4hbm::ut::List_GetNthConst(&mIDToComponent, i));
+        const IDToComponent* p = static_cast<const IDToComponent*>(nw4hbm::ut::List_GetNth(&mIDToComponent, i));
 
         p->mpComponent->setTriggerTarget(b);
     }
@@ -267,7 +267,7 @@ void PaneManager::addLayoutScene(const nw4hbm::lyt::Layout& rLayout) {
     walkInChildren(pRootPane->GetChildList());
 }
 
-void PaneManager::walkInChildren(nw4hbm::lyt::Pane::LinkList& rPaneList) {
+void PaneManager::walkInChildren(nw4hbm::lyt::PaneList& rPaneList) {
     NW4HBM_RANGE_FOR(it, rPaneList) {
         PaneComponent* pPaneComponent = nullptr;
         PaneToComponent* pPaneToComponent = nullptr;
@@ -307,7 +307,7 @@ void PaneManager::delLayoutScene(const nw4hbm::lyt::Layout& rLayout) {
     walkInChildrenDel(pRootPane->GetChildList());
 }
 
-void PaneManager::walkInChildrenDel(nw4hbm::lyt::Pane::LinkList& rPaneList) {
+void PaneManager::walkInChildrenDel(nw4hbm::lyt::PaneList& rPaneList) {
     NW4HBM_RANGE_FOR(it, rPaneList) {
         PaneToComponent* pPaneToComponent =
             static_cast<PaneToComponent*>(nw4hbm::ut::List_GetNext(&mPaneToComponent, nullptr));

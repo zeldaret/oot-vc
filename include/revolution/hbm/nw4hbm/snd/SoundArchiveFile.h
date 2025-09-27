@@ -7,8 +7,10 @@
 #include "revolution/hbm/nw4hbm/snd/SoundArchive.h"
 #include "revolution/hbm/nw4hbm/snd/Util.h"
 
-#include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
+#include "revolution/hbm/nw4hbm/ut/binaryFileFormat.h"
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
+
+#include "revolution/hbm/nw4hbm/config.h"
 
 namespace nw4hbm {
 namespace snd {

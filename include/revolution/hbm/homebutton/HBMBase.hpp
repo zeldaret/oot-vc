@@ -10,7 +10,7 @@
 #include "revolution/hbm/HBMConfig.h"
 #include "revolution/hbm/homebutton/HBMCommon.hpp"
 #include "revolution/hbm/homebutton/HBMGUIManager.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_drawInfo.hpp"
+#include "revolution/hbm/nw4hbm/lyt/drawInfo.h"
 #include "revolution/types.h"
 #include "revolution/wpad/WPAD.h"
 

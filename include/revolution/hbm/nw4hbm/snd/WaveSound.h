@@ -19,7 +19,7 @@ class WaveSound : public BasicSound {
     friend class WaveSoundHandle;
 
   public:
-    NW4R_UT_RUNTIME_TYPEINFO;
+    NW4HBM_UT_RUNTIME_TYPEINFO;
 
     explicit WaveSound(SoundInstanceManager<WaveSound>* manager);
 

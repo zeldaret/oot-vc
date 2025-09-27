@@ -134,7 +134,6 @@ inline void padStack(void) { int pad = 0; }
 #define NW4R_RANGE_FOR_NO_AUTO_INC(it_, list_) \
     for (DECLTYPE((list_).GetBeginIter())(it_) = (list_).GetBeginIter(); (it_) != (list_).GetEndIter();)
 
-#define NW4HBM_VERSION NW4R_VERSION
 #define NW4HBM_RANGE_FOR NW4R_RANGE_FOR
 #define NW4HBM_RANGE_FOR_NO_AUTO_INC NW4R_RANGE_FOR_NO_AUTO_INC
 

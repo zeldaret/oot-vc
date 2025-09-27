@@ -9,8 +9,10 @@
 #include "revolution/hbm/nw4hbm/snd/global.h" // SampleFormat
 #include "revolution/hbm/nw4hbm/snd/snd_adpcm.hpp"
 
-#include "revolution/hbm/nw4hbm/ut/ut_FileStream.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
+#include "revolution/hbm/nw4hbm/ut/FileStream.h"
+#include "revolution/hbm/nw4hbm/ut/binaryFileFormat.h"
+
+#include "revolution/hbm/nw4hbm/config.h"
 
 namespace nw4hbm {
 namespace snd {

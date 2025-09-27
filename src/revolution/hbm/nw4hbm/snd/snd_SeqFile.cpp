@@ -7,8 +7,8 @@
 
 #include "revolution/hbm/nw4hbm/snd/Util.h"
 
-#include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp" // ut::AddOffsetToPtr
+#include "revolution/hbm/nw4hbm/ut/binaryFileFormat.h"
+#include "revolution/hbm/nw4hbm/ut/inlines.h" // ut::AddOffsetToPtr
 
 #include "revolution/hbm/HBMAssert.hpp"
 

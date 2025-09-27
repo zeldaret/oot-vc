@@ -5,7 +5,7 @@
 namespace nw4hbm {
 namespace snd {
 namespace detail {
-NW4R_UT_GET_DERIVED_RUNTIME_TYPEINFO(SeqSound, BasicSound);
+NW4HBM_UT_GET_DERIVED_RUNTIME_TYPEINFO(SeqSound, BasicSound);
 
 SeqSound::SeqSound(SoundInstanceManager<SeqSound>* manager)
     : mTempSpecialHandle(nullptr), mManager(manager), mCallback(nullptr), mLoadingFlag(false) {}

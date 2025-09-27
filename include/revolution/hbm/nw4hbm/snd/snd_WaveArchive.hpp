@@ -11,7 +11,7 @@
 #include "revolution/hbm/nw4hbm/snd/Util.h"
 #include "revolution/hbm/nw4hbm/snd/WaveFile.h"
 
-#include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
+#include "revolution/hbm/nw4hbm/ut/binaryFileFormat.h"
 
 /*******************************************************************************
  * types

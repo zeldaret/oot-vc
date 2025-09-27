@@ -2,6 +2,7 @@
 #define NW4HBM_UT_LIST_H
 
 #include "revolution/types.h"
+#include "revolution/hbm/HBMAssert.hpp"
 
 namespace nw4hbm {
     namespace ut {
@@ -37,6 +38,7 @@ namespace nw4hbm {
         }
         
         static u16 List_GetSize(const List* list) {
+            NW4HBMAssertPointerNonnull_Line(list, 207);
             return list->numObjects;
         }
     }

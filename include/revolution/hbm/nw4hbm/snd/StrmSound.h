@@ -23,7 +23,7 @@ class StrmSound : public BasicSound {
     friend class StrmSoundHandle;
 
   public:
-    NW4R_UT_RUNTIME_TYPEINFO;
+    NW4HBM_UT_RUNTIME_TYPEINFO;
 
     explicit StrmSound(SoundInstanceManager<StrmSound>* manager);
 

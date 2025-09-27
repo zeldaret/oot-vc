@@ -17,21 +17,21 @@
 #include "revolution/hbm/homebutton/HBMFrameController.hpp"
 #include "revolution/hbm/homebutton/HBMRemoteSpk.hpp"
 
-#include "revolution/hbm/nw4hbm/lyt/lyt_animation.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_arcResourceAccessor.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_common.hpp" // nw4hbm::lyt::Size
-#include "revolution/hbm/nw4hbm/lyt/lyt_drawInfo.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_group.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_layout.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_textBox.hpp"
+#include "revolution/hbm/nw4hbm/lyt/animation.h"
+#include "revolution/hbm/nw4hbm/lyt/arcResourceAccessor.h"
+#include "revolution/hbm/nw4hbm/lyt/common.h" // nw4hbm::lyt::Size
+#include "revolution/hbm/nw4hbm/lyt/drawInfo.h"
+#include "revolution/hbm/nw4hbm/lyt/group.h"
+#include "revolution/hbm/nw4hbm/lyt/layout.h"
+#include "revolution/hbm/nw4hbm/lyt/textBox.h"
 #include "revolution/hbm/nw4hbm/lyt/material.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
-#include "revolution/hbm/nw4hbm/math/math_triangular.hpp" // nw4hbm::math::Atan2Deg
-#include "revolution/hbm/nw4hbm/math/math_types.hpp"
+#include "revolution/hbm/nw4hbm/math/triangular.h" // nw4hbm::math::Atan2Deg
+#include "revolution/hbm/nw4hbm/math/types.h"
 #include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
-#include "revolution/hbm/nw4hbm/ut/ut_Rect.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_ResFont.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp" // nw4hbm::ut::DynamicCast
+#include "revolution/hbm/nw4hbm/ut/Rect.h"
+#include "revolution/hbm/nw4hbm/ut/ResFont.h"
+#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h" // nw4hbm::ut::DynamicCast
 
 #include "revolution/ax.h"
 #include "revolution/axfx.h"
@@ -744,7 +744,7 @@ void HomeButton::create() {
 
         mpAnmController[i]->mpGroup = mpLayout->GetGroupContainer()->FindGroupByName(scGrName[scAnmTable[i].pane]);
 
-        nw4hbm::lyt::detail::PaneLink::LinkList& list = mpAnmController[i]->mpGroup->GetPaneList();
+        nw4hbm::lyt::PaneLinkList& list = mpAnmController[i]->mpGroup->GetPaneList();
 
         NW4HBM_RANGE_FOR(it, list)
         it->mTarget->BindAnimation(mpAnmController[i]->mpAnimGroup, false);
@@ -772,7 +772,7 @@ void HomeButton::create() {
         mpGroupAnmController[i]->mpGroup =
             mpLayout->GetGroupContainer()->FindGroupByName(scGroupName[scGroupAnmTable[i].pane]);
 
-        nw4hbm::lyt::detail::PaneLink::LinkList& list = mpGroupAnmController[i]->mpGroup->GetPaneList();
+        nw4hbm::lyt::PaneLinkList& list = mpGroupAnmController[i]->mpGroup->GetPaneList();
 
         NW4HBM_RANGE_FOR(it, list) { it->mTarget->BindAnimation(mpGroupAnmController[i]->mpAnimGroup, false); }
 
@@ -798,7 +798,7 @@ void HomeButton::create() {
 
         mpPairGroupAnmController[i]->mpGroup = mpLayout->GetGroupContainer()->FindGroupByName(scPairGroupName[i]);
 
-        nw4hbm::lyt::detail::PaneLink::LinkList& list = mpPairGroupAnmController[i]->mpGroup->GetPaneList();
+        nw4hbm::lyt::PaneLinkList& list = mpPairGroupAnmController[i]->mpGroup->GetPaneList();
 
         NW4HBM_RANGE_FOR(it, list) { it->mTarget->BindAnimation(mpPairGroupAnmController[i]->mpAnimGroup, false); }
 

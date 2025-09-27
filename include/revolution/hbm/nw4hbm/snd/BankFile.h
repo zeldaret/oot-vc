@@ -7,6 +7,8 @@
 
 #include "revolution/hbm/ut.hpp"
 
+#include "revolution/hbm/nw4hbm/config.h"
+
 namespace nw4hbm {
 namespace snd {
 namespace detail {

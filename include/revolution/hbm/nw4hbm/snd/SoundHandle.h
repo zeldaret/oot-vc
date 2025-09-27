@@ -5,7 +5,7 @@
 
 #include "revolution/hbm/nw4hbm/snd/BasicSound.h"
 
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp" // ut::NonCopyable
+#include "revolution/hbm/nw4hbm/ut/inlines.h" // ut::NonCopyable
 
 namespace nw4hbm {
 namespace snd {

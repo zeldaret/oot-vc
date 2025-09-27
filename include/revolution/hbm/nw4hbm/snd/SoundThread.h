@@ -6,7 +6,7 @@
 #include "revolution/hbm/nw4hbm/snd/AxManager.h"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp" // ut::NonCopyable
+#include "revolution/hbm/nw4hbm/ut/inlines.h" // ut::NonCopyable
 
 #include "revolution/os/OSMessage.h"
 #include "revolution/os/OSMutex.h"

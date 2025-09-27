@@ -6,8 +6,8 @@
 
 #include "macros.h" // NW4HBM_RANGE_FOR
 
-#include "revolution/hbm/nw4hbm/lyt/lyt_animation.hpp"
-#include "revolution/hbm/nw4hbm/lyt/lyt_group.hpp"
+#include "revolution/hbm/nw4hbm/lyt/animation.h"
+#include "revolution/hbm/nw4hbm/lyt/group.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
 #include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
 
@@ -33,7 +33,7 @@ void GroupAnmController::do_calc() {
         flag = false;
     }
 
-    nw4hbm::lyt::detail::PaneLink::LinkList& list = mpGroup->GetPaneList();
+    nw4hbm::lyt::PaneLinkList& list = mpGroup->GetPaneList();
 
     NW4HBM_RANGE_FOR(it, list) { it->mTarget->SetAnimationEnable(mpAnimGroup, flag, false); }
 }

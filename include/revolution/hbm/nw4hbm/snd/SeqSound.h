@@ -26,7 +26,7 @@ class SeqSound : public BasicSound {
     friend class SeqSoundHandle;
 
   public:
-    NW4R_UT_RUNTIME_TYPEINFO;
+    NW4HBM_UT_RUNTIME_TYPEINFO;
     typedef void (*NotifyAsyncEndCallback)(bool result, const void* seqBase, s32 seqOffset, void* userData);
 
     class SeqLoadCallback {

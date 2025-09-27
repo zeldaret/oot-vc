@@ -6,7 +6,7 @@
 // WARNING: DO NOT REORDER these #include directives, data pooling depends on it
 
 // clang-format off
-#include "revolution/hbm/nw4hbm/ut/ut_FileStream.hpp" // This needs to be
+#include "revolution/hbm/nw4hbm/ut/FileStream.h" // This needs to be
 #include "revolution/hbm/nw4hbm/snd/SoundArchive.h" // before this
 // clang-format on
 
