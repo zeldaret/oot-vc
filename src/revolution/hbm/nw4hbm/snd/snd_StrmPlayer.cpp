@@ -1,825 +1,99 @@
 #include "revolution/hbm/nw4hbm/snd/StrmPlayer.h"
 
-/* Original source:
- * kiwi515/ogws
- * src/nw4r/snd/snd_StrmPlayer.cpp
- */
-
-/*******************************************************************************
- * headers
- */
-
-#include <cstring.hpp> // std::memcpy
-#include <limits.h> // LONG_MAX
-
-#include "decomp.h"
-#include "macros.h" // ATTRIBUTE_UNUSED
-#include "revolution/types.h"
-
-#include "revolution/hbm/nw4hbm/snd/global.h"
-#include "revolution/hbm/nw4hbm/snd/AxVoice.h"
-#include "revolution/hbm/nw4hbm/snd/BasicPlayer.h"
-#include "revolution/hbm/nw4hbm/snd/Channel.h"
-#include "revolution/hbm/nw4hbm/snd/InstancePool.h"
-#include "revolution/hbm/nw4hbm/snd/SoundThread.h"
-#include "revolution/hbm/nw4hbm/snd/StrmChannel.h"
-#include "revolution/hbm/nw4hbm/snd/StrmFile.h"
-#include "revolution/hbm/nw4hbm/snd/StrmSound.h"
-#include "revolution/hbm/nw4hbm/snd/TaskManager.h"
-#include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_VoiceManager.hpp"
+#include "revolution/hbm/nw4hbm/snd/AxManager.h"
 #include "revolution/hbm/nw4hbm/snd/WaveFile.h"
-#include "revolution/hbm/nw4hbm/snd/snd_adpcm.hpp"
+#include "revolution/hbm/ut.hpp"
 
-#include "revolution/hbm/nw4hbm/ut/ut_DvdFileStream.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_FileStream.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_inlines.hpp"
-#include "revolution/hbm/nw4hbm/ut/ut_lock.hpp"
+#include <cstring.hpp>
+#include <limits.h>
 
-#include "revolution/dvd/dvd.h"
-#include "revolution/os/OSCache.h"
-
-#include "revolution/hbm/HBMAssert.hpp"
-
-/*******************************************************************************
- * variables
- */
-
-namespace nw4hbm {
-namespace snd {
-namespace detail {
-// .bss
-byte_t StrmPlayer::sLoadBuffer[LOAD_BUFFER_SIZE];
-OSMutex StrmPlayer::sLoadBufferMutex;
-
-// .sbss
-bool StrmPlayer::sStaticInitFlag;
-} // namespace detail
-} // namespace snd
-} // namespace nw4hbm
-
-/*******************************************************************************
- * functions
- */
+#include "revolution/dvd.h"
 
 namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-StrmPlayer::StrmPlayer() : mSetupFlag(false), mActiveFlag(false), mFileStream(nullptr) {
-    if (!sStaticInitFlag) {
-        OSInitMutex(&sLoadBufferMutex);
-        sStaticInitFlag = true;
-    }
-
-    u32 taskCount = mStrmDataLoadTaskPool.Create(mStrmDataLoadTaskArea, sizeof mStrmDataLoadTaskArea);
-
-    NW4HBMAssert_Line(taskCount == BUFFER_BLOCK_COUNT_MAX, 70);
+namespace {
+StrmPlayerList sPlayerList;
 }
 
-StrmPlayer::~StrmPlayer() { Shutdown(); }
+u8 StrmPlayer::LoadCommand::mMramBuf[LOAD_BUFFER_SIZE] alignas(32);
 
-StrmPlayer::SetupResult StrmPlayer::Setup(StrmBufferPool* bufferPool, int allocChannelCount, byte2_t allocTrackFlag,
-                                          int voiceOutCount) {
-    SoundThread::AutoLock lock;
-
-    NW4HBMAssertPointerNonnull_Line(bufferPool, 105);
-
-    if (mSetupFlag) {
-        Shutdown();
+StrmPlayer::StrmPlayer() : mActiveFlag(false), mVoice(nullptr) {
+    for (u32 i = 0; i < 32; i++) {
+        LoadCommand& loadCommand = mLoadCoammndArray[i];
+        loadCommand.mPlayer = this;
+        mFreeLoadCommandList.PushBack(&loadCommand);
     }
-
-    InitParam();
-    mChannelCount = ut::Min(allocChannelCount, STRM_CHANNEL_NUM);
-
-    byte4_t bitMask = allocTrackFlag;
-
-    int trackIndex;
-    for (trackIndex = 0; bitMask; bitMask >>= 1, trackIndex++) {
-        if (!(bitMask & 1)) {
-            continue;
-        }
-
-        if (trackIndex >= 8) {
-            NW4HBMWarningMessage_Line(133, "Too large track index (%d). Max track index is %d.", trackIndex,
-                                    STRM_TRACK_NUM - 1);
-
-            break;
-        }
-
-        mTracks[trackIndex].mActiveFlag = true;
-    }
-
-    mTrackCount = ut::Min(trackIndex, STRM_TRACK_NUM);
-    if (mTrackCount == 0) {
-        return SETUP_ERR_UNKNOWN;
-    }
-
-    mVoiceOutCount = voiceOutCount;
-    mBufferPool = bufferPool;
-
-    {
-        ut::AutoInterruptLock lockIntr;
-
-        if (mChannelCount > 0) {
-            if (!AllocStrmBuffers()) {
-                return SETUP_ERR_CANNOT_ALLOCATE_BUFFER;
-            }
-            mAllocStrmBufferFlag = true;
-        }
-    }
-
-    mSetupFlag = true;
-
-    return SETUP_SUCCESS;
 }
 
-void StrmPlayer::Shutdown() {
-    Stop();
-
-    SoundThread::AutoLock lock;
-
-    if (!mSetupFlag) {
-        return;
+bool StrmPlayer::Prepare(StrmBufferPool* bufferPool, StartOffsetType startOffsetType, s32 startOffset, int voices,
+                         StrmCallback* callback, u32 callbackData) {
+    NW4HBMAssertPointerNonnull_Line(bufferPool, 90);
+    if (mActiveFlag) {
+        ForceStop();
     }
 
-    mBufferPool = nullptr;
+    InitParam(voices);
 
-    NW4HBMAssert_Line(mStrmDataLoadTaskPool.Count() == BUFFER_BLOCK_COUNT_MAX, 191);
-    mStrmDataLoadTaskPool.Destroy(mStrmDataLoadTaskArea, sizeof mStrmDataLoadTaskArea);
-
-    mSetupFlag = false;
-}
-
-bool StrmPlayer::Prepare(ut::FileStream* fileStream, StartOffsetType startOffsetType, int startOffset) {
-    SoundThread::AutoLock lock;
-
-    NW4HBMAssert_Line(mSetupFlag, 218);
-    NW4HBMAssertPointerNonnull_Line(fileStream, 219);
-    NW4HBMAssert_Line(fileStream->CanRead(), 220);
-    NW4HBMAssert_Line(fileStream->CanSeek(), 221);
-
-    mFileStream = fileStream;
     mStartOffsetType = startOffsetType;
     mStartOffset = startOffset;
-    mTaskErrorFlag = false;
-    mTaskCancelFlag = false;
-    mLoadingDelayFlag = false;
+    mCallback = callback;
+    mCallbackData = callbackData;
+    mBufferPool = bufferPool;
+
+    StrmCallback::Result result =
+        callback->LoadHeader(NotifyStrmHeaderAsyncEndCallback, this, reinterpret_cast<u32>(this), callbackData);
+
+    switch (result) {
+        case StrmCallback::RESULT_FAILED: {
+            ForceStop();
+            break;
+        }
+        case StrmCallback::RESULT_SUCCESS:
+        case StrmCallback::RESULT_ASYNC:
+        default: {
+            break;
+        }
+    }
+
     mActiveFlag = true;
-
-    SoundThread::GetInstance().RegisterPlayerCallback(this);
-
-    StrmHeaderLoadTask* task = &mStrmHeaderLoadTask;
-
-    task->player = this;
-    task->fileStream = mFileStream;
-    task->startOffsetType = mStartOffsetType;
-    task->startOffset = mStartOffset;
-
-    TaskManager::GetInstance().AppendTask(task, TaskManager::PRIORITY_MIDDLE);
 
     return true;
 }
 
 bool StrmPlayer::Start() {
-    SoundThread::AutoLock lock;
+    ut::AutoInterruptLock lock;
 
     if (!mPreparedFlag) {
         return false;
     }
 
     if (!mStartedFlag) {
-        if (!AllocVoices(mVoiceOutCount)) {
-            FreeStrmBuffers();
-            return false;
-        }
-
-        s32 blockIndex = 0;
-        u32 blockOffset = 0;
-        s32 loopCount = 0;
-
-        if (!CalcStartOffset(&blockIndex, &blockOffset, &loopCount)) {
-            // NW4HBMPanic_Line(276);
-            return false;
-        }
-
-        mLoopCounter += loopCount;
-
-        u32 sampleBufferLen = mDataBlockSize * mPlayingBufferBlockCount;
-        u32 sampleCount = GetSampleByByte(sampleBufferLen, mStrmInfo.sampleFormat);
-
-        for (int trackIndex = 0; trackIndex < mTrackCount; trackIndex++) {
-            StrmTrack& track = mTracks[trackIndex];
-            if (!track.mActiveFlag) {
-                continue;
-            }
-
-            WaveInfo waveData;
-
-            waveData.sampleFormat = mStrmInfo.sampleFormat;
-            waveData.loopFlag = true;
-            waveData.numChannels = track.mTrackInfo.channelCount;
-            waveData.sampleRate = mStrmInfo.sampleRate;
-            waveData.loopStart = 0;
-            waveData.loopEnd = sampleCount;
-
-            for (int channelIndex = 0; channelIndex < track.mTrackInfo.channelCount; channelIndex++) {
-                StrmChannel* channel = GetTrackChannel(track, channelIndex);
-                if (!channel) {
-                    continue;
-                }
-
-                ChannelParam& channelParam = waveData.channelParam[channelIndex];
-
-                channelParam.dataAddr = channel->bufferAddress;
-                channelParam.adpcmParam = channel->adpcmParam;
-                channelParam.adpcmLoopParam = channel->adpcmLoopParam;
-                channelParam.adpcmParam.pred_scale = *static_cast<u8*>(channel->bufferAddress);
-            }
-
-            {
-                ut::AutoInterruptLock lock;
-
-                if (track.mVoice) {
-                    track.mVoice->Setup(waveData, blockOffset);
-                    track.mVoice->SetVoiceType(AxVoice::VOICE_TYPE_STREAM);
-                    track.mVoice->Start();
-                }
-            }
-        }
-
-        if (blockIndex == mStrmInfo.numBlocks - 2) {
-            UpdateDataLoopAddress(1);
-        } else if (blockIndex == mStrmInfo.numBlocks - 1) {
-            UpdateDataLoopAddress(0);
-        }
-
+        NW4HBMAssertPointerNonnull_Line(mVoice, 151);
+        mVoice->Start();
         UpdatePauseStatus();
 
+        sPlayerList.PushBack(this);
         mStartedFlag = true;
     }
 
     return true;
 }
 
-u32 StrmPlayer::GetSampleByByte(byte4_t byte, SampleFormat format) {
-    u32 samples = 0;
-
-    switch (format) {
-        case SAMPLE_FORMAT_DSP_ADPCM: {
-            samples = (byte >> 3) * 14;
-
-            if (u32 frac = byte & 0x07) {
-                samples += (frac - 1) * 2;
-            }
-        } break;
-
-        case SAMPLE_FORMAT_PCM_S8:
-            samples = byte;
-            break;
-
-        case SAMPLE_FORMAT_PCM_S16:
-            samples = byte / 2;
-            break;
-
-        default:
-            NW4HBMPanicMessage_Line(368, "Invalid format\n");
-            break;
-    }
-
-    return samples;
-}
-
 void StrmPlayer::Stop() {
-    {
-        SoundThread::AutoLock lock;
-
-        for (int trackIndex = 0; trackIndex < STRM_TRACK_NUM; trackIndex++) {
-            if (mTracks[trackIndex].mActiveFlag) {
-                if (Voice* voice = mTracks[trackIndex].mVoice) {
-                    voice->Stop();
-                }
-            }
-        }
-
-        if (mActiveFlag) {
-            SoundThread::GetInstance().UnregisterPlayerCallback(this);
-        }
+    if (mActiveFlag) {
+        ForceStop();
     }
-
-    TaskManager::GetInstance().CancelTask(&mStrmHeaderLoadTask);
-
-    {
-        ut::AutoInterruptLock lock;
-
-        while (!mStrmDataLoadTaskList.IsEmpty()) {
-            StrmDataLoadTask* task = &mStrmDataLoadTaskList.GetBack();
-
-            TaskManager::GetInstance().CancelTask(task);
-        }
-    }
-
-    FreeStrmBuffers();
-    FreeVoices();
-
-    {
-        SoundThread::AutoLock lock;
-
-        if (mFileStream) {
-            mFileStream->Close();
-            mFileStream = nullptr;
-        }
-    }
-
-    mStartedFlag = false;
-    mPreparedFlag = false;
-    mActiveFlag = false;
-
-    NW4HBMAssert_Line(mStrmDataLoadTaskPool.Count() == BUFFER_BLOCK_COUNT_MAX, 435);
 }
 
 void StrmPlayer::Pause(bool flag) {
-    SoundThread::AutoLock lock;
-
     mPauseFlag = flag;
-
     if (flag) {
         mLoadWaitFlag = true;
     }
-
-    UpdatePauseStatus();
-}
-
-// Some functions in between idk
-DECOMP_FORCE(0.0f);
-DECOMP_FORCE(SI2D_CONSTANT);
-DECOMP_FORCE(UI2D_CONSTANT);
-
-void StrmPlayer::InitParam() {
-    BasicPlayer::InitParam();
-
-    mStartedFlag = false;
-    mPreparedFlag = false;
-    mLoadFinishFlag = false;
-    mPauseFlag = false;
-    mPauseStatus = false;
-    mLoadWaitFlag = false;
-    mNoRealtimeLoadFlag = false;
-    mPlayFinishFlag = false;
-    mSkipUpdateAdpcmLoop = false;
-    mValidAdpcmLoop = false;
-    mAllocStrmBufferFlag = false;
-    mLoopCounter = 0;
-    mVoiceOutCount = 1;
-    mLoadWaitCount = 0;
-
-    for (int trackIndex = 0; trackIndex < STRM_TRACK_NUM; trackIndex++) {
-        StrmTrack& track = mTracks[trackIndex];
-
-        track.mActiveFlag = false;
-        track.mVolume = 1.0f;
-        track.mPan = 0.0f;
-        track.mVoice = nullptr;
-    }
-
-    for (int channelIndex = 0; channelIndex < STRM_CHANNEL_NUM; channelIndex++) {
-        StrmChannel& channel = mChannels[channelIndex];
-
-        channel.bufferAddress = nullptr;
-    }
-}
-
-#pragma push
-
-#pragma ppc_iro_level 0 // somehow this got turned off???
-
-bool StrmPlayer::LoadHeader(ut::FileStream* fileStream, StartOffsetType startOffsetType, int startOffset) {
-    NW4HBMAssertPointerNonnull_Line(fileStream, 619);
-
-    ut::detail::AutoLock<OSMutex> lock(sLoadBufferMutex);
-
-    StrmFileLoader loader(*fileStream);
-    if (!loader.LoadFileHeader(sLoadBuffer, LOAD_BUFFER_SIZE)) {
-        return false;
-    }
-
-    if (!loader.ReadStrmInfo(&mStrmInfo)) {
-        return false;
-    }
-
-    if (mChannelCount == 0) {
-        mChannelCount = ut::Min(loader.GetChannelCount(), STRM_CHANNEL_NUM);
-    }
-
-    NW4HBMAssert_Line(mTrackCount == ut::Min(loader.GetTrackCount(), STRM_TRACK_NUM), 643);
-    NW4HBMAssert_Line(mChannelCount == ut::Min(loader.GetChannelCount(), STRM_CHANNEL_NUM), 644);
-
-    for (int i = 0; i < mTrackCount; i++) {
-        if (!loader.ReadStrmTrackInfo(&mTracks[i].mTrackInfo, i)) {
-            return false;
-        }
-    }
-
-    if (IsAdpcm()) {
-        for (int i = 0; i < mChannelCount; i++) {
-            if (!loader.ReadAdpcmInfo(&mChannels[i].adpcmParam, &mChannels[i].adpcmLoopParam, i)) {
-                return false;
-            }
-        }
-
-        if (startOffset != 0) {
-            int startOffsetSamples;
-
-            if (startOffsetType == START_OFFSET_TYPE_SAMPLE) {
-                startOffsetSamples = startOffset;
-            } else if (startOffsetType == START_OFFSET_TYPE_MILLISEC) {
-                startOffsetSamples = startOffset * mStrmInfo.sampleRate / 1000;
-            }
-
-            /* NOTE: startOffsetSamples is used uninitialized if neither
-             * branch is taken (asserted externally or ERRATUM?)
-             */
-
-            s32 blockIndex = startOffsetSamples / static_cast<s32>(mStrmInfo.blockSamples);
-
-            u16 yn1[16];
-            u16 yn2[16];
-            if (!loader.ReadAdpcBlockData(yn1, yn2, blockIndex, mStrmInfo.numChannels)) {
-                return false;
-            }
-
-            for (int i = 0; i < mStrmInfo.numChannels; i++) {
-                mChannels[i].adpcmParam.yn1 = yn1[i];
-                mChannels[i].adpcmParam.yn2 = yn2[i];
-            }
-        }
-    }
-
-    if (!SetupPlayer()) {
-        return false;
-    }
-
-    mPrepareCounter = 0;
-
-    for (int i = 0; i < mBufferBlockCountBase; i++) {
-        UpdateLoadingBlockIndex();
-
-        mPrepareCounter++;
-
-        if (mLoadFinishFlag) {
-            break;
-        }
-    }
-
-    if (mStrmInfo.numBlocks <= 2 && !mStrmInfo.loopFlag) {
-        SetLoopEndToZeroBuffer(mStrmInfo.numBlocks - 1);
-    }
-
-    return true;
-}
-
-#pragma pop
-
-#pragma push
-
-#pragma ppc_iro_level 0 // somehow this got turned off???
-
-bool StrmPlayer::LoadStreamData(ut::FileStream* fileStream, int offset, u32 size ATTRIBUTE_UNUSED, u32 blockSize,
-                                int bufferBlockIndex, bool needUpdateAdpcmLoop) {
-    NW4HBMAssertPointerNonnull_Line(fileStream, 746);
-    NW4HBMAssertAligned_Line(offset, 32, 747);
-    NW4HBMAssertAligned_Line(blockSize, 32, 748);
-
-    if (ut::DvdFileStream* dvdStream = ut::DynamicCast<ut::DvdFileStream*>(fileStream)) {
-        dvdStream->SetPriority(1);
-    }
-
-    ut::detail::AutoLock<OSMutex> lock(sLoadBufferMutex);
-
-    DCInvalidateRange(sLoadBuffer, LOAD_BUFFER_SIZE);
-
-    int loadOffset = offset + mStrmInfo.blockHeaderOffset;
-    u16 adpcmPredScale[STRM_CHANNEL_NUM];
-
-    int currentChannel = 0;
-    while (currentChannel < mChannelCount) {
-        NW4HBMAssertAligned_Line(loadOffset, 32, 773);
-
-        int loadChannelCount = Channel::CHANNEL_MAX;
-
-        if (currentChannel + loadChannelCount > mChannelCount) {
-            loadChannelCount = mChannelCount - currentChannel;
-        }
-
-        u32 loadSize = blockSize * loadChannelCount;
-        NW4HBMAssert_Line(loadSize <= LOAD_BUFFER_SIZE, 781);
-
-        fileStream->Seek(loadOffset, ut::FileStream::SEEK_BEG);
-
-        s32 resultSize = fileStream->Read(sLoadBuffer, loadSize);
-        if (resultSize != loadSize) {
-            return false;
-        }
-
-        for (int i = 0; i < loadChannelCount; i++) {
-            if (needUpdateAdpcmLoop) {
-                adpcmPredScale[currentChannel] = sLoadBuffer[blockSize * i];
-            }
-
-            u32 len = blockSize;
-            void* source = ut::AddOffsetToPtr(sLoadBuffer, blockSize * i);
-            void* dest = ut::AddOffsetToPtr(mChannels[currentChannel].bufferAddress, mDataBlockSize * bufferBlockIndex);
-
-            std::memcpy(dest, source, len);
-            DCFlushRange(dest, len);
-
-            currentChannel++;
-        }
-
-        loadOffset += loadSize;
-    }
-
-    if (needUpdateAdpcmLoop) {
-        SetAdpcmLoopContext(mChannelCount, adpcmPredScale);
-    }
-
-    if (!mPreparedFlag) {
-        mPrepareCounter--;
-
-        if (mPrepareCounter == 0) {
-            mPreparedFlag = true;
-        }
-    }
-
-    return true;
-}
-
-#pragma pop // ?????
-
-bool StrmPlayer::SetupPlayer() {
-    NW4HBMAssertPointerNonnull_Line(mBufferPool, 850);
-
-    u32 strmBufferSize = mBufferPool->GetBlockSize();
-
-    s32 blockIndex = 0;
-    u32 blockOffset = 0;
-    s32 loopCount = 0;
-    if (!CalcStartOffset(&blockIndex, &blockOffset, &loopCount)) {
-        return false;
-    }
-
-    mLoopStartBlockIndex = mStrmInfo.loopStart / mStrmInfo.blockSamples;
-    mLastBlockIndex = mStrmInfo.numBlocks - 1;
-
-    mDataBlockSize = mStrmInfo.blockSize;
-    if (mDataBlockSize > DATA_BLOCK_SIZE_MAX) {
-        NW4HBMWarningMessage_Line(870, "Too large stream data block size.");
-        return false;
-    }
-
-    mBufferBlockCount = strmBufferSize / mDataBlockSize;
-    if (mBufferBlockCount < 4) {
-        NW4HBMWarningMessage_Line(876, "Too small stream buffer size.");
-        return false;
-    }
-
-    if (mBufferBlockCount > BUFFER_BLOCK_COUNT_MAX) {
-        mBufferBlockCount = BUFFER_BLOCK_COUNT_MAX;
-    }
-
-    mBufferBlockCountBase = mBufferBlockCount - 1;
-    mChangeNumBlocks = mBufferBlockCountBase;
-
-    mPlayingDataBlockIndex = blockIndex;
-    mLoadingDataBlockIndex = blockIndex;
-
-    mLoadingBufferBlockIndex = 0;
-    mPlayingBufferBlockIndex = 0;
-
-    if (mNoRealtimeLoadFlag) {
-        mLoadingBufferBlockCount = mStrmInfo.numBlocks;
-    } else {
-        mLoadingBufferBlockCount = CalcLoadingBufferBlockCount();
-    }
-
-    mPlayingBufferBlockCount = mLoadingBufferBlockCount;
-
-    ut::AutoInterruptLock lock;
-
-    if (!mAllocStrmBufferFlag) {
-        if (!AllocStrmBuffers()) {
-            return false;
-        }
-
-        mAllocStrmBufferFlag = true;
-    }
-
-    return true;
-}
-
-bool StrmPlayer::AllocStrmBuffers() {
-    for (int index = 0; index < mChannelCount; index++) {
-        void* strmBuffer = mBufferPool->Alloc();
-
-        if (!strmBuffer) {
-            for (int i = 0; i < index; i++) {
-                mBufferPool->Free(mChannels[i].bufferAddress);
-                mChannels[i].bufferAddress = nullptr;
-            }
-
-            return false;
-        }
-
-        mChannels[index].bufferAddress = strmBuffer;
-    }
-
-    return true;
-}
-
-void StrmPlayer::FreeStrmBuffers() {
-    for (int index = 0; index < mChannelCount; index++) {
-        if (!mChannels[index].bufferAddress) {
-            continue;
-        }
-
-        mBufferPool->Free(mChannels[index].bufferAddress);
-        mChannels[index].bufferAddress = nullptr;
-    }
-}
-
-bool StrmPlayer::AllocVoices(int voiceOutCount) {
-    ut::AutoInterruptLock lock;
-
-    NW4HBMAssertPointerNonnull_Line(mBufferPool, 992);
-
-    for (int trackIndex = 0; trackIndex < mTrackCount; trackIndex++) {
-        StrmTrack& track = mTracks[trackIndex];
-        if (!track.mActiveFlag) {
-            continue;
-        }
-
-        Voice* voice =
-            VoiceManager::GetInstance().AllocVoice(track.mTrackInfo.channelCount, voiceOutCount, Voice::PRIORITY_MAX,
-                                                   &VoiceCallbackFunc, &mTracks[trackIndex]);
-
-        if (!voice) {
-            for (int i = 0; i < trackIndex; i++) {
-                StrmTrack& t = mTracks[i];
-
-                if (t.mVoice) {
-                    t.mVoice->Free();
-                    t.mVoice = nullptr;
-                }
-            }
-
-            return false;
-        }
-
-        track.mVoice = voice;
-        voice->SetVoiceOutParamPitchDisableFlag(true);
-    }
-
-    return true;
-}
-
-void StrmPlayer::FreeVoices() {
-    ut::AutoInterruptLock lock;
-
-    for (int trackIndex = 0; trackIndex < mTrackCount; trackIndex++) {
-        StrmTrack& track = mTracks[trackIndex];
-        if (!track.mActiveFlag) {
-            continue;
-        }
-
-        if (track.mVoice) {
-            track.mVoice->Free();
-            track.mVoice = nullptr;
-        }
-    }
-}
-
-void StrmPlayer::Update() {
-    if (!mActiveFlag) {
-        return;
-    }
-
-    if (mTaskErrorFlag && !mTaskCancelFlag) {
-        NW4HBMWarningMessage_Line(1076, "Task error is occured.");
-
-        Stop();
-        return;
-    }
-
     if (mStartedFlag) {
-        for (int trackIndex = 0; trackIndex < mTrackCount; trackIndex++) {
-            StrmTrack& track = mTracks[trackIndex];
-
-            if (track.mActiveFlag && !track.mVoice) {
-                Stop();
-                return;
-            }
-        }
-    }
-
-    if (mLoadWaitFlag && mStrmDataLoadTaskList.IsEmpty() && !CheckDiskDriveError()) {
-        mLoadWaitFlag = false;
         UpdatePauseStatus();
-    }
-
-    if (mLoadingDelayFlag) {
-        NW4HBMWarningMessage_Line(1109, "Pause stream because of loading delay.");
-        mLoadingDelayFlag = false;
-    }
-
-    for (int trackIndex = 0; trackIndex < mTrackCount; trackIndex++) {
-        UpdateVoiceParams(&mTracks[trackIndex]);
-    }
-}
-
-void StrmPlayer::UpdateVoiceParams(StrmTrack* track) {
-    if (!track->mActiveFlag) {
-        return;
-    }
-
-    f32 volume = 1.0f;
-    volume *= GetVolume();
-    volume *= track->mTrackInfo.volume / 127.0f;
-    volume *= track->mVolume;
-
-    f32 pitchRatio = 1.0f;
-    pitchRatio *= GetPitch();
-
-    f32 pan = 0.0f;
-    pan += GetPan();
-    if (track->mTrackInfo.pan <= 1) {
-        pan += (track->mTrackInfo.pan - 63) / 63.0f;
-    } else {
-        pan += (track->mTrackInfo.pan - 64) / 63.0f;
-    }
-
-    pan += track->mPan;
-
-    f32 surroundPan = 0.0f;
-    surroundPan += GetSurroundPan();
-
-    f32 lpfFreq = 1.0f;
-    lpfFreq += GetLpfFreq();
-
-    int biquadType = GetBiquadType();
-    f32 biquadValue = GetBiquadValue();
-
-    int remoteFilter = 0;
-    remoteFilter += GetRemoteFilter();
-
-    f32 mainSend = 0.0f;
-    mainSend += GetMainSend();
-
-    f32 fxsend[AUX_BUS_NUM];
-    for (int i = 0; i < AUX_BUS_NUM; i++) {
-        fxsend[i] = 0.0f;
-        fxsend[i] += GetFxSend(static_cast<AuxBus>(i));
-    }
-
-    ut::AutoInterruptLock lock;
-
-    if (Voice* voice = track->mVoice) {
-        voice->SetVolume(volume);
-        voice->SetPitch(pitchRatio);
-        voice->SetPan(pan);
-        voice->SetSurroundPan(surroundPan);
-        voice->SetLpfFreq(lpfFreq);
-        voice->SetBiquadFilter(biquadType, biquadValue);
-        voice->SetRemoteFilter(remoteFilter);
-        voice->SetOutputLine(GetOutputLine());
-        voice->SetMainOutVolume(GetMainOutVolume());
-        voice->SetMainSend(mainSend);
-
-        for (int i = 0; i < AUX_BUS_NUM; i++) {
-            AuxBus bus = static_cast<AuxBus>(i);
-            voice->SetFxSend(bus, fxsend[i]);
-        }
-
-        for (int i = 0; i < mVoiceOutCount; i++) {
-            voice->SetVoiceOutParam(i, GetVoiceOutParam(i));
-        }
-    }
-}
-
-bool StrmPlayer::CheckDiskDriveError() const {
-    ut::DvdFileStream* dvdFileStream = ut::DynamicCast<ut::DvdFileStream*>(mFileStream);
-    if (!dvdFileStream) {
-        return false;
-    }
-
-    s32 driveStatus = DVDGetDriveStatus();
-    switch (driveStatus) {
-        case DVD_STATE_IDLE:
-        case DVD_STATE_BUSY:
-            return false;
-
-        default:
-            return true;
     }
 }
 
@@ -827,86 +101,152 @@ void StrmPlayer::UpdateBuffer() {
     if (!mStartedFlag) {
         return;
     }
-
-    if (!mTracks[0].mActiveFlag) {
+    if (mVoice == nullptr) {
         return;
     }
 
-    Voice* voice = mTracks[0].mVoice;
-    if (!voice) {
-        return;
-    }
-
-    if (CheckDiskDriveError()) {
+    s32 driveStatus = DVDGetDriveStatus();
+    if (driveStatus == DVD_STATE_IDLE) {
+        mDiskErrorFlag = false;
+        UpdatePauseStatus();
+    } else if (driveStatus != DVD_STATE_BUSY) {
+        mDiskErrorFlag = true;
         mLoadWaitFlag = true;
-
         UpdatePauseStatus();
     }
 
-    if (!mPlayFinishFlag && !mNoRealtimeLoadFlag && !mLoadWaitFlag) {
-        u32 playingSample = voice->GetCurrentPlayingSample();
-        int axCurrentBlockIndex = playingSample / mStrmInfo.blockSamples;
+    if (!mLoadWaitFlag) {
+        if (mFillBufferCommandList.GetSize() >= mBufferBlockCountBase - 1) {
+            NW4HBMWarningMessage_Line(253, "stop strm because of loading delay!");
+            mLoadWaitFlag = true;
+            UpdatePauseStatus();
+        }
+    } else {
+        if (mFillBufferCommandList.IsEmpty()) {
+            mLoadWaitFlag = false;
+            UpdatePauseStatus();
+        }
+    }
+
+    if (!mPlayFinishFlag && !mNoRealtimeLoadFlag) {
+        NW4HBMAssertPointerNonnull_Line(mVoice, 276);
+        const u32 playingSample = mVoice->GetCurrentPlayingSample();
+        const int axCurrentBlockIndex = static_cast<int>(playingSample / mStrmInfo.blockSamples);
 
         while (mPlayingBufferBlockIndex != axCurrentBlockIndex) {
-            if (!mLoadWaitFlag && !mStrmDataLoadTaskList.IsEmpty() && mLoadWaitCount >= mBufferBlockCountBase - 2) {
-                mLoadingDelayFlag = true;
-                mLoadWaitFlag = true;
-
-                UpdatePauseStatus();
-
-                break;
-            } else {
-                UpdatePlayingBlockIndex();
-                UpdateLoadingBlockIndex();
-            }
+            UpdatePlayingBlockIndex();
+            UpdateLoadingBlockIndex(LoadCommand::STATE_INTERVAL);
         }
     }
 }
 
-void StrmPlayer::UpdateLoopAddress(u32 loopStartSamples, u32 loopEndSamples) {
+void StrmPlayer::Update() {
+    if (!mStartedFlag) {
+        return;
+    }
+
+    if (mVoice == nullptr) {
+        ForceStop();
+        return;
+    }
+
+    {
+        ut::AutoInterruptLock lock;
+
+        f32 volume = 1.0f;
+        volume *= mExtVolume;
+
+        f32 pitchRatio = 1.0f;
+        pitchRatio *= mExtPitch;
+
+        f32 pan = 0.0f;
+        pan += mExtPan;
+
+        f32 surroundPan = 0.0f;
+        surroundPan += mExtSurroundPan;
+
+        f32 pan2 = 0.0f;
+        pan2 += mExtPan2;
+
+        f32 surroundPan2 = 0.0f;
+        surroundPan2 += mExtSurroundPan2;
+
+        f32 lpfFreq = 1.0f;
+        lpfFreq += mExtLpfFreq;
+
+        f32 mainSend = 0.0f;
+        mainSend += mMainSend;
+
+        f32 fxSend[AUX_BUS_NUM];
+        for (int i = 0; i < AUX_BUS_NUM; i++) {
+            fxSend[i] = 0.0f;
+            fxSend[i] += mFxSend[i];
+        }
+
+        f32 remoteSend[WPAD_MAX_CONTROLLERS];
+        f32 remoteFxSend[WPAD_MAX_CONTROLLERS];
+        for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
+            remoteSend[i] = 0.0f;
+            remoteSend[i] += mRemoteSend[i];
+
+            remoteFxSend[i] = 0.0f;
+            remoteFxSend[i] += mRemoteSend[i]; // @bug Should be mRemoteFxSend
+        }
+
+        mVoice->SetVolume(volume);
+        mVoice->SetPitch(pitchRatio);
+        mVoice->SetPan(pan);
+        mVoice->SetSurroundPan(surroundPan);
+        mVoice->SetPan2(pan2);
+        mVoice->SetSurroundPan2(surroundPan2);
+        mVoice->SetLpfFreq(lpfFreq);
+        mVoice->SetOutputLine(mOutputLineFlag);
+        mVoice->SetMainOutVolume(GetMainOutVolume());
+        mVoice->SetMainSend(mainSend);
+
+        for (int i = 0; i < AUX_BUS_NUM; i++) {
+            mVoice->SetFxSend(static_cast<AuxBus>(i), fxSend[i]);
+        }
+
+        for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
+            mVoice->SetRemoteOutVolume(i, GetRemoteOutVolume(i));
+            mVoice->SetRemoteSend(i, remoteSend[i]);
+            mVoice->SetRemoteFxSend(i, remoteFxSend[i]);
+        }
+    }
+}
+
+void StrmPlayer::UpdateLoopAddress(u32 startSample, u32 endSample) {
+    NW4HBMAssertPointerNonnull_Line(mVoice, 414);
     ut::AutoInterruptLock lock;
 
-    for (int trackIndex = 0; trackIndex < mTrackCount; trackIndex++) {
-        StrmTrack& track = mTracks[trackIndex];
-
-        if (!track.mActiveFlag) {
-            continue;
-        }
-
-        Voice* voice = track.mVoice;
-        if (!voice) {
-            continue;
-        }
-
-        for (int channelIndex = 0; channelIndex < track.mTrackInfo.channelCount; channelIndex++) {
-            // mTracks[trackIndex] againinstead of track?
-            StrmChannel* channel = GetTrackChannel(mTracks[trackIndex], channelIndex);
-
-            voice->SetLoopStart(channelIndex, channel->bufferAddress, loopStartSamples);
-            voice->SetLoopEnd(channelIndex, channel->bufferAddress, loopEndSamples);
-        }
-
-        voice->SetLoopFlag(true);
+    for (int i = 0; i < mChannelCount; i++) {
+        mVoice->SetLoopStart(i, mChannels[i].mBuffer, startSample);
+        mVoice->SetLoopEnd(i, mChannels[i].mBuffer, endSample);
     }
+
+    mVoice->SetLoopFlag(true);
 }
 
 void StrmPlayer::UpdatePlayingBlockIndex() {
     mPlayingDataBlockIndex++;
+
     if (mPlayingDataBlockIndex > mLastBlockIndex) {
         if (mStrmInfo.loopFlag) {
             mPlayingDataBlockIndex = mLoopStartBlockIndex;
 
-            if (mLoopCounter < LONG_MAX) {
+            if (mLoopCounter < INT_MAX) {
                 mLoopCounter++;
             }
 
             UpdateLoopAddress(0, mPlayingBufferBlockCount * mStrmInfo.blockSamples);
         } else {
-            // NW4HBMPanic_Line(1379);
+            NW4HBMAssert_Line(false, 454);
         }
     }
 
     mPlayingBufferBlockIndex++;
+
     if (mPlayingBufferBlockIndex >= mPlayingBufferBlockCount) {
         mPlayingBufferBlockIndex = 0;
         mPlayingBufferBlockCount = mLoadingBufferBlockCount;
@@ -914,163 +254,126 @@ void StrmPlayer::UpdatePlayingBlockIndex() {
         UpdateLoopAddress(0, mPlayingBufferBlockCount * mStrmInfo.blockSamples);
     }
 
-    if (mPlayingBufferBlockIndex == mPlayingBufferBlockCount - 1) {
+    if (mPlayingBufferBlockIndex == mPlayingBufferBlockCount - 1 && mVoice->GetFormat() == AxVoice::FORMAT_ADPCM) {
+        NW4HBMCheckMessage_Line(mValidAdpcmLoop, 476, "AdpcmLoop can not update!");
+
         if (!mSkipUpdateAdpcmLoop && mValidAdpcmLoop) {
-            for (int trackIndex = 0; trackIndex < mTrackCount; trackIndex++) {
-                StrmTrack& track = mTracks[trackIndex];
+            ut::AutoInterruptLock lock;
 
-                if (!track.mActiveFlag) {
-                    continue;
-                }
+            for (int i = 0; i < mChannelCount; i++) {
+                AdpcmLoopParam loopParam;
+                loopParam.loop_pred_scale = mAdpcmPredScale[i];
+                loopParam.loop_yn1 = 0;
+                loopParam.loop_yn2 = 0;
 
-                Voice* voice = track.mVoice;
-                if (!voice) {
-                    continue;
-                }
-
-                if (voice->GetFormat() == SAMPLE_FORMAT_DSP_ADPCM) {
-                    NW4HBMCheckMessage_Line(1411, mValidAdpcmLoop, "AdpcmLoop can not update!");
-
-                    ut::AutoInterruptLock lock;
-
-                    for (int channelIndex = 0; channelIndex < track.mTrackInfo.channelCount; channelIndex++) {
-                        StrmChannel* channel = GetTrackChannel(track, channelIndex);
-
-                        AdpcmLoopParam loop;
-                        loop.loop_pred_scale = channel->adpcmPredScale;
-                        loop.loop_yn1 = 0;
-                        loop.loop_yn2 = 0;
-
-                        voice->SetAdpcmLoop(channelIndex, &loop);
-                    }
-
-                    voice->SetVoiceType(AxVoice::VOICE_TYPE_STREAM);
-                }
+                mVoice->SetAdpcmLoop(i, mVoice->GetFormat(), &loopParam);
             }
+
+            mVoice->SetVoiceType(AxVoice::VOICE_TYPE_STREAM);
         }
+
         mValidAdpcmLoop = false;
         mSkipUpdateAdpcmLoop = false;
     }
 
     if (mPlayingDataBlockIndex == mLastBlockIndex - 1) {
-        s32 endBufferBlockIndex = mPlayingBufferBlockIndex + 1;
-        UpdateDataLoopAddress(endBufferBlockIndex);
-    }
-}
+        const s32 endBlock = mPlayingBufferBlockIndex + 1;
 
-void StrmPlayer::UpdateDataLoopAddress(s32 endBlockBufferIndex) {
-    if (mStrmInfo.loopFlag) {
-        s32 startBlockNum = endBlockBufferIndex + 1;
+        if (mStrmInfo.loopFlag) {
+            s32 startBlock = endBlock + 1;
+            if (startBlock >= mPlayingBufferBlockCount) {
+                startBlock -= mPlayingBufferBlockCount;
+            }
 
-        if (startBlockNum >= mPlayingBufferBlockCount) {
-            startBlockNum -= mPlayingBufferBlockCount;
-        }
+            ut::AutoInterruptLock lock;
 
-        ut::AutoInterruptLock lock;
+            UpdateLoopAddress(startBlock * mStrmInfo.blockSamples,
+                              mStrmInfo.lastBlockSamples + (endBlock * mStrmInfo.blockSamples));
 
-        UpdateLoopAddress(startBlockNum * mStrmInfo.blockSamples,
-                          mStrmInfo.lastBlockSamples + (endBlockBufferIndex * mStrmInfo.blockSamples));
+            if (mStrmInfo.format == WaveFile::FORMAT_ADPCM) {
+                if (mVoice->GetFormat() == AxVoice::FORMAT_ADPCM) {
+                    mVoice->SetVoiceType(AxVoice::VOICE_TYPE_NORMAL);
 
-        if (IsAdpcm()) {
-            for (int trackIndex = 0; trackIndex < mTrackCount; trackIndex++) {
-                StrmTrack& track = mTracks[trackIndex];
-
-                if (!track.mActiveFlag) {
-                    continue;
-                }
-
-                Voice* voice = track.mVoice;
-                if (!voice) {
-                    continue;
-                }
-
-                if (voice->GetFormat() == SAMPLE_FORMAT_DSP_ADPCM) {
-                    voice->SetVoiceType(AxVoice::VOICE_TYPE_NORMAL);
-
-                    for (int channelIndex = 0; channelIndex < track.mTrackInfo.channelCount; channelIndex++) {
-                        StrmChannel* channel = GetTrackChannel(track, channelIndex);
-
-                        voice->SetAdpcmLoop(channelIndex, &channel->adpcmLoopParam);
+                    for (int i = 0; i < mChannelCount; i++) {
+                        mVoice->SetAdpcmLoop(i, mVoice->GetFormat(), &mChannels[i].mAdpcmInfo.adpcmloop);
                     }
                 }
+
+                if (endBlock == mPlayingBufferBlockCount - 1) {
+                    mSkipUpdateAdpcmLoop = true;
+                }
             }
 
-            if (endBlockBufferIndex == mPlayingBufferBlockCount - 1) {
-                mSkipUpdateAdpcmLoop = true;
-            }
+            return;
         }
-    } else {
-        SetLoopEndToZeroBuffer(endBlockBufferIndex);
+
+        SetLoopEndToZeroBuffer(endBlock);
     }
 }
 
-void StrmPlayer::SetLoopEndToZeroBuffer(int endBufferBlockIndex) {
+void StrmPlayer::SetLoopEndToZeroBuffer(int endBlock) {
     {
         ut::AutoInterruptLock lock;
 
-        for (int trackIndex = 0; trackIndex < mTrackCount; trackIndex++) {
-            StrmTrack& track = mTracks[trackIndex];
-
-            if (!track.mActiveFlag) {
-                continue;
-            }
-
-            Voice* voice = track.mVoice;
-            if (!voice) {
-                continue;
-            }
-
-            for (int channelIndex = 0; channelIndex < track.mTrackInfo.channelCount; channelIndex++) {
-                StrmChannel* channel = GetTrackChannel(track, channelIndex);
-
-                voice->StopAtPoint(channelIndex, channel->bufferAddress,
-                                   mStrmInfo.lastBlockSamples + endBufferBlockIndex * mStrmInfo.blockSamples);
-            }
+        for (int i = 0; i < mChannelCount; i++) {
+            mVoice->StopAtPoint(i, mChannels[i].mBuffer,
+                                mStrmInfo.lastBlockSamples + (endBlock * mStrmInfo.blockSamples));
         }
     }
 
     mPlayFinishFlag = true;
 }
 
-void StrmPlayer::UpdateLoadingBlockIndex() {
-    mLoadWaitCount++;
-
+void StrmPlayer::UpdateLoadingBlockIndex(LoadCommand::Status status) {
     if (mLoadFinishFlag) {
         return;
     }
 
+    LoadCommand* param;
+    {
+        ut::AutoInterruptLock lock;
+
+        param = &mFreeLoadCommandList.GetFront();
+        mFreeLoadCommandList.PopFront();
+    }
+
+    param->mStatus = status;
+    param->mBufferBlockIndex = mLoadingBufferBlockIndex;
+    param->mStreamBlockIndex = mLoadingDataBlockIndex;
+
     u32 blockSize = mLoadingDataBlockIndex < static_cast<s32>(mStrmInfo.numBlocks - 1) ? mStrmInfo.blockSize
                                                                                        : mStrmInfo.lastBlockPaddedSize;
 
-    u32 loadSize = mStrmInfo.blockHeaderOffset + blockSize * mChannelCount;
+    u32 loadSize = mStrmInfo.blockHeaderOffset + mChannelCount * ut::RoundUp(blockSize, 32);
 
     s32 loadOffset = mStrmInfo.dataOffset + mLoadingDataBlockIndex * (mStrmInfo.blockHeaderOffset +
                                                                       mStrmInfo.blockSize * mStrmInfo.numChannels);
 
-    NW4HBMAssertAligned_Line(blockSize, 32, 1576);
-    NW4HBMAssertAligned_Line(loadSize, 32, 1577);
-    NW4HBMAssertAligned_Line(loadOffset, 32, 1578);
+    // clang-format off
+    NW4HBMAssert_Line(loadSize <= sizeof( LoadCommand::mMramBuf ), 613);
+    // clang-format on
 
-    bool needUpdateAdpcmLoop = mLoadingBufferBlockIndex == 0 && IsAdpcm();
+    mFillBufferCommandList.PushBack(param);
 
-    StrmDataLoadTask* task = mStrmDataLoadTaskPool.Alloc();
-    NW4HBMAssertPointerNonnull_Line(task, 1584);
+    bool needUpdateAdpcmLoop = mLoadingBufferBlockIndex == 0 && mStrmInfo.format == WaveFile::FORMAT_ADPCM;
 
-    task->mStrmPlayer = this;
-    task->fileStream = mFileStream;
-    task->mSize = loadSize;
-    task->mOffset = loadOffset;
-    task->mBlockSize = blockSize;
-    task->mBufferBlockIndex = mLoadingBufferBlockIndex;
-    task->mNeedUpdateAdpcmLoop = needUpdateAdpcmLoop;
-
-    ut::AutoInterruptLock lock;
-
-    mStrmDataLoadTaskList.PushBack(task);
-
-    TaskManager::GetInstance().AppendTask(task,
-                                          mStartedFlag ? TaskManager::PRIORITY_HIGH : TaskManager::PRIORITY_MIDDLE);
-
+    StrmCallback::Result result = mCallback->LoadStream(param->mMramBuf, loadSize, loadOffset, mChannelCount, blockSize,
+                                                        mStrmInfo.blockHeaderOffset, needUpdateAdpcmLoop, *param,
+                                                        reinterpret_cast<u32>(this), mCallbackData);
+    switch (result) {
+        case StrmCallback::RESULT_FAILED: {
+            ForceStop();
+            break;
+        }
+        case StrmCallback::RESULT_SUCCESS: {
+            param->NotifyAsyncEnd(true);
+            break;
+        }
+        case StrmCallback::RESULT_ASYNC:
+        default: {
+            break;
+        }
+    }
     mLoadingDataBlockIndex++;
 
     if (mLoadingDataBlockIndex > mLastBlockIndex) {
@@ -1078,7 +381,6 @@ void StrmPlayer::UpdateLoadingBlockIndex() {
             mLoadingDataBlockIndex = mLoopStartBlockIndex;
         } else {
             mLoadFinishFlag = true;
-
             return;
         }
     }
@@ -1094,208 +396,434 @@ void StrmPlayer::UpdateLoadingBlockIndex() {
 void StrmPlayer::UpdatePauseStatus() {
     ut::AutoInterruptLock lock;
 
-    bool pauseStatus = false;
+    bool paused = false;
 
     if (mPauseFlag) {
-        pauseStatus = true;
+        paused = true;
     }
 
     if (mLoadWaitFlag) {
-        pauseStatus = true;
+        paused = true;
     }
 
-    if (pauseStatus != mPauseStatus) {
-        for (int trackIndex = 0; trackIndex < mTrackCount; trackIndex++) {
-            if (!mTracks[trackIndex].mActiveFlag) {
-                continue;
-            }
+    if (paused != mPauseStatus) {
+        NW4HBMAssertPointerNonnull_Line(mVoice, 209);
+        mVoice->Pause(paused);
 
-            if (Voice* voice = mTracks[trackIndex].mVoice) {
-                voice->Pause(pauseStatus);
-            }
-        }
-
-        mPauseStatus = pauseStatus;
+        mPauseStatus = paused;
     }
 }
 
 int StrmPlayer::CalcLoadingBufferBlockCount() const {
-    int restBlockCount = mLastBlockIndex - mLoadingDataBlockIndex + 1;
-    int loopBlockCount = mLastBlockIndex - mLoopStartBlockIndex + 1;
+    int restBlocks = (mLastBlockIndex - mLoadingDataBlockIndex) + 1;
+    int loopBlocks = (mLastBlockIndex - mLoopStartBlockIndex) + 1;
 
-    if ((mBufferBlockCountBase + 1 - restBlockCount) % loopBlockCount == 0) {
+    if ((mBufferBlockCountBase + 1 - restBlocks) % loopBlocks == 0) {
         return mBufferBlockCountBase + 1;
-    } else {
-        return mBufferBlockCountBase;
+    }
+
+    return mBufferBlockCountBase;
+}
+
+void StrmPlayer::UpdateBufferAllPlayers() {
+    for (StrmPlayerList::Iterator it = sPlayerList.GetBeginIter(); it != sPlayerList.GetEndIter();) {
+        StrmPlayerList::Iterator currIt = it++;
+        currIt->UpdateBuffer();
     }
 }
 
-bool StrmPlayer::CalcStartOffset(s32* startBlockIndex, u32* startBlockOffset, s32* loopCount) {
-    if (mStrmInfo.blockSamples == 0) {
+void StrmPlayer::UpdateAllPlayers() {
+    for (StrmPlayerList::Iterator it = sPlayerList.GetBeginIter(); it != sPlayerList.GetEndIter();) {
+        StrmPlayerList::Iterator currIt = it++;
+        currIt->Update();
+    }
+}
+
+void StrmPlayer::StopAllPlayers() {
+    for (StrmPlayerList::Iterator it = sPlayerList.GetBeginIter(); it != sPlayerList.GetEndIter();) {
+        StrmPlayerList::Iterator currIt = it++;
+        currIt->Stop();
+    }
+
+    NW4HBMAssert_Line(sPlayerList.IsEmpty(), 750);
+}
+
+void StrmPlayer::SetMainOutVolume(f32 volume) {
+    ut::AutoInterruptLock lock;
+    mMainOutVolume = volume;
+}
+
+f32 StrmPlayer::GetMainOutVolume() const { return mMainOutVolume; }
+
+void StrmPlayer::SetMainSend(f32 send) {
+    ut::AutoInterruptLock lock;
+    mMainSend = send;
+}
+
+f32 StrmPlayer::GetMainSend() const { return mMainSend; }
+
+void StrmPlayer::SetFxSend(AuxBus bus, f32 send) {
+    NW4HBMAssertHeaderClampedLValue_Line(bus, 0, 3, 777);
+    ut::AutoInterruptLock lock;
+    mFxSend[bus] = send;
+}
+
+f32 StrmPlayer::GetFxSend(AuxBus bus) const {
+    NW4HBMAssertHeaderClampedLValue_Line(bus, 0, 3, 784);
+    return mFxSend[bus];
+}
+
+void StrmPlayer::SetOutputLine(int lineFlag) {
+    ut::AutoInterruptLock lock;
+    mOutputLineFlag = lineFlag;
+}
+
+int StrmPlayer::GetOutputLine() const { return mOutputLineFlag; }
+
+void StrmPlayer::SetRemoteOutVolume(int remoteIndex, f32 volume) {
+    NW4HBMAssertHeaderClampedLValue_Line(remoteIndex, 0, 4, 802);
+    ut::AutoInterruptLock lock;
+    mRemoteOutVolume[remoteIndex] = volume;
+}
+
+f32 StrmPlayer::GetRemoteOutVolume(int remoteIndex) const {
+    NW4HBMAssertHeaderClampedLValue_Line(remoteIndex, 0, 4, 809);
+    return mRemoteOutVolume[remoteIndex];
+}
+
+void StrmPlayer::SetRemoteSend(int remoteIndex, f32 send) {
+    NW4HBMAssertHeaderClampedLValue_Line(remoteIndex, 0, 4, 815);
+    ut::AutoInterruptLock lock;
+    mRemoteSend[remoteIndex] = send;
+}
+
+f32 StrmPlayer::GetRemoteSend(int remoteIndex) const {
+    NW4HBMAssertHeaderClampedLValue_Line(remoteIndex, 0, 4, 822);
+    return mRemoteSend[remoteIndex];
+}
+
+void StrmPlayer::SetRemoteFxSend(int remoteIndex, f32 send) {
+    NW4HBMAssertHeaderClampedLValue_Line(remoteIndex, 0, 4, 828);
+    ut::AutoInterruptLock lock;
+    mRemoteFxSend[remoteIndex] = send;
+}
+
+f32 StrmPlayer::GetRemoteFxSend(int remoteIndex) const {
+    NW4HBMAssertHeaderClampedLValue_Line(remoteIndex, 0, 4, 835);
+    return mRemoteFxSend[remoteIndex];
+}
+
+void StrmPlayer::InitParam(int voices) {
+    mActiveFlag = false;
+    mStartedFlag = false;
+    mPreparedFlag = false;
+    mLoadFinishFlag = false;
+    mPauseFlag = false;
+    mDiskErrorFlag = false;
+    mPauseStatus = false;
+    mLoadWaitFlag = false;
+    mNoRealtimeLoadFlag = false;
+    mPlayFinishFlag = false;
+    mSkipUpdateAdpcmLoop = false;
+    mValidAdpcmLoop = false;
+    mChannelCount = 0;
+    mLoopCounter = 0;
+
+    mExtVolume = 1.0f;
+    mExtPitch = 1.0f;
+    mExtPan = 0.0f;
+    mExtSurroundPan = 0.0f;
+    mExtPan2 = 0.0f;
+    mExtSurroundPan2 = 0.0f;
+    mExtLpfFreq = 0.0f;
+
+    mOutputLineFlag = OUTPUT_LINE_MAIN;
+    mMainOutVolume = 1.0f;
+    mMainSend = 0.0f;
+
+    for (int i = 0; i < AUX_BUS_NUM; i++) {
+        mFxSend[i] = 0.0f;
+    }
+    for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
+        mRemoteSend[i] = 0.0f;
+        mRemoteFxSend[i] = 0.0f;
+    }
+
+    mVoiceOutCount = voices;
+
+    for (int i = 0; i < CHANNEL_MAX; i++) {
+        mChannels[i].mBuffer = nullptr;
+        mChannels[i].mBufferSize = 0;
+    }
+}
+
+void StrmPlayer::Setup(const StrmHeader* header) {
+    if (!SetupPlayer(header)) {
+        ForceStop();
+        return;
+    }
+
+    mPrepareCounter = 0;
+    for (int i = 0; i < mBufferBlockCountBase; i++) {
+        UpdateLoadingBlockIndex(LoadCommand::STATE_SETUP);
+        mPrepareCounter++;
+
+        if (mLoadFinishFlag) {
+            break;
+        }
+    }
+
+    if (mStrmInfo.numBlocks <= 2 && !mStrmInfo.loopFlag) {
+        SetLoopEndToZeroBuffer(mStrmInfo.numBlocks - 1);
+    }
+}
+
+bool StrmPlayer::SetupPlayer(const StrmHeader* strmHeader) {
+    NW4HBMAssertPointerNonnull_Line(mBufferPool, 993);
+    u32 poolBlockSize = mBufferPool->GetBlockSize();
+    mStrmInfo = strmHeader->strmInfo;
+
+    u32 blockOffset = 0;
+    s32 loopCount = 0;
+
+    if (mStrmInfo.format == WaveFile::FORMAT_ADPCM) {
+        for (int i = 0; i < mStrmInfo.numChannels; i++) {
+            mChannels[i].mAdpcmInfo = strmHeader->adpcmInfo[i];
+        }
+    }
+
+    mLoopStartBlockIndex = mStrmInfo.loopStart / mStrmInfo.blockSamples;
+    mLastBlockIndex = mStrmInfo.numBlocks - 1;
+
+    mDataBlockSize = mStrmInfo.blockSize;
+    if (mDataBlockSize > DATA_BLOCK_SIZE_MAX) {
+        NW4HBMWarningMessage_Line(1012, "Too large stream data block size.");
         return false;
     }
 
-    int startOffsetSamples;
-    if (mStartOffsetType == START_OFFSET_TYPE_SAMPLE) {
-        startOffsetSamples = mStartOffset;
-    } else if (mStartOffsetType == START_OFFSET_TYPE_MILLISEC) {
-        startOffsetSamples = mStartOffset * static_cast<s64>(mStrmInfo.sampleRate) / 1000;
+    mBufferBlockCount = poolBlockSize / mDataBlockSize;
+    if (mBufferBlockCount < DATA_BLOCK_COUNT_MIN) {
+        NW4HBMWarningMessage_Line(1018, "Too small stream buffer size.");
+        return false;
+    } else if (mBufferBlockCount > DATA_BLOCK_COUNT_MAX) {
+        mBufferBlockCount = DATA_BLOCK_COUNT_MAX;
     }
 
-    *loopCount = 0;
+    mBufferBlockCountBase = mBufferBlockCount - 1;
+    mChangeNumBlocks = mBufferBlockCountBase;
 
-    if (startOffsetSamples >= mStrmInfo.loopEnd) {
-        if (mStrmInfo.loopFlag) {
-            s32 loopStart = mStrmInfo.loopStart;
-            s32 loopEnd = mStrmInfo.loopEnd;
-            s32 loopLen = loopEnd - loopStart;
-            s32 startOffset2 = startOffsetSamples - loopEnd;
+    s32 blockIndex = 0;
+    if (mStrmInfo.blockSamples > 0) {
+        if (mStartOffsetType == START_OFFSET_TYPE_SAMPLE) {
+            blockIndex = static_cast<s32>(mStartOffset) / static_cast<s32>(mStrmInfo.blockSamples);
+        } else if (mStartOffsetType == START_OFFSET_TYPE_MILLISEC) {
+            blockIndex =
+                static_cast<s32>(mStrmInfo.sampleRate * mStartOffset / 1000) / static_cast<s32>(mStrmInfo.blockSamples);
+        }
+    }
+    mPlayingDataBlockIndex = blockIndex;
+    mLoadingDataBlockIndex = blockIndex;
 
-            *loopCount = startOffset2 / loopLen + 1;
+    mLoadingBufferBlockIndex = 0;
+    mPlayingBufferBlockIndex = 0;
 
-            startOffsetSamples = loopStart + startOffset2 % loopLen;
-        } else {
+    if (mNoRealtimeLoadFlag) {
+        mLoadingBufferBlockCount = mStrmInfo.numBlocks;
+    } else {
+        mLoadingBufferBlockCount = CalcLoadingBufferBlockCount();
+    }
+
+    mPlayingBufferBlockCount = mLoadingBufferBlockCount;
+
+    {
+        ut::AutoInterruptLock lock;
+        mChannelCount = ut::Min<int>(mStrmInfo.numChannels, CHANNEL_MAX);
+        if (!AllocChannels(mChannelCount, mVoiceOutCount)) {
             return false;
         }
     }
 
-    *startBlockIndex = startOffsetSamples / static_cast<int>(mStrmInfo.blockSamples);
+    {
+        ut::AutoInterruptLock lock;
 
-    *startBlockOffset = startOffsetSamples % mStrmInfo.blockSamples;
+        WaveData waveData;
+        waveData.format = mStrmInfo.format;
+        waveData.loopFlag = true;
+        waveData.numChannels = static_cast<u8>(mChannelCount);
+        waveData.sampleRate = mStrmInfo.sampleRate;
+        waveData.loopStart = 0;
+        waveData.loopEnd = AxVoice::GetSampleByByte(static_cast<u32>(mDataBlockSize * mPlayingBufferBlockCount),
+                                                    WaveFormatToAxFormat(mStrmInfo.format));
+
+        for (int i = 0; i < mChannelCount; i++) {
+            ChannelParam& channelParam = waveData.channelParam[i];
+
+            channelParam.dataAddr = mChannels[i].mBuffer;
+            channelParam.adpcmInfo = mChannels[i].mAdpcmInfo;
+        }
+
+        mVoice->Setup(waveData);
+        mVoice->SetVoiceType(AxVoice::VOICE_TYPE_STREAM);
+    }
 
     return true;
 }
 
-void StrmPlayer::VoiceCallbackFunc(Voice* voice, Voice::VoiceCallbackStatus status, void* arg) {
-    StrmTrack* track = static_cast<StrmTrack*>(arg);
-    NW4HBMAssertPointerNonnull_Line(track, 1771);
-    NW4HBMAssert_Line(track->mVoice == voice, 1773);
+bool StrmPlayer::AllocChannels(int channels, int voices) {
+    NW4HBMAssertPointerNonnull_Line(mBufferPool, 1116);
 
+    for (int i = 0; i < channels; i++) {
+        void* buffer = mBufferPool->Alloc();
+
+        if (buffer == nullptr) {
+            for (int j = 0; j < i; j++) {
+                mBufferPool->Free(mChannels[j].mBuffer);
+            }
+
+            return false;
+        }
+
+        mChannels[i].mBuffer = buffer;
+        mChannels[i].mBufferSize = mBufferPool->GetBlockSize();
+    }
+
+    AxVoice* voice =
+        AxManager::GetInstance().AllocVoice(channels, voices, AxVoice::PRIORITY_MAX, VoiceCallbackFunc, this);
+
+    if (voice == nullptr) {
+        for (int i = 0; i < channels; i++) {
+            mBufferPool->Free(mChannels[i].mBuffer);
+        }
+
+        return false;
+    }
+
+    mVoice = voice;
+    return true;
+}
+
+void StrmPlayer::FreeChannels() {
     ut::AutoInterruptLock lock;
 
-    switch (status) {
-        case Voice::CALLBACK_STATUS_FINISH_WAVE:
-        case Voice::CALLBACK_STATUS_CANCEL:
-            voice->Free();
-            track->mVoice = nullptr;
+    for (int i = 0; i < mChannelCount; i++) {
+        if (mChannels[i].mBuffer != nullptr) {
+            mBufferPool->Free(mChannels[i].mBuffer);
 
-            break;
+            mChannels[i].mBuffer = nullptr;
+            mChannels[i].mBufferSize = 0;
+        }
+    }
 
-        case Voice::CALLBACK_STATUS_DROP_VOICE:
-        case Voice::CALLBACK_STATUS_DROP_DSP:
-            track->mVoice = nullptr;
+    mChannelCount = 0;
 
-            break;
-
-        default:
-            NW4HBMPanicMessage_Line(1789, "Unknown Voice callback status %d", status);
-            return; // NOTE: do not change (invokes scope guard destructor twice)
+    if (mVoice != nullptr) {
+        mVoice->Free();
+        mVoice = nullptr;
     }
 }
 
-void StrmPlayer::SetAdpcmLoopContext(int channelNum, u16* predScale) {
-    if (!IsAdpcm()) {
+void StrmPlayer::ForceStop() {
+    {
+        ut::AutoInterruptLock lock;
+        if (mVoice != nullptr) {
+            mVoice->Stop();
+        }
+        if (mStartedFlag) {
+            sPlayerList.Erase(this);
+            mStartedFlag = false;
+            mPreparedFlag = false;
+        }
+    }
+
+    mCallback->CancelLoading(reinterpret_cast<u32>(this), mCallbackData);
+
+    {
+        ut::AutoInterruptLock lock;
+
+        while (!mFillBufferCommandList.IsEmpty()) {
+            LoadCommand& param = mFillBufferCommandList.GetFront();
+            mFillBufferCommandList.PopFront();
+            mFreeLoadCommandList.PushBack(&param);
+        }
+    }
+
+    FreeChannels();
+    mActiveFlag = false;
+}
+
+void StrmPlayer::NotifyStrmHeaderAsyncEndCallback(bool result, const StrmHeader* header, void* userData) {
+    StrmPlayer* player = reinterpret_cast<StrmPlayer*>(userData);
+
+    NW4HBMAssertPointerNonnull_Line(player, 1256);
+
+    if (result) {
+        player->Setup(header);
+    } else {
+        player->ForceStop();
+    }
+}
+
+void StrmPlayer::VoiceCallbackFunc(AxVoice* voice, AxVoice::CallbackStatus status, void* arg) {
+    StrmPlayer* player = static_cast<StrmPlayer*>(arg);
+
+    NW4HBMAssertPointerNonnull_Line(player, 1284);
+    NW4HBMAssert_Line(player->mVoice == voice, 1286);
+
+    switch (status) {
+        case AxVoice::CALLBACK_STATUS_FINISH_WAVE:
+        case AxVoice::CALLBACK_STATUS_INVALIDATE_WAVE: {
+            voice->Free();
+            player->FreeChannels();
+            break;
+        }
+        case AxVoice::CALLBACK_STATUS_DROP_VOICE:
+        case AxVoice::CALLBACK_STATUS_DROP_DSP: {
+            player->mVoice = nullptr;
+            player->FreeChannels();
+            break;
+        }
+        default: {
+            NW4HBMPanicMessage_Line(1301, "Unknown AxVoice callback status %d", status);
+            break;
+        }
+    }
+}
+
+void StrmPlayer::LoadCommand::NotifyAsyncEnd(bool result) {
+    ut::AutoInterruptLock lock;
+
+    mPlayer->mFillBufferCommandList.Erase(this);
+
+    if (result) {
+        if (mStatus == STATE_SETUP) {
+            if (--mPlayer->mPrepareCounter == 0) {
+                mPlayer->mPreparedFlag = true;
+            }
+        }
+    } else {
+        mPlayer->ForceStop();
+    }
+
+    mPlayer->mFreeLoadCommandList.PushBack(this);
+}
+
+void StrmPlayer::LoadCommand::SetAdpcmLoopContext(int channelNum, u16* predScale) {
+    if (mPlayer->mStrmInfo.format != WaveFile::FORMAT_ADPCM) {
         return;
     }
 
-    for (int channelIndex = 0; channelIndex < channelNum && channelIndex < STRM_CHANNEL_NUM; channelIndex++) {
-        mChannels[channelIndex].adpcmPredScale = predScale[channelIndex];
+    for (int i = 0; i < channelNum && i < CHANNEL_MAX; i++) {
+        mPlayer->mAdpcmPredScale[i] = predScale[i];
     }
 
-    mValidAdpcmLoop = true;
+    mPlayer->mValidAdpcmLoop = true;
 }
 
-StrmChannel* StrmPlayer::GetTrackChannel(StrmTrack const& track, int channelIndex) {
-    if (channelIndex >= Channel::CHANNEL_MAX) {
+void* StrmPlayer::LoadCommand::GetBuffer(int channelNum) {
+    if (channelNum >= mPlayer->mChannelCount) {
         return nullptr;
     }
-
-    int index = track.mTrackInfo.channelIndexTable[channelIndex];
-    if (index >= STRM_CHANNEL_NUM) {
-        return nullptr;
-    }
-
-    return &mChannels[index];
-}
-
-void StrmPlayer::SetTrackVolume(byte4_t trackBitFlag, f32 volume) {
-    ut::AutoInterruptLock lock;
-
-    for (int trackNo = 0; trackNo < mTrackCount && trackBitFlag; trackNo++, trackBitFlag >>= 1) {
-        if (trackBitFlag & 1) {
-            mTracks[trackNo].mVolume = volume;
-        }
-    }
-}
-
-StrmPlayer::StrmTrack* StrmPlayer::GetPlayerTrack(int trackNo) {
-    if (trackNo > STRM_TRACK_NUM - 1) {
-        return nullptr;
-    }
-
-    return &mTracks[trackNo];
-}
-
-StrmPlayer::StrmHeaderLoadTask::StrmHeaderLoadTask() : player(nullptr), fileStream(nullptr), startOffset(0) {}
-
-void StrmPlayer::StrmHeaderLoadTask::Execute() {
-    NW4HBMAssertPointerNonnull_Line(player, 1894);
-
-    bool result = player->LoadHeader(fileStream, startOffsetType, startOffset);
-    if (!result) {
-        player->SetTaskErrorFlag();
-    }
-}
-
-void StrmPlayer::StrmHeaderLoadTask::Cancel() { /* ... */ }
-
-void StrmPlayer::StrmHeaderLoadTask::OnCancel() {
-    player->SetTaskCancelFlag();
-
-    if (fileStream && fileStream->CanCancel()) {
-        if (fileStream->CanAsync()) {
-            fileStream->CancelAsync(nullptr, nullptr);
-        } else {
-            fileStream->Cancel();
-        }
-    }
-}
-
-StrmPlayer::StrmDataLoadTask::StrmDataLoadTask()
-    : mStrmPlayer(nullptr), fileStream(nullptr), mSize(0), mOffset(0), mBlockSize(0), mBufferBlockIndex(-1),
-      mNeedUpdateAdpcmLoop(false) {}
-
-void StrmPlayer::StrmDataLoadTask::Execute() {
-    bool result =
-        mStrmPlayer->LoadStreamData(fileStream, mOffset, mSize, mBlockSize, mBufferBlockIndex, mNeedUpdateAdpcmLoop);
-    if (!result) {
-        mStrmPlayer->SetTaskErrorFlag();
-    }
-
-    ut::AutoInterruptLock lock;
-    mStrmPlayer->mStrmDataLoadTaskList.Erase(this);
-    mStrmPlayer->mStrmDataLoadTaskPool.Free(this);
-
-    mStrmPlayer->mLoadWaitCount--;
-}
-
-void StrmPlayer::StrmDataLoadTask::Cancel() {
-    ut::AutoInterruptLock lock;
-
-    mStrmPlayer->mStrmDataLoadTaskList.Erase(this);
-    mStrmPlayer->mStrmDataLoadTaskPool.Free(this);
-}
-
-void StrmPlayer::StrmDataLoadTask::OnCancel() {
-    mStrmPlayer->SetTaskCancelFlag();
-
-    if (fileStream && fileStream->CanCancel()) {
-        if (fileStream->CanAsync()) {
-            fileStream->CancelAsync(nullptr, nullptr);
-        } else {
-            fileStream->Cancel();
-        }
-    }
+    return static_cast<u8*>(mPlayer->mChannels[channelNum].mBuffer) + mPlayer->mDataBlockSize * mBufferBlockIndex;
 }
 
 } // namespace detail

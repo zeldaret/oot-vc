@@ -159,7 +159,7 @@ class StrmPlayer : public BasicPlayer {
     int CalcLoadingBufferBlockCount() const;
     bool CalcStartOffset(s32* blockIndex, u32* blockOffset, s32* loopCount);
 
-    static void VoiceCallbackFunc(AxVoice* dropVoice, AxVoice::CallbackStatus status, void* pCallbackArg);
+    static void VoiceCallbackFunc(AxVoice* voice, AxVoice::CallbackStatus status, void* pCallbackArg);
 
     static void NotifyStrmHeaderAsyncEndCallback(bool result, const StrmHeader* header, void* userData);
 
