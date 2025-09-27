@@ -50,6 +50,7 @@
 #include "revolution/hbm/nw4hbm/snd/StrmFile.h"
 #include "revolution/hbm/nw4hbm/snd/StrmPlayer.h"
 #include "revolution/hbm/nw4hbm/snd/StrmSound.h"
+#include "revolution/hbm/nw4hbm/snd/StrmSoundHandle.h"
 #include "revolution/hbm/nw4hbm/snd/Task.h"
 #include "revolution/hbm/nw4hbm/snd/TaskManager.h"
 #include "revolution/hbm/nw4hbm/snd/TaskThread.h"
@@ -57,6 +58,7 @@
 #include "revolution/hbm/nw4hbm/snd/WaveFile.h"
 #include "revolution/hbm/nw4hbm/snd/WavePlayer.h"
 #include "revolution/hbm/nw4hbm/snd/WaveSound.h"
+#include "revolution/hbm/nw4hbm/snd/WaveSoundHandle.h"
 #include "revolution/hbm/nw4hbm/snd/WsdFile.h"
 #include "revolution/hbm/nw4hbm/snd/WsdPlayer.h"
 #include "revolution/hbm/nw4hbm/snd/WsdTrack.h"
@@ -68,12 +70,10 @@
 // #include "revolution/hbm/nw4hbm/snd/snd_MoveValue.hpp"
 // #include "revolution/hbm/nw4hbm/snd/snd_SoundActor.hpp"
 // #include "revolution/hbm/nw4hbm/snd/snd_SoundMemoryAllocatable.hpp"
-// #include "revolution/hbm/nw4hbm/snd/StrmSoundHandle.h"
 // #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
 // #include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
 // #include "revolution/hbm/nw4hbm/snd/snd_VoiceManager.hpp"
 // #include "revolution/hbm/nw4hbm/snd/snd_WaveArchive.hpp"
-// #include "revolution/hbm/nw4hbm/snd/snd_WaveSoundHandle.hpp"
 // #include "revolution/hbm/nw4hbm/snd/snd_adpcm.hpp"
 
 #endif

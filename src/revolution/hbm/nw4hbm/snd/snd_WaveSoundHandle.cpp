@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_WaveSoundHandle.hpp"
+#include "revolution/hbm/nw4hbm/snd/WaveSoundHandle.h"
 
 /* Original source:
  * kiwi515/ogws

@@ -1177,6 +1177,8 @@ revolution/hbm/nw4hbm/snd/snd_WavePlayer.cpp:
 revolution/hbm/nw4hbm/snd/snd_WaveSound.cpp:
 	.text       start:0x8013A708 end:0x8013AB8C
 	.ctors      start:0x8016A718 end:0x8016A71C
+	.data       start:0x8019D888 end:0x8019DA78
+	.sbss       start:0x8025DC98 end:0x8025DCA0
 
 revolution/hbm/nw4hbm/snd/snd_WaveSoundHandle.cpp:
 	.text       start:0x8013AB8C end:0x8013ABC4

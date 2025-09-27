@@ -5,6 +5,8 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/Util.h"
+#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
+#include "revolution/hbm/nw4hbm/snd/WaveFile.h"
 
 #include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
 
