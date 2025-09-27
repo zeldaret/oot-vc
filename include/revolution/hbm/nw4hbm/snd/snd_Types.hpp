@@ -1,14 +1,17 @@
 #ifndef NW4R_SND_TYPES_H
 #define NW4R_SND_TYPES_H
 
-#include "revolution/types.h"
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
+#include "revolution/types.h"
 
 namespace nw4hbm {
 namespace snd {
 
 static const int CHANNEL_MIN = 1;
 static const int CHANNEL_MAX = 2;
+
+static const int VOICE_MAX = 4;
+static const int PRIORITY_MAX = 255;
 
 static const int THREAD_STACK_SIZE = 1024;
 static const int STREAM_BUFFER_SIZE = 512;

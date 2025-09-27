@@ -1170,6 +1170,9 @@ revolution/hbm/nw4hbm/snd/snd_WaveFile.cpp:
 revolution/hbm/nw4hbm/snd/snd_WavePlayer.cpp:
 	.text       start:0x80139B44 end:0x8013A708
 	.ctors      start:0x8016A714 end:0x8016A718
+	.data       start:0x8019D3C8 end:0x8019D888
+	.bss        start:0x80259DA0 end:0x80259DB8
+	.sdata2     start:0x8025E8E8 end:0x8025E8F0
 
 revolution/hbm/nw4hbm/snd/snd_WaveSound.cpp:
 	.text       start:0x8013A708 end:0x8013AB8C

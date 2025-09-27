@@ -245,7 +245,7 @@ template <typename T, int I> class LinkList : public detail::LinkListImpl {
 
         const T& operator*() const {
             const T* p = this->operator->();
-            NW4HBMAssertPointerNonnull_Line(p, 0);
+            NW4HBMAssertPointerNonnull_Line(p, 447);
 
             return *p;
         }
@@ -277,7 +277,7 @@ template <typename T, int I> class LinkList : public detail::LinkListImpl {
     }
 
     const T& GetFront() const {
-        NW4HBMAssert_Line(!IsEmpty(), 0);
+        NW4HBMAssert_Line(!IsEmpty(), 502);
         return *GetBeginIter();
     }
 

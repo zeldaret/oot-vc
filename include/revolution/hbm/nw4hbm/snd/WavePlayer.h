@@ -52,7 +52,7 @@ class WavePlayer {
         SampleFormat sampleFormat; // 0x04
         int sampleRate; // 0x08
         f32 pitchMax; // 0x0C
-        int voices; // 0x10
+        int voiceCount; // 0x10
     } SetupParam;
 
     WavePlayer();
