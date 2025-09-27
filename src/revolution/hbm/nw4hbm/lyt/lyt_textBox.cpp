@@ -132,7 +132,7 @@ int CalcLineRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, co
     NW4HBMAssertPointerValid_Line(str, 73);
     NW4HBMAssertMinimumValue_Line(length, 0, 74);
     ut::PrintContext<charT> context = {pTextWriter, str, 0.0f, 0.0f, 0};
-    const ut::Font *font = pTextWriter->GetFont();
+    const ut::Font* font = pTextWriter->GetFont();
 
     f32 x = 0.0f;
     bool bCharSpace = false;
@@ -140,7 +140,7 @@ int CalcLineRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, co
     NW4HBMAssertPointerValid_Line(font, 83);
     ut::CharStrmReader reader = font->GetCharStrmReader();
 
-    const charT *prStrPos = (const charT *)reader.GetCurrentPos();
+    const charT* prStrPos = (const charT*)reader.GetCurrentPos();
 
     pRect->left = 0.0f;
     pRect->right = 0.0f;
@@ -152,12 +152,12 @@ int CalcLineRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, co
     reader.Set(str);
     ut::Rect prMaxRect = *pRect;
     u16 code = reader.Next();
-    while (((const charT *)reader.GetCurrentPos() - str) <= length) {
+    while (((const charT*)reader.GetCurrentPos() - str) <= length) {
         if (code < ' ') {
             ut::Operation operation;
             ut::Rect rect(x, 0.0f, 0.0f, 0.0f);
 
-            context.str = (const charT *)reader.GetCurrentPos();
+            context.str = (const charT*)reader.GetCurrentPos();
             context.flags = !bCharSpace;
 
             pTextWriter->SetCursorX(x);
@@ -205,7 +205,7 @@ int CalcLineRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, co
                 break;
             }
         }
-        prStrPos = (const charT *)reader.GetCurrentPos();
+        prStrPos = (const charT*)reader.GetCurrentPos();
         code = reader.Next();
         prMaxRect = *pRect;
     }
@@ -216,96 +216,97 @@ int CalcLineRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, co
             return (prStrPos - str);
         }
     }
-    return ((const charT *)reader.GetCurrentPos() - str);
-//     ut::PrintContext<charT> context = {pTextWriter, str, 0.0f, 0.0f, 0};
-//     const ut::Font* font = pTextWriter->GetFont();
+    return ((const charT*)reader.GetCurrentPos() - str);
+    //     ut::PrintContext<charT> context = {pTextWriter, str, 0.0f, 0.0f, 0};
+    //     const ut::Font* font = pTextWriter->GetFont();
 
-//     f32 x = 0.0f;
-//     bool bCharSpace = false;
+    //     f32 x = 0.0f;
+    //     bool bCharSpace = false;
 
-//     NW4HBMAssertPointerValid_Line(font, 83);
-//     ut::CharStrmReader reader = font->GetCharStrmReader();
-//     const charT* prStrPos = static_cast<const charT*>(reader.GetCurrentPos());
+    //     NW4HBMAssertPointerValid_Line(font, 83);
+    //     ut::CharStrmReader reader = font->GetCharStrmReader();
+    //     const charT* prStrPos = static_cast<const charT*>(reader.GetCurrentPos());
 
-//     pRect->left = 0.0f;
-//     pRect->right = 0.0f;
-//     pRect->top = ut::Min(0.0f, pTextWriter->GetLineHeight());
-//     pRect->bottom = ut::Max(0.0f, pTextWriter->GetLineHeight());
+    //     pRect->left = 0.0f;
+    //     pRect->right = 0.0f;
+    //     pRect->top = ut::Min(0.0f, pTextWriter->GetLineHeight());
+    //     pRect->bottom = ut::Max(0.0f, pTextWriter->GetLineHeight());
 
-//     *pbOver = false;
-//     reader.Set(str);
+    //     *pbOver = false;
+    //     reader.Set(str);
 
-//     char16_t code = reader.Next();
-//     ut::Rect prMaxRect = *pRect;
-//     // reader.Something();
+    //     char16_t code = reader.Next();
+    //     ut::Rect prMaxRect = *pRect;
+    //     // reader.Something();
 
-//     for (; static_cast<const charT*>(reader.GetCurrentPos()) - str <= length;
-//          prStrPos = static_cast<const charT*>(reader.GetCurrentPos()), code = reader.Next(), prMaxRect = *pRect) {
-//         if ((int)code < L' ') {
-//             ut::Operation operation;
-//             ut::Rect rect(x, 0.0f, 0.0f, 0.0f);
+    //     for (; static_cast<const charT*>(reader.GetCurrentPos()) - str <= length;
+    //          prStrPos = static_cast<const charT*>(reader.GetCurrentPos()), code = reader.Next(), prMaxRect = *pRect)
+    //          {
+    //         if ((int)code < L' ') {
+    //             ut::Operation operation;
+    //             ut::Rect rect(x, 0.0f, 0.0f, 0.0f);
 
-//             context.str = static_cast<const charT*>(reader.GetCurrentPos());
-//             context.flags = 0;
-//             context.flags |= BOOLIFY_FALSE_TERNARY(bCharSpace);
+    //             context.str = static_cast<const charT*>(reader.GetCurrentPos());
+    //             context.flags = 0;
+    //             context.flags |= BOOLIFY_FALSE_TERNARY(bCharSpace);
 
-//             pTextWriter->SetCursorX(x);
+    //             pTextWriter->SetCursorX(x);
 
-//             operation = pTextWriter->GetTagProcessor().CalcRect(&rect, code, &context);
+    //             operation = pTextWriter->GetTagProcessor().CalcRect(&rect, code, &context);
 
-//             reader.Set(context.str);
+    //             reader.Set(context.str);
 
-//             pRect->left = ut::Min(pRect->left, rect.left);
-//             pRect->top = ut::Min(pRect->top, rect.top);
-//             pRect->right = ut::Max(pRect->right, rect.right);
-//             pRect->bottom = ut::Max(pRect->bottom, rect.bottom);
+    //             pRect->left = ut::Min(pRect->left, rect.left);
+    //             pRect->top = ut::Min(pRect->top, rect.top);
+    //             pRect->right = ut::Max(pRect->right, rect.right);
+    //             pRect->bottom = ut::Max(pRect->bottom, rect.bottom);
 
-//             x = pTextWriter->GetCursorX();
+    //             x = pTextWriter->GetCursorX();
 
-//             if (pRect->GetWidth() > maxWidth) {
-//                 *pbOver = true;
-//                 break;
-//             }
+    //             if (pRect->GetWidth() > maxWidth) {
+    //                 *pbOver = true;
+    //                 break;
+    //             }
 
-//             if (operation == ut::OPERATION_END_DRAW) {
-//                 return length;
-//             } else if (operation == ut::OPERATION_NO_CHAR_SPACE) {
-//                 bCharSpace = false;
-//             } else if (operation == ut::OPERATION_CHAR_SPACE) {
-//                 bCharSpace = true;
-//             } else if (operation == ut::OPERATION_NEXT_LINE) {
-//                 goto end_draw;
-//             }
-//         } else {
-//             if (bCharSpace) {
-//                 x += pTextWriter->GetCharSpace();
-//             }
+    //             if (operation == ut::OPERATION_END_DRAW) {
+    //                 return length;
+    //             } else if (operation == ut::OPERATION_NO_CHAR_SPACE) {
+    //                 bCharSpace = false;
+    //             } else if (operation == ut::OPERATION_CHAR_SPACE) {
+    //                 bCharSpace = true;
+    //             } else if (operation == ut::OPERATION_NEXT_LINE) {
+    //                 goto end_draw;
+    //             }
+    //         } else {
+    //             if (bCharSpace) {
+    //                 x += pTextWriter->GetCharSpace();
+    //             }
 
-//             bCharSpace = true;
+    //             bCharSpace = true;
 
-//             if (pTextWriter->IsWidthFixed()) {
-//                 x += pTextWriter->GetFixedWidth();
-//             } else {
-//                 x += pTextWriter->GetFont()->GetCharWidth(code) * pTextWriter->GetScaleH();
-//             }
+    //             if (pTextWriter->IsWidthFixed()) {
+    //                 x += pTextWriter->GetFixedWidth();
+    //             } else {
+    //                 x += pTextWriter->GetFont()->GetCharWidth(code) * pTextWriter->GetScaleH();
+    //             }
 
-//             pRect->left = ut::Min(pRect->left, x);
-//             pRect->right = ut::Max(pRect->right, x);
+    //             pRect->left = ut::Min(pRect->left, x);
+    //             pRect->right = ut::Max(pRect->right, x);
 
-//             if (pRect->GetWidth() > maxWidth) {
-//                 *pbOver = true;
-//                 goto end_draw;
-//             }
-//         }
-//     }
+    //             if (pRect->GetWidth() > maxWidth) {
+    //                 *pbOver = true;
+    //                 goto end_draw;
+    //             }
+    //         }
+    //     }
 
-// end_draw:
-//     if (*pbOver && prStrPos) {
-//         *pRect = prMaxRect;
-//         return prStrPos - str;
-//     } else {
-//         return static_cast<const charT*>(reader.GetCurrentPos()) - str;
-//     }
+    // end_draw:
+    //     if (*pbOver && prStrPos) {
+    //         *pRect = prMaxRect;
+    //         return prStrPos - str;
+    //     } else {
+    //         return static_cast<const charT*>(reader.GetCurrentPos()) - str;
+    //     }
 }
 
 template <typename charT>
@@ -462,9 +463,7 @@ void TextBox::SetVtxColor(u32 idx, ut::Color value) {
     SetTextColor(idx / 2, value);
 }
 
-void TextBox::SetTextColor(u32 type, ut::Color value) {
-    __SetTextColor(type, value);
-}
+void TextBox::SetTextColor(u32 type, ut::Color value) { __SetTextColor(type, value); }
 
 u8 TextBox::GetVtxColorElement(u32 idx) const {
     NW4HBMAssert_Line(idx < ANIMTARGET_VERTEXCOLOR_MAX, 486);

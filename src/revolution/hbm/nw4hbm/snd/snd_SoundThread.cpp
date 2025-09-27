@@ -30,7 +30,7 @@ bool SoundThread::Create(s32 priority) {
     OSInitMutex(&mMutex);
 
     BOOL result = OSCreateThread(&mThread, SoundThreadFunc, &GetInstance(), mThreadStack + THREAD_STACK_SIZE,
-                                  THREAD_STACK_SIZE * 8, priority, 0);
+                                 THREAD_STACK_SIZE * 8, priority, 0);
 
     if (result) {
         OSResumeThread(&mThread);

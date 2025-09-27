@@ -24,7 +24,7 @@ template <typename T> class AutoLock : private NonCopyable {
 
 } // namespace detail
 
-typedef detail::AutoLock<OSMutex>   AutoMutexLock;
+typedef detail::AutoLock<OSMutex> AutoMutexLock;
 
 class AutoInterruptLock : private NonCopyable {
   public:

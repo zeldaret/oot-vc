@@ -20,7 +20,7 @@ class SoundHandle;
 class SoundPlayer;
 
 namespace detail {
-namespace { 
+namespace {
 class BasicPlayer;
 }
 class ExternalSoundPlayer;

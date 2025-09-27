@@ -16,47 +16,48 @@
  */
 
 // forward declarations
-namespace nw4hbm { namespace snd { class SoundArchivePlayer; }}
+namespace nw4hbm {
+namespace snd {
+class SoundArchivePlayer;
+}
+} // namespace nw4hbm
 
 /*******************************************************************************
  * classes and functions
  */
 
-namespace nw4hbm { namespace snd
-{
-	// [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x278fa
-	class SoundActor : public SoundStartable
-	{
-	// methods
-	public:
-		// cdtors
-		SoundActor();
+namespace nw4hbm {
+namespace snd {
+// [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x278fa
+class SoundActor : public SoundStartable {
+    // methods
+  public:
+    // cdtors
+    SoundActor();
 
-		// methods
-		detail::ExternalSoundPlayer *detail_GetActorPlayer(int actorPlayerId)
-		{
-			if (actorPlayerId < 0 || ACTOR_PLAYER_COUNT <= actorPlayerId)
-				return nullptr;
+    // methods
+    detail::ExternalSoundPlayer* detail_GetActorPlayer(int actorPlayerId) {
+        if (actorPlayerId < 0 || ACTOR_PLAYER_COUNT <= actorPlayerId) {
+            return nullptr;
+        }
 
-			return &mActorPlayer[actorPlayerId];
-		}
+        return &mActorPlayer[actorPlayerId];
+    }
 
-		detail::SoundActorParam const &detail_GetActorParam() const
-		{
-			return mActorParam;
-		}
+    detail::SoundActorParam const& detail_GetActorParam() const { return mActorParam; }
 
-	// static members
-	public:
-		static int const ACTOR_PLAYER_COUNT = 4;
+    // static members
+  public:
+    static int const ACTOR_PLAYER_COUNT = 4;
 
-	// members
-	private:
-		/* base SoundStartable */										// size 0x04, offset 0x00
-		SoundArchivePlayer			&mSoundArchivePlayer;				// size 0x04, offset 0x04
-		detail::ExternalSoundPlayer	mActorPlayer[ACTOR_PLAYER_COUNT];	// size 0x40, offset 0x08
-		detail::SoundActorParam		mActorParam;						// size 0x0c, offset 0x48
-	}; // size 0x54
-}} // namespace nw4hbm::snd
+    // members
+  private:
+    /* base SoundStartable */ // size 0x04, offset 0x00
+    SoundArchivePlayer& mSoundArchivePlayer; // size 0x04, offset 0x04
+    detail::ExternalSoundPlayer mActorPlayer[ACTOR_PLAYER_COUNT]; // size 0x40, offset 0x08
+    detail::SoundActorParam mActorParam; // size 0x0c, offset 0x48
+}; // size 0x54
+} // namespace snd
+} // namespace nw4hbm
 
 #endif // NW4R_SND_SOUND_ACTOR_H

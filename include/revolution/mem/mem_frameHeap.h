@@ -55,9 +55,7 @@ static inline u32 MEMGetAllocatableSizeForFrmHeap(struct MEMiHeapHead* heap) {
     return MEMGetAllocatableSizeForFrmHeapEx(heap, 4);
 }
 
-static inline u32 MEMCountFreeBlockForUnitHeap(struct MEMiHeapHead* heap) {
-    return MEMAdjustFrmHeap(heap);
-}
+static inline u32 MEMCountFreeBlockForUnitHeap(struct MEMiHeapHead* heap) { return MEMAdjustFrmHeap(heap); }
 
 #ifdef __cplusplus
 }

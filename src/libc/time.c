@@ -82,8 +82,9 @@ void __time2tm(time_t in_time, struct tm* tm) {
     for (;;) {
         unsigned long days_this_year = __leap_year(years) ? 366 : 365;
 
-        if (days < days_this_year)
+        if (days < days_this_year) {
             break;
+        }
 
         days -= days_this_year;
         years += 1;
@@ -122,8 +123,9 @@ static int __tm2time(struct tm* tm, time_t* time) {
     long days;
     time_t seconds, day_secs;
 
-    if (!tm || !time)
+    if (!tm || !time) {
         return 0;
+    }
 
     --tm->tm_mday;
 

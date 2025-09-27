@@ -46,7 +46,8 @@ void StrmFileReader::Setup(const void* strmData) {
     mHeadBlock = static_cast<const StrmFile::HeadBlock*>(ut::AddOffsetToPtr(mHeader, mHeader->headBlockOffset));
     NW4HBMAssert_Line(mHeadBlock->blockHeader.kind == StrmFile::SIGNATURE_HEAD_BLOCK, 104);
 
-    StrmFile::StrmDataInfo const *info = Util::GetDataRefAddress0(mHeadBlock->refDataHeader, &mHeadBlock->refDataHeader);
+    StrmFile::StrmDataInfo const* info =
+        Util::GetDataRefAddress0(mHeadBlock->refDataHeader, &mHeadBlock->refDataHeader);
     NW4HBMAssert_Line(info->blockSize % 32 == 0, 108);
 }
 

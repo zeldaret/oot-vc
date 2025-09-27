@@ -1,8 +1,8 @@
 #ifndef NW4R_SND_PLAYER_HEAP_H
 #define NW4R_SND_PLAYER_HEAP_H
 
-#include "revolution/hbm/nw4hbm/snd/snd_SoundMemoryAllocatable.hpp"
 #include "revolution/hbm/nw4hbm/snd/SoundHeap.h"
+#include "revolution/hbm/nw4hbm/snd/snd_SoundMemoryAllocatable.hpp"
 
 // forward declarations
 namespace nw4hbm {

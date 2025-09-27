@@ -1,8 +1,8 @@
 #ifndef NW4R_SND_INSTANCE_POOL_H
 #define NW4R_SND_INSTANCE_POOL_H
 
-#include "revolution/types.h"
 #include "new.hpp"
+#include "revolution/types.h"
 
 namespace nw4hbm {
 namespace snd {

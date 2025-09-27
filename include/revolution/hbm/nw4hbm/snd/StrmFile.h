@@ -2,15 +2,15 @@
 #define NW4R_SND_STRM_FILE_H
 
 #include "macros.h"
-#include "revolution/types.h"
 #include "revolution/os.h"
+#include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/Util.h" // Util::DataRef
 #include "revolution/hbm/nw4hbm/snd/global.h" // SampleFormat
 #include "revolution/hbm/nw4hbm/snd/snd_adpcm.hpp"
 
-#include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
 #include "revolution/hbm/nw4hbm/ut/ut_FileStream.hpp"
+#include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
 
 namespace nw4hbm {
 namespace snd {
@@ -102,7 +102,7 @@ typedef struct StrmInfo {
 } StrmInfo;
 
 class StrmFileReader {
-public:
+  public:
     StrmFileReader();
 
     bool IsAvailable() const { return mHeader != NULL; }

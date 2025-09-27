@@ -5,7 +5,7 @@
 
 namespace nw4hbm {
 namespace ut {
-#define NW4R_UT_RUNTIME_TYPEINFO                                                                      \
+#define NW4R_UT_RUNTIME_TYPEINFO                                                                        \
     virtual const nw4hbm::ut::detail::RuntimeTypeInfo* GetRuntimeTypeInfo() const { return &typeInfo; } \
     static const nw4hbm::ut::detail::RuntimeTypeInfo typeInfo
 

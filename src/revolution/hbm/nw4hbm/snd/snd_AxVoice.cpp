@@ -260,8 +260,8 @@ void AxVoice::Setup(const WaveData& waveParam) {
         mVoiceChannelParam[channelIndex].waveData = waveParam.channelParam[channelIndex].dataAddr;
         mVoiceChannelParam[channelIndex].adpcmInfo = waveParam.channelParam[channelIndex].adpcmInfo;
 
-        SetAxAddr(channelIndex, waveParam.loopFlag, mFormat, mVoiceChannelParam[channelIndex].waveData, waveParam.loopStart,
-                  waveParam.loopEnd);
+        SetAxAddr(channelIndex, waveParam.loopFlag, mFormat, mVoiceChannelParam[channelIndex].waveData,
+                  waveParam.loopStart, waveParam.loopEnd);
 
         if (mFormat == FORMAT_ADPCM) {
             SetAxAdpcm(channelIndex, mFormat, (const AdpcmParam*)&mVoiceChannelParam[channelIndex].adpcmInfo);

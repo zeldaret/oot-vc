@@ -3,65 +3,65 @@
 
 #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
 
+#include "revolution/hbm/nw4hbm/snd/Channel.h"
 #include "revolution/hbm/nw4hbm/snd/Lfo.h"
 #include "revolution/hbm/nw4hbm/snd/WsdFile.h"
-#include "revolution/hbm/nw4hbm/snd/Channel.h"
 
 namespace nw4hbm {
-    namespace snd {
-        namespace detail {
-            class WsdPlayer;
-            class WsdTrack {
-                public:
-                    class WsdCallback {
-                        public:
-                            virtual ~WsdCallback() {}   // 0x08
+namespace snd {
+namespace detail {
+class WsdPlayer;
+class WsdTrack {
+  public:
+    class WsdCallback {
+      public:
+        virtual ~WsdCallback() {} // 0x08
 
-                            virtual bool GetWaveSoundData(WaveSoundInfo* info, WaveSoundNoteInfo* noteInfo, WaveData* waveData, const void* waveSoundData, int index, int noteIndex, u32 userData) const;
-                    };
+        virtual bool GetWaveSoundData(WaveSoundInfo* info, WaveSoundNoteInfo* noteInfo, WaveData* waveData,
+                                      const void* waveSoundData, int index, int noteIndex, u32 userData) const;
+    };
 
-                    typedef enum StartOffsetType {
-                        START_OFFSET_TYPE_SAMPLE = 0,
-                        START_OFFSET_TYPE_MILLISEC
-                    } StartOffsetType;
+    typedef enum StartOffsetType {
+        START_OFFSET_TYPE_SAMPLE = 0,
+        START_OFFSET_TYPE_MILLISEC
+    } StartOffsetType;
 
-                    WsdTrack() :
-                    mWsdPlayer(nullptr) {}
+    WsdTrack() : mWsdPlayer(nullptr) {}
 
-                    void        Init(WsdPlayer* player);
+    void Init(WsdPlayer* player);
 
-                    void        Start(const void* wsdData, int index);
-                    void        Close();
+    void Start(const void* wsdData, int index);
+    void Close();
 
-                    void        UpdateChannel();
-                    void        ReleaseAllChannel(int release) NO_INLINE;
-                    void        PauseAllChannel(bool flag);
-                    void        FreeAllChannel();
-                    void        AddChannel(Channel* channel);
+    void UpdateChannel();
+    void ReleaseAllChannel(int release) NO_INLINE;
+    void PauseAllChannel(bool flag);
+    void FreeAllChannel();
+    void AddChannel(Channel* channel);
 
-                    int         Parse(const WsdCallback* callback, u32 callbackData, bool doNoteOn);
-                    int         ParseNextTick(const WsdCallback* callback, u32 callbackData, bool doNoteOn);
+    int Parse(const WsdCallback* callback, u32 callbackData, bool doNoteOn);
+    int ParseNextTick(const WsdCallback* callback, u32 callbackData, bool doNoteOn);
 
-                    static void ChannelCallbackFunc(Channel* dropChannel, Channel::ChannelCallbackStatus status, u32 userData);
+    static void ChannelCallbackFunc(Channel* dropChannel, Channel::ChannelCallbackStatus status, u32 userData);
 
-                    const void* GetWsdDataAddress() const   { return mWsdData; }
+    const void* GetWsdDataAddress() const { return mWsdData; }
 
-                private:
-                    const void*     mWsdData;       // 0x00
-                    int             mIndex;         // 0x04
+  private:
+    const void* mWsdData; // 0x00
+    int mIndex; // 0x04
 
-                    u32             mCounter;       // 0x08
-                    LfoParam        mLfoParam;      // 0x0C
-                    u8              mBendRange;     // 0x1C
-                    u8              mPriority;      // 0x1D
+    u32 mCounter; // 0x08
+    LfoParam mLfoParam; // 0x0C
+    u8 mBendRange; // 0x1C
+    u8 mPriority; // 0x1D
 
-                    WaveSoundInfo   mWaveSoundInfo; // 0x20
-                    WsdPlayer*      mWsdPlayer;     // 0x2C
+    WaveSoundInfo mWaveSoundInfo; // 0x20
+    WsdPlayer* mWsdPlayer; // 0x2C
 
-                    Channel*        mChannelList;   // 0x30
-            };
-        }
-    }
-}
+    Channel* mChannelList; // 0x30
+};
+} // namespace detail
+} // namespace snd
+} // namespace nw4hbm
 
 #endif // NW4R_SND_WSD_TRACK_H

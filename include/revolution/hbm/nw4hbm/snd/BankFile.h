@@ -2,8 +2,8 @@
 #define NW4R_SND_BANK_FILE_H
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/snd/WaveFile.h"
 #include "revolution/hbm/nw4hbm/snd/Util.h"
+#include "revolution/hbm/nw4hbm/snd/WaveFile.h"
 
 #include "revolution/hbm/ut.hpp"
 

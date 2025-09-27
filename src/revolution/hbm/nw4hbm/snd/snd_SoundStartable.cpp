@@ -46,4 +46,4 @@ SoundStartable::StartResult SoundStartable::detail_PrepareSound(SoundHandle* han
 }
 
 } // namespace snd
-} // namespace nw4r
+} // namespace nw4hbm

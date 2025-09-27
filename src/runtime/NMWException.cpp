@@ -37,10 +37,12 @@ extern char __throw_catch_compare(const char* throwtype, const char* catchtype, 
 
     if (*cptr2 == 'P') {
         cptr2++;
-        if (*cptr2 == 'C')
+        if (*cptr2 == 'C') {
             cptr2++;
-        if (*cptr2 == 'V')
+        }
+        if (*cptr2 == 'V') {
             cptr2++;
+        }
         if (*cptr2 == 'v') {
             if (*cptr1 == 'P' || *cptr1 == '*') {
                 return true;
@@ -52,8 +54,9 @@ extern char __throw_catch_compare(const char* throwtype, const char* catchtype, 
     switch (*cptr1) {
         case '*':
         case '!':
-            if (*cptr1++ != *cptr2++)
+            if (*cptr1++ != *cptr2++) {
                 return false;
+            }
             for (;;) {
                 if (*cptr1 == *cptr2++) {
                     if (*cptr1++ == '!') {
@@ -68,8 +71,9 @@ extern char __throw_catch_compare(const char* throwtype, const char* catchtype, 
                 } else {
                     while (*cptr1++ != '!') {}
                     while (*cptr1++ != '!') {}
-                    if (*cptr1 == 0)
+                    if (*cptr1 == 0) {
                         return false;
+                    }
 
                     cptr2 = catchtype + 1;
                 }
@@ -82,25 +86,30 @@ extern char __throw_catch_compare(const char* throwtype, const char* catchtype, 
         cptr2++;
 
         if (*cptr2 == 'C') {
-            if (*cptr1 == 'C')
+            if (*cptr1 == 'C') {
                 cptr1++;
+            }
             cptr2++;
         }
-        if (*cptr1 == 'C')
+        if (*cptr1 == 'C') {
             return false;
+        }
 
         if (*cptr2 == 'V') {
-            if (*cptr1 == 'V')
+            if (*cptr1 == 'V') {
                 cptr1++;
+            }
             cptr2++;
         }
-        if (*cptr1 == 'V')
+        if (*cptr1 == 'V') {
             return false;
+        }
     }
 
     for (; *cptr1 == *cptr2; cptr1++, cptr2++) {
-        if (*cptr1 == 0)
+        if (*cptr1 == 0) {
             return true;
+        }
     }
 
     return false;

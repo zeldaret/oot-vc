@@ -146,7 +146,7 @@ bool Layout::Build(const void* lytResBuf, ResourceAccessor* pResAcsr) {
 
     if (fileHead->version != 8) {
         NW4HBMPanicMessage_Line(187, "Version check faild ('%d.%d' must be '%d.%d').", (fileHead->version >> 8) & 0xFF,
-                            fileHead->version & 0xFF, 0, 8);
+                                fileHead->version & 0xFF, 0, 8);
     }
 
     ResBlockSet resBlockSet = {};
@@ -251,7 +251,7 @@ AnimTransform* Layout::CreateAnimTransform(const void* anmResBuf, ResourceAccess
 
     if (pFileHead->version != 8) {
         NW4HBMPanicMessage_Line(311, "Version check faild ('%d.%d' must be '%d.%d').", (pFileHead->version >> 8) & 0xFF,
-                            pFileHead->version & 0xFF, 0, 8);
+                                pFileHead->version & 0xFF, 0, 8);
     }
 
     const res::AnimationBlock* pInfoBlock = nullptr;

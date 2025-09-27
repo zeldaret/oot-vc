@@ -68,8 +68,7 @@ class SoundArchivePlayer : public detail::DisposeCallback, public SoundStartable
 
     bool IsAvailable() const;
 
-    bool Setup(const SoundArchive* arc, void* buffer, u32 mramBufferSize, void* strmBuffer,
-               u32 strmBufferSize);
+    bool Setup(const SoundArchive* arc, void* buffer, u32 mramBufferSize, void* strmBuffer, u32 strmBufferSize);
 
     void Shutdown();
 

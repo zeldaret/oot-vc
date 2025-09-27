@@ -298,7 +298,8 @@ template <typename charT> void TextWriterBase<charT>::CalcStringRectImpl(Rect* p
     } while (remain > 0);
 }
 
-template <typename charT> void TextWriterBase<charT>::ut_TextWriterBase_unused1(Rect* pRect, const charT* str, int length) {
+template <typename charT>
+void TextWriterBase<charT>::ut_TextWriterBase_unused1(Rect* pRect, const charT* str, int length) {
     void* buffer;
     int size;
 

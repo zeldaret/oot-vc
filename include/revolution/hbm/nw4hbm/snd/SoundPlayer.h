@@ -4,8 +4,8 @@
 #include "revolution/types.h" // f32
 
 #include "revolution/hbm/nw4hbm/snd/BasicSound.h"
-#include "revolution/hbm/nw4hbm/snd/global.h" // AUX_BUS_NUM
 #include "revolution/hbm/nw4hbm/snd/PlayerHeap.h"
+#include "revolution/hbm/nw4hbm/snd/global.h" // AUX_BUS_NUM
 
 namespace nw4hbm {
 namespace snd {

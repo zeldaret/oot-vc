@@ -1,6 +1,6 @@
+#include "decomp.h"
 #include "revolution/hbm/snd.hpp"
 #include "revolution/hbm/ut.hpp"
-#include "decomp.h"
 
 namespace nw4hbm {
 namespace snd {

@@ -81,7 +81,7 @@ void EnvGenerator::Update(int msec) {
                 break;
             }
 
-        /* fallthrough */;
+            /* fallthrough */;
 
         case STATUS_DECAY: {
             f32 sustainDecay = CalcDecibelSquare(mSustain);

@@ -55,8 +55,8 @@ class AxManager {
     void ShutdownEffect(AuxBus bus);
 
     FxList& GetEffectList(AuxBus bus) {
-      NW4HBMAssertHeaderClampedLValue_Line(bus, AUX_A, AUX_BUS_NUM, 189);
-      return mFxList[bus];
+        NW4HBMAssertHeaderClampedLValue_Line(bus, AUX_A, AUX_BUS_NUM, 189);
+        return mFxList[bus];
     }
 
     void AppendVoiceList(AxVoice* voice);

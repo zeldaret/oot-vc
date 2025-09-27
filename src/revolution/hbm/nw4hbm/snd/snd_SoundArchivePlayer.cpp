@@ -18,8 +18,8 @@
 
 #include "revolution/hbm/HBMAssert.hpp"
 
-#include <stddef.h>
 #include "decomp.h"
+#include <stddef.h>
 
 namespace nw4hbm {
 namespace snd {

@@ -293,10 +293,10 @@ Window::Window(const res::Window* pBlock, const ResBlockSet& resBlockSet) : Pane
     mContentInflation = pBlock->inflation;
 
     NW4HBMAssertPointerNonnull_Line(resBlockSet.pMaterialList, 193);
-    const u32* matOffsTbl = detail::ConvertOffsToPtr<u32>(resBlockSet.pMaterialList, sizeof(*resBlockSet.pMaterialList));
+    const u32* matOffsTbl =
+        detail::ConvertOffsToPtr<u32>(resBlockSet.pMaterialList, sizeof(*resBlockSet.pMaterialList));
 
-    const res::WindowContent* pResContent =
-        detail::ConvertOffsToPtr<res::WindowContent>(pBlock, pBlock->contentOffset);
+    const res::WindowContent* pResContent = detail::ConvertOffsToPtr<res::WindowContent>(pBlock, pBlock->contentOffset);
 
     for (int i = 0; i < (int)ARRAY_COUNT(mContent.vtxColors); i++) {
         mContent.vtxColors[i] = pResContent->vtxCols[i];
@@ -312,8 +312,8 @@ Window::Window(const res::Window* pBlock, const ResBlockSet& resBlockSet) : Pane
     }
 
     if (void* pMemMaterial = Layout::AllocMemory(sizeof(Material))) {
-        const res::Material* pResMaterial = detail::ConvertOffsToPtr<res::Material>(
-            resBlockSet.pMaterialList, matOffsTbl[pResContent->materialIdx]);
+        const res::Material* pResMaterial =
+            detail::ConvertOffsToPtr<res::Material>(resBlockSet.pMaterialList, matOffsTbl[pResContent->materialIdx]);
 
         mpMaterial = new (pMemMaterial) Material(pResMaterial, resBlockSet);
     }

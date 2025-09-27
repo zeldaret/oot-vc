@@ -1,8 +1,8 @@
 #ifndef REVOLUTION_MEM_UNIT_HEAP_H
 #define REVOLUTION_MEM_UNIT_HEAP_H
 
-#include "revolution/types.h"
 #include "revolution/mem/mem_heapCommon.h"
+#include "revolution/types.h"
 
 #ifdef __cplusplus
 extern "C" {

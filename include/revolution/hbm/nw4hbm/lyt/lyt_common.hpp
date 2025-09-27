@@ -6,11 +6,11 @@
  */
 
 #include "revolution/gx/GXTypes.h"
+#include "revolution/hbm/HBMAssert.hpp"
 #include "revolution/hbm/nw4hbm/math/math_types.hpp" // math::VEC2
 #include "revolution/hbm/nw4hbm/ut/Color.hpp"
 #include "revolution/tpl/TPL.h"
 #include "revolution/types.h"
-#include "revolution/hbm/HBMAssert.hpp"
 
 /*******************************************************************************
  * macros

@@ -19,8 +19,7 @@ class SoundSystem {
     static void InitSoundSystem(s32 soundThreadPrio = DEFAULT_SOUND_THREAD_PRIORITY,
                                 s32 dvdThreadPriority = DEFAULT_DVD_THREAD_PRIORITY);
 
-
-	static void ShutdownSoundSystem();
+    static void ShutdownSoundSystem();
 
     static void SetOutputMode(OutputMode mode) { detail::AxManager::GetInstance().SetOutputMode(mode); }
 

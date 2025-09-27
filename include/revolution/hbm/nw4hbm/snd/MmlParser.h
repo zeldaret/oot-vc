@@ -1,8 +1,8 @@
 #ifndef NW4R_SND_MML_PARSER_H
 #define NW4R_SND_MML_PARSER_H
 
-#include "revolution/types.h"
 #include "revolution/hbm/nw4hbm/snd/SeqTrack.h"
+#include "revolution/types.h"
 
 namespace nw4hbm {
 namespace snd {

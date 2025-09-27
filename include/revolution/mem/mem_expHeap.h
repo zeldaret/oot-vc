@@ -1,8 +1,8 @@
 #ifndef _RVL_SDK_MEM_EXP_HEAP_H
 #define _RVL_SDK_MEM_EXP_HEAP_H
 
-#include "revolution/types.h"
 #include "revolution/mem/mem_heapCommon.h"
+#include "revolution/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,13 +60,9 @@ u32 MEMResizeForMBlockExpHeap(MEMHeapHandle heap, void* memBlock, u32 size);
 void MEMFreeToExpHeap(MEMHeapHandle heap, void* memBlock);
 u32 MEMAdjustExpHeap(MEMHeapHandle heap);
 
-static inline MEMHeapHandle MEMCreateExpHeap(void* start, u32 size) {
-    return MEMCreateExpHeapEx(start, size, 0);
-}
+static inline MEMHeapHandle MEMCreateExpHeap(void* start, u32 size) { return MEMCreateExpHeapEx(start, size, 0); }
 
-static inline void* MEMAllocFromExpHeap(MEMHeapHandle heap, u32 size) {
-    return MEMAllocFromExpHeapEx(heap, size, 4);
-}
+static inline void* MEMAllocFromExpHeap(MEMHeapHandle heap, u32 size) { return MEMAllocFromExpHeapEx(heap, size, 4); }
 
 #ifdef __cplusplus
 }

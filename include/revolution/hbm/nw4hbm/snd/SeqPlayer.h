@@ -1,7 +1,6 @@
 #ifndef NW4R_SND_SEQ_PLAYER_H
 #define NW4R_SND_SEQ_PLAYER_H
 
-
 #include "macros.h" // ATTRIBUTE_UNUSED
 #include "revolution/types.h"
 

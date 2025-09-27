@@ -7,19 +7,19 @@ namespace detail {
 
 bool WsdFileReader::IsValidFileHeader(const void* wsdData) {
     const ut::BinaryFileHeader* fileHeader = static_cast<const ut::BinaryFileHeader*>(wsdData);
-	NW4HBMAssert_Line(fileHeader->signature == WsdFile::SIGNATURE_FILE, 55);
+    NW4HBMAssert_Line(fileHeader->signature == WsdFile::SIGNATURE_FILE, 55);
 
     if (fileHeader->signature != WsdFile::SIGNATURE_FILE) {
         return false;
     }
 
-	NW4HBMAssertMessage_Line(fileHeader->version >= NW4HBM_VERSION(1, 0), 63,
+    NW4HBMAssertMessage_Line(fileHeader->version >= NW4HBM_VERSION(1, 0), 63,
                              "wsd file is not supported version.\n  please reconvert file using new version tools.\n");
     if (fileHeader->version < NW4HBM_VERSION(1, 0)) {
         return false;
     }
 
-	NW4HBMAssertMessage_Line(fileHeader->version <= WsdFile::FILE_VERSION, 69,
+    NW4HBMAssertMessage_Line(fileHeader->version <= WsdFile::FILE_VERSION, 69,
                              "wsd file is not supported version.\n  please reconvert file using new version tools.\n");
     if (fileHeader->version > WsdFile::FILE_VERSION) {
         return false;
@@ -29,7 +29,7 @@ bool WsdFileReader::IsValidFileHeader(const void* wsdData) {
 }
 
 WsdFileReader::WsdFileReader(const void* wsdData) : mHeader(nullptr), mDataBlock(nullptr), mWaveBlock(nullptr) {
-	NW4HBMAssertPointerNonnull_Line(wsdData, 89);
+    NW4HBMAssertPointerNonnull_Line(wsdData, 89);
 
     if (!IsValidFileHeader(wsdData)) {
         return;
@@ -38,10 +38,10 @@ WsdFileReader::WsdFileReader(const void* wsdData) : mHeader(nullptr), mDataBlock
     mHeader = static_cast<const WsdFile::Header*>(wsdData);
 
     mDataBlock = static_cast<const WsdFile::DataBlock*>(ut::AddOffsetToPtr(mHeader, mHeader->dataBlockOffset));
-	NW4HBMAssert_Line(mDataBlock->blockHeader.kind == WsdFile::SIGNATURE_DATA_BLOCK, 98);
+    NW4HBMAssert_Line(mDataBlock->blockHeader.kind == WsdFile::SIGNATURE_DATA_BLOCK, 98);
 
     mWaveBlock = static_cast<const WsdFile::WaveBlock*>(ut::AddOffsetToPtr(mHeader, mHeader->waveBlockOffset));
-	NW4HBMAssert_Line(mWaveBlock->blockHeader.kind == WsdFile::SIGNATURE_WAVE_BLOCK, 102);
+    NW4HBMAssert_Line(mWaveBlock->blockHeader.kind == WsdFile::SIGNATURE_WAVE_BLOCK, 102);
 }
 
 bool WsdFileReader::ReadWaveSoundInfo(WaveSoundInfo* soundInfo, int id) const {

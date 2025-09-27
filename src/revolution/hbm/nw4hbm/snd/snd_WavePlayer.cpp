@@ -18,8 +18,8 @@ WavePlayerList sPlayerList;
 // DECOMP_FORCE(NW4HBMAssertHeaderClampedLRValue_String(setupParam.channelCount));
 
 WavePlayer::WavePlayer()
-    : mStartFlag(false), mVoiceStartFlag(false), mChannelCount(0), mVoice(nullptr), mLoopSetFlag(false), mCallback(nullptr),
-      mCallbackArg(nullptr), mPauseFlag(false), mPlaySampleCount(0) {
+    : mStartFlag(false), mVoiceStartFlag(false), mChannelCount(0), mVoice(nullptr), mLoopSetFlag(false),
+      mCallback(nullptr), mCallbackArg(nullptr), mPauseFlag(false), mPlaySampleCount(0) {
     InitParam();
 }
 
@@ -427,4 +427,4 @@ WavePlayer::WavePacket::WavePacket() : mWaveBuffer(), mAppendFlag(false) {
 }
 
 } // namespace snd
-} // namespace nw4r
+} // namespace nw4hbm

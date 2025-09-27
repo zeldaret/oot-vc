@@ -1,9 +1,9 @@
 #include "revolution/hbm/nw4hbm/snd/RemoteSpeakerManager.h"
 
+#include "decomp.h"
 #include "revolution/ax.h"
 #include "revolution/hbm/HBMAssert.hpp"
 #include "revolution/os.h"
-#include "decomp.h"
 
 namespace nw4hbm {
 namespace snd {

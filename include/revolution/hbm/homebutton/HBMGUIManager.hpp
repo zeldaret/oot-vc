@@ -6,8 +6,8 @@
  */
 
 #include "macros.h"
-#include "revolution/hbm/nw4hbm/ut/list.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
+#include "revolution/hbm/nw4hbm/ut/list.h"
 #include "revolution/kpad/KPAD.h"
 #include "revolution/mem/mem_allocator.h"
 #include "revolution/mtx/mtx.h"

@@ -1,5 +1,5 @@
-#include "revolution/hbm/nw4hbm/snd/MmlSeqTrack.h"
 #include "revolution/hbm/nw4hbm/snd/MmlParser.h"
+#include "revolution/hbm/nw4hbm/snd/MmlSeqTrack.h"
 
 namespace nw4hbm {
 namespace snd {

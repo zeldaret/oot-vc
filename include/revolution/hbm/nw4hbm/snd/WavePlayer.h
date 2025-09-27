@@ -130,6 +130,6 @@ class WavePlayer {
 typedef ut::LinkList<WavePlayer, offsetof(WavePlayer, mPlayerLink)> WavePlayerList;
 
 } // namespace snd
-} // namespace nw4r
+} // namespace nw4hbm
 
 #endif // NW4R_SND_WAVE_PLAYER_H
