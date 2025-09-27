@@ -8,7 +8,11 @@
 // clang-format off
 #include "revolution/hbm/nw4hbm/snd/BasicSound.h" // needed for SoundStartable
 #include "revolution/hbm/nw4hbm/snd/PlayerHeap.h" // PlayerHeap needs to be before DisposeCallbackManager
+
+#define MAKE_DTOR_ZERO
 #include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h" // DisposeCallbackManager needs to be before MmlSeqTrackAllocator
+#undef MAKE_DTOR_ZERO
+
 #include "revolution/hbm/nw4hbm/snd/MmlSeqTrackAllocator.h" // MmlSeqTrackAllocator needs to be before NoteOnCallback
 #include "revolution/hbm/nw4hbm/snd/NoteOnCallback.h"
 #include "revolution/hbm/nw4hbm/snd/MmlParser.h"
