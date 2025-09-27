@@ -276,64 +276,64 @@ bool SoundArchivePlayer::CreateGroupAddressTable(const SoundArchive* arc, void**
     return true;
 }
 
-bool SoundArchivePlayer::SetupSeqSound(const SoundArchive* arc, int sounds, void** buffer, void* end) {
-    u32 numSounds = sounds * sizeof(detail::SeqSound);
+bool SoundArchivePlayer::SetupSeqSound(const SoundArchive* arc, int numSounds, void** buffer, void* end) {
+    u32 soundsSize = numSounds * sizeof(detail::SeqSound);
 
-    void* soundEnd = ut::RoundUp(ut::AddOffsetToPtr(*buffer, numSounds), 4);
+    void* soundEnd = ut::RoundUp(ut::AddOffsetToPtr(*buffer, soundsSize), 4);
 
     if (ut::ComparePtr(soundEnd, end) > 0) {
         return false;
     }
 
-    u32 createNum = mSeqSoundInstanceManager.Create(*buffer, numSounds);
+    u32 createNum = mSeqSoundInstanceManager.Create(*buffer, soundsSize);
     NW4HBMAssert_Line(createNum == numSounds, 524);
     *buffer = soundEnd;
 
     return true;
 }
 
-bool SoundArchivePlayer::SetupWaveSound(const SoundArchive* arc, int sounds, void** buffer, void* end) {
-    u32 numSounds = sounds * sizeof(detail::WaveSound);
+bool SoundArchivePlayer::SetupWaveSound(const SoundArchive* arc, int numSounds, void** buffer, void* end) {
+    u32 soundsSize = numSounds * sizeof(detail::WaveSound);
 
-    void* soundEnd = ut::RoundUp(ut::AddOffsetToPtr(*buffer, numSounds), 4);
+    void* soundEnd = ut::RoundUp(ut::AddOffsetToPtr(*buffer, soundsSize), 4);
 
     if (ut::ComparePtr(soundEnd, end) > 0) {
         return false;
     }
 
-    u32 createNum = mWaveSoundInstanceManager.Create(*buffer, numSounds);
+    u32 createNum = mWaveSoundInstanceManager.Create(*buffer, soundsSize);
     NW4HBMAssert_Line(createNum == numSounds, 556);
     *buffer = soundEnd;
 
     return true;
 }
 
-bool SoundArchivePlayer::SetupStrmSound(const SoundArchive* arc, int sounds, void** buffer, void* end) {
-    u32 numSounds = sounds * sizeof(detail::StrmSound);
+bool SoundArchivePlayer::SetupStrmSound(const SoundArchive* arc, int numSounds, void** buffer, void* end) {
+    u32 soundsSize = numSounds * sizeof(detail::StrmSound);
 
-    void* soundEnd = ut::RoundUp(ut::AddOffsetToPtr(*buffer, numSounds), 4);
+    void* soundEnd = ut::RoundUp(ut::AddOffsetToPtr(*buffer, soundsSize), 4);
 
     if (ut::ComparePtr(soundEnd, end) > 0) {
         return false;
     }
 
-    u32 createNum = mStrmSoundInstanceManager.Create(*buffer, numSounds);
+    u32 createNum = mStrmSoundInstanceManager.Create(*buffer, soundsSize);
     NW4HBMAssert_Line(createNum == numSounds, 588);
     *buffer = soundEnd;
 
     return true;
 }
 
-bool SoundArchivePlayer::SetupSeqTrack(const SoundArchive* arc, int tracks, void** buffer, void* end) {
-    u32 numTracks = tracks * sizeof(detail::MmlSeqTrack);
+bool SoundArchivePlayer::SetupSeqTrack(const SoundArchive* arc, int numTracks, void** buffer, void* end) {
+    u32 tracksSize = numTracks * sizeof(detail::MmlSeqTrack);
 
-    void* pTrackEnd = ut::RoundUp(ut::AddOffsetToPtr(*buffer, numTracks), 4);
+    void* pTrackEnd = ut::RoundUp(ut::AddOffsetToPtr(*buffer, tracksSize), 4);
 
     if (ut::ComparePtr(pTrackEnd, end) > 0) {
         return false;
     }
 
-    u32 createNum = mMmlSeqTrackAllocator.Create(*buffer, numTracks);
+    u32 createNum = mMmlSeqTrackAllocator.Create(*buffer, tracksSize);
     NW4HBMAssert_Line(createNum == numTracks, 620);
     *buffer = pTrackEnd;
 
