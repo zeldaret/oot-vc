@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/snd/snd_StrmSoundHandle.hpp"
+#include "revolution/hbm/nw4hbm/snd/StrmSoundHandle.h"
 
 /* Original source:
  * kiwi515/ogws

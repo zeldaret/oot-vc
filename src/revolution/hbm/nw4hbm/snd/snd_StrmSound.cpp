@@ -1,142 +1,42 @@
 #include "revolution/hbm/nw4hbm/snd/StrmSound.h"
+#include "revolution/hbm/nw4hbm/snd/StrmSoundHandle.h"
 
-/* Original source:
- * kiwi515/ogws
- * src/nw4r/snd/snd_StrmSound.cpp
- */
-
-/*******************************************************************************
- * headers
- */
-
-#include "macros.h" // ARRAY_COUNT
-#include "revolution/types.h"
-
-#include "revolution/hbm/nw4hbm/snd/BasicSound.h"
 #include "revolution/hbm/nw4hbm/snd/SoundInstanceManager.h"
-#include "revolution/hbm/nw4hbm/snd/StrmPlayer.h"
-#include "revolution/hbm/nw4hbm/snd/snd_StrmSoundHandle.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_MoveValue.hpp"
 
-#include "revolution/hbm/nw4hbm/ut/ut_RuntimeTypeInfo.hpp"
+namespace nw4hbm {
+namespace snd {
+namespace detail {
 
-#include "revolution/hbm/HBMAssert.hpp"
+NW4R_UT_GET_DERIVED_RUNTIME_TYPEINFO(StrmSound, BasicSound);
 
-/*******************************************************************************
- * types
- */
+StrmSound::StrmSound(SoundInstanceManager<StrmSound>* manager) : mTempSpecialHandle(nullptr), mManager(manager) {}
 
-// forward declarations
-namespace nw4hbm { namespace snd { namespace detail { class StrmBufferPool; }}}
+bool StrmSound::Prepare(StrmBufferPool* bufferPool, StrmPlayer::StartOffsetType startOffsetType, s32 offset, int voices,
+                        StrmPlayer::StrmCallback* callback, u32 callbackData) {
+	NW4HBMAssertPointerNonnull_Line(GetSoundPlayer(), 66);
+	NW4HBMAssertPointerNonnull_Line(bufferPool, 67);
+    if (bufferPool == NULL) {
+        return false;
+    }
 
-namespace nw4hbm { namespace ut { class FileStream; }}
-
-/*******************************************************************************
- * variables
- */
-
-namespace nw4hbm { namespace snd { namespace detail
-{
-	// .sbss
-	ut::detail::RuntimeTypeInfo const StrmSound::typeInfo(
-		&BasicSound::typeInfo);
-}}} // namespace nw4hbm::snd::detail
-
-/*******************************************************************************
- * functions
- */
-
-namespace nw4hbm { namespace snd { namespace detail {
-
-StrmSound::StrmSound(SoundInstanceManager<StrmSound> *manager, int priority,
-                     int ambientPriority) :
-	BasicSound			(priority, ambientPriority),
-	mTempSpecialHandle	(nullptr),
-	mManager			(manager)
-{
+    InitParam();
+    return mStrmPlayer.Prepare(bufferPool, startOffsetType, offset, voices, callback, callbackData);
 }
 
-void StrmSound::InitParam()
-{
-	BasicSound::InitParam();
-
-	for (int i = 0; i < ARRAY_COUNT(mTrackVolume); i++)
-	{
-		mTrackVolume[i].InitValue(0.0f);
-		mTrackVolume[i].SetTarget(1.0f, 1);
-	}
+void StrmSound::Shutdown() {
+    BasicSound::Shutdown();
+    mManager->Free(this);
 }
 
-StrmPlayer::SetupResult StrmSound::Setup(StrmBufferPool *bufferPool,
-                                         int allocChannelCount,
-                                         byte2_t allocTrackFlag)
-{
-	NW4HBMAssertPointerNonnull_Line(bufferPool, 90);
-
-	InitParam();
-
-	return mStrmPlayer.Setup(bufferPool, allocChannelCount, allocTrackFlag,
-	                         GetVoiceOutCount());
+void StrmSound::SetPlayerPriority(int priority) {
+    BasicSound::SetPlayerPriority(priority);
+    mManager->UpdatePriority(this, CalcCurrentPlayerPriority());
 }
 
-bool StrmSound::Prepare(StrmPlayer::StartOffsetType startOffsetType, s32 offset,
-                        ut::FileStream *fileStream)
-{
-	bool result = mStrmPlayer.Prepare(fileStream, startOffsetType, offset);
-	if (!result)
-	{
-		mStrmPlayer.Shutdown();
-		return false;
-	}
+bool StrmSound::IsAttachedTempSpecialHandle() { return mTempSpecialHandle != NULL; }
 
-	return true;
-}
+void StrmSound::DetachTempSpecialHandle() { mTempSpecialHandle->DetachSound(); }
 
-void StrmSound::UpdateMoveValue()
-{
-	BasicSound::UpdateMoveValue();
-
-	for (int trackNo = 0; trackNo < (int)ARRAY_COUNT(mTrackVolume); trackNo++)
-	{
-		if (mStrmPlayer.GetPlayerTrack(trackNo))
-			mTrackVolume[trackNo].Update();
-	}
-}
-
-void StrmSound::UpdateParam()
-{
-	BasicSound::UpdateParam();
-
-	for (int trackNo = 0; trackNo < (int)ARRAY_COUNT(mTrackVolume); trackNo++)
-	{
-		if (mStrmPlayer.GetPlayerTrack(trackNo))
-		{
-			mStrmPlayer.SetTrackVolume(1 << trackNo,
-			                           mTrackVolume[trackNo].GetValue());
-		}
-	}
-}
-
-void StrmSound::Shutdown()
-{
-	BasicSound::Shutdown();
-
-	mManager->Free(this);
-}
-
-void StrmSound::OnUpdatePlayerPriority()
-{
-	mManager->UpdatePriority(this, CalcCurrentPlayerPriority());
-}
-
-bool StrmSound::IsAttachedTempSpecialHandle()
-{
-	return mTempSpecialHandle != nullptr;
-}
-
-void StrmSound::DetachTempSpecialHandle()
-{
-	mTempSpecialHandle->DetachSound();
-}
-
-}}} // namespace nw4hbm::snd::detail
+} // namespace detail
+} // namespace snd
+} // namespace nw4r

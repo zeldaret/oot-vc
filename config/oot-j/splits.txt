@@ -1139,6 +1139,8 @@ revolution/hbm/nw4hbm/snd/snd_StrmPlayer.cpp:
 revolution/hbm/nw4hbm/snd/snd_StrmSound.cpp:
 	.text       start:0x80138718 end:0x80138B20
 	.ctors      start:0x8016A710 end:0x8016A714
+	.data       start:0x8019D010 end:0x8019D190
+	.sbss       start:0x8025DC80 end:0x8025DC88
 
 revolution/hbm/nw4hbm/snd/snd_StrmSoundHandle.cpp:
 	.text       start:0x80138B20 end:0x80138B58

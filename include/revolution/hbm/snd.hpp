@@ -68,7 +68,7 @@
 // #include "revolution/hbm/nw4hbm/snd/snd_MoveValue.hpp"
 // #include "revolution/hbm/nw4hbm/snd/snd_SoundActor.hpp"
 // #include "revolution/hbm/nw4hbm/snd/snd_SoundMemoryAllocatable.hpp"
-// #include "revolution/hbm/nw4hbm/snd/snd_StrmSoundHandle.hpp"
+// #include "revolution/hbm/nw4hbm/snd/StrmSoundHandle.h"
 // #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
 // #include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
 // #include "revolution/hbm/nw4hbm/snd/snd_VoiceManager.hpp"

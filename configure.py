@@ -703,7 +703,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_StrmChannel.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_StrmFile.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_StrmPlayer.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_StrmSound.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_StrmSound.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_StrmSoundHandle.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_TaskManager.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_TaskThread.cpp"),
