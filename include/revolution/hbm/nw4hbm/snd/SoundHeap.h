@@ -5,7 +5,7 @@
 #include "revolution/hbm/nw4hbm/snd/FrameHeap.h"
 #include "revolution/hbm/nw4hbm/snd/SoundMemoryAllocatable.h"
 
-#include "revolution/hbm/ut.hpp"
+#include "revolution/hbm/nw4hbm/ut.h"
 
 #include "revolution/os.h"
 

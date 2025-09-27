@@ -1,4 +1,4 @@
-#include "revolution/hbm/snd.hpp"
+#include "revolution/hbm/nw4hbm/snd.h"
 
 #include "revolution/axfx.h"
 #include "revolution/dvd.h"

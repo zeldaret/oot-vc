@@ -1,5 +1,5 @@
 #include "decomp.h"
-#include "revolution/hbm/snd.hpp"
+#include "revolution/hbm/nw4hbm/snd.h"
 #include "revolution/mem.h"
 
 namespace nw4hbm {

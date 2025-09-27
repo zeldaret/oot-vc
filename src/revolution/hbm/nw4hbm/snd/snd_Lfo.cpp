@@ -1,4 +1,4 @@
-#include "revolution/hbm/snd.hpp"
+#include "revolution/hbm/nw4hbm/snd.h"
 
 namespace nw4hbm {
 namespace snd {

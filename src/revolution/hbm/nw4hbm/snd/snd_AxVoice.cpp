@@ -1,5 +1,9 @@
-#include "revolution/hbm/snd.hpp"
-#include "revolution/hbm/ut.hpp"
+#include "revolution/hbm/nw4hbm/snd/AxVoice.h"
+
+#include "revolution/hbm/nw4hbm/snd/AxManager.h"
+#include "revolution/hbm/nw4hbm/snd/WaveFile.h"
+#include "revolution/hbm/nw4hbm/snd/Util.h"
+#include "revolution/hbm/nw4hbm/ut.h"
 
 #include "cstring.hpp"
 #include "decomp.h"
@@ -691,7 +695,7 @@ void AxVoice::SetAxAdpcm(int channelIndex, Format format, const AdpcmParam* para
     switch (format) {
         case FORMAT_ADPCM: {
             NW4HBMAssertPointerNonnull_Line(param, 1081);
-            memcpy(adpcmParam.a, param, 32);
+            std::memcpy(adpcmParam.a, param, 32);
             adpcmParam.gain = param->gain;
             adpcmParam.pred_scale = param->pred_scale;
             adpcmParam.yn1 = param->yn1;
@@ -699,7 +703,7 @@ void AxVoice::SetAxAdpcm(int channelIndex, Format format, const AdpcmParam* para
             break;
         }
         case FORMAT_PCM16: {
-            memset(adpcmParam.a, 0, 32);
+            std::memset(adpcmParam.a, 0, 32);
             adpcmParam.gain = 0x800;
             adpcmParam.pred_scale = 0;
             adpcmParam.yn1 = 0;
@@ -707,7 +711,7 @@ void AxVoice::SetAxAdpcm(int channelIndex, Format format, const AdpcmParam* para
             break;
         }
         case FORMAT_PCM8: {
-            memset(adpcmParam.a, 0, 32);
+            std::memset(adpcmParam.a, 0, 32);
             adpcmParam.gain = 0x100;
             adpcmParam.pred_scale = 0;
             adpcmParam.yn1 = 0;

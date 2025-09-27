@@ -7,7 +7,7 @@
 #include "revolution/hbm/nw4hbm/snd/SeqPlayer.h"
 #include "revolution/hbm/nw4hbm/snd/SeqSound.h"
 
-#include "revolution/hbm/ut.hpp"
+#include "revolution/hbm/nw4hbm/ut.h"
 
 namespace nw4hbm {
 namespace snd {

@@ -3,7 +3,7 @@
 
 #include "revolution/hbm/nw4hbm/snd/SoundArchive.h"
 #include "revolution/hbm/nw4hbm/snd/SoundArchiveFile.h"
-#include "revolution/hbm/ut.hpp" // IWYU pragma: export
+#include "revolution/hbm/nw4hbm/ut.h" // IWYU pragma: export
 #include "revolution/nand.h" // IWYU pragma: export
 
 #include "macros.h"

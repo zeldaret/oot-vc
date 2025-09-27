@@ -1,5 +1,7 @@
-#include "revolution/hbm/snd.hpp"
-#include "revolution/hbm/ut.hpp"
+#include "revolution/hbm/nw4hbm/snd/SoundArchive.h"
+
+#include "revolution/hbm/nw4hbm/snd/SoundArchiveFile.h"
+#include "revolution/hbm/nw4hbm/ut.h"
 
 #include "cstring.hpp"
 

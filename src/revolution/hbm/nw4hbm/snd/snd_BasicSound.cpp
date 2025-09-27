@@ -1,5 +1,9 @@
-#include "revolution/hbm/snd.hpp"
+#include "revolution/hbm/nw4hbm/snd/BasicSound.h"
 
+#include "revolution/hbm/nw4hbm/snd/BasicPlayer.h"
+#include "revolution/hbm/nw4hbm/snd/ExternalSoundPlayer.h"
+#include "revolution/hbm/nw4hbm/snd/SoundPlayer.h"
+#include "revolution/hbm/nw4hbm/snd/SoundHandle.h"
 #include "limits.h"
 
 namespace nw4hbm {

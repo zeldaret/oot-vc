@@ -1,5 +1,8 @@
-#include "revolution/hbm/snd.hpp"
+#include "revolution/hbm/nw4hbm/snd/Channel.h"
 
+#include "revolution/hbm/nw4hbm/snd/ChannelManager.h"
+#include "revolution/hbm/nw4hbm/snd/Util.h"
+#include "revolution/hbm/nw4hbm/snd/AxManager.h"
 #include "revolution/ax.h"
 
 namespace nw4hbm {

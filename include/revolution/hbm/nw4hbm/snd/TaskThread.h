@@ -2,7 +2,7 @@
 #define NW4R_SND_TASK_THREAD_H
 
 #include "revolution/hbm/nw4hbm/snd/types.h"
-#include "revolution/hbm/ut.hpp"
+#include "revolution/hbm/nw4hbm/ut.h"
 #include "revolution/os.h"
 
 namespace nw4hbm {

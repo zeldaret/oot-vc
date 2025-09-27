@@ -1,7 +1,8 @@
 #ifndef NW4R_SND_SOUND_ARCHIVE_LOADER_H
 #define NW4R_SND_SOUND_ARCHIVE_LOADER_H
 
-#include "revolution/hbm/ut.hpp" // IWYU pragma: export
+#include "revolution/hbm/nw4hbm/snd/types.h" // IWYU pragma: export
+#include "revolution/hbm/nw4hbm/ut.h" // IWYU pragma: export
 #include "revolution/os.h" // IWYU pragma: export
 
 namespace nw4hbm {

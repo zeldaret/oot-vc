@@ -6,7 +6,7 @@
 #include "revolution/hbm/nw4hbm/snd/global.h"
 #include "revolution/hbm/nw4hbm/snd/types.h"
 
-#include "revolution/hbm/ut.hpp"
+#include "revolution/hbm/nw4hbm/ut.h"
 
 namespace nw4hbm {
 namespace snd {

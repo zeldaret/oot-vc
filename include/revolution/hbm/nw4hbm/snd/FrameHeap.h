@@ -2,7 +2,7 @@
 #define NW4R_SND_FRAME_HEAP_H
 #include "revolution/types.h"
 
-#include "revolution/hbm/ut.hpp"
+#include "revolution/hbm/nw4hbm/ut.h"
 
 #include "revolution/mem.h"
 

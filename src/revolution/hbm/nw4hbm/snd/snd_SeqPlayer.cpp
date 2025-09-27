@@ -4,7 +4,7 @@
 #include "revolution/hbm/nw4hbm/snd/NoteOnCallback.h"
 #include "revolution/hbm/nw4hbm/snd/SeqTrack.h"
 #include "revolution/hbm/nw4hbm/snd/SeqTrackAllocator.h"
-#include "revolution/hbm/ut.hpp"
+#include "revolution/hbm/nw4hbm/ut.h"
 
 namespace nw4hbm {
 namespace snd {

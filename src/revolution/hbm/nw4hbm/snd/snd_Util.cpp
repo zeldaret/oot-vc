@@ -1,7 +1,7 @@
 #include "fdlibm.h"
-#include "revolution/hbm/math.hpp"
+#include "revolution/hbm/nw4hbm/math.h"
 #include "revolution/hbm/nw4hbm/snd/Util.h"
-#include "revolution/hbm/ut.hpp"
+#include "revolution/hbm/nw4hbm/ut.h"
 
 namespace nw4hbm {
 namespace snd {

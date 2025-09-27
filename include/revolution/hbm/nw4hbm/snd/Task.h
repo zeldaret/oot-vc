@@ -2,7 +2,7 @@
 #define NW4R_SND_TASK_H
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
-#include "revolution/hbm/ut.hpp"
+#include "revolution/hbm/nw4hbm/ut.h"
 
 namespace nw4hbm {
 namespace snd {
