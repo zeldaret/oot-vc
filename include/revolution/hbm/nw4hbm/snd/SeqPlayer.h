@@ -8,9 +8,9 @@
 #include "revolution/hbm/nw4hbm/snd/BasicPlayer.h"
 
 //! TODO: find a way to remove this hack
-#define DISPOSECALLBACK_DTOR_ZERO
+#define MAKE_DTOR_ZERO
 #include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h" // DisposeCallback
-#undef DISPOSECALLBACK_DTOR_ZERO
+#undef MAKE_DTOR_ZERO
 
 #include "revolution/hbm/nw4hbm/snd/SoundThread.h"
 

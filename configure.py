@@ -182,6 +182,9 @@ config.ldflags = [
     "-fp hardware",
     "-nodefaults",
     "-warn off",
+    "-mapunused",
+    "-listclosure",
+    "-listdwarf",
 ]
 
 cflags_base = [
@@ -645,10 +648,20 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/homebutton/HBMGUIManager.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/homebutton/HBMController.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/homebutton/HBMRemoteSpk.cpp"),
+        ],
+    ),
+    RevolutionHBMLib(
+        "nw4hbm/db",
+        [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/db/db_assert.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/db/db_console.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/db/db_directPrint.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/db/db_mapFile.cpp"),
+        ],
+    ),
+    RevolutionHBMLib(
+        "nw4hbm/lyt",
+        [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_animation.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_arcResourceAccessor.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_bounding.cpp"),
@@ -662,7 +675,17 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_textBox.cpp", mw_version="GC/3.0a5.2"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_window.cpp", mw_version="GC/3.0a5.2"),
+        ],
+    ),
+    RevolutionHBMLib(
+        "nw4hbm/math",
+        [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/math/math_triangular.cpp"),
+        ],
+    ),
+    RevolutionHBMLib(
+        "nw4hbm/snd",
+        [
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_AxManager.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_AxVoice.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_Bank.cpp"),
@@ -702,7 +725,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_SoundThread.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_StrmChannel.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_StrmFile.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_StrmPlayer.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_StrmPlayer.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_StrmSound.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_StrmSoundHandle.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_TaskManager.cpp"),
@@ -713,8 +736,13 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_WaveSound.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_WaveSoundHandle.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_WsdFile.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_WsdPlayer.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_WsdPlayer.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_WsdTrack.cpp"),
+        ],
+    ),
+    RevolutionHBMLib(
+        "nw4hbm/ut",
+        [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/ut/ut_CharStrmReader.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/ut/ut_CharWriter.cpp"),

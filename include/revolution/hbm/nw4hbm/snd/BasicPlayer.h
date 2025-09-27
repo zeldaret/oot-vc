@@ -7,10 +7,17 @@
 namespace nw4hbm {
 namespace snd {
 namespace detail {
+
+namespace {
+
 class BasicPlayer {
   public:
     BasicPlayer() : mId(-1) {}
-    virtual ~BasicPlayer() {} // 0x08
+    virtual ~BasicPlayer()
+#ifdef MAKE_DTOR_ZERO
+        = 0
+#endif
+    {}; // 0x08
 
     virtual bool Start() = 0; // 0x0C
     virtual void Stop() = 0; // 0x10
@@ -54,6 +61,7 @@ class BasicPlayer {
   private:
     u32 mId; // 0x04
 };
+} // namespace
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm

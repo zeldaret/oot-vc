@@ -1190,11 +1190,15 @@ revolution/hbm/nw4hbm/snd/snd_WsdFile.cpp:
 	.sdata2     start:0x8025E8F0 end:0x8025E8F8
 
 revolution/hbm/nw4hbm/snd/snd_WsdPlayer.cpp:
-	.text       start:0x8013B0FC end:0x8013C0E4
+	.text       start:0x8013B0FC end:0x8013C1DC
+	.ctors      start:0x8016A71C end:0x8016A720
+	.data       start:0x8019DCB8 end:0x8019E040
+	.bss        start:0x80259DB8 end:0x80259DD0
+	.sdata2     start:0x8025E8F8 end:0x8025E900
 
 revolution/hbm/nw4hbm/snd/snd_WsdTrack.cpp:
-	.text       start:0x8013C0E4 end:0x8013CD64
-	.ctors      start:0x8016A71C end:0x8016A720
+	.text       start:0x8013C1DC end:0x8013CD64
+	.data       start:0x8019E040 end:0x8019E268
 
 revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp:
 	.text       start:0x8013CD64 end:0x8013CFBC

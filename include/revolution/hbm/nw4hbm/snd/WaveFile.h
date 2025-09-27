@@ -1,11 +1,8 @@
 #ifndef NW4R_SND_WAVE_FILE_H
 #define NW4R_SND_WAVE_FILE_H
-#include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/AxVoice.h"
 #include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
-
-#include "revolution/hbm/ut.hpp"
 
 namespace nw4hbm {
 namespace snd {

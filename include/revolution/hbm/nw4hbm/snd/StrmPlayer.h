@@ -1,30 +1,24 @@
 #ifndef NW4R_SND_STRM_PLAYER_H
 #define NW4R_SND_STRM_PLAYER_H
 
-#include "revolution/types.h"
+#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
 
+#include "revolution/hbm/nw4hbm/snd/AxVoice.h"
+
+//! TODO: find a way to remove this hack
+#define MAKE_DTOR_ZERO
 #include "revolution/hbm/nw4hbm/snd/BasicPlayer.h"
-#include "revolution/hbm/nw4hbm/snd/global.h"
+#undef MAKE_DTOR_ZERO
+
 #include "revolution/hbm/nw4hbm/snd/InstancePool.h"
-#include "revolution/hbm/nw4hbm/snd/SoundThread.h"
 #include "revolution/hbm/nw4hbm/snd/StrmChannel.h"
 #include "revolution/hbm/nw4hbm/snd/StrmFile.h"
-#include "revolution/hbm/nw4hbm/snd/snd_Voice.hpp"
-
-#include "revolution/hbm/nw4hbm/ut/LinkList.h"
-
-#include "revolution/os/OSMutex.h"
 
 namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-class BasicStrmPlayer : public BasicPlayer {
-public:
-    virtual ~BasicStrmPlayer() = 0 {};
-};
-
-class StrmPlayer : public BasicStrmPlayer {
+class StrmPlayer : public BasicPlayer {
   public:
     typedef enum StartOffsetType {
         START_OFFSET_TYPE_SAMPLE = 0,

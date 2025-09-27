@@ -1,13 +1,10 @@
 #ifndef NW4R_SND_AX_MANAGER_H
 #define NW4R_SND_AX_MANAGER_H
-#include "revolution/types.h"
+
+#include "revolution/hbm/nw4hbm/snd/FxBase.h"
 
 #include "revolution/hbm/nw4hbm/snd/AxVoice.h"
-#include "revolution/hbm/nw4hbm/snd/FxBase.h"
 #include "revolution/hbm/nw4hbm/snd/snd_MoveValue.hpp"
-#include "revolution/hbm/nw4hbm/snd/snd_Types.hpp"
-
-#include "revolution/hbm/ut.hpp"
 
 #include "revolution/ai.h"
 #include "revolution/ax.h"

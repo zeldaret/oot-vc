@@ -13,14 +13,14 @@ DisposeCallbackManager& DisposeCallbackManager::GetInstance() {
 
 DisposeCallbackManager::DisposeCallbackManager() {}
 
-void DisposeCallbackManager::RegisterDisposeCallback(DisposeCallback* callback) {
+void DisposeCallbackManager::RegisterDisposeCallback(DisposeCallbackBase* callback) {
     ut::AutoInterruptLock lock;
-    mCallbackList.PushBack(callback);
+    mCallbackList.PushBack((DisposeCallback*)callback);
 }
 
-void DisposeCallbackManager::UnregisterDisposeCallback(DisposeCallback* callback) {
+void DisposeCallbackManager::UnregisterDisposeCallback(DisposeCallbackBase* callback) {
     ut::AutoInterruptLock lock;
-    mCallbackList.Erase(callback);
+    mCallbackList.Erase((DisposeCallback*)callback);
 }
 
 void DisposeCallbackManager::Dispose(void* data, u32 size, void* arg) {
