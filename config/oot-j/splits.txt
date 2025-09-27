@@ -1288,12 +1288,16 @@ runtime/New.cpp:
 	extab       start:0x80006688 end:0x800066BC
 	extabindex  start:0x80006C1C end:0x80006C34
 	.text       start:0x8015263C end:0x80152740
+	.rodata     start:0x8016E368 end:0x8016E3C0
+	.data       start:0x801A0060 end:0x801A0088
+	.sdata      start:0x8025CF80 end:0x8025CF90
 	.sbss       start:0x8025DCE0 end:0x8025DCE8
 
 runtime/NMWException.cpp:
 	extab       start:0x800066BC end:0x800066FC
 	extabindex  start:0x80006C34 end:0x80006C64
 	.text       start:0x80152740 end:0x80152CCC
+	.sdata      start:0x8025CF90 end:0x8025CF98
 
 runtime/ptmf.c:
 	.text       start:0x80152CCC end:0x80152D30
@@ -1316,6 +1320,9 @@ runtime/Gecko_ExceptionPPC.cpp:
 	extab       start:0x800066FC end:0x80006770
 	extabindex  start:0x80006C64 end:0x80006CB8
 	.text       start:0x8015389C end:0x80154FE4
+	.rodata     start:0x8016E3D8 end:0x8016E440
+	.data       start:0x801A0088 end:0x801A0188
+	.bss        start:0x80259E08 end:0x80259E18
 	.sdata      start:0x8025CFA0 end:0x8025CFA8
 
 runtime/GCN_mem_alloc.c:
