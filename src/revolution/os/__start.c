@@ -1,3 +1,4 @@
+#include "__ppc_eabi_linker.h"
 #include "macros.h"
 #include "metrotrk.h"
 #include "revolution/db.h"
@@ -343,8 +344,8 @@ INIT static ASM void __init_registers(void) {
 }
 
 INIT static void __init_data(void) {
-    const RomSection* rs;
-    const BssSection* bs;
+    const __rom_copy_info* rs;
+    const __bss_init_info* bs;
 
     rs = _rom_copy_info;
     while (true) {
@@ -352,7 +353,7 @@ INIT static void __init_data(void) {
             break;
         }
 
-        __copy_rom_section(rs->virt, rs->phys, rs->size);
+        __copy_rom_section(rs->addr, rs->rom, rs->size);
         rs++;
     }
 
@@ -362,7 +363,7 @@ INIT static void __init_data(void) {
             break;
         }
 
-        __init_bss_section(bs->virt, bs->size);
+        __init_bss_section(bs->addr, bs->size);
         bs++;
     }
 }
