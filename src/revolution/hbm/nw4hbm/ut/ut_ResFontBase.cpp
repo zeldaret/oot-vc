@@ -1,9 +1,11 @@
+#include "revolution/hbm/nw4hbm/ut/ResFont.h"
+
 /*******************************************************************************
  * headers
  */
 
 #include "macros.h"
-#include "revolution.h"
+#include "revolution/hbm/HBMAssert.hpp"
 
 /*******************************************************************************
  * macros

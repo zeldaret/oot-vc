@@ -1,10 +1,22 @@
+#include "revolution/hbm/nw4hbm/ut/TextWriterBase.h"
+
+#include "cstdarg.hpp" // std::va_list
+#include "cstdio.hpp" // std::vsnprintf
+#include "cstring.hpp" // std::strlen
+#include "cwchar.hpp"
+
+#include "revolution/hbm/nw4hbm/ut/CharWriter.h"
+#include "revolution/types.h"
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
+
 /*******************************************************************************
  * headers
  */
 
-#include "cstdarg.hpp"
-#include "macros.h"
-#include "revolution.h"
+// #include "cstdarg.hpp"
+// #include "macros.h"
+
+// #include "revolution/hbm/HBMAssert.hpp"
 
 /*******************************************************************************
  * variables
@@ -298,8 +310,7 @@ template <typename charT> void TextWriterBase<charT>::CalcStringRectImpl(Rect* p
     } while (remain > 0);
 }
 
-template <typename charT>
-void TextWriterBase<charT>::ut_TextWriterBase_unused1(Rect* pRect, const charT* str, int length) {
+template <typename charT> void TextWriterBase<charT>::ut_TextWriterBase_unused1(Rect* pRect, const charT* str, int length) {
     void* buffer;
     int size;
 
@@ -520,5 +531,8 @@ namespace nw4hbm {
 namespace ut {
 template class TextWriterBase<char>;
 template class TextWriterBase<wchar_t>;
+
+DECOMP_FORCE(NW4HBMAssertPointerValid_String(this) "\0");
+
 } // namespace ut
 } // namespace nw4hbm

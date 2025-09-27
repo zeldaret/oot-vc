@@ -1,5 +1,7 @@
+#include "revolution/hbm/nw4hbm/ut/NandFileStream.h"
+
+#include "revolution/hbm/HBMAssert.hpp"
 #include "macros.h"
-#include "revolution.h"
 
 namespace nw4hbm {
 namespace ut {
@@ -135,7 +137,7 @@ s32 NandFileStream::Read(void* buf, u32 length) {
     return result;
 }
 
-bool NandFileStream::ReadAsync(void* buf, u32 length, StreamCallback pCallback, void* pCallbackArg) {
+bool NandFileStream::ReadAsync(void* buf, u32 length, IOStreamCallback pCallback, void* pCallbackArg) {
     NW4HBMAlign32_2_Line(buf, 313);
     NW4HBMAlign32_2_Line(length, 314);
     NW4HBMAssertMessage_Line(this->IsAvailable() != 0, 315, "NandFileStream is not opened");
@@ -144,14 +146,14 @@ bool NandFileStream::ReadAsync(void* buf, u32 length, StreamCallback pCallback, 
 }
 
 // fake? ReadAsync requires inlines
-void NandFileStream::ReadAsyncSetArgs(StreamCallback pCallback, void* pCallbackArg) {
+void NandFileStream::ReadAsyncSetArgs(IOStreamCallback pCallback, void* pCallbackArg) {
     mCallback = pCallback;
     mArg = pCallbackArg;
     mIsBusy = true;
 }
 
 // fake? ReadAsync requires inlines
-bool NandFileStream::ReadAsyncImpl(void* buf, u32 length, StreamCallback pCallback, void* pCallbackArg) {
+bool NandFileStream::ReadAsyncImpl(void* buf, u32 length, IOStreamCallback pCallback, void* pCallbackArg) {
     NW4HBMAlign32_Line(buf, 370);
     NW4HBMAlign32_Line(length, 371);
     NW4HBMAssertMessage_Line(this->IsAvailable() != 0, 372, "NandFileStream is not opened");
@@ -184,7 +186,7 @@ void NandFileStream::Write(const void* buf, u32 length) {
     mFilePosition.Append(result);
 }
 
-bool NandFileStream::WriteAsync(const void* buf, u32 length, StreamCallback pCallback, void* pCallbackArg) {
+bool NandFileStream::WriteAsync(const void* buf, u32 length, IOStreamCallback pCallback, void* pCallbackArg) {
     NW4HBMAlign32_Line(buf, 423);
     NW4HBMAlign32_Line(length, 424);
     NW4HBMAssertMessage_Line(this->IsAvailable() != 0, 425, "NandFileStream is not opened");

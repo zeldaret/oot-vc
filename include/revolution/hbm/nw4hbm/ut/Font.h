@@ -1,154 +1,84 @@
-#ifndef RVL_SDK_HBM_NW4HBM_UT_FONT_HPP
-#define RVL_SDK_HBM_NW4HBM_UT_FONT_HPP
+#ifndef NW4HBM_UT_FONT_H
+#define NW4HBM_UT_FONT_H
 
-/*******************************************************************************
- * headers
- */
-
-#include "revolution/gx/GXTypes.h"
-#include "revolution/hbm/nw4hbm/ut/ut_CharStrmReader.hpp"
 #include "revolution/types.h"
+#include "revolution/gx/GXTypes.h"
 
-/*******************************************************************************
- * classes and functions
- */
+#include "revolution/hbm/nw4hbm/ut/CharStrmReader.h"
+#include "revolution/hbm/nw4hbm/ut/fontResources.h"
+
+#include "macros.h"
 
 namespace nw4hbm {
-namespace ut {
-// from ogws
-enum FontMapMethod {
-    FONT_MAPMETHOD_DIRECT,
-    FONT_MAPMETHOD_TABLE,
-    FONT_MAPMETHOD_SCAN,
-};
+    namespace ut {
+        typedef enum FontMapMethod {
+            FONT_MAPMETHOD_DIRECT = 0,
+            FONT_MAPMETHOD_TABLE,
+            FONT_MAPMETHOD_SCAN,
+        } FontMapMethod;
 
-enum FontEncoding {
-    FONT_ENCODING_UTF8,
-    FONT_ENCODING_UTF16,
-    FONT_ENCODING_SJIS,
-    FONT_ENCODING_CP1252,
+        typedef enum FontEncoding {
+            FONT_ENCODING_UTF8 = 0,
+            FONT_ENCODING_UTF16,
+            FONT_ENCODING_SJIS,
+            FONT_ENCODING_CP1252,
 
-    NUM_OF_FONT_ENCODING
-};
+            NUM_OF_FONT_ENCODING
+        } FontEncoding;
 
-struct CharWidths {
-    s8 left; // size 0x01, offset 0x00
-    u8 glyphWidth; // size 0x01, offset 0x01
-    s8 charWidth; // size 0x01, offset 0x02
-}; // size 0x03
+        class Font {
+            public:
+                typedef enum Type {
+                    INVALID_CHARACTER_CODE = 0xFFFF,
+                    TYPE_NULL = 0,
+                    TYPE_ROM,
+                    TYPE_RESOURCE,
+                } Type;
 
-struct FontWidth {
-    u16 indexBegin; // size 0x02, offset 0x00
-    u16 indexEnd; // size 0x02, offset 0x02
-    FontWidth* pNext; // size 0x04, offset 0x04
-    CharWidths widthTable[]; // flexible,  offset 0x08 (unit size 0x03)
-}; // size 0x08
+            public:
+                Font() : mReaderFunc(&CharStrmReader::ReadNextCharCP1252) {}
+                virtual ~Font() {}
 
-struct Glyph {
-    void* pTexture; // size 0x04, offset 0x00
-    CharWidths widths; // size 0x03, offset 0x04
-    u8 height; // size 0x01, offset 0x07
-    GXTexFmt texFormat; // size 0x04, offset 0x08
-    u16 texWidth; // size 0x02, offset 0x0c
-    u16 texHeight; // size 0x02, offset 0x0e
-    u16 cellX; // size 0x02, offset 0x10
-    u16 cellY; // size 0x02, offset 0x12
-}; // size 0x14
+                virtual int             GetWidth() const = 0;
+                virtual int             GetHeight() const = 0;
 
-struct FontTextureGlyph {
-    u8 cellWidth; // size 0x01, offset 0x00
-    u8 cellHeight; // size 0x01, offset 0x01
-    s8 baselinePos; // size 0x01, offset 0x02
-    u8 maxCharWidth; // size 0x01, offset 0x03
-    u32 sheetSize; // size 0x04, offset 0x04
-    u16 sheetNum; // size 0x02, offset 0x08
-    u16 sheetFormat; // size 0x02, offset 0x0a
-    u16 sheetRow; // size 0x02, offset 0x0c
-    u16 sheetLine; // size 0x02, offset 0x0e
-    u16 sheetWidth; // size 0x02, offset 0x10
-    u16 sheetHeight; // size 0x02, offset 0x12
-    byte_t* sheetImage; // size 0x04, offset 0x14
-}; // size 0x18
+                virtual int             GetAscent() const = 0;
+                virtual int             GetDescent() const = 0;
 
-struct FontCodeMap {
-    char16_t ccodeBegin; // size 0x02, offset 0x00
-    char16_t ccodeEnd; // size 0x02, offset 0x02
-    u16 mappingMethod; // size 0x02, offset 0x04
-    byte2_t reserved;
-    FontCodeMap* pNext; // size 0x04, offset 0x08
-    u16 mapInfo[]; // flexible,  offset 0x0c (unit size 0x02)
-}; // size 0x0c
+                virtual int             GetBaselinePos() const = 0;
 
-struct FontInformation {
-    u8 fontType; // size 0x01, offset 0x00
-    s8 linefeed; // size 0x01, offset 0x01
-    u16 alterCharIndex; // size 0x02, offset 0x02
-    CharWidths defaultWidth; // size 0x03, offset 0x04
-    u8 encoding; // size 0x01, offset 0x07
-    FontTextureGlyph* pGlyph; // size 0x04, offset 0x08
-    FontWidth* pWidth; // size 0x04, offset 0x0c
-    FontCodeMap* pMap; // size 0x04, offset 0x10
-    u8 height; // size 0x01, offset 0x14
-    u8 width; // size 0x01, offset 0x15
-    u8 ascent; // size 0x01, offset 0x16
-    byte1_t padding_[1];
-}; // size 0x18
+                virtual int             GetCellHeight() const = 0;
+                virtual int             GetCellWidth() const = 0;
 
-class Font {
-    // enums
-  public:
-    enum Type {
-        INVALID_CHARACTER_CODE = 0xFFFF,
-        TYPE_NULL = 0,
+                virtual int             GetMaxCharWidth() const = 0;
+                virtual Type            GetType() const = 0;
+                virtual GXTexFmt        GetTextureFormat() const = 0;
+                virtual int             GetLineFeed() const = 0;
 
-        TYPE_ROM,
-        TYPE_RESOURCE,
-    };
+                virtual CharWidths      GetDefaultCharWidths() const = 0;
+                virtual void            SetDefaultCharWidths(const CharWidths& widths) = 0;
 
-    // methods
-  public:
-    // cdtors
-    Font() : mReaderFunc(&CharStrmReader::ReadNextCharCP1252) {}
-    virtual ~Font() {}
+                virtual bool            SetAlternateChar(u16 c) = 0;
 
-    // virtual function ordering
-    // vtable Font
-    virtual int GetWidth() const = 0;
-    virtual int GetHeight() const = 0;
-    virtual int GetAscent() const = 0;
-    virtual int GetDescent() const = 0;
-    virtual int GetBaselinePos() const = 0;
-    virtual int GetCellHeight() const = 0;
-    virtual int GetCellWidth() const = 0;
-    virtual int GetMaxCharWidth() const = 0;
-    virtual Type GetType() const = 0;
-    virtual GXTexFmt GetTextureFormat() const = 0;
-    virtual int GetLineFeed() const = 0;
-    virtual CharWidths GetDefaultCharWidths() const = 0;
-    virtual void SetDefaultCharWidths(const CharWidths& widths) = 0;
-    virtual bool SetAlternateChar(char16_t c) = 0;
-    virtual void SetLineFeed(int linefeed) = 0;
-    virtual int GetCharWidth(char16_t c) const = 0;
-    virtual CharWidths GetCharWidths(char16_t c) const = 0;
-    virtual void GetGlyph(Glyph* glyph, char16_t c) const = 0;
-    virtual FontEncoding GetEncoding() const = 0;
+                virtual void            SetLineFeed(int linefeed) = 0;
 
-    // methods
-    void InitReaderFunc(FontEncoding encoding);
+                virtual int             GetCharWidth(u16 c) const = 0;
+                virtual CharWidths      GetCharWidths(u16 c) const = 0;
 
-    // why???
-    CharStrmReader GetCharStrmReader() const NO_INLINE {
-        NW4HBMAssertPointerValid_Line(this, 117);
-        CharStrmReader reader(mReaderFunc);
-        return reader;
+                virtual void            GetGlyph(Glyph* glyph, u16 c) const = 0;
+
+                virtual FontEncoding    GetEncoding() const = 0;
+
+                void InitReaderFunc(FontEncoding encoding);
+
+                CharStrmReader GetCharStrmReader() const NO_INLINE {
+                    return CharStrmReader(mReaderFunc);
+                }
+
+            private:
+                CharStrmReader::ReadFunc    mReaderFunc;    // 0x04
+        };
     }
+}
 
-    // members
-  private:
-    /* vtable */ // size 0x04, offset 0x00
-    CharStrmReader::ReadFunc mReaderFunc; // size 0x0c, offset 0x04
-}; // size 0x10
-} // namespace ut
-} // namespace nw4hbm
-
-#endif // RVL_SDK_HBM_NW4HBM_UT_FONT_HPP
+#endif // NW4HBM_UT_CHAR_STREAM_READER_H

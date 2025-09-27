@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.hpp"
+#include "revolution/hbm/nw4hbm/ut/binaryFileFormat.h"
 
 /*******************************************************************************
  * headers
@@ -6,7 +6,7 @@
 
 #include "macros.h"
 #include "revolution/hbm/HBMAssert.hpp"
-#include "revolution/hbm/nw4hbm/db/assert.hpp"
+#include "revolution/hbm/nw4hbm/db/assert.h"
 #include "revolution/hbm/nw4hbm/db/console.h"
 #include "revolution/types.h"
 

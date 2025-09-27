@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/ut/ut_CharWriter.hpp"
+#include "revolution/hbm/nw4hbm/ut/CharWriter.h"
 
 /*******************************************************************************
  * headers
@@ -9,9 +9,10 @@
 #include "macros.h"
 #include "revolution/gx.h"
 #include "revolution/hbm/nw4hbm/db/console.h"
-#include "revolution/hbm/nw4hbm/math/math_types.hpp"
-#include "revolution/hbm/nw4hbm/ut/Color.hpp"
+#include "revolution/hbm/nw4hbm/math/types.h"
+#include "revolution/hbm/nw4hbm/ut/Color.h"
 #include "revolution/hbm/nw4hbm/ut/Font.h"
+#include "revolution/hbm/HBMAssert.hpp"
 
 /*******************************************************************************
  * local function declarations

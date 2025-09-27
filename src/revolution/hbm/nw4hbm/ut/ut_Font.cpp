@@ -5,7 +5,9 @@
  */
 
 #include "macros.h"
-#include "revolution/hbm/nw4hbm/ut/ut_CharStrmReader.hpp"
+#include "revolution/hbm/nw4hbm/ut/CharStrmReader.h"
+
+#include "revolution/hbm/HBMAssert.hpp"
 
 /*******************************************************************************
  * functions

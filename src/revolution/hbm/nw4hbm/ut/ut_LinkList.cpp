@@ -5,7 +5,9 @@
  */
 
 #include "macros.h"
-#include "revolution.h"
+// #include "revolution.h"
+
+#include "revolution/hbm/HBMAssert.hpp"
 
 /*******************************************************************************
  * functions
@@ -61,7 +63,7 @@ LinkListImpl::Iterator LinkListImpl::Insert(Iterator it, LinkListNode* p) {
 
     mSize++;
 
-    return p;
+    return (Iterator)p;
 }
 
 LinkListImpl::Iterator LinkListImpl::Erase(LinkListNode* p) {
@@ -82,7 +84,7 @@ LinkListImpl::Iterator LinkListImpl::Erase(LinkListNode* p) {
     p->mNext = nullptr;
     p->mPrev = nullptr;
 
-    return pNext;
+    return (Iterator)pNext;
 }
 
 void LinkListImpl::SetPrev(LinkListNode* pPrev, LinkListNode* pNext) {

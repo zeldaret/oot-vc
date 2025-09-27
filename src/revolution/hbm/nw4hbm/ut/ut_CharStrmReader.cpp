@@ -1,4 +1,4 @@
-#include "revolution/hbm/nw4hbm/ut/ut_CharStrmReader.hpp"
+#include "revolution/hbm/nw4hbm/ut/CharStrmReader.h"
 
 /*******************************************************************************
  * headers

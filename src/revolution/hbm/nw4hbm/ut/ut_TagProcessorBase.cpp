@@ -1,9 +1,13 @@
+#include "revolution/hbm/nw4hbm/ut/TagProcessorBase.h"
+
+#include "revolution/hbm/nw4hbm/ut/TextWriter.h"
+
 /*******************************************************************************
  * headers
  */
 
 #include "macros.h"
-#include "revolution.h"
+#include "revolution/hbm/HBMAssert.hpp"
 
 /*******************************************************************************
  * functions
@@ -12,11 +16,11 @@
 namespace nw4hbm {
 namespace ut {
 
-template <typename charT> TagProcessorBase<charT>::TagProcessorBase() {}
+template <typename T> TagProcessorBase<T>::TagProcessorBase() {}
 
-template <typename charT> TagProcessorBase<charT>::~TagProcessorBase() {}
+template <typename T> TagProcessorBase<T>::~TagProcessorBase() {}
 
-template <typename charT> Operation TagProcessorBase<charT>::Process(char16_t code, PrintContext<charT>* context) {
+template <typename T> Operation TagProcessorBase<T>::Process(u16 code, PrintContext<T>* context) {
     NW4HBMAssert_Line(code < ' ', 85);
     NW4HBMAssertPointerValid_Line(context, 86);
 
@@ -34,15 +38,15 @@ template <typename charT> Operation TagProcessorBase<charT>::Process(char16_t co
     }
 }
 
-template <typename charT>
-Operation TagProcessorBase<charT>::CalcRect(Rect* pRect, char16_t code, PrintContext<charT>* context) {
+template <typename T>
+Operation TagProcessorBase<T>::CalcRect(Rect* pRect, u16 code, PrintContext<T>* context) {
     NW4HBMAssertPointerValid_Line(pRect, 132);
     NW4HBMAssert_Line(code < ' ', 133);
     NW4HBMAssertPointerValid_Line(context, 134);
 
     switch (code) {
         case '\n': {
-            TextWriterBase<charT>& writer = *context->writer;
+            TextWriterBase<T>& writer = *context->writer;
 
             pRect->right = writer.GetCursorX();
             pRect->top = writer.GetCursorY();
@@ -57,7 +61,7 @@ Operation TagProcessorBase<charT>::CalcRect(Rect* pRect, char16_t code, PrintCon
             return OPERATION_NEXT_LINE;
 
         case '\t': {
-            TextWriterBase<charT>& writer = *context->writer;
+            TextWriterBase<T>& writer = *context->writer;
 
             pRect->left = writer.GetCursorX();
 
@@ -76,9 +80,9 @@ Operation TagProcessorBase<charT>::CalcRect(Rect* pRect, char16_t code, PrintCon
     }
 }
 
-template <typename charT> void TagProcessorBase<charT>::ProcessLinefeed(PrintContext<charT>* context) {
+template <typename T> void TagProcessorBase<T>::ProcessLinefeed(PrintContext<T>* context) {
     NW4HBMAssertPointerValid_Line(context, 195);
-    TextWriterBase<charT>& writer = *context->writer;
+    TextWriterBase<T>& writer = *context->writer;
 
     f32 x = context->xOrigin;
     f32 y = writer.GetCursorY() + writer.GetLineHeight();
@@ -86,9 +90,9 @@ template <typename charT> void TagProcessorBase<charT>::ProcessLinefeed(PrintCon
     writer.SetCursor(x, y);
 }
 
-template <typename charT> void TagProcessorBase<charT>::ProcessTab(PrintContext<charT>* context) {
+template <typename T> void TagProcessorBase<T>::ProcessTab(PrintContext<T>* context) {
     NW4HBMAssertPointerValid_Line(context, 211);
-    TextWriterBase<charT>& writer = *context->writer;
+    TextWriterBase<T>& writer = *context->writer;
     int tabWidth = writer.GetTabWidth();
 
     if (tabWidth > 0) {

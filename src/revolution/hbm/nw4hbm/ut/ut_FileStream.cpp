@@ -1,5 +1,7 @@
 #include "revolution/hbm/ut.hpp"
 
+#include "revolution/hbm/HBMAssert.hpp"
+
 namespace nw4hbm {
 namespace ut {
 
@@ -11,7 +13,7 @@ void FileStream::Seek(s32 offset, u32 origin) {
 
 void FileStream::Cancel() { NW4HBMAssertMessage_Line(CanCancel(), 60, "Stream don't support CANCEL function\n"); }
 
-bool FileStream::CancelAsync(StreamCallback pCallback, void* pCallbackArg) {
+bool FileStream::CancelAsync(IOStreamCallback pCallback, void* pCallbackArg) {
 #pragma unused(pCallback)
 #pragma unused(pCallbackArg)
     NW4HBMAssertMessage_Line(CanCancel(), 78, "Stream don't support CANCEL function\n");

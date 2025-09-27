@@ -1,5 +1,7 @@
 #include "revolution/hbm/ut.hpp"
 
+#include "revolution/hbm/HBMAssert.hpp"
+
 namespace nw4hbm {
 namespace ut {
 
@@ -14,7 +16,7 @@ s32 IOStream::Read(void* pDst, u32 size) {
     return 0;
 }
 
-bool IOStream::ReadAsync(void* pDst, u32 size, StreamCallback pCallback, void* pCallbackArg) {
+bool IOStream::ReadAsync(void* pDst, u32 size, IOStreamCallback pCallback, void* pCallbackArg) {
 #pragma unused(pDst)
 #pragma unused(size)
 #pragma unused(pCallback)
@@ -30,7 +32,7 @@ void IOStream::Write(const void* pSrc, u32 size) {
     NW4HBMAssertMessage_Line(CanWrite(), 82, "Stream don't support WRITE function\n");
 }
 
-bool IOStream::WriteAsync(const void* pSrc, u32 size, StreamCallback pCallback, void* pCallbackArg) {
+bool IOStream::WriteAsync(const void* pSrc, u32 size, IOStreamCallback pCallback, void* pCallbackArg) {
 #pragma unused(pSrc)
 #pragma unused(size)
 #pragma unused(pCallback)

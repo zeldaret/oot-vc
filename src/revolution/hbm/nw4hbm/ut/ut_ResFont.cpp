@@ -1,12 +1,13 @@
-#include "revolution/hbm/nw4hbm/ut/ut_ResFont.hpp"
+#include "revolution/hbm/nw4hbm/ut/ResFont.h"
 
 /*******************************************************************************
  * headers
  */
 
 #include "macros.h" // NW4HBM_VERSION
-#include "revolution.h"
 #include "revolution/hbm/nw4hbm/db/console.h"
+
+#include "revolution/hbm/HBMAssert.hpp"
 
 /*******************************************************************************
  * macros
