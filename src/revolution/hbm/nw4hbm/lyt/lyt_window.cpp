@@ -177,7 +177,7 @@ Window::Window(const res::Window* pBlock, const ResBlockSet& resBlockSet) : Pane
     mContentInflation = pBlock->inflation;
 
     NW4HBMAssertPointerNonnull_Line(resBlockSet.pMaterialList, 193);
-    const u32* matOffsTbl =
+    const u32* const matOffsTbl =
         detail::ConvertOffsToPtr<u32>(resBlockSet.pMaterialList, sizeof(*resBlockSet.pMaterialList));
 
     const res::WindowContent* pResContent = detail::ConvertOffsToPtr<res::WindowContent>(pBlock, pBlock->contentOffset);
