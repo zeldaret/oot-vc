@@ -1,17 +1,9 @@
 #include "revolution/hbm/nw4hbm/ut/Font.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "macros.h"
 #include "revolution/hbm/nw4hbm/ut/CharStrmReader.h"
 
 #include "revolution/hbm/HBMAssert.hpp"
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace ut {

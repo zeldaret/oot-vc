@@ -1,17 +1,9 @@
 #include "revolution/hbm/nw4hbm/ut/ResFont.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/hbm/nw4hbm/config.h"
 #include "revolution/hbm/nw4hbm/db/console.h"
 
 #include "revolution/hbm/HBMAssert.hpp"
-
-/*******************************************************************************
- * macros
- */
 
 #define MAGIC_FONT 'RFNT' // Revolution Font
 #define MAGIC_FONT_UNPACKED 'RFNU' // Revolution Font, unpacked
@@ -24,10 +16,6 @@
 
 #define CONVERT_OFFSET_TO_PTR(type_, ptr_, offset_) reinterpret_cast<type_*>(reinterpret_cast<u32>(ptr_) + offset_)
 
-/*******************************************************************************
- * local function declarations
- */
-
 namespace nw4hbm {
 namespace ut {
 namespace {
@@ -37,10 +25,6 @@ template <typename T> void ResolveOffset(T*& ptr, void* base) {
 } // namespace
 } // namespace ut
 } // namespace nw4hbm
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace ut {

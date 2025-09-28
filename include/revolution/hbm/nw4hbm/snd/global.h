@@ -1,15 +1,7 @@
 #ifndef NW4R_SND_GLOBAL_H
 #define NW4R_SND_GLOBAL_H
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/types.h" // f32
-
-/*******************************************************************************
- * types
- */
 
 namespace nw4hbm {
 namespace snd {

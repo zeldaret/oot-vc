@@ -1,9 +1,5 @@
 #include "revolution/hbm/homebutton/HBMBase.hpp"
 
-/*******************************************************************************
- * headers
- */
-
 #include "cstring.hpp"
 #include "new.hpp" // placement new
 

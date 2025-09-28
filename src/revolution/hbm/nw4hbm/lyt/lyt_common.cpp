@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/lyt/common.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "cstring.hpp" // std::strncmp
 
 #include "macros.h"
@@ -17,10 +13,6 @@
 
 #include "revolution/gx.h"
 #include "revolution/tpl/TPL.h"
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace lyt {

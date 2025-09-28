@@ -1,10 +1,6 @@
 #ifndef RVL_SDK_HBM_HOMEBUTTON_CONTROLLER_HPP
 #define RVL_SDK_HBM_HOMEBUTTON_CONTROLLER_HPP
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/hbm/homebutton/HBMCommon.hpp"
 #include "revolution/hbm/homebutton/HBMRemoteSpk.hpp"
 #include "revolution/hbm/nw4hbm/snd/SoundHandle.h"
@@ -13,10 +9,6 @@
 #include "revolution/os/OSTime.h"
 #include "revolution/types.h"
 #include "revolution/wpad/WPAD.h"
-
-/*******************************************************************************
- * types
- */
 
 // [SGLEA4]/GormitiDebug.elf:.debug_info::0x47b892
 struct HBController {
@@ -30,10 +22,6 @@ struct HBController {
     bool rumble; // size 0x01, offset 0x1c
     /* 3 bytes padding */
 }; // size 0x20
-
-/*******************************************************************************
- * classes and functions
- */
 
 namespace homebutton {
 // [SGLEA4]/GormitiDebug.elf:.debug_info::0x47b75e

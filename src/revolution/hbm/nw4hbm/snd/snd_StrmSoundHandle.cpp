@@ -5,17 +5,9 @@
  * src/nw4r/snd/snd_StrmSoundHandle.cpp
  */
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/types.h" // nullptr
 
 #include "revolution/hbm/nw4hbm/snd/StrmSound.h"
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace snd {

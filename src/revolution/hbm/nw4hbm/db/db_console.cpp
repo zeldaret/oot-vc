@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/db/console.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "cstdarg.hpp"
 #include "cstdio.hpp" // vsnprintf
 
@@ -21,10 +17,6 @@
 #include "revolution/hbm/nw4hbm/ut/Color.h"
 
 #include "decomp.h"
-
-/*******************************************************************************
- * local function declarations
- */
 
 namespace nw4hbm {
 namespace db {
@@ -92,19 +84,11 @@ static void Console_PrintString_(ConsoleOutputType type, detail::ConsoleHead* co
 } // namespace db
 } // namespace nw4hbm
 
-/*******************************************************************************
- * variables
- */
-
 namespace nw4hbm {
 namespace db {
 static OSMutex sMutex;
 }
 } // namespace nw4hbm
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace db {

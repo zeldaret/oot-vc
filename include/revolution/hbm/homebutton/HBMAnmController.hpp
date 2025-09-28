@@ -1,15 +1,7 @@
 #ifndef RVL_SDK_HBM_HOMEBUTTON_ANM_CONTROLLER_HPP
 #define RVL_SDK_HBM_HOMEBUTTON_ANM_CONTROLLER_HPP
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/hbm/homebutton/HBMFrameController.hpp"
-
-/*******************************************************************************
- * classes and functions
- */
 
 // forward declarations
 namespace nw4hbm {

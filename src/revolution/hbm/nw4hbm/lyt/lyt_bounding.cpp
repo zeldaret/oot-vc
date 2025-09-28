@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/lyt/bounding.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/hbm/nw4hbm/lyt/common.h"
 #include "revolution/hbm/nw4hbm/lyt/drawInfo.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
@@ -11,19 +7,11 @@
 #include "revolution/hbm/nw4hbm/ut/Color.h"
 #include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
 
-/*******************************************************************************
- * variables
- */
-
 namespace nw4hbm {
 namespace lyt {
 const ut::detail::RuntimeTypeInfo Bounding::typeInfo(&Pane::typeInfo);
 }
 } // namespace nw4hbm
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace lyt {

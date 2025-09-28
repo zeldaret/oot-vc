@@ -1,10 +1,6 @@
 #ifndef RVL_SDK_HBM_HOMEBUTTON_BASE_HPP
 #define RVL_SDK_HBM_HOMEBUTTON_BASE_HPP
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/ax.h"
 #include "revolution/axfx.h"
 #include "revolution/hbm/HBMConfig.h"
@@ -13,10 +9,6 @@
 #include "revolution/hbm/nw4hbm/lyt/drawInfo.h"
 #include "revolution/types.h"
 #include "revolution/wpad/WPAD.h"
-
-/*******************************************************************************
- * classes and functions
- */
 
 // forward declarations
 namespace nw4hbm {

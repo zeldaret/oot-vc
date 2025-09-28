@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/lyt/textBox.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "cstring.hpp"
 #include "cwchar.hpp" // std::wcslen
 #include "new.hpp"
@@ -35,10 +31,6 @@
 
 #include "revolution/gx/GXTypes.h"
 
-/*******************************************************************************
- * local function declarations
- */
-
 namespace {
 // pretend this is nw4hbm::lyt
 using namespace nw4hbm;
@@ -65,20 +57,12 @@ void CalcStringRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter,
                         f32 maxWidth);
 } // unnamed namespace
 
-/*******************************************************************************
- * variables
- */
-
 namespace nw4hbm {
 namespace lyt {
 // .bss
 const ut::detail::RuntimeTypeInfo TextBox::typeInfo(&Pane::typeInfo);
 } // namespace lyt
 } // namespace nw4hbm
-
-/*******************************************************************************
- * functions
- */
 
 namespace {
 

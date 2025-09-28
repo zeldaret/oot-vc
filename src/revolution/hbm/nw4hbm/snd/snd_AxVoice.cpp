@@ -1,8 +1,8 @@
 #include "revolution/hbm/nw4hbm/snd/AxVoice.h"
 
 #include "revolution/hbm/nw4hbm/snd/AxManager.h"
-#include "revolution/hbm/nw4hbm/snd/WaveFile.h"
 #include "revolution/hbm/nw4hbm/snd/Util.h"
+#include "revolution/hbm/nw4hbm/snd/WaveFile.h"
 #include "revolution/hbm/nw4hbm/ut.h"
 
 #include "cstring.hpp"

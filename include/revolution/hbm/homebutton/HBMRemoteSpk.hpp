@@ -1,19 +1,11 @@
 #ifndef RVL_SDK_HBM_HOMEBUTTON_REMOTE_SPK_HPP
 #define RVL_SDK_HBM_HOMEBUTTON_REMOTE_SPK_HPP
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/arc/arc.h" // ARCHandle
 #include "revolution/os/OSAlarm.h"
 #include "revolution/types.h"
 #include "revolution/wenc/wenc.h" // WENCInfo
 #include "revolution/wpad/WPAD.h"
-
-/*******************************************************************************
- * class
- */
 
 namespace homebutton {
 // [SGLEA4]/GormitiDebug.elf:.debug_info::0x47b924

@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/lyt/animation.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "cstring.hpp" // std::memset
 #include "new.hpp"
 
@@ -21,10 +17,6 @@
 #include "revolution/hbm/nw4hbm/ut/inlines.h"
 
 #include "revolution/os/OSFastCast.h"
-
-/*******************************************************************************
- * local function declarations
- */
 
 namespace {
 // pretend this is nw4hbm::lyt
@@ -52,10 +44,6 @@ void AnimateTexturePattern(Material* pMaterial, const res::AnimationInfo* pAnimI
 void AnimateIndTexSRT(Material* pMaterial, const res::AnimationInfo* pAnimInfo, const u32* animTargetOffsets,
                       f32 frame);
 } // namespace
-
-/*******************************************************************************
- * functions
- */
 
 namespace {
 

@@ -9,18 +9,10 @@
 #include "revolution/hbm/nw4hbm/ut/inlines.h"
 #include "revolution/types.h"
 
-/*******************************************************************************
- * headers
- */
-
 // #include "cstdarg.hpp"
 // #include "macros.h"
 
 // #include "revolution/hbm/HBMAssert.hpp"
-
-/*******************************************************************************
- * variables
- */
 
 namespace nw4hbm {
 namespace ut {
@@ -33,10 +25,6 @@ template <typename charT> charT* TextWriterBase<charT>::mFormatBuffer;
 template <typename charT> TagProcessorBase<charT> TextWriterBase<charT>::mDefaultTagProcessor;
 } // namespace ut
 } // namespace nw4hbm
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace ut {
@@ -523,10 +511,6 @@ void TextWriterBase<charT>::CalcVStringRect(Rect* pRect, const charT* format, st
 
 } // namespace ut
 } // namespace nw4hbm
-
-/*******************************************************************************
- * explicit template instantiations
- */
 
 namespace nw4hbm {
 namespace ut {

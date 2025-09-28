@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/lyt/material.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "cstring.hpp"
 
 #include "macros.h"
@@ -22,10 +18,6 @@
 
 #include "revolution/gx.h"
 #include "revolution/tpl/TPL.h"
-
-/*******************************************************************************
- * local function declarations
- */
 
 namespace {
 // pretend this is nw4hbm::lyt
@@ -62,10 +54,6 @@ inline u32 GetTexMtx(u32 texMtxIdx) { return texMtxIdx * 3 + 30; }
 inline u32 GetTexMtxIdx(u32 texMtx) { return (texMtx - 30) / 3; }
 } // unnamed namespace
 
-/*******************************************************************************
- * variables
- */
-
 // .rodata
 static const GXColorS10 DefaultBlackColor = {0x0000, 0x0000, 0x0000, 0x0000};
 
@@ -82,10 +70,6 @@ static inline void SetDefaultWhiteColor(GXColorS10* p) {
 static inline bool IsDefaultWhiteColor(GXColorS10* p) {
     return p->r == 255 && p->g == 255 && p->b == 255 && p->a == 255;
 }
-
-/*******************************************************************************
- * functions
- */
 
 namespace {
 

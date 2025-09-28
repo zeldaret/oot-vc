@@ -33,10 +33,6 @@ namespace detail {
 } // namespace snd
 } // namespace nw4hbm
 
-/*******************************************************************************
- * functions
- */
-
 namespace nw4hbm {
 namespace snd {
 namespace detail {

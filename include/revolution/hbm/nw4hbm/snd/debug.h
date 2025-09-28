@@ -1,10 +1,6 @@
 #ifndef NW4R_SND_DEBUG_H
 #define NW4R_SND_DEBUG_H
 
-/*******************************************************************************
- * types
- */
-
 namespace nw4hbm {
 namespace snd {
 // [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x2bd7b3
@@ -27,10 +23,6 @@ enum DebugSoundType {
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
-
-/*******************************************************************************
- * classes and functions
- */
 
 namespace nw4hbm {
 namespace snd {

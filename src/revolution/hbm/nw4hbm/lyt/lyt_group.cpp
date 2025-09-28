@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/lyt/group.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "cstring.hpp" // std::memcpy
 #include "new.hpp"
 
@@ -16,10 +12,6 @@
 #include "revolution/hbm/nw4hbm/lyt/types.h" // detail::ConvertOffsToPtr
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace lyt {

@@ -1,10 +1,6 @@
 #include "revolution/hbm/nw4hbm/math/arithmetic.h"
 #include "revolution/types.h"
 
-/*******************************************************************************
- * types
- */
-
 // typedef names are from the nw4r version
 
 // [SGLEA4]/GormitiDebug.elf:.debug_info::0x4a08a4
@@ -21,10 +17,6 @@ typedef struct {
     f32 atan_delta; // size 0x04, offset 0x04
 } ArcTanSample; // size 0x08
 
-/*******************************************************************************
- * local function declarations
- */
-
 namespace nw4hbm {
 namespace math {
 namespace {
@@ -32,10 +24,6 @@ f32 AtanFIdx_(f32 x);
 }
 } // namespace math
 } // namespace nw4hbm
-
-/*******************************************************************************
- * variables
- */
 
 namespace nw4hbm {
 namespace math {
@@ -317,10 +305,6 @@ static ArcTanSample sArcTanTbl[] = {
 } // namespace
 } // namespace math
 } // namespace nw4hbm
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace math {

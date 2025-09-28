@@ -1,12 +1,6 @@
-/*******************************************************************************
- * headers
- */
+
 #include "revolution/hbm/homebutton/HBMFrameController.hpp"
 #include "revolution.h"
-
-/*******************************************************************************
- * functions
- */
 
 namespace homebutton {
 

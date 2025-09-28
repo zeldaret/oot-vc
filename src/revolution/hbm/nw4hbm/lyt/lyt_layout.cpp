@@ -4,10 +4,6 @@
  * of macros and loose constants
  */
 
-/*******************************************************************************
- * headers
- */
-
 #include "new.hpp"
 
 #include "macros.h"
@@ -29,17 +25,9 @@
 
 #include "revolution/mem/mem_allocator.h"
 
-/*******************************************************************************
- * macros
- */
-
 // Kind of annoying
 // I'll just kinda borrow the lyt function
 #define CONVERT_OFFSET_TO_PTR(type_, ptr_, offset_) reinterpret_cast<type_*>(reinterpret_cast<u32>(ptr_) + offset_)
-
-/*******************************************************************************
- * local function declarations
- */
 
 namespace {
 // pretend this is nw4hbm::lyt
@@ -81,20 +69,12 @@ template <class T, typename Param1, typename Param2> T* CreateObject(Param1 p1, 
 }
 } // unnamed namespace
 
-/*******************************************************************************
- * variables
- */
-
 namespace nw4hbm {
 namespace lyt {
 // .bss
 MEMAllocator* Layout::mspAllocator;
 } // namespace lyt
 } // namespace nw4hbm
-
-/*******************************************************************************
- * functions
- */
 
 namespace {
 

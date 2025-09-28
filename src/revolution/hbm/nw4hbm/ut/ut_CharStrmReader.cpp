@@ -1,15 +1,7 @@
 #include "revolution/hbm/nw4hbm/ut/CharStrmReader.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/hbm/HBMAssert.hpp"
 #include "revolution/types.h"
-
-/*******************************************************************************
- * local function declarations
- */
 
 namespace nw4hbm {
 namespace ut {
@@ -18,10 +10,6 @@ inline bool IsSJISLeadByte(char_t c) { return (0x81 <= c && c < 0xA0) || 0xE0 <=
 } // namespace
 } // namespace ut
 } // namespace nw4hbm
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace ut {

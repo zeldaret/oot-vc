@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/lyt/arcResourceAccessor.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "cstring.hpp"
 #include "string.h" // stricmp
 
@@ -14,10 +10,6 @@
 
 #include "revolution/arc/arc.h"
 
-/*******************************************************************************
- * local function declarations
- */
-
 namespace {
 // pretend this is nw4hbm::lyt
 using namespace nw4hbm;
@@ -26,10 +18,6 @@ using namespace nw4hbm::lyt;
 s32 FindNameResource(ARCHandle* pArcHandle, const char* resName);
 void* GetResourceSub(ARCHandle* pArcHandle, const char* resRootDir, u32 resType, const char* name, u32* pSize);
 } // namespace
-
-/*******************************************************************************
- * functions
- */
 
 namespace {
 

@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/lyt/window.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "new.hpp"
 
 #include "macros.h"
@@ -20,20 +16,12 @@
 #include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
 #include "revolution/hbm/nw4hbm/ut/inlines.h"
 
-/*******************************************************************************
- * types
- */
-
 // probably local
 // [SGLEA4]/GormitiDebug.elf:.debug_info::0x49dde9
 struct TextureFlipInfo {
     u8 coords[4][2]; // size 0x08, offset 0x00
     u8 idx[2]; // size 0x02, offset 0x08
 }; // size 0x0a
-
-/*******************************************************************************
- * local function declarations
- */
 
 namespace {
 // pretend this is nw4hbm::lyt
@@ -57,20 +45,12 @@ void GetRBFrameSize(math::VEC2* pPt, Size* pSize, const math::VEC2& basePt, cons
 void GetRBTexCoord(math::VEC2* texCds, const Size& polSize, const Size& texSize, u8 textureFlip);
 } // unnamed namespace
 
-/*******************************************************************************
- * variables
- */
-
 namespace nw4hbm {
 namespace lyt {
 // .bss
 const ut::detail::RuntimeTypeInfo Window::typeInfo(&Pane::typeInfo);
 } // namespace lyt
 } // namespace nw4hbm
-
-/*******************************************************************************
- * functions
- */
 
 // TODO clean up
 

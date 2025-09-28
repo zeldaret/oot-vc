@@ -1,10 +1,6 @@
 #ifndef NW4R_SND_CHANNEL_H
 #define NW4R_SND_CHANNEL_H
 
-/*******************************************************************************
- * headers
- */
-
 #include <limits.h> // USHRT_MAX
 
 #include "revolution/types.h"

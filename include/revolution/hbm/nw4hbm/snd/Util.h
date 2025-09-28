@@ -1,19 +1,11 @@
 #ifndef NW4R_SND_UTIL_H
 #define NW4R_SND_UTIL_H
 
-/*******************************************************************************
- * headers
- */
-
 #include "macros.h" // static_assert
 #include "revolution/types.h"
 
 #include "revolution/hbm/HBMAssert.hpp"
 #include "revolution/hbm/nw4hbm/snd/types.h"
-
-/*******************************************************************************
- * classes and functions
- */
 
 namespace nw4hbm {
 namespace snd {

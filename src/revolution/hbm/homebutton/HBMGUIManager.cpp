@@ -1,9 +1,5 @@
 #include "revolution/hbm/homebutton/HBMGUIManager.hpp"
 
-/*******************************************************************************
- * headers
- */
-
 #include "macros.h"
 #include "new.hpp" // IWYU pragma: keep (placement new)
 #include "revolution/gx.h"
@@ -24,10 +20,6 @@
 #include "revolution/os/OSError.h"
 #include "revolution/types.h"
 
-/*******************************************************************************
- * local function declarations
- */
-
 namespace homebutton {
 namespace gui {
 static void drawLine_(f32 x0, f32 y0, f32 x1, f32 y1, f32 z, u8 uWidth, GXColor& rColor);
@@ -36,20 +28,12 @@ static bool is_visible(nw4hbm::lyt::Pane* pPane);
 } // namespace gui
 } // namespace homebutton
 
-/*******************************************************************************
- * variables
- */
-
 namespace homebutton {
 namespace gui {
 // .bss
 u32 PaneManager::suIDCounter;
 } // namespace gui
 } // namespace homebutton
-
-/*******************************************************************************
- * functions
- */
 
 namespace homebutton {
 namespace gui {

@@ -1,16 +1,8 @@
 #ifndef RVL_SDK_HBM_HOMEBUTTON_AX_SOUND_HPP
 #define RVL_SDK_HBM_HOMEBUTTON_AX_SOUND_HPP
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/hbm/nw4hbm/snd/mix.h" // HBMMIXSoundMode
 #include "revolution/types.h"
-
-/*******************************************************************************
- * classes and functions
- */
 
 namespace homebutton {
 void PlaySeq(int num);

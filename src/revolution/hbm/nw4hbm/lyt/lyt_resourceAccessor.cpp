@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/lyt/resourceAccessor.h"
 
-/*******************************************************************************
- * functions
- */
-
 // forward declarations
 namespace nw4hbm {
 namespace ut {

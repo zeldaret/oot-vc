@@ -1,16 +1,8 @@
 #ifndef RVL_SDK_HBM_NW4HBM_MATH_ARITHMETIC_HPP
 #define RVL_SDK_HBM_NW4HBM_MATH_ARITHMETIC_HPP
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/os/OSFastCast.h"
 #include "revolution/types.h"
-
-/*******************************************************************************
- * classes and functions
- */
 
 namespace nw4hbm {
 namespace math {

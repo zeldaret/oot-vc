@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/ut/CharWriter.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/types.h"
 
 #include "macros.h"
@@ -14,17 +10,9 @@
 #include "revolution/hbm/nw4hbm/ut/Color.h"
 #include "revolution/hbm/nw4hbm/ut/Font.h"
 
-/*******************************************************************************
- * local function declarations
- */
-
 namespace nw4hbm {
 static void SetupGXCommon();
 } // namespace nw4hbm
-
-/*******************************************************************************
- * variables
- */
 
 namespace nw4hbm {
 namespace ut {
@@ -32,10 +20,6 @@ namespace ut {
 /* CharWriter::LoadingTexture CharWriter::mLoadingTexture; */ // pooling
 } // namespace ut
 } // namespace nw4hbm
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 

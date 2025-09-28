@@ -1,19 +1,11 @@
 #include "revolution/hbm/homebutton/HBMController.hpp"
 
-/*******************************************************************************
- * headers
- */
-
 #include "macros.h"
 #include "revolution/hbm/homebutton/HBMRemoteSpk.hpp"
 #include "revolution/kpad/KPAD.h"
 #include "revolution/os/OSTime.h"
 #include "revolution/types.h"
 #include "revolution/wpad/WPAD.h"
-
-/*******************************************************************************
- * variables
- */
 
 namespace homebutton {
 // .bss
@@ -25,10 +17,6 @@ bool Controller::sSetInfoAsync[WPAD_MAX_CONTROLLERS];
 RemoteSpk* Controller::sPInstance;
 s32 Controller::lbl_8025DBBC;
 } // namespace homebutton
-
-/*******************************************************************************
- * functions
- */
 
 namespace homebutton {
 

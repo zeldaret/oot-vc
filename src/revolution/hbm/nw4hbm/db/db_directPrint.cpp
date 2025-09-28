@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/db/directPrint.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "cstdarg.hpp"
 #include "cstdio.hpp"
 #include "cstring.hpp"
@@ -44,10 +40,6 @@ typedef struct YUVColorInfo {
     u16 colorV4; // 0x10
     u16 reserved; // 0x12
 } YUVColorInfo;
-
-/*******************************************************************************
- * local function declarations
- */
 
 namespace nw4hbm {
 namespace db {
@@ -90,10 +82,6 @@ static void* CreateFB_(GXRenderModeObj const* rmode);
 } // namespace detail
 } // namespace db
 } // namespace nw4hbm
-
-/*******************************************************************************
- * variables
- */
 
 namespace nw4hbm {
 namespace db {
@@ -139,10 +127,6 @@ static YUVColorInfo sFrameBufferColor;
 static int sInitialized = false;
 } // namespace db
 } // namespace nw4hbm
-
-/*******************************************************************************
- * functions
- */
 
 // inline functions
 namespace nw4hbm {

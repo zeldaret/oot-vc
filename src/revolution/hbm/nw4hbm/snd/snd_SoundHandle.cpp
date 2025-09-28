@@ -5,19 +5,11 @@
  * src/nw4r/snd/snd_SoundHandle.cpp
  */
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/types.h" // nullptr
 
 #include "revolution/hbm/nw4hbm/snd/BasicSound.h"
 
 #include "revolution/hbm/HBMAssert.hpp"
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace snd {

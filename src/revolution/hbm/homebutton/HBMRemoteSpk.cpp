@@ -1,9 +1,5 @@
 #include "revolution/hbm/homebutton/HBMRemoteSpk.hpp"
 
-/*******************************************************************************
- * headers
- */
-
 #include "macros.h"
 #include "revolution/arc/arc.h"
 #include "revolution/hbm/homebutton/HBMController.hpp"
@@ -15,17 +11,9 @@
 #include "revolution/wpad/WPAD.h"
 #include "string.h"
 
-/*******************************************************************************
- * local function declarations
- */
-
 namespace homebutton {
 static bool MakeVolumeData(const s16* src, s16* dst, int vol, u32 size);
 } // namespace homebutton
-
-/*******************************************************************************
- * functions
- */
 
 namespace homebutton {
 

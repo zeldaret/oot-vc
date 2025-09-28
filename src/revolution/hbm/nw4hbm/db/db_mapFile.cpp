@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/db/mapFile.h"
 
-/*******************************************************************************
- * headers
- */
-
 // #include "cstddef.hpp"
 
 #include "macros.h"
@@ -23,15 +19,7 @@
 #define NW4HBMAssertPointerNonnull_FileLine(ptr_, file_, line_) \
     NW4HBMAssertMessage_FileLine(file_, line_, (ptr_) != 0, "NW4HBM:Pointer must not be NULL (" #ptr_ ")")
 
-/*******************************************************************************
- * types
- */
-
 typedef u8 GetCharFunc(u8 const* buf);
-
-/*******************************************************************************
- * local function declarations
- */
 
 namespace nw4hbm {
 namespace db {
@@ -49,10 +37,6 @@ static bool QuerySymbolToMapFile_(u8* buf, OSModuleInfo const* moduleInfo, u32 a
 static bool QuerySymbolToSingleMapFile_(MapFile* pMapFile, u32 address, u8* strBuf, u32 strBufSize) NO_INLINE;
 } // namespace db
 } // namespace nw4hbm
-
-/*******************************************************************************
- * variables
- */
 
 namespace nw4hbm {
 namespace db {
@@ -73,10 +57,6 @@ char lbl_80194ECC[] = "NW4HBM:Pointer must not be NULL (pMapFile)";
 char lbl_80194EF8[] = "NW4HBM:Failed assertion sMapFileList->moduleInfo != NULL";
 char lbl_80194F34[] = "NW4HBM:Pointer must not be NULL (filePath)";
 char lbl_80194F60[] = "NW4HBM:Failed assertion pMapFile->fileEntry >= 0";
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace db {

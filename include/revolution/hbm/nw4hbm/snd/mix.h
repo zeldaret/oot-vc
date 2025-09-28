@@ -1,16 +1,8 @@
 #ifndef RVL_SDK_HBM_SOUND_MIX_H
 #define RVL_SDK_HBM_SOUND_MIX_H
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/ax/AXVPB.h"
 #include "revolution/types.h"
-
-/*******************************************************************************
- * types
- */
 
 typedef u32 HBMMIXSoundMode;
 enum HBMMIXSoundMode_et {
@@ -24,10 +16,6 @@ typedef u32 HBMMIXKey;
 
 typedef int HBMMIXIndex;
 #define HBMMIX_INDEX_NULL -1
-
-/*******************************************************************************
- * functions
- */
 
 #ifdef __cplusplus
 extern "C" {

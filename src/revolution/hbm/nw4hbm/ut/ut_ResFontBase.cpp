@@ -1,21 +1,9 @@
 #include "revolution/hbm/nw4hbm/ut/ResFont.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "macros.h"
 #include "revolution/hbm/HBMAssert.hpp"
 
-/*******************************************************************************
- * macros
- */
-
 #define GLYPH_INDEX_NOT_FOUND 0xFFFF
-
-/*******************************************************************************
- * types
- */
 
 struct CMapScanEntry {
     char16_t ccode; // size 0x02, offset 0x00
@@ -26,10 +14,6 @@ struct CMapInfoScan {
     u16 num; // size 0x02, offset 0x00
     CMapScanEntry entries[]; // flexible,  offset 0x02 (unit size 0x04)
 }; // size 0x02
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace ut {

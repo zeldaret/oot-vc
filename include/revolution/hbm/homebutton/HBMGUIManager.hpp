@@ -1,10 +1,6 @@
 #ifndef RVL_SDK_HBM_HOMEBUTTON_GUI_MANAGER_HPP
 #define RVL_SDK_HBM_HOMEBUTTON_GUI_MANAGER_HPP
 
-/*******************************************************************************
- * headers
- */
-
 #include "macros.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
 #include "revolution/hbm/nw4hbm/ut/list.h"
@@ -13,10 +9,6 @@
 #include "revolution/mtx/mtx.h"
 #include "revolution/mtx/vec.h"
 #include "revolution/types.h"
-
-/*******************************************************************************
- * classes and functions
- */
 
 // forward declarations
 namespace nw4hbm {

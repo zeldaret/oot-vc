@@ -1,10 +1,6 @@
 #ifndef RVL_SDK_HBM_HOMEBUTTON_COMMON_H
 #define RVL_SDK_HBM_HOMEBUTTON_COMMON_H
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/gx/GXTypes.h"
 #include "revolution/hbm/HBMConfig.h"
 #include "revolution/kpad/KPAD.h"
@@ -12,10 +8,6 @@
 #include "revolution/mtx/mtx.h"
 #include "revolution/types.h"
 #include "revolution/wpad/WPAD.h"
-
-/*******************************************************************************
- * types
- */
 
 #ifdef __cplusplus
 extern "C" {
@@ -82,10 +74,6 @@ typedef struct HBMKPadData {
 typedef struct HBMControllerData {
     HBMKPadData wiiCon[WPAD_MAX_CONTROLLERS]; // size 0x40, offset 0x00
 } HBMControllerData; // size 0x40
-
-/*******************************************************************************
- * functions
- */
 
 void HBMCreate(const HBMDataInfo* pHBInfo);
 void HBMDelete(void);

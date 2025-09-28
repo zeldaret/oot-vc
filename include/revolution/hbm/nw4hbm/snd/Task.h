@@ -1,8 +1,8 @@
 #ifndef NW4R_SND_TASK_H
 #define NW4R_SND_TASK_H
 
-#include "revolution/hbm/nw4hbm/ut/LinkList.h"
 #include "revolution/hbm/nw4hbm/ut.h"
+#include "revolution/hbm/nw4hbm/ut/LinkList.h"
 
 namespace nw4hbm {
 namespace snd {

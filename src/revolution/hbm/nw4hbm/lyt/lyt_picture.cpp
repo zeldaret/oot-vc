@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/lyt/picture.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "new.hpp"
 
 #include "macros.h" // ARRAY_COUNT
@@ -21,19 +17,11 @@
 #include "revolution/gx/GXTypes.h"
 #include "revolution/tpl/TPL.h"
 
-/*******************************************************************************
- * variables
- */
-
 namespace nw4hbm {
 namespace lyt {
 const ut::detail::RuntimeTypeInfo Picture::typeInfo(&Pane::typeInfo);
 }
 } // namespace nw4hbm
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace lyt {

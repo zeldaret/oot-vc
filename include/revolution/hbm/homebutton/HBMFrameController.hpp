@@ -1,15 +1,7 @@
 #ifndef RVL_SDK_HBM_HOMEBUTTON_FRAME_CONTROLLER_HPP
 #define RVL_SDK_HBM_HOMEBUTTON_FRAME_CONTROLLER_HPP
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/types.h"
-
-/*******************************************************************************
- * classes and functions
- */
 
 namespace homebutton {
 

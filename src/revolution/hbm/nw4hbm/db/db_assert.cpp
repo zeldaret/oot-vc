@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/db/assert.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "revolution/hbm/HBMConfig.h"
 
 #include "cstdarg.hpp"
@@ -26,10 +22,6 @@
 
 #include "decomp.h"
 
-/*******************************************************************************
- * local function declarations
- */
-
 namespace nw4hbm {
 namespace db {
 static void Assertion_Printf_(char const* fmt, ...);
@@ -43,10 +35,6 @@ static void WarningAlarmFunc_(OSAlarm* alarm, OSContext* ctx);
 } // namespace db
 } // namespace nw4hbm
 
-/*******************************************************************************
- * variables
- */
-
 namespace nw4hbm {
 namespace db {
 static u32 sWarningTime;
@@ -54,10 +42,6 @@ static detail::ConsoleHead* sAssertionConsole;
 static bool sDispWarningAuto;
 } // namespace db
 } // namespace nw4hbm
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace db {

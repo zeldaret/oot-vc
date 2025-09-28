@@ -1,10 +1,6 @@
 #ifndef RVL_SDK_HBM_CONFIG_H
 #define RVL_SDK_HBM_CONFIG_H
 
-/*******************************************************************************
- * options
- */
-
 /* HBM library version used by DVD games.
  */
 #define HBM_APP_TYPE_DVD 1
@@ -14,10 +10,6 @@
  * games.
  */
 #define HBM_APP_TYPE_NAND 2
-
-/*******************************************************************************
- * configuration
- */
 
 /* The macro HBM_APP_TYPE must be defined to one of these two values.
  *

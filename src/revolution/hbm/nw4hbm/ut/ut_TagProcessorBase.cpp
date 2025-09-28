@@ -2,16 +2,8 @@
 
 #include "revolution/hbm/nw4hbm/ut/TextWriter.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "macros.h"
 #include "revolution/hbm/HBMAssert.hpp"
-
-/*******************************************************************************
- * functions
- */
 
 namespace nw4hbm {
 namespace ut {
@@ -107,10 +99,6 @@ template <typename T> void TagProcessorBase<T>::ProcessTab(PrintContext<T>* cont
 
 } // namespace ut
 } // namespace nw4hbm
-
-/*******************************************************************************
- * explicit template instantiations
- */
 
 namespace nw4hbm {
 namespace ut {

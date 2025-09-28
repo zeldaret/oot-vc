@@ -1,9 +1,5 @@
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
 
-/*******************************************************************************
- * headers
- */
-
 #include "cstring.hpp" // std::strncpy
 
 #include "macros.h"
@@ -24,10 +20,6 @@
 #include "revolution/gx/GXTransform.h"
 #include "revolution/mtx/mtx.h"
 
-/*******************************************************************************
- * local function declarations
- */
-
 namespace {
 // pretend this is nw4hbm::lyt
 using namespace nw4hbm;
@@ -36,19 +28,11 @@ using namespace nw4hbm::lyt;
 void ReverseYAxis(math::MTX34* pMtx);
 } // unnamed namespace
 
-/*******************************************************************************
- * variables
- */
-
 namespace nw4hbm {
 namespace lyt {
 const ut::detail::RuntimeTypeInfo Pane::typeInfo(nullptr);
 }
 } // namespace nw4hbm
-
-/*******************************************************************************
- * functions
- */
 
 namespace {
 
