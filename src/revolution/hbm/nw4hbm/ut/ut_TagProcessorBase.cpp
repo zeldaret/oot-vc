@@ -1,7 +1,7 @@
 #include "revolution/hbm/nw4hbm/ut/TagProcessorBase.h"
 
-#include "revolution/hbm/nw4hbm/ut/TextWriter.h"
 #include "revolution/hbm/nw4hbm/db.h"
+#include "revolution/hbm/nw4hbm/ut/TextWriter.h"
 
 namespace nw4hbm {
 namespace ut {

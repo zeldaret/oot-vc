@@ -89,9 +89,6 @@ void Pane::AppendChild(Pane* pChild) { InsertChild(mChildList.GetEndIter(), pChi
 // extern void _deadstrip2();
 // extern void _deadstrip2() { PaneList::GetNodeFromPointer(nullptr); }
 
-
-
-
 void Pane::InsertChild(PaneList::Iterator next, Pane* pChild) {
     NW4HBMAssertPointerNonnull_Line(pChild, 253);
     NW4HBMAssert_Line(pChild->mpParent == 0, 254);

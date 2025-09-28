@@ -4,7 +4,6 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-
 // clang-format off
     s16 const EnvGenerator::DecibelSquareTable[DECIBEL_SQUARE_TABLE_SIZE] =
     {

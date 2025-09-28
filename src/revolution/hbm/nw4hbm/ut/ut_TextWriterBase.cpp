@@ -7,8 +7,8 @@
 #define NO_THIS_ASSERT
 #include "revolution/hbm/nw4hbm/ut/Font.h"
 
-#include "revolution/hbm/nw4hbm/db.h"
 #include "decomp.h"
+#include "revolution/hbm/nw4hbm/db.h"
 
 namespace nw4hbm {
 namespace ut {

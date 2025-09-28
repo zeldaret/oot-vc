@@ -49,7 +49,6 @@ class Controller;
 class GroupAnmController;
 class RemoteSpk;
 
-
 class HomeButtonEventHandler : public gui::EventHandler {
     // methods
   public:
@@ -69,11 +68,9 @@ class HomeButtonEventHandler : public gui::EventHandler {
     HomeButton* mpHomeButton; // size 0x04, offset 0x08
 }; // size 0x0c
 
-
 class HomeButton {
     // enums
   private:
-    
     typedef enum /* expliticly untagged */
     {
         eSeq_Normal,
@@ -87,7 +84,6 @@ class HomeButton {
 
     // nested classes
   private:
-    
     class BlackFader {
         // methods
       public:

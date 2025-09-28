@@ -12,7 +12,6 @@ namespace homebutton {
 class RemoteSpk {
     // nested types
   private:
-    
     struct ChanInfo {
         OSAlarm alarm; // size 0x30, offset 0x00
         WENCInfo wencinfo; // size 0x20, offset 0x30

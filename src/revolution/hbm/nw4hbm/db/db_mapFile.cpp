@@ -69,7 +69,9 @@ static u8 GetCharOnDvd_(u8 const* buf) {
     s32 address = (s32)(reinterpret_cast<u32>(buf) & ~0x80000000);
     s32 offset = address - sMapBufOffset;
 
-    if ((u32)address < sFileLength == false) { return false; }
+    if ((u32)address < sFileLength == false) {
+        return false;
+    }
 
     if (sMapBufOffset < 0 || offset < 0 || ARRAY_COUNT(sMapBuf) <= offset) {
         s32 len;
@@ -88,7 +90,9 @@ static u8 GetCharOnDvd_(u8 const* buf) {
 
         OSRestoreInterrupts(intrStatus);
 
-        if (len > 0 == false) { return false; }
+        if (len > 0 == false) {
+            return false;
+        }
     }
 
     return static_cast<u8>(sMapBuf[offset]);
@@ -99,7 +103,9 @@ static u8* SearchNextLine_(u8* buf, s32 lines) {
 
     NW4HBMAssertPointerNonnull_FileLine(GetCharPtr_, lbl_80194E60, 361);
 
-    if (buf == nullptr) { return false; }
+    if (buf == nullptr) {
+        return false;
+    }
 
     for (; (c = (*GetCharPtr_)(buf)) != '\0'; buf++) {
         if (c == '\n') {
@@ -132,7 +138,9 @@ static u8* SearchParam_(u8* lineTop, u32 argNum, u8 splitter) {
 
     NW4HBMAssertPointerNonnull_FileLine(GetCharPtr_, lbl_80194E60, 432);
 
-    if (buf == nullptr) { return false; }
+    if (buf == nullptr) {
+        return false;
+    }
 
     while (true) {
         u8 c = (*GetCharPtr_)(buf);

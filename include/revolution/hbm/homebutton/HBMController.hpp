@@ -10,7 +10,6 @@
 #include "revolution/types.h"
 #include "revolution/wpad/WPAD.h"
 
-
 struct HBController {
     int chan; // size 0x04, offset 0x00
     f32 spVol; // size 0x04, offset 0x04

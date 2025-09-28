@@ -6,7 +6,6 @@
 #include "revolution/mem/mem_allocator.h"
 #include "revolution/types.h" // u32
 
-
 extern "C" MEMAllocator* spAllocator;
 
 // library internals

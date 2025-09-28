@@ -75,7 +75,7 @@ class Font {
     void InitReaderFunc(FontEncoding encoding);
 
     CharStrmReader GetCharStrmReader() const NO_INLINE {
-      //! TODO: required to make `ut_TextWriterBase` happy
+        //! TODO: required to make `ut_TextWriterBase` happy
 #ifndef NO_THIS_ASSERT
         NW4HBMAssertPointerValid_Line(this, 117);
 #endif

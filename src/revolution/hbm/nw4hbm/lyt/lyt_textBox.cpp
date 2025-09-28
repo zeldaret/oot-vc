@@ -1,12 +1,12 @@
+#include "revolution/hbm/nw4hbm/ut/CharStrmReader.h"
 #include "revolution/hbm/nw4hbm/ut/Font.h"
 #include "revolution/hbm/nw4hbm/ut/ResFont.h"
-#include "revolution/hbm/nw4hbm/ut/CharStrmReader.h"
 
-#include "revolution/hbm/nw4hbm/lyt/textBox.h"
-#include "revolution/hbm/nw4hbm/lyt/material.h"
 #include "revolution/hbm/nw4hbm/lyt/common.h"
-#include "revolution/hbm/nw4hbm/lyt/pane.h"
 #include "revolution/hbm/nw4hbm/lyt/layout.h"
+#include "revolution/hbm/nw4hbm/lyt/material.h"
+#include "revolution/hbm/nw4hbm/lyt/pane.h"
+#include "revolution/hbm/nw4hbm/lyt/textBox.h"
 
 #include "new.hpp"
 
@@ -171,8 +171,8 @@ int CalcLineStrNum(f32* pWidth, ut::TextWriterBase<T>* pTextWriter, const T* str
                    bool* pbOver) {
     NW4HBMAssertPointerValid_Line(pTextWriter, 275);
     NW4HBMAssertPointerValid_Line(str, 276);
-    NW4HBMAssertHeaderMinimumValue_Line(length, 0, 277);   
-   
+    NW4HBMAssertHeaderMinimumValue_Line(length, 0, 277);
+
     ut::Rect rect;
     ut::TextWriterBase<T> myCopy = *pTextWriter;
     myCopy.SetCursor(0.0f, 0.0f);
@@ -298,22 +298,22 @@ TextBox::~TextBox() {
     FreeStringBuffer();
 }
 
-ut::Color TextBox::GetVtxColor(u32 idx) const  {
+ut::Color TextBox::GetVtxColor(u32 idx) const {
     NW4HBMAssert_Line(idx < VERTEXCOLOR_MAX, 467);
     return GetTextColor(idx / 2);
 }
 
-void TextBox::SetVtxColor(u32 idx, ut::Color value)  {
+void TextBox::SetVtxColor(u32 idx, ut::Color value) {
     NW4HBMAssert_Line(idx < VERTEXCOLOR_MAX, 478);
     SetTextColor(idx / 2, value);
 }
 
-u8 TextBox::GetVtxColorElement(u32 idx) const  {
+u8 TextBox::GetVtxColorElement(u32 idx) const {
     NW4HBMAssert_Line(idx < ANIMTARGET_VERTEXCOLOR_MAX, 486);
     return reinterpret_cast<const u8*>(mTextColors + idx / 8)[idx % 4];
 }
 
-void TextBox::SetVtxColorElement(u32 idx, u8 value)  {
+void TextBox::SetVtxColorElement(u32 idx, u8 value) {
     NW4HBMAssert_Line(idx < ANIMTARGET_VERTEXCOLOR_MAX, 494);
     reinterpret_cast<u8*>(mTextColors + idx / 8)[idx % 4] = value;
 }

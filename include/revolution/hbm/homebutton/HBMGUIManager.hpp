@@ -24,7 +24,6 @@ namespace gui {
 class Manager;
 class PaneComponent;
 
-
 class Interface {
     // methods
   public:
@@ -46,7 +45,6 @@ class Interface {
     /* vtable */ // size 0x04, offset 0x00
 }; // size 0x04
 
-
 class EventHandler // also see HBMBase.cpp
 {
     // methods
@@ -64,7 +62,6 @@ class EventHandler // also see HBMBase.cpp
     /* vtable */ // size 0x04, offset 0x00
     Manager* mpManager; // size 0x04, offset 0x04
 }; // size 0x08
-
 
 class Component : public Interface {
     // NOTE the misspelling of triggerTarget as triggerTarger
@@ -126,11 +123,9 @@ class Component : public Interface {
     Manager* mpManager; // size 0x04, offset 0x28
 }; // size 0x2c
 
-
 class Manager : public Interface {
     // nested types
   private:
-    
     struct IDToComponent {
         // methods
       public:
@@ -193,11 +188,9 @@ class Manager : public Interface {
     MEMAllocator* mpAllocator; // size 0x04, offset 0x14
 }; // size 0x18
 
-
 class PaneManager : public Manager {
     // nested types
   private:
-    
     struct PaneToComponent {
         // methods
       public:
@@ -249,7 +242,6 @@ class PaneManager : public Manager {
     // static members
     static u32 suIDCounter;
 }; // size 0x2c
-
 
 class PaneComponent : public Component {
     // methods

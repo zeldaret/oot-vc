@@ -1,7 +1,7 @@
 #include "revolution/hbm/nw4hbm/ut/FileStream.h"
 
-#include "revolution/hbm/nw4hbm/ut/inlines.h"
 #include "revolution/hbm/nw4hbm/db.h"
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
 
 namespace nw4hbm {
 namespace ut {

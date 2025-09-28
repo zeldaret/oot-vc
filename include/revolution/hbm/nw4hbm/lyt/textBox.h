@@ -4,10 +4,10 @@
 #include "revolution/hbm/nw4hbm/lyt/common.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
 
-#include "revolution/hbm/nw4hbm/ut/TagProcessorBase.h"
 #include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
-#include "revolution/hbm/nw4hbm/ut/WideTextWriter.h"
+#include "revolution/hbm/nw4hbm/ut/TagProcessorBase.h"
 #include "revolution/hbm/nw4hbm/ut/WideTagProcessor.h"
+#include "revolution/hbm/nw4hbm/ut/WideTextWriter.h"
 
 namespace nw4hbm {
 namespace lyt {

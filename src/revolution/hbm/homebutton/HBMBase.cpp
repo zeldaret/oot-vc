@@ -739,8 +739,8 @@ void HomeButton::create() {
             it->mTarget->BindAnimation(mpGroupAnmController[i]->mpAnimGroup, false);
         }
 
-        mpGroupAnmController[i]->init(ANIM_TYPE_FORWARD,
-                                      mpGroupAnmController[i]->mpAnimGroup->GetFrameMax(), 0, mpHBInfo->frameDelta);
+        mpGroupAnmController[i]->init(ANIM_TYPE_FORWARD, mpGroupAnmController[i]->mpAnimGroup->GetFrameMax(), 0,
+                                      mpHBInfo->frameDelta);
     }
 
     for (i = 0; i < (int)ARRAY_COUNT(mpPairGroupAnmController); i++) {
@@ -767,8 +767,7 @@ void HomeButton::create() {
             it->mTarget->BindAnimation(mpPairGroupAnmController[i]->mpAnimGroup, false);
         }
 
-        mpPairGroupAnmController[i]->init(ANIM_TYPE_FORWARD,
-                                          mpPairGroupAnmController[i]->mpAnimGroup->GetFrameMax(), 0,
+        mpPairGroupAnmController[i]->init(ANIM_TYPE_FORWARD, mpPairGroupAnmController[i]->mpAnimGroup->GetFrameMax(), 0,
                                           mpHBInfo->frameDelta);
     }
 

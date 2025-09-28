@@ -13,7 +13,6 @@
 extern "C" {
 #endif
 
-
 typedef enum HBMSelectBtnNum {
     HBM_SELECT_NULL = -1,
 
@@ -26,10 +25,8 @@ typedef enum HBMSelectBtnNum {
     HBM_SELECT_MAX
 } HBMSelectBtnNum;
 
-
 // Same arg names as UserCallback in HBMAxSound.cpp, so probably same type
 typedef int HBMSoundCallback(int evt, int num);
-
 
 typedef struct HBMDataInfo {
     void* layoutBuf; // size 0x04, offset 0x00
@@ -63,13 +60,11 @@ typedef struct HBMDataInfoEx {
 } HBMDataInfoEx; // size 0x??
 #endif
 
-
 typedef struct HBMKPadData {
     KPADStatus* kpad; // size 0x04, offset 0x00
     Vec2 pos; // size 0x08, offset 0x04
     u32 use_devtype; // size 0x04, offset 0x0c
 } HBMKPadData; // size 0x10
-
 
 typedef struct HBMControllerData {
     HBMKPadData wiiCon[WPAD_MAX_CONTROLLERS]; // size 0x40, offset 0x00

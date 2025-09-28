@@ -100,7 +100,9 @@ static u32 PutChar_(ConsoleHandle console, u8 const* str, u8* dstPtr) {
     u32 codeWidth = CodeWidth_(str);
     u32 cnt;
 
-    if (console->printXPos + codeWidth <= console->width == 0) { return false; }
+    if (console->printXPos + codeWidth <= console->width == 0) {
+        return false;
+    }
 
     console->printXPos += codeWidth;
 
