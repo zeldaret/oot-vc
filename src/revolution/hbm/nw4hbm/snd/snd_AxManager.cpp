@@ -7,6 +7,8 @@
 #include "cstring.hpp"
 #include "macros.h"
 
+#include "decomp.h"
+
 namespace nw4hbm {
 namespace snd {
 namespace detail {
@@ -343,6 +345,8 @@ void AxManager::SetMasterVolume(f32 volume, int frame) {
         UpdateAllVoicesSync(AxVoice::SYNC_AX_VE);
     }
 }
+
+DECOMP_FORCE_CLASS_METHOD(FxList, GetPointerFromNode(static_cast<ut::LinkListNode*>(nullptr)));
 
 void AxManager::AxCallbackFunc() {
     for (CallbackList::Iterator it = GetInstance().mCallbackList.GetBeginIter();

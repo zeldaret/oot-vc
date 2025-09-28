@@ -686,7 +686,7 @@ config.libs = [
     RevolutionHBMLib(
         "nw4hbm/snd",
         [
-            Object(NotLinked, "revolution/hbm/nw4hbm/snd/snd_AxManager.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_AxManager.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_AxVoice.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_Bank.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/snd/snd_BankFile.cpp"),
