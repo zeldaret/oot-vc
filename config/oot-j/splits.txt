@@ -913,6 +913,8 @@ revolution/hbm/nw4hbm/lyt/lyt_picture.cpp:
 	.text       start:0x80117000 end:0x80117720
 	.ctors      start:0x8016A6F0 end:0x8016A6F4
 	.data       start:0x80196530 end:0x80196758
+	.sbss       start:0x8025DC08 end:0x8025DC10
+	.sdata2     start:0x8025E6A0 end:0x8025E6A8
 
 revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.cpp:
 	.text       start:0x80117720 end:0x80117778
@@ -923,6 +925,7 @@ revolution/hbm/nw4hbm/lyt/lyt_textBox.cpp:
 	.ctors      start:0x8016A6F4 end:0x8016A6F8
 	.data       start:0x80196770 end:0x80196DE8
 	.sbss       start:0x8025DC10 end:0x8025DC18
+	.sdata2     start:0x8025E6A8 end:0x8025E6C0
 
 revolution/hbm/nw4hbm/lyt/lyt_window.cpp:
 	.text       start:0x8011A5C0 end:0x8011CE94
