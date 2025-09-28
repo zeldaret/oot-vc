@@ -119,7 +119,9 @@ bool DirectPrint_IsActive() { return sInitialized && sFrameBufferInfo.frameMemor
 void DirectPrint_EraseXfb(int posh, int posv, int sizeh, int sizev) {
     int posEndH, posEndV;
 
-    ensure_noreturn(sFrameBufferInfo.frameMemory, nullptr);
+    if (sFrameBufferInfo.frameMemory == NULL) {
+        return;
+    }
 
     if (GetDotWidth_() == 2) {
         posh *= 2;

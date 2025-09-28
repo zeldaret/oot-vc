@@ -230,7 +230,7 @@ void PaneManager::addLayoutScene(const nw4hbm::lyt::Layout& rLayout) {
 }
 
 void PaneManager::walkInChildren(nw4hbm::lyt::PaneList& rPaneList) {
-    NW4HBM_RANGE_FOR(it, rPaneList) {
+    for (nw4hbm::lyt::PaneList::Iterator it = rPaneList.GetBeginIter(); it != rPaneList.GetEndIter(); it++) {
         PaneComponent* pPaneComponent = nullptr;
         PaneToComponent* pPaneToComponent = nullptr;
 
@@ -270,7 +270,7 @@ void PaneManager::delLayoutScene(const nw4hbm::lyt::Layout& rLayout) {
 }
 
 void PaneManager::walkInChildrenDel(nw4hbm::lyt::PaneList& rPaneList) {
-    NW4HBM_RANGE_FOR(it, rPaneList) {
+    for (nw4hbm::lyt::PaneList::Iterator it = rPaneList.GetBeginIter(); it != rPaneList.GetEndIter(); it++) {
         PaneToComponent* pPaneToComponent =
             static_cast<PaneToComponent*>(nw4hbm::ut::List_GetNext(&mPaneToComponent, nullptr));
 

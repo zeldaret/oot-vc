@@ -8,54 +8,54 @@ void FrameController::init(int anm_type, f32 max_frame, f32 min_frame, f32 delta
     mMaxFrame = max_frame;
     mMinFrame = min_frame;
 
-    mFrameDelta = delta;
-    mState = eState_Stopped;
-    mAltFlag = false;
+    mDelta = delta;
+    mState = ANIM_STATE_STOP;
+    mbAlternateBack = false;
 
     initFrame();
 }
 
-void FrameController::initFrame() { mCurFrame = mAnmType == eAnmType_Backward ? mMaxFrame : mMinFrame; }
+void FrameController::initFrame() { mFrame = mAnmType == ANIM_TYPE_BACKWARD ? mMaxFrame : mMinFrame; }
 
 void FrameController::calc() {
-    if (mState != eState_Playing) {
+    if (mState != ANIM_STATE_PLAY) {
         return;
     }
 
     switch (mAnmType) {
-        case eAnmType_Forward:
-            if ((mCurFrame += mFrameDelta) >= getLastFrame()) {
-                mCurFrame = getLastFrame();
+        case ANIM_TYPE_FORWARD:
+            if ((mFrame += mDelta) >= getLastFrame()) {
+                mFrame = getLastFrame();
                 stop();
             }
 
             break;
 
-        case eAnmType_Backward:
-            if ((mCurFrame -= mFrameDelta) <= mMinFrame) {
-                mCurFrame = mMinFrame;
+        case ANIM_TYPE_BACKWARD:
+            if ((mFrame -= mDelta) <= mMinFrame) {
+                mFrame = mMinFrame;
                 stop();
             }
 
             break;
 
-        case eAnmType_Wrap:
-            if ((mCurFrame += mFrameDelta) >= mMaxFrame) {
-                mCurFrame -= mMaxFrame - mMinFrame;
+        case ANIM_TYPE_LOOP:
+            if ((mFrame += mDelta) >= mMaxFrame) {
+                mFrame -= mMaxFrame - mMinFrame;
             }
 
             break;
 
-        case eAnmType_Oscillate:
-            if (!mAltFlag) {
-                if ((mCurFrame += mFrameDelta) >= getLastFrame()) {
-                    mCurFrame = getLastFrame();
-                    mAltFlag = true;
+        case ANIM_TYPE_ALTERNATE:
+            if (!mbAlternateBack) {
+                if ((mFrame += mDelta) >= getLastFrame()) {
+                    mFrame = getLastFrame();
+                    mbAlternateBack = true;
                 }
             } else {
-                if ((mCurFrame -= mFrameDelta) <= mMinFrame) {
-                    mCurFrame = mMinFrame;
-                    mAltFlag = false;
+                if ((mFrame -= mDelta) <= mMinFrame) {
+                    mFrame = mMinFrame;
+                    mbAlternateBack = false;
                 }
             }
 

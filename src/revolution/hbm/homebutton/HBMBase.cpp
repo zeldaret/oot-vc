@@ -71,7 +71,6 @@ namespace homebutton {
 #endif // HBM_APP_TYPE == HBM_APP_TYPE_NAND
 #endif // 0
 
-
 HomeButton* HomeButton::spHomeButtonObj;
 OSMutex HomeButton::sMutex;
 WPADInfo HomeButton::sWpadInfo[WPAD_MAX_CONTROLLERS];
@@ -82,7 +81,6 @@ enum HBMAllocatorType {
     HBM_ALLOCATOR_LOCAL,
     HBM_ALLOCATOR_NW4R,
 };
-
 
 static MEMAllocator sAllocator;
 
@@ -708,10 +706,11 @@ void HomeButton::create() {
 
         nw4hbm::lyt::PaneLinkList& list = mpAnmController[i]->mpGroup->GetPaneList();
 
-        NW4HBM_RANGE_FOR(it, list)
-        it->mTarget->BindAnimation(mpAnmController[i]->mpAnimGroup, false);
+        for (nw4hbm::lyt::PaneLinkList::Iterator it = list.GetBeginIter(); it != list.GetEndIter(); it++) {
+            it->mTarget->BindAnimation(mpAnmController[i]->mpAnimGroup, false);
+        }
 
-        mpAnmController[i]->init(FrameController::eAnmType_Forward, mpAnmController[i]->mpAnimGroup->GetFrameMax(), 0,
+        mpAnmController[i]->init(ANIM_TYPE_FORWARD, mpAnmController[i]->mpAnimGroup->GetFrameMax(), 0,
                                  mpHBInfo->frameDelta);
     }
 
@@ -736,9 +735,11 @@ void HomeButton::create() {
 
         nw4hbm::lyt::PaneLinkList& list = mpGroupAnmController[i]->mpGroup->GetPaneList();
 
-        NW4HBM_RANGE_FOR(it, list) { it->mTarget->BindAnimation(mpGroupAnmController[i]->mpAnimGroup, false); }
+        for (nw4hbm::lyt::PaneLinkList::Iterator it = list.GetBeginIter(); it != list.GetEndIter(); it++) {
+            it->mTarget->BindAnimation(mpGroupAnmController[i]->mpAnimGroup, false);
+        }
 
-        mpGroupAnmController[i]->init(FrameController::eAnmType_Forward,
+        mpGroupAnmController[i]->init(ANIM_TYPE_FORWARD,
                                       mpGroupAnmController[i]->mpAnimGroup->GetFrameMax(), 0, mpHBInfo->frameDelta);
     }
 
@@ -762,9 +763,11 @@ void HomeButton::create() {
 
         nw4hbm::lyt::PaneLinkList& list = mpPairGroupAnmController[i]->mpGroup->GetPaneList();
 
-        NW4HBM_RANGE_FOR(it, list) { it->mTarget->BindAnimation(mpPairGroupAnmController[i]->mpAnimGroup, false); }
+        for (nw4hbm::lyt::PaneLinkList::Iterator it = list.GetBeginIter(); it != list.GetEndIter(); it++) {
+            it->mTarget->BindAnimation(mpPairGroupAnmController[i]->mpAnimGroup, false);
+        }
 
-        mpPairGroupAnmController[i]->init(FrameController::eAnmType_Forward,
+        mpPairGroupAnmController[i]->init(ANIM_TYPE_FORWARD,
                                           mpPairGroupAnmController[i]->mpAnimGroup->GetFrameMax(), 0,
                                           mpHBInfo->frameDelta);
     }

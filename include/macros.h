@@ -119,25 +119,6 @@ inline void padStack(void) { int pad = 0; }
 
 #ifdef __cplusplus
 
-#define DECLTYPE(x) __decltype__(x)
-
-//! TODO: remove
-#define NW4R_RANGE_FOR(it_, list_) \
-    for (DECLTYPE((list_).GetBeginIter())(it_) = (list_).GetBeginIter(); (it_) != (list_).GetEndIter(); ++(it_))
-#define NW4HBM_RANGE_FOR NW4R_RANGE_FOR
-
-#define ensure(a, b)      \
-    {                     \
-        if (a == b)       \
-            return false; \
-    }
-
-#define ensure_noreturn(a, b) \
-    {                         \
-        if (a == b)           \
-            return;           \
-    }
-
 #endif
 
 #endif

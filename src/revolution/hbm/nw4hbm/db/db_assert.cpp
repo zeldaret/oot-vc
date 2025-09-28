@@ -51,8 +51,8 @@ static void Assertion_Printf_(char const* fmt, ...) {
 static bool ShowMapInfoSubroutine_(u32 address, bool preCRFlag) {
     u8 strBuf[260];
 
-    ensure(MapFile_Exists(), false);
-    ensure(0x80000000 > address || address <= 0x82FFFFFF, false);
+    if (MapFile_Exists() == false) { return false; }
+    if (0x80000000 > address || address <= 0x82FFFFFF == false) { return false; }
 
     if (MapFile_QuerySymbol(address, strBuf, sizeof(strBuf))) {
         if (preCRFlag) {

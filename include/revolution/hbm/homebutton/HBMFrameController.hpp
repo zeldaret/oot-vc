@@ -4,66 +4,73 @@
 #include "revolution/types.h"
 
 namespace homebutton {
+enum {
+    ANIM_TYPE_FORWARD = 0,
+    ANIM_TYPE_BACKWARD,
+    ANIM_TYPE_LOOP,
+    ANIM_TYPE_ALTERNATE
+};
+
+enum {
+    ANIM_STATE_STOP = 0,
+    ANIM_STATE_PLAY,
+    ANIM_STATE_STOP_REQ,
+};
 
 class FrameController {
-    // enums
   public:
-    enum eState {
-        eState_Stopped,
-        eState_Playing,
-    };
-
-    enum eAnmType {
-        eAnmType_Forward, // name known from asserts
-        eAnmType_Backward,
-        eAnmType_Wrap,
-        eAnmType_Oscillate,
-
-        eAnmType_Max // name known from asserts
-    };
-
-    // methods
-  public:
-    // cdtors
     FrameController() {}
     virtual ~FrameController() {}
 
-    // virtual function ordering
-    // vtable FrameController
+    void init(int type, f32 maxFrame, f32 minFrame, f32 delta);
+    void initFrame();
+
     virtual void calc();
 
-    // methods
+    void setMaxFrame(f32 value) { mMaxFrame = value; }
     f32 getMaxFrame() const { return mMaxFrame; }
-    f32 getCurrentFrame() const { return mCurFrame; }
+
     f32 getLastFrame() const { return mMaxFrame - 1.0f; }
-    bool isPlaying() const { return mState == eState_Playing; }
 
-    void setAnmType(int anmType) { mAnmType = anmType; }
+    void setMinFrame(f32 value) { mMinFrame = value; }
+    f32 getMinFrame() const { return mMinFrame; }
 
-    void init(int anmType, f32 max_frame, f32 min_frame, f32 delta);
-    void initFrame();
+    void setCurrentFrame(f32 value) { mFrame = value; }
+    f32 getCurrentFrame() const { return mFrame; }
+
+    void setDelta(f32 value) { mDelta = value; }
+    f32 getDelta() const { return mDelta; }
+
+    void setState(int value) { mState = value; }
+    int getState() const { return mState; }
+
+    void setAnimType(int value) { mAnmType = value; }
+    int getAnimType() const { return mAnmType; }
+
+    bool isPlaying() const { return mState == ANIM_STATE_PLAY; }
 
     void start() {
         initFrame();
         restart();
     }
 
-    void restart() { mState = eState_Playing; }
-    void stop() { mState = eState_Stopped; }
+    void restart() { mState = ANIM_STATE_PLAY; }
+    void stop() { mState = ANIM_STATE_STOP; }
 
-    // members
-  protected: // GroupAnmController::doCalc
-    /* vtable */ // size 0x04, offset 0x00
-    f32 mMaxFrame; // size 0x04, offset 0x04
-    f32 mMinFrame; // size 0x04, offset 0x08
-    f32 mCurFrame; // size 0x04, offset 0x0c
-    f32 mFrameDelta; // size 0x04, offset 0x10
-    int mState; // size 0x04, offset 0x14
-    int mAnmType; // size 0x04, offset 0x18
-    bool mAltFlag; // size 0x01, offset 0x1c
-    /* 3 bytes padding */
-}; // size 0x24
+  protected:
+    f32 mMaxFrame; // 0x04
+    f32 mMinFrame; // 0x08
+    f32 mFrame; // 0x0C
 
+    f32 mDelta; // 0x10
+
+    int mState; // 0x14
+
+    int mAnmType; // 0x18
+
+  private:
+    bool mbAlternateBack; // 0x1C
+};
 } // namespace homebutton
 
 #endif // RVL_SDK_HBM_HOMEBUTTON_FRAME_CONTROLLER_HPP

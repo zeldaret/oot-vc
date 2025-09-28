@@ -20,10 +20,6 @@ class GroupAnmController : public FrameController {
     GroupAnmController();
     virtual ~GroupAnmController();
 
-    // virtual function ordering
-    // vtable FrameController
-    // virtual void calc();
-
     // methods
     void do_calc();
 
