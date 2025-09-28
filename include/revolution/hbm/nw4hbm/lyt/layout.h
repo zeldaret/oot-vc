@@ -1,8 +1,6 @@
 #ifndef NW4HBM_LYT_LAYOUT_H
 #define NW4HBM_LYT_LAYOUT_H
 
-#include "decomp.h"
-
 #include "revolution/mem.h"
 #include "revolution/types.h"
 

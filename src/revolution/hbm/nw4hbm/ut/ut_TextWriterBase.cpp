@@ -1,33 +1,16 @@
 #include "revolution/hbm/nw4hbm/ut/TextWriterBase.h"
 
-#include "cstdarg.hpp" // std::va_list
-#include "cstdio.hpp" // std::vsnprintf
-#include "cstring.hpp" // std::strlen
-#include "cwchar.hpp"
-
 #include "revolution/hbm/nw4hbm/ut/CharWriter.h"
 #include "revolution/hbm/nw4hbm/ut/inlines.h"
-#include "revolution/types.h"
 
-// #include "cstdarg.hpp"
-// #include "macros.h"
-
-// #include "revolution/hbm/HBMAssert.hpp"
+#include "decomp.h"
 
 namespace nw4hbm {
 namespace ut {
-// .data
+
 template <typename charT> u32 TextWriterBase<charT>::mFormatBufferSize = 0x100;
-
-// .bss
 template <typename charT> charT* TextWriterBase<charT>::mFormatBuffer;
-
 template <typename charT> TagProcessorBase<charT> TextWriterBase<charT>::mDefaultTagProcessor;
-} // namespace ut
-} // namespace nw4hbm
-
-namespace nw4hbm {
-namespace ut {
 
 template <typename charT>
 TextWriterBase<charT>::TextWriterBase()
@@ -190,7 +173,7 @@ template <typename charT> f32 TextWriterBase<charT>::PrintImpl(const charT* str,
     CharStrmReader reader = GetFont()->GetCharStrmReader();
     reader.Set(str);
 
-    char16_t code = reader.Next();
+    u16 code = reader.Next();
 
     while (static_cast<const charT*>(reader.GetCurrentPos()) - str <= length) {
         if (code < ' ') { // C0 control characters under space
@@ -241,7 +224,7 @@ template <typename charT> f32 TextWriterBase<charT>::PrintImpl(const charT* str,
 
             bCharSpace = true;
 
-            { // 0x4a7507 wants lexical_block
+            {
                 const Font* pFont = GetFont();
                 f32 adj = -pFont->GetBaselinePos() * GetScaleV();
 
@@ -332,7 +315,7 @@ template <typename charT> int TextWriterBase<charT>::CalcLineRectImpl(Rect* pRec
 
     reader.Set(str);
 
-    for (char16_t code = reader.Next(); static_cast<const charT*>(reader.GetCurrentPos()) - str <= length;
+    for (u16 code = reader.Next(); static_cast<const charT*>(reader.GetCurrentPos()) - str <= length;
          code = reader.Next()) {
         if (code < ' ') {
             Operation operation;
@@ -509,11 +492,6 @@ void TextWriterBase<charT>::CalcVStringRect(Rect* pRect, const charT* format, st
     CalcStringRect(pRect, buffer, length);
 }
 
-} // namespace ut
-} // namespace nw4hbm
-
-namespace nw4hbm {
-namespace ut {
 template class TextWriterBase<char>;
 template class TextWriterBase<wchar_t>;
 

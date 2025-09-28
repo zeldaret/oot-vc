@@ -1,21 +1,12 @@
 #include "revolution/hbm/homebutton/HBMRemoteSpk.hpp"
 
-#include "macros.h"
-#include "revolution/arc/arc.h"
 #include "revolution/hbm/homebutton/HBMController.hpp"
-#include "revolution/os/OSAlarm.h"
-#include "revolution/os/OSInterrupt.h"
-#include "revolution/os/OSTime.h"
-#include "revolution/types.h"
-#include "revolution/wenc/wenc.h"
-#include "revolution/wpad/WPAD.h"
+
 #include "string.h"
 
 namespace homebutton {
-static bool MakeVolumeData(const s16* src, s16* dst, int vol, u32 size);
-} // namespace homebutton
 
-namespace homebutton {
+static bool MakeVolumeData(const s16* src, s16* dst, int vol, u32 size);
 
 void RemoteSpk::SetInstance(RemoteSpk* pThis) { Controller::SetInstance(pThis); }
 

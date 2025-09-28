@@ -1,14 +1,9 @@
 #include "revolution/hbm/nw4hbm/lyt/arcResourceAccessor.h"
 
-#include "cstring.hpp"
-#include "string.h" // stricmp
+#include "revolution/hbm/nw4hbm/ut.h"
+#include "revolution/arc.h"
 
-#include "macros.h"
-#include "revolution/types.h"
-
-#include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
-
-#include "revolution/arc/arc.h"
+#include "string.h"
 
 namespace {
 // pretend this is nw4hbm::lyt

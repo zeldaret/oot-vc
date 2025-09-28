@@ -4,17 +4,12 @@
 #include "revolution/hbm/nw4hbm/lyt/drawInfo.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
 
-#include "revolution/hbm/nw4hbm/ut/Color.h"
-#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
+#include "revolution/hbm/nw4hbm/ut.h"
 
 namespace nw4hbm {
 namespace lyt {
+
 const ut::detail::RuntimeTypeInfo Bounding::typeInfo(&Pane::typeInfo);
-}
-} // namespace nw4hbm
-
-namespace nw4hbm {
-namespace lyt {
 
 Bounding::Bounding(const res::Bounding* pBlock, const ResBlockSet&) : Pane(pBlock) {}
 

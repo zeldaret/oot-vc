@@ -1,14 +1,7 @@
 #include "revolution/hbm/homebutton/HBMController.hpp"
 
-#include "macros.h"
-#include "revolution/hbm/homebutton/HBMRemoteSpk.hpp"
-#include "revolution/kpad/KPAD.h"
-#include "revolution/os/OSTime.h"
-#include "revolution/types.h"
-#include "revolution/wpad/WPAD.h"
-
 namespace homebutton {
-// .bss
+
 bool Controller::sBatteryFlag[WPAD_MAX_CONTROLLERS];
 OSAlarm Controller::sAlarm[WPAD_MAX_CONTROLLERS];
 OSAlarm Controller::sAlarmSoundOff[WPAD_MAX_CONTROLLERS];
@@ -16,9 +9,6 @@ Controller* Controller::sThis[WPAD_MAX_CONTROLLERS];
 bool Controller::sSetInfoAsync[WPAD_MAX_CONTROLLERS];
 RemoteSpk* Controller::sPInstance;
 s32 Controller::lbl_8025DBBC;
-} // namespace homebutton
-
-namespace homebutton {
 
 void Controller::wpadConnectCallback(WPADChannel chan, WPADResult result) {
     switch (result) {
@@ -313,9 +303,6 @@ void Controller::stopMotor() {
     }
 }
 
-/* not sure what the return value here is? doesn't seem like WPADResult and
- * it's never used
- */
 s32 Controller::getInfoAsync(WPADInfo* info) {
     if (getChan() >= WPAD_MAX_CONTROLLERS) {
         return -2;

@@ -1,32 +1,22 @@
 #include "revolution/hbm/nw4hbm/db/console.h"
 
-#include "cstdarg.hpp"
-#include "cstdio.hpp" // vsnprintf
-
-#include "macros.h"
-#include "revolution/types.h"
-
 #include "revolution/hbm/nw4hbm/db/directPrint.h"
-
-#include "revolution/os/OSError.h" // OSReport
-#include "revolution/os/OSInterrupt.h"
-#include "revolution/os/OSMutex.h"
-#include "revolution/os/OSThread.h" // OSGetCurrentThread
-
-#include "revolution/hbm/HBMAssert.hpp"
-#include "revolution/hbm/nw4hbm/ut/Color.h"
+#include "revolution/os.h"
 
 #include "decomp.h"
 
 namespace nw4hbm {
 namespace db {
-static inline u8* GetTextPtr_(detail::ConsoleHead* console, u16 line, u16 xPos) {
+
+static OSMutex sMutex;
+
+static inline u8* GetTextPtr_(ConsoleHandle console, u16 line, u16 xPos) {
     return console->textBuf + xPos + (console->width + 1) * line;
 }
 
 static inline u32 CodeWidth_(u8 const* p) { return *p >= 0x81 ? sizeof(wchar_t) : sizeof(char); }
 
-static inline u32 GetTabSize_(detail::ConsoleHead* console) {
+static inline u32 GetTabSize_(ConsoleHandle console) {
     s32 tab = (console->attr & /* REGISTER16_BITFIELD(12, 13) */ 0xC) >> 2;
     // EXTRACT_BIT_FIELD does not generate srawi
 
@@ -41,7 +31,7 @@ static inline u8 const* SearchEndOfLine_(u8 const* str) {
     return str;
 }
 
-static inline u16 GetRingUsedLines_(detail::ConsoleHead* console) {
+static inline u16 GetRingUsedLines_(ConsoleHandle console) {
     NW4HBMAssertPointerNonnull_Line(console, 112);
 
     { // 39ac92 wants lexical_block
@@ -55,7 +45,7 @@ static inline u16 GetRingUsedLines_(detail::ConsoleHead* console) {
     }
 }
 
-static inline u16 GetActiveLines_(detail::ConsoleHead* console) {
+static inline u16 GetActiveLines_(ConsoleHandle console) {
     u16 lines = GetRingUsedLines_(console);
 
     if (console->printTopUsed) {
@@ -65,45 +55,17 @@ static inline u16 GetActiveLines_(detail::ConsoleHead* console) {
     return lines;
 }
 
-static void TerminateLine_(detail::ConsoleHead* console);
-static u8* NextLine_(detail::ConsoleHead* console);
-static u8* PutTab_(detail::ConsoleHead* console, u8* dstPtr);
-static u32 GetTabSize_(detail::ConsoleHead* console);
-static u32 PutChar_(detail::ConsoleHead* console, const u8* str, u8* dstPtr);
-static u32 CodeWidth_(const u8* p);
-
-static void UnlockMutex_(OSMutex* mutex);
-static bool TryLockMutex_(OSMutex* mutex);
-
-static void DoDrawString_(detail::ConsoleHead* console, u32 printLine, u8 const* str, ut::TextWriterBase<char>* writer);
-static void DoDrawConsole_(detail::ConsoleHead* console, ut::TextWriterBase<char>* writer);
-
-static void PrintToBuffer_(detail::ConsoleHead* console, u8 const* str);
-
-static void Console_PrintString_(ConsoleOutputType type, detail::ConsoleHead* console, u8 const* str);
-} // namespace db
-} // namespace nw4hbm
-
-namespace nw4hbm {
-namespace db {
-static OSMutex sMutex;
-}
-} // namespace nw4hbm
-
-namespace nw4hbm {
-namespace db {
-
-static void TerminateLine_(detail::ConsoleHead* console) {
+static void TerminateLine_(ConsoleHandle console) {
     *GetTextPtr_(console, console->printTop, console->printXPos) = '\0';
 }
 
-static u8* NextLine_(detail::ConsoleHead* console) {
+static u8* NextLine_(ConsoleHandle console) {
     *GetTextPtr_(console, console->printTop, console->printXPos) = '\0';
     console->printXPos = 0;
     console->printTop++;
     console->printTopUsed = 0;
 
-    if (console->printTop == console->height && !(console->attr & /* FLAG_BIT(1) */ 2)) {
+    if (console->printTop == console->height && !(console->attr & 2)) {
         console->printTop = 0;
     }
 
@@ -118,7 +80,7 @@ static u8* NextLine_(detail::ConsoleHead* console) {
     return GetTextPtr_(console, console->printTop, 0);
 }
 
-static u8* PutTab_(detail::ConsoleHead* console, u8* dstPtr) {
+static u8* PutTab_(ConsoleHandle console, u8* dstPtr) {
     u32 tabWidth = GetTabSize_(console);
 
     do {
@@ -133,7 +95,7 @@ static u8* PutTab_(detail::ConsoleHead* console, u8* dstPtr) {
     return dstPtr;
 }
 
-static u32 PutChar_(detail::ConsoleHead* console, u8 const* str, u8* dstPtr) {
+static u32 PutChar_(ConsoleHandle console, u8 const* str, u8* dstPtr) {
     u32 codeWidth = CodeWidth_(str);
     u32 cnt;
 
@@ -148,17 +110,14 @@ static u32 PutChar_(detail::ConsoleHead* console, u8 const* str, u8* dstPtr) {
     return codeWidth;
 }
 
-// dwarf line is 300?
 static void UnlockMutex_(OSMutex* mutex) { OSUnlockMutex(mutex); }
 
-// dwarf line is 273?
 static bool TryLockMutex_(OSMutex* mutex) {
     OSLockMutex(mutex);
     return true;
 }
 
-static void DoDrawString_(detail::ConsoleHead* console, u32 printLine, u8 const* str,
-                          ut::TextWriterBase<char>* writer) {
+static void DoDrawString_(ConsoleHandle console, u32 printLine, u8 const* str, ut::TextWriterBase<char>* writer) {
     if (writer) {
         writer->Printf("%s\n", str);
     } else {
@@ -168,7 +127,7 @@ static void DoDrawString_(detail::ConsoleHead* console, u32 printLine, u8 const*
     }
 }
 
-static void DoDrawConsole_(detail::ConsoleHead* console, ut::TextWriterBase<char>* writer) {
+static void DoDrawConsole_(ConsoleHandle console, ut::TextWriterBase<char>* writer) {
     s32 viewOffset;
     u16 line;
     u16 printLines;
@@ -217,7 +176,7 @@ static void DoDrawConsole_(detail::ConsoleHead* console, ut::TextWriterBase<char
     }
 }
 
-void Console_DrawDirect(detail::ConsoleHead* console) {
+void Console_DrawDirect(ConsoleHandle console) {
     NW4HBMAssertPointerNonnull_Line(console, 621);
 
     if (DirectPrint_IsActive() && console->isVisible) {
@@ -236,7 +195,7 @@ DECOMP_FORCE("illegal console handle");
 DECOMP_FORCE(NW4HBMAssertPointerNonnull_String(buffer));
 DECOMP_FORCE(NW4HBMAssertAligned_String(buffer, 4));
 
-static void PrintToBuffer_(detail::ConsoleHead* console, u8 const* str) {
+static void PrintToBuffer_(ConsoleHandle console, u8 const* str) {
     u8* storePtr;
 
     NW4HBMAssertPointerNonnull_Line(console, 747);
@@ -296,7 +255,7 @@ static void PrintToBuffer_(detail::ConsoleHead* console, u8 const* str) {
     }
 }
 
-static void Console_PrintString_(ConsoleOutputType type, detail::ConsoleHead* console, u8 const* str) {
+static void Console_PrintString_(ConsoleOutputType type, ConsoleHandle console, u8 const* str) {
     NW4HBMAssertPointerNonnull_Line(console, 843);
 
     if (type & CONSOLE_OUTPUT_DISPLAY) {
@@ -308,15 +267,13 @@ static void Console_PrintString_(ConsoleOutputType type, detail::ConsoleHead* co
     }
 }
 
-void Console_VFPrintf(ConsoleOutputType type, detail::ConsoleHead* console, char const* format, std::va_list vlist) {
+void Console_VFPrintf(ConsoleOutputType type, ConsoleHandle console, char const* format, std::va_list vlist) {
 #if !defined(NDEBUG)
-    static int dummy; // needed to get the @0 at the end of sStrBuf
     static u8 sStrBuf[1024];
 
     NW4HBMAssertPointerNonnull_Line(console, 872);
 
     if (TryLockMutex_(&sMutex)) {
-        // Cool
         std::vsnprintf(reinterpret_cast<char*>(sStrBuf), sizeof sStrBuf, format, vlist);
 
         Console_PrintString_(type, console, sStrBuf);
@@ -326,7 +283,7 @@ void Console_VFPrintf(ConsoleOutputType type, detail::ConsoleHead* console, char
 #endif // !defined(NDEBUG)
 }
 
-void Console_Printf(detail::ConsoleHead* console, char const* format, ...) {
+void Console_Printf(ConsoleHandle console, char const* format, ...) {
     std::va_list vlist;
 
     va_start(vlist, format);
@@ -336,7 +293,7 @@ void Console_Printf(detail::ConsoleHead* console, char const* format, ...) {
     va_end(vlist);
 }
 
-s32 Console_GetTotalLines(detail::ConsoleHead* console) {
+s32 Console_GetTotalLines(ConsoleHandle console) {
     s32 count;
 
     // this is not part of this function but it's required to generate the dtor (`nw4hbm::ut::Color::~Color()`)

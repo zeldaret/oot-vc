@@ -1,10 +1,6 @@
 #include "revolution/hbm/nw4hbm/ut/binaryFileFormat.h"
 
-#include "macros.h"
-#include "revolution/hbm/HBMAssert.hpp"
-#include "revolution/hbm/nw4hbm/db/assert.h"
-#include "revolution/hbm/nw4hbm/db/console.h"
-#include "revolution/types.h"
+#include "revolution/hbm/nw4hbm/db.h"
 
 namespace nw4hbm {
 namespace ut {

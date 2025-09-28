@@ -1,18 +1,6 @@
 #include "revolution/hbm/nw4hbm/lyt/common.h"
 
-#include "cstring.hpp" // std::strncmp
-
-#include "macros.h"
-#include "revolution/types.h"
-
 #include "revolution/hbm/nw4hbm/lyt/layout.h"
-
-#include "revolution/hbm/nw4hbm/math/types.h"
-#include "revolution/hbm/nw4hbm/ut/Color.h"
-#include "revolution/hbm/nw4hbm/ut/inlines.h"
-
-#include "revolution/gx.h"
-#include "revolution/tpl/TPL.h"
 
 namespace nw4hbm {
 namespace lyt {

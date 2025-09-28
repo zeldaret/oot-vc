@@ -1,11 +1,7 @@
 #include "revolution/hbm/homebutton/HBMAnmController.hpp"
 
-#include "macros.h" // NW4HBM_RANGE_FOR
-
 #include "revolution/hbm/nw4hbm/lyt/animation.h"
 #include "revolution/hbm/nw4hbm/lyt/group.h"
-#include "revolution/hbm/nw4hbm/lyt/pane.h"
-#include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
 
 namespace homebutton {
 

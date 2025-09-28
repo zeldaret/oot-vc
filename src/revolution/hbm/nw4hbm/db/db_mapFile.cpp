@@ -1,15 +1,7 @@
 #include "revolution/hbm/nw4hbm/db/mapFile.h"
 
-// #include "cstddef.hpp"
-
-#include "macros.h"
-#include "revolution/types.h"
-
-// #include "revolution/os/__OSGlobals.h"
-#include "revolution/dvd/dvd.h"
-#include "revolution/dvd/dvdfs.h"
-#include "revolution/os/OSInterrupt.h"
-#include "revolution/os/OSLink.h"
+#include "revolution/dvd.h"
+#include "revolution/os.h"
 
 #include "revolution/hbm/HBMAssert.hpp"
 
@@ -200,11 +192,7 @@ static u32 XStrToU32_(u8 const* str) {
     return 0;
 }
 
-#if defined(NDEBUG)
-inline
-#endif // defined(NDEBUG)
-    static u32
-    CopySymbol_(const u8* buf, u8* str, u32 strLenMax, u8 splitter) {
+static u32 CopySymbol_(const u8* buf, u8* str, u32 strLenMax, u8 splitter) {
     u32 cnt = 0;
 
     NW4HBMAssertPointerNonnull_FileLine(buf, lbl_80194E60, 544);

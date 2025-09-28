@@ -4,8 +4,6 @@
 #include "revolution/hbm/HBMAssert.hpp"
 #include "revolution/types.h"
 
-#include "decomp.h"
-
 namespace nw4hbm {
 namespace ut {
 class CharStrmReader {

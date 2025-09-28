@@ -1,44 +1,13 @@
 #include "revolution/hbm/homebutton/HBMBase.hpp"
 
-#include "cstring.hpp"
-#include "new.hpp" // placement new
-
-#include "macros.h"
-#include "revolution/types.h"
-
 #include "revolution/hbm/homebutton/HBMAnmController.hpp"
 #include "revolution/hbm/homebutton/HBMAxSound.hpp"
-#include "revolution/hbm/homebutton/HBMCommon.hpp"
 #include "revolution/hbm/homebutton/HBMController.hpp"
-#include "revolution/hbm/homebutton/HBMFrameController.hpp"
-#include "revolution/hbm/homebutton/HBMRemoteSpk.hpp"
-
-#include "revolution/hbm/nw4hbm/lyt/animation.h"
-#include "revolution/hbm/nw4hbm/lyt/arcResourceAccessor.h"
-#include "revolution/hbm/nw4hbm/lyt/common.h" // nw4hbm::lyt::Size
-#include "revolution/hbm/nw4hbm/lyt/drawInfo.h"
-#include "revolution/hbm/nw4hbm/lyt/group.h"
-#include "revolution/hbm/nw4hbm/lyt/layout.h"
-#include "revolution/hbm/nw4hbm/lyt/material.h"
-#include "revolution/hbm/nw4hbm/lyt/pane.h"
-#include "revolution/hbm/nw4hbm/lyt/textBox.h"
-#include "revolution/hbm/nw4hbm/math/triangular.h" // nw4hbm::math::Atan2Deg
-#include "revolution/hbm/nw4hbm/math/types.h"
-#include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
-#include "revolution/hbm/nw4hbm/ut/Rect.h"
-#include "revolution/hbm/nw4hbm/ut/ResFont.h"
-#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h" // nw4hbm::ut::DynamicCast
-
-#include "revolution/ax.h"
-#include "revolution/axfx.h"
+#include "revolution/hbm/nw4hbm/lyt.h"
 #include "revolution/mem.h"
-#include "revolution/os.h"
-#include "revolution/os/OSAlarm.h"
-#include "revolution/os/OSMutex.h"
-#include "revolution/os/OSTime.h"
-#include "revolution/sc/scapi.h"
 #include "revolution/vi.h"
-#include "revolution/wpad/WPAD.h"
+
+#include "new.hpp"
 
 //! TODO: remove
 #define OSAssert_Line(...) (void)0;
@@ -63,7 +32,7 @@ static void SimpleSyncCallback(s32 result, s32 num);
 
 namespace homebutton {
 #if 0 /* data pooling */
-	// .rodata
+	
     static const AnmControllerTable scAnmTable[12];
     static const AnmControllerTable scGroupAnmTable[74];
 
@@ -77,7 +46,7 @@ namespace homebutton {
     const int HomeButton::scWaitStopMotorTime = 30;
     const int HomeButton::scWaitDisConnectTime = 180;
 
-	// .data
+	
     const char *HomeButton::scCursorLytName[WPAD_MAX_CONTROLLERS];
     const char *HomeButton::scCursorPaneName;
     const char *HomeButton::scCursorRotPaneName;
@@ -102,7 +71,7 @@ namespace homebutton {
 #endif // HBM_APP_TYPE == HBM_APP_TYPE_NAND
 #endif // 0
 
-// .bss
+
 HomeButton* HomeButton::spHomeButtonObj;
 OSMutex HomeButton::sMutex;
 WPADInfo HomeButton::sWpadInfo[WPAD_MAX_CONTROLLERS];
@@ -114,10 +83,9 @@ enum HBMAllocatorType {
     HBM_ALLOCATOR_NW4R,
 };
 
-// .bss
+
 static MEMAllocator sAllocator;
 
-// .data (not .sdata, HBM is -sdata 0)
 MEMAllocator* spAllocator = &sAllocator;
 
 void* HBMAllocMem(u32 size) {
@@ -717,8 +685,6 @@ void HomeButton::create() {
     }
 
     {
-        // 0x4817f1 wants lexical_block?
-
         void* lytRes = mpResAccessor->GetResource(0, mpLayoutName, nullptr);
         mpLayout->Build(lytRes, mpResAccessor);
     }

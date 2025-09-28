@@ -1,9 +1,6 @@
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
 
-#include "macros.h"
-// #include "revolution.h"
-
-#include "revolution/hbm/HBMAssert.hpp"
+#include "revolution/hbm/nw4hbm/db.h"
 
 namespace nw4hbm {
 namespace ut {

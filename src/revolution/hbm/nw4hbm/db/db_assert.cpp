@@ -1,29 +1,19 @@
 #include "revolution/hbm/nw4hbm/db/assert.h"
 
 #include "revolution/hbm/HBMConfig.h"
-
-#include "cstdarg.hpp"
-
-#include "macros.h"
-#include "revolution/types.h"
-
 #include "revolution/hbm/nw4hbm/db/console.h"
 #include "revolution/hbm/nw4hbm/db/directPrint.h"
 #include "revolution/hbm/nw4hbm/db/mapFile.h"
 
-#include "revolution/base/PPCArch.h"
-#include "revolution/os/OSAlarm.h"
-#include "revolution/os/OSContext.h"
-#include "revolution/os/OSError.h"
-#include "revolution/os/OSInterrupt.h"
-#include "revolution/os/OSMemory.h"
-#include "revolution/os/OSThread.h"
-#include "revolution/vi/vi.h"
+#include "revolution/base.h"
+#include "revolution/os.h"
+#include "revolution/vi.h"
 
 #include "decomp.h"
 
 namespace nw4hbm {
 namespace db {
+
 static void Assertion_Printf_(char const* fmt, ...);
 
 #if HBM_APP_TYPE == HBM_APP_TYPE_DVD
@@ -32,19 +22,10 @@ static bool ShowMapInfoSubroutine_(u32 address, bool preCRFlag);
 
 static void ShowStack_(register_t sp) NO_INLINE;
 static void WarningAlarmFunc_(OSAlarm* alarm, OSContext* ctx);
-} // namespace db
-} // namespace nw4hbm
 
-namespace nw4hbm {
-namespace db {
 static u32 sWarningTime;
-static detail::ConsoleHead* sAssertionConsole;
+static ConsoleHandle sAssertionConsole;
 static bool sDispWarningAuto;
-} // namespace db
-} // namespace nw4hbm
-
-namespace nw4hbm {
-namespace db {
 
 static void Assertion_Printf_(char const* fmt, ...) {
     std::va_list vlist;

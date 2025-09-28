@@ -1,23 +1,8 @@
 #include "revolution/hbm/nw4hbm/lyt/material.h"
 
-#include "cstring.hpp"
-
-#include "macros.h"
-#include "revolution/types.h"
-
 #include "revolution/hbm/nw4hbm/lyt/common.h"
 #include "revolution/hbm/nw4hbm/lyt/layout.h"
-#include "revolution/hbm/nw4hbm/lyt/resourceAccessor.h"
-
-#include "revolution/hbm/nw4hbm/math/arithmetic.h" // math::FAbs
-#include "revolution/hbm/nw4hbm/math/triangular.h"
-#include "revolution/hbm/nw4hbm/math/types.h"
-#include "revolution/hbm/nw4hbm/ut/Color.h"
-#include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
-#include "revolution/hbm/nw4hbm/ut/inlines.h"
-
-#include "revolution/gx.h"
-#include "revolution/tpl/TPL.h"
+#include "revolution/hbm/nw4hbm/math.h"
 
 namespace {
 // pretend this is nw4hbm::lyt
@@ -54,7 +39,7 @@ inline u32 GetTexMtx(u32 texMtxIdx) { return texMtxIdx * 3 + 30; }
 inline u32 GetTexMtxIdx(u32 texMtx) { return (texMtx - 30) / 3; }
 } // unnamed namespace
 
-// .rodata
+
 static const GXColorS10 DefaultBlackColor = {0x0000, 0x0000, 0x0000, 0x0000};
 
 // seems like this doesn't exist?

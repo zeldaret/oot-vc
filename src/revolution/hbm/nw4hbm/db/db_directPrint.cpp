@@ -1,24 +1,11 @@
 #include "revolution/hbm/nw4hbm/db/directPrint.h"
 
-#include "cstdarg.hpp"
-#include "cstdio.hpp"
-#include "cstring.hpp"
-
-#include "string.h"
-
-#include "macros.h"
-#include "revolution/types.h"
-
-#include "revolution/gx/GXFrameBuf.h"
-#include "revolution/gx/GXTypes.h"
-#include "revolution/os/OSArena.h"
-#include "revolution/os/OSCache.h"
-#include "revolution/os/OSInterrupt.h"
-#include "revolution/os/OSMutex.h"
-#include "revolution/os/OSThread.h"
+#include "revolution/hbm/HBMAssert.hpp"
+#include "revolution/os.h"
 #include "revolution/vi/vi.h"
 
-#include "revolution/hbm/HBMAssert.hpp"
+#include "cstdio.hpp"
+#include "string.h"
 
 typedef struct FrameBufferInfo {
     u8* frameMemory; // 0x00
@@ -43,9 +30,15 @@ typedef struct YUVColorInfo {
 
 namespace nw4hbm {
 namespace db {
-// defined later since they require the definition of sFrameBufferInfo
-static inline int GetDotWidth_();
-static inline int GetDotHeight_();
+
+static void DrawStringToXfb_(int posh, int posv, char const* str, bool turnOver, bool backErase);
+static char const* DrawStringLineToXfb_(int posh, int posv, char const* str, int width);
+static void DrawCharToXfb_(int posh, int posv, int code);
+
+namespace detail {
+static void WaitVIRetrace_();
+static void* CreateFB_(GXRenderModeObj const* rmode);
+} // namespace detail
 
 static inline int StrLineWidth_(char const* str) {
     int len = 0;
@@ -72,20 +65,6 @@ static inline int StrLineWidth_(char const* str) {
     return len;
 }
 
-static void DrawStringToXfb_(int posh, int posv, char const* str, bool turnOver, bool backErase);
-static char const* DrawStringLineToXfb_(int posh, int posv, char const* str, int width);
-static void DrawCharToXfb_(int posh, int posv, int code);
-
-namespace detail {
-static void WaitVIRetrace_();
-static void* CreateFB_(GXRenderModeObj const* rmode);
-} // namespace detail
-} // namespace db
-} // namespace nw4hbm
-
-namespace nw4hbm {
-namespace db {
-// .data
 static const u8 sAsciiTable[128] = {
     0x7A, 0x7A, 0x7A, 0x7A, 0x7A, 0x7A, 0x7A, 0x7A, 0x7A, 0xFD, 0xFE, 0x7A, 0x7A, 0x7A, 0x7A, 0x7A, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x64, 0x65, 0x66, 0x2B,
@@ -119,28 +98,12 @@ static const u32 sFontData2[77] = {
     0xF8000000, 0x10000000, 0x20000000, 0x40000000, 0xF8000000,
 };
 
-// .bss
 static FrameBufferInfo sFrameBufferInfo;
 static YUVColorInfo sFrameBufferColor;
-
-// .sbss
 static int sInitialized = false;
-} // namespace db
-} // namespace nw4hbm
-
-// inline functions
-namespace nw4hbm {
-namespace db {
 
 static inline int GetDotWidth_() { return sFrameBufferInfo.frameWidth < 400 ? 1 : 2; }
-
 static inline int GetDotHeight_() { return sFrameBufferInfo.frameHeight < 300 ? 1 : 2; }
-
-} // namespace db
-} // namespace nw4hbm
-
-namespace nw4hbm {
-namespace db {
 
 void DirectPrint_Init() {
     if (!sInitialized) {

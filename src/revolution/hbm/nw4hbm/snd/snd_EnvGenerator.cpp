@@ -3,7 +3,7 @@
 namespace nw4hbm {
 namespace snd {
 namespace detail {
-// .rodata
+
 
 // clang-format off
     s16 const EnvGenerator::DecibelSquareTable[DECIBEL_SQUARE_TABLE_SIZE] =
@@ -27,7 +27,6 @@ namespace detail {
     };
 // clang-format on
 
-// .sdata2
 #define VOLUME_INIT -90.4f
 } // namespace detail
 } // namespace snd

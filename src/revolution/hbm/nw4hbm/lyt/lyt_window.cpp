@@ -1,23 +1,9 @@
 #include "revolution/hbm/nw4hbm/lyt/window.h"
 
+#include "revolution/hbm/nw4hbm/lyt/layout.h"
+
 #include "new.hpp"
 
-#include "macros.h"
-#include "revolution/types.h"
-
-#include "revolution/hbm/nw4hbm/lyt/common.h"
-#include "revolution/hbm/nw4hbm/lyt/layout.h"
-#include "revolution/hbm/nw4hbm/lyt/material.h"
-#include "revolution/hbm/nw4hbm/lyt/pane.h"
-#include "revolution/hbm/nw4hbm/lyt/types.h"
-
-#include "revolution/hbm/nw4hbm/math/types.h"
-#include "revolution/hbm/nw4hbm/ut/Color.h"
-#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
-#include "revolution/hbm/nw4hbm/ut/inlines.h"
-
-// probably local
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x49dde9
 struct TextureFlipInfo {
     u8 coords[4][2]; // size 0x08, offset 0x00
     u8 idx[2]; // size 0x02, offset 0x08
@@ -47,8 +33,9 @@ void GetRBTexCoord(math::VEC2* texCds, const Size& polSize, const Size& texSize,
 
 namespace nw4hbm {
 namespace lyt {
-// .bss
+
 const ut::detail::RuntimeTypeInfo Window::typeInfo(&Pane::typeInfo);
+
 } // namespace lyt
 } // namespace nw4hbm
 

@@ -1,42 +1,20 @@
 #include "revolution/hbm/homebutton/HBMGUIManager.hpp"
 
-#include "macros.h"
-#include "new.hpp" // IWYU pragma: keep (placement new)
-#include "revolution/gx.h"
 #include "revolution/hbm/nw4hbm/lyt/bounding.h"
-#include "revolution/hbm/nw4hbm/lyt/common.h" // nw4hbm::lyt::Size
 #include "revolution/hbm/nw4hbm/lyt/layout.h"
-#include "revolution/hbm/nw4hbm/lyt/pane.h"
 #include "revolution/hbm/nw4hbm/lyt/picture.h"
 #include "revolution/hbm/nw4hbm/lyt/window.h"
-#include "revolution/hbm/nw4hbm/math/types.h"
-#include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
-#include "revolution/hbm/nw4hbm/ut/Rect.h"
-#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h" // nw4hbm::ut::DynamicCast
-#include "revolution/hbm/nw4hbm/ut/list.h"
-#include "revolution/mem/mem_allocator.h"
-#include "revolution/mtx/mtx.h"
-#include "revolution/mtx/vec.h"
-#include "revolution/os/OSError.h"
-#include "revolution/types.h"
+
+#include "new.hpp"
 
 namespace homebutton {
 namespace gui {
+
+u32 PaneManager::suIDCounter;
+
 static void drawLine_(f32 x0, f32 y0, f32 x1, f32 y1, f32 z, u8 uWidth, GXColor& rColor);
 
 static bool is_visible(nw4hbm::lyt::Pane* pPane);
-} // namespace gui
-} // namespace homebutton
-
-namespace homebutton {
-namespace gui {
-// .bss
-u32 PaneManager::suIDCounter;
-} // namespace gui
-} // namespace homebutton
-
-namespace homebutton {
-namespace gui {
 
 static void drawLine_(f32 x0, f32 y0, f32 x1, f32 y1, f32 z, u8 uWidth, GXColor& rColor) {
     static const f32 cubeScale ATTRIBUTE_UNUSED = 1.0f;
@@ -410,7 +388,6 @@ void PaneComponent::draw() {
               color);
 }
 
-#pragma push
 #pragma global_optimizer off // ...ok!
 
 static bool is_visible(nw4hbm::lyt::Pane* pPane) {
@@ -427,7 +404,7 @@ static bool is_visible(nw4hbm::lyt::Pane* pPane) {
 
 bool PaneComponent::isVisible() { return is_visible(mpPane); }
 
-#pragma pop
+#pragma global_optimizer reset
 
 } // namespace gui
 } // namespace homebutton

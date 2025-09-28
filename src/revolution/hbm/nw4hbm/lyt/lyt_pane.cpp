@@ -1,24 +1,7 @@
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
 
-#include "cstring.hpp" // std::strncpy
-
-#include "macros.h"
-#include "revolution/types.h"
-
-#include "revolution/hbm/nw4hbm/lyt/animation.h"
 #include "revolution/hbm/nw4hbm/lyt/common.h"
-#include "revolution/hbm/nw4hbm/lyt/drawInfo.h"
 #include "revolution/hbm/nw4hbm/lyt/layout.h"
-#include "revolution/hbm/nw4hbm/lyt/material.h"
-
-#include "revolution/hbm/nw4hbm/math/types.h"
-#include "revolution/hbm/nw4hbm/ut/Color.h"
-#include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
-#include "revolution/hbm/nw4hbm/ut/Rect.h"
-#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
-
-#include "revolution/gx/GXTransform.h"
-#include "revolution/mtx/mtx.h"
 
 namespace {
 // pretend this is nw4hbm::lyt
@@ -207,12 +190,12 @@ void Pane::CalculateMtx(const DrawInfo& drawInfo) {
         return;
     }
 
-    { // 0x498f0f wants lexical_block
+    {
         math::MTX34 mtx1;
         math::MTX34 mtx2;
         math::MTX34 rotateMtx;
 
-        { // 0x498f5e wants lexical_block
+        {
             math::VEC2 scale(mScale);
 
             if (drawInfo.IsLocationAdjust() && detail::TestBit(mFlag, 2)) {

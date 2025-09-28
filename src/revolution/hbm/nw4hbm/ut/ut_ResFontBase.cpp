@@ -1,12 +1,11 @@
 #include "revolution/hbm/nw4hbm/ut/ResFont.h"
 
-#include "macros.h"
-#include "revolution/hbm/HBMAssert.hpp"
+#include "revolution/hbm/nw4hbm/db.h"
 
 #define GLYPH_INDEX_NOT_FOUND 0xFFFF
 
 struct CMapScanEntry {
-    char16_t ccode; // size 0x02, offset 0x00
+    u16 ccode; // size 0x02, offset 0x00
     u16 index; // size 0x02, offset 0x02
 }; // size 0x04
 
@@ -109,7 +108,7 @@ void ResFontBase::SetDefaultCharWidths(const CharWidths& widths) {
     // clang-format on
 }
 
-bool ResFontBase::SetAlternateChar(char16_t c) {
+bool ResFontBase::SetAlternateChar(u16 c) {
     NW4HBMAssertPointerValid_Line(this, 350);
     NW4HBMAssertPointerValid_Line(mFontInfo, 351);
     u16 index = FindGlyphIndex(c);
@@ -129,15 +128,15 @@ void ResFontBase::SetLineFeed(int linefeed) {
     mFontInfo->linefeed = linefeed;
 }
 
-int ResFontBase::GetCharWidth(char16_t c) const { return GetCharWidths(c).charWidth; }
+int ResFontBase::GetCharWidth(u16 c) const { return GetCharWidths(c).charWidth; }
 
-CharWidths ResFontBase::GetCharWidths(char16_t c) const {
+CharWidths ResFontBase::GetCharWidths(u16 c) const {
     u16 index = GetGlyphIndex(c);
 
     return GetCharWidthsFromIndex(index);
 }
 
-void ResFontBase::GetGlyph(Glyph* glyph, char16_t c) const {
+void ResFontBase::GetGlyph(Glyph* glyph, u16 c) const {
     u16 index = GetGlyphIndex(c);
 
     GetGlyphFromIndex(glyph, index);
@@ -149,7 +148,7 @@ FontEncoding ResFontBase::GetEncoding() const {
     return static_cast<FontEncoding>(mFontInfo->encoding);
 }
 
-u16 ResFontBase::GetGlyphIndex(char16_t c) const {
+u16 ResFontBase::GetGlyphIndex(u16 c) const {
     NW4HBMAssertPointerValid_Line(this, 482);
     NW4HBMAssertPointerValid_Line(mFontInfo, 483);
     u16 index = FindGlyphIndex(c);
@@ -157,7 +156,7 @@ u16 ResFontBase::GetGlyphIndex(char16_t c) const {
     return index != GLYPH_INDEX_NOT_FOUND ? index : mFontInfo->alterCharIndex;
 }
 
-u16 ResFontBase::FindGlyphIndex(char16_t c) const {
+u16 ResFontBase::FindGlyphIndex(u16 c) const {
     NW4HBMAssertPointerValid_Line(this, 502);
     NW4HBMAssertPointerValid_Line(mFontInfo, 503);
     FontCodeMap* pMap;
@@ -170,7 +169,7 @@ u16 ResFontBase::FindGlyphIndex(char16_t c) const {
     return GLYPH_INDEX_NOT_FOUND;
 }
 
-u16 ResFontBase::FindGlyphIndex(const FontCodeMap* pMap, char16_t c) const {
+u16 ResFontBase::FindGlyphIndex(const FontCodeMap* pMap, u16 c) const {
     NW4HBMAssertPointerValid_Line(this, 539);
     NW4HBMAssertPointerValid_Line(pMap, 540);
     u16 index = GLYPH_INDEX_NOT_FOUND;

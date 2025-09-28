@@ -1,9 +1,7 @@
 #include "revolution/hbm/nw4hbm/ut/TagProcessorBase.h"
 
 #include "revolution/hbm/nw4hbm/ut/TextWriter.h"
-
-#include "macros.h"
-#include "revolution/hbm/HBMAssert.hpp"
+#include "revolution/hbm/nw4hbm/db.h"
 
 namespace nw4hbm {
 namespace ut {
@@ -97,12 +95,8 @@ template <typename T> void TagProcessorBase<T>::ProcessTab(PrintContext<T>* cont
     }
 }
 
-} // namespace ut
-} // namespace nw4hbm
-
-namespace nw4hbm {
-namespace ut {
 template class TagProcessorBase<char>;
 template class TagProcessorBase<wchar_t>;
+
 } // namespace ut
 } // namespace nw4hbm

@@ -1,9 +1,6 @@
 #include "revolution/hbm/nw4hbm/math/arithmetic.h"
 #include "revolution/types.h"
 
-// typedef names are from the nw4r version
-
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x4a08a4
 typedef struct {
     f32 sin_val; // size 0x04, offset 0x00
     f32 cos_val; // size 0x04, offset 0x04
@@ -11,7 +8,6 @@ typedef struct {
     f32 cos_delta; // size 0x04, offset 0x0c
 } SinCosSample; // size 0x10
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x4a090d
 typedef struct {
     f32 atan_val; // size 0x04, offset 0x00
     f32 atan_delta; // size 0x04, offset 0x04
@@ -21,14 +17,6 @@ namespace nw4hbm {
 namespace math {
 namespace {
 f32 AtanFIdx_(f32 x);
-}
-} // namespace math
-} // namespace nw4hbm
-
-namespace nw4hbm {
-namespace math {
-namespace {
-// .data
 
 static SinCosSample sSinCosTbl[] = {
     {0.0f, 1.0f, 0.024541f, -3.01e-4f},
@@ -303,11 +291,6 @@ static ArcTanSample sArcTanTbl[] = {
 };
 
 } // namespace
-} // namespace math
-} // namespace nw4hbm
-
-namespace nw4hbm {
-namespace math {
 
 namespace {
 

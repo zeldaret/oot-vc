@@ -1,16 +1,8 @@
 #include "revolution/hbm/nw4hbm/ut/list.h"
 
-#include "macros.h"
-#include "revolution/hbm/HBMAssert.hpp"
-#include "revolution/types.h"
+#include "revolution/hbm/nw4hbm/db.h"
 
 #define OBJ_TO_NODE(list_, object_) reinterpret_cast<Link*>(reinterpret_cast<u32>(object_) + (list_)->offset)
-
-namespace nw4hbm {
-namespace ut {
-static void SetFirstObject(List* list, void* object);
-}
-} // namespace nw4hbm
 
 namespace nw4hbm {
 namespace ut {

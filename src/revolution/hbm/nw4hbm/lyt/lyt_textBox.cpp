@@ -1,35 +1,8 @@
 #include "revolution/hbm/nw4hbm/lyt/textBox.h"
 
-#include "cstring.hpp"
-#include "cwchar.hpp" // std::wcslen
-#include "new.hpp"
-
-#include "macros.h"
-#include "revolution/types.h"
-
-#include "revolution/hbm/HBMAssert.hpp"
-
-#include "revolution/hbm/nw4hbm/lyt/common.h"
 #include "revolution/hbm/nw4hbm/lyt/layout.h"
-#include "revolution/hbm/nw4hbm/lyt/material.h"
-#include "revolution/hbm/nw4hbm/lyt/pane.h"
-#include "revolution/hbm/nw4hbm/lyt/resourceAccessor.h"
-#include "revolution/hbm/nw4hbm/lyt/types.h" // detail::ConvertOffsToPointer
 
-#include "revolution/hbm/nw4hbm/db/console.h"
-#include "revolution/hbm/nw4hbm/math/types.h" // math::VEC2
-#include "revolution/hbm/nw4hbm/ut/CharStrmReader.h"
-#include "revolution/hbm/nw4hbm/ut/CharWriter.h"
-#include "revolution/hbm/nw4hbm/ut/Color.h"
-#include "revolution/hbm/nw4hbm/ut/Font.h"
-#include "revolution/hbm/nw4hbm/ut/Rect.h"
-#include "revolution/hbm/nw4hbm/ut/ResFont.h"
-#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
-#include "revolution/hbm/nw4hbm/ut/TagProcessorBase.h"
-#include "revolution/hbm/nw4hbm/ut/TextWriterBase.h"
-#include "revolution/hbm/nw4hbm/ut/inlines.h"
-
-#include "revolution/gx/GXTypes.h"
+#include "new.hpp"
 
 namespace {
 // pretend this is nw4hbm::lyt
@@ -59,8 +32,9 @@ void CalcStringRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter,
 
 namespace nw4hbm {
 namespace lyt {
-// .bss
+
 const ut::detail::RuntimeTypeInfo TextBox::typeInfo(&Pane::typeInfo);
+
 } // namespace lyt
 } // namespace nw4hbm
 
@@ -200,97 +174,8 @@ int CalcLineRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, co
             return (prStrPos - str);
         }
     }
+
     return ((const charT*)reader.GetCurrentPos() - str);
-    //     ut::PrintContext<charT> context = {pTextWriter, str, 0.0f, 0.0f, 0};
-    //     const ut::Font* font = pTextWriter->GetFont();
-
-    //     f32 x = 0.0f;
-    //     bool bCharSpace = false;
-
-    //     NW4HBMAssertPointerValid_Line(font, 83);
-    //     ut::CharStrmReader reader = font->GetCharStrmReader();
-    //     const charT* prStrPos = static_cast<const charT*>(reader.GetCurrentPos());
-
-    //     pRect->left = 0.0f;
-    //     pRect->right = 0.0f;
-    //     pRect->top = ut::Min(0.0f, pTextWriter->GetLineHeight());
-    //     pRect->bottom = ut::Max(0.0f, pTextWriter->GetLineHeight());
-
-    //     *pbOver = false;
-    //     reader.Set(str);
-
-    //     char16_t code = reader.Next();
-    //     ut::Rect prMaxRect = *pRect;
-    //     // reader.Something();
-
-    //     for (; static_cast<const charT*>(reader.GetCurrentPos()) - str <= length;
-    //          prStrPos = static_cast<const charT*>(reader.GetCurrentPos()), code = reader.Next(), prMaxRect = *pRect)
-    //          {
-    //         if ((int)code < L' ') {
-    //             ut::Operation operation;
-    //             ut::Rect rect(x, 0.0f, 0.0f, 0.0f);
-
-    //             context.str = static_cast<const charT*>(reader.GetCurrentPos());
-    //             context.flags = 0;
-    //             context.flags |= BOOLIFY_FALSE_TERNARY(bCharSpace);
-
-    //             pTextWriter->SetCursorX(x);
-
-    //             operation = pTextWriter->GetTagProcessor().CalcRect(&rect, code, &context);
-
-    //             reader.Set(context.str);
-
-    //             pRect->left = ut::Min(pRect->left, rect.left);
-    //             pRect->top = ut::Min(pRect->top, rect.top);
-    //             pRect->right = ut::Max(pRect->right, rect.right);
-    //             pRect->bottom = ut::Max(pRect->bottom, rect.bottom);
-
-    //             x = pTextWriter->GetCursorX();
-
-    //             if (pRect->GetWidth() > maxWidth) {
-    //                 *pbOver = true;
-    //                 break;
-    //             }
-
-    //             if (operation == ut::OPERATION_END_DRAW) {
-    //                 return length;
-    //             } else if (operation == ut::OPERATION_NO_CHAR_SPACE) {
-    //                 bCharSpace = false;
-    //             } else if (operation == ut::OPERATION_CHAR_SPACE) {
-    //                 bCharSpace = true;
-    //             } else if (operation == ut::OPERATION_NEXT_LINE) {
-    //                 goto end_draw;
-    //             }
-    //         } else {
-    //             if (bCharSpace) {
-    //                 x += pTextWriter->GetCharSpace();
-    //             }
-
-    //             bCharSpace = true;
-
-    //             if (pTextWriter->IsWidthFixed()) {
-    //                 x += pTextWriter->GetFixedWidth();
-    //             } else {
-    //                 x += pTextWriter->GetFont()->GetCharWidth(code) * pTextWriter->GetScaleH();
-    //             }
-
-    //             pRect->left = ut::Min(pRect->left, x);
-    //             pRect->right = ut::Max(pRect->right, x);
-
-    //             if (pRect->GetWidth() > maxWidth) {
-    //                 *pbOver = true;
-    //                 goto end_draw;
-    //             }
-    //         }
-    //     }
-
-    // end_draw:
-    //     if (*pbOver && prStrPos) {
-    //         *pRect = prMaxRect;
-    //         return prStrPos - str;
-    //     } else {
-    //         return static_cast<const charT*>(reader.GetCurrentPos()) - str;
-    //     }
 }
 
 template <typename charT>

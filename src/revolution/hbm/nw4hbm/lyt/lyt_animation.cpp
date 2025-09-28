@@ -1,22 +1,10 @@
 #include "revolution/hbm/nw4hbm/lyt/animation.h"
 
-#include "cstring.hpp" // std::memset
-#include "new.hpp"
-
-#include "macros.h" // NW4HBM_RANGE_FOR
-#include "revolution/types.h"
-
 #include "revolution/hbm/nw4hbm/lyt/common.h"
 #include "revolution/hbm/nw4hbm/lyt/layout.h"
-#include "revolution/hbm/nw4hbm/lyt/material.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
-#include "revolution/hbm/nw4hbm/lyt/resourceAccessor.h"
-#include "revolution/hbm/nw4hbm/lyt/types.h"
 
-#include "revolution/hbm/nw4hbm/ut/LinkList.h" // IWYU pragma: keep (NW4HBM_RANGE_FOR)
-#include "revolution/hbm/nw4hbm/ut/inlines.h"
-
-#include "revolution/os/OSFastCast.h"
+#include "new.hpp"
 
 namespace {
 // pretend this is nw4hbm::lyt

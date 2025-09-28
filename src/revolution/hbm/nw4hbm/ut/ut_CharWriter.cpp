@@ -1,27 +1,15 @@
 #include "revolution/hbm/nw4hbm/ut/CharWriter.h"
 
-#include "revolution/types.h"
-
-#include "macros.h"
-#include "revolution/gx.h"
-#include "revolution/hbm/HBMAssert.hpp"
-#include "revolution/hbm/nw4hbm/db/console.h"
-#include "revolution/hbm/nw4hbm/math/types.h"
+#include "revolution/hbm/nw4hbm/db.h"
+#include "revolution/hbm/nw4hbm/math.h"
 #include "revolution/hbm/nw4hbm/ut/Color.h"
 #include "revolution/hbm/nw4hbm/ut/Font.h"
 
+#include "revolution/gx.h"
+
 namespace nw4hbm {
+
 static void SetupGXCommon();
-} // namespace nw4hbm
-
-namespace nw4hbm {
-namespace ut {
-// .bss
-/* CharWriter::LoadingTexture CharWriter::mLoadingTexture; */ // pooling
-} // namespace ut
-} // namespace nw4hbm
-
-namespace nw4hbm {
 
 void SetupGXCommon() {
     static ut::Color fog(0x00000000);
@@ -40,7 +28,6 @@ void SetupGXCommon() {
 
 namespace ut {
 
-// pooling
 CharWriter::LoadingTexture CharWriter::mLoadingTexture;
 
 CharWriter::CharWriter() : mAlpha(0xff), mIsWidthFixed(false), mFixedWidth(0.0f), mFont(nullptr) {
@@ -197,7 +184,7 @@ f32 CharWriter::GetFixedWidth() const {
     return mFixedWidth;
 }
 
-f32 CharWriter::Print(char16_t code) {
+f32 CharWriter::Print(u16 code) {
     NW4HBMAssertPointerValid_Line(this, 808);
     NW4HBMAssertPointerValid_Line(mFont, 809);
     NW4HBMAssert_Line(code != Font::INVALID_CHARACTER_CODE, 810);
