@@ -5,9 +5,13 @@
 #include "revolution/hbm/nw4hbm/lyt/pane.h"
 
 #include "revolution/hbm/nw4hbm/ut/TagProcessorBase.h"
+#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
+#include "revolution/hbm/nw4hbm/ut/WideTextWriter.h"
+#include "revolution/hbm/nw4hbm/ut/WideTagProcessor.h"
 
 namespace nw4hbm {
 namespace lyt {
+
 class TextBox : public Pane {
   public:
     NW4HBM_UT_RUNTIME_TYPEINFO;
@@ -48,6 +52,7 @@ class TextBox : public Pane {
         NW4HBMAssert_Line(type < TEXTCOLOR_MAX, 95);
         return mTextColors[type];
     }
+
     void SetTextColor(u32 type, ut::Color value) {
         NW4HBMAssert_Line(type < TEXTCOLOR_MAX, 96);
         mTextColors[type] = value;

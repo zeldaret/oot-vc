@@ -1,8 +1,8 @@
 #ifndef NW4HBM_UT_CHAR_STREAM_READER_H
 #define NW4HBM_UT_CHAR_STREAM_READER_H
 
-#include "revolution/hbm/HBMAssert.hpp"
-#include "revolution/types.h"
+// required to fix data order in `lyt_textBox.cpp`
+#include "revolution/hbm/nw4hbm/lyt/textBox.h"
 
 namespace nw4hbm {
 namespace ut {

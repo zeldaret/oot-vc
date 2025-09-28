@@ -5,8 +5,6 @@
 #include "revolution/hbm/nw4hbm/lyt/resources.h"
 #include "revolution/hbm/nw4hbm/lyt/types.h"
 
-#include "revolution/hbm/nw4hbm/ut.h"
-
 #define TexMtxMax 10
 #define IndTexMtxMax 3
 

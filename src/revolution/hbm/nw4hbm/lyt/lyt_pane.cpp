@@ -3,6 +3,8 @@
 #include "revolution/hbm/nw4hbm/lyt/common.h"
 #include "revolution/hbm/nw4hbm/lyt/layout.h"
 
+#include "decomp.h"
+
 namespace {
 // pretend this is nw4hbm::lyt
 using namespace nw4hbm;
@@ -29,7 +31,8 @@ void ReverseYAxis(math::MTX34* pMtx) {
 
 namespace nw4hbm {
 namespace lyt {
-
+DECOMP_FORCE_CLASS_METHOD(nw4hbm::lyt::PaneLinkList, GetNodeFromPointer(nullptr));
+DECOMP_FORCE_CLASS_METHOD(nw4hbm::lyt::AnimTransformList, GetNodeFromPointer(nullptr));
 extern void __deadstrip1();
 extern void __deadstrip1() {
     (void)0.0f;
@@ -83,8 +86,11 @@ void Pane::SetUserData(const char* userData) { std::strncpy(mUserData, userData,
 
 void Pane::AppendChild(Pane* pChild) { InsertChild(mChildList.GetEndIter(), pChild); }
 
-extern void _deadstrip2();
-extern void _deadstrip2() { PaneList::GetNodeFromPointer(nullptr); }
+// extern void _deadstrip2();
+// extern void _deadstrip2() { PaneList::GetNodeFromPointer(nullptr); }
+
+
+
 
 void Pane::InsertChild(PaneList::Iterator next, Pane* pChild) {
     NW4HBMAssertPointerNonnull_Line(pChild, 253);
@@ -93,9 +99,9 @@ void Pane::InsertChild(PaneList::Iterator next, Pane* pChild) {
     pChild->mpParent = this;
 }
 
-char _lyt_pane_unused1[] = "NW4HBM:Pointer must not be NULL (pNext)";
-char _lyt_pane_unused2[] = "NW4HBM:Failed assertion pNext->mpParent == this";
-char _lyt_pane_unused3[] = "NW4HBM:Failed assertion pChild->mpParent == this";
+DECOMP_FORCE(NW4HBMAssertPointerNonnull_String(pNext));
+DECOMP_FORCE(NW4HBMAssert_String(pNext->mpParent == this));
+DECOMP_FORCE(NW4HBMAssert_String(pChild->mpParent == this));
 
 #pragma ppc_iro_level 0
 
@@ -132,6 +138,8 @@ u8 Pane::GetColorElement(u32 idx) const {
             return GetVtxColorElement(idx);
     }
 }
+
+DECOMP_FORCE_CLASS_METHOD(nw4hbm::lyt::GroupList, GetNodeFromPointer(nullptr));
 
 void Pane::SetColorElement(u32 idx, u8 value) {
     NW4HBMAssert_Line(idx < ANIMTARGET_PANE_COLOR_MAX, 334);

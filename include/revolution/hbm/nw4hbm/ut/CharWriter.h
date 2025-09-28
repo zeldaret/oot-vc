@@ -4,7 +4,7 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/ut/Color.h"
-#include "revolution/hbm/nw4hbm/ut/Font.h"
+#include "revolution/hbm/nw4hbm/ut/fontResources.h"
 
 #include "revolution/hbm/nw4hbm/math/types.h"
 
@@ -12,6 +12,9 @@
 
 namespace nw4hbm {
 namespace ut {
+
+class Font;
+
 class CharWriter {
   public:
     typedef enum GradationMode {

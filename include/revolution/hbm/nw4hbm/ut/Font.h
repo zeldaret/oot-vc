@@ -74,7 +74,14 @@ class Font {
 
     void InitReaderFunc(FontEncoding encoding);
 
-    CharStrmReader GetCharStrmReader() const NO_INLINE { return CharStrmReader(mReaderFunc); }
+    CharStrmReader GetCharStrmReader() const NO_INLINE {
+      //! TODO: required to make `ut_TextWriterBase` happy
+#ifndef NO_THIS_ASSERT
+        NW4HBMAssertPointerValid_Line(this, 117);
+#endif
+        CharStrmReader reader(mReaderFunc);
+        return reader;
+    }
 
   private:
     CharStrmReader::ReadFunc mReaderFunc; // 0x04

@@ -1,5 +1,6 @@
 #include "revolution/hbm/nw4hbm/db/console.h"
 
+#include "revolution/hbm/HBMAssert.hpp"
 #include "revolution/hbm/nw4hbm/db/directPrint.h"
 #include "revolution/os.h"
 

@@ -924,6 +924,7 @@ revolution/hbm/nw4hbm/lyt/lyt_textBox.cpp:
 	.text       start:0x80117778 end:0x8011A5C0
 	.ctors      start:0x8016A6F4 end:0x8016A6F8
 	.data       start:0x80196770 end:0x80196DE8
+	.sdata      start:0x8025CE50 end:0x8025CE60
 	.sbss       start:0x8025DC10 end:0x8025DC18
 	.sdata2     start:0x8025E6A8 end:0x8025E6C0
 

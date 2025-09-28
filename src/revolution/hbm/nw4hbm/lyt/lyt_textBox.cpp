@@ -1,44 +1,25 @@
-#include "revolution/hbm/nw4hbm/lyt/textBox.h"
+#include "revolution/hbm/nw4hbm/ut/Font.h"
+#include "revolution/hbm/nw4hbm/ut/ResFont.h"
+#include "revolution/hbm/nw4hbm/ut/CharStrmReader.h"
 
+#include "revolution/hbm/nw4hbm/lyt/textBox.h"
+#include "revolution/hbm/nw4hbm/lyt/material.h"
+#include "revolution/hbm/nw4hbm/lyt/common.h"
+#include "revolution/hbm/nw4hbm/lyt/pane.h"
 #include "revolution/hbm/nw4hbm/lyt/layout.h"
 
 #include "new.hpp"
 
-namespace {
-// pretend this is nw4hbm::lyt
-using namespace nw4hbm;
-using namespace nw4hbm::lyt;
-
-ut::Color GetColor(const GXColorS10& src);
-s16 ClampColor(s16 colVal);
-
-// not putting the definitions inline here; they would be too big
-template <typename charT>
-int CalcLineStrNum(f32* pWidth, ut::TextWriterBase<charT>* pTextWriter, const charT* str, int length, f32 maxWidth,
-                   bool* pbOver);
-
-template <typename charT>
-int CalcLineRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, const charT* str, int length,
-                     f32 maxWidth, bool* pbOver);
-
-template <typename charT>
-void CalcStringRect(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, const charT* str, int length,
-                    f32 maxWidth);
-
-template <typename charT>
-void CalcStringRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, const charT* str, int length,
-                        f32 maxWidth);
-} // unnamed namespace
-
 namespace nw4hbm {
 namespace lyt {
-
 NW4HBM_UT_GET_DERIVED_RUNTIME_TYPEINFO(TextBox, Pane);
-
-} // namespace lyt
+}
 } // namespace nw4hbm
 
 namespace {
+using namespace nw4hbm;
+
+u8 ClampColor(s16 colVal);
 
 ut::Color GetColor(const GXColorS10& src) {
     GXColor dst;
@@ -51,45 +32,16 @@ ut::Color GetColor(const GXColorS10& src) {
     return dst;
 }
 
-s16 ClampColor(s16 colVal) {
-    if (colVal < 0) {
-        return 0;
-    }
+u8 ClampColor(s16 value) { return value < 0 ? 0 : (value > 255 ? 255 : value); }
 
-    if (colVal > 255) {
-        return 255;
-    }
-
-    return colVal;
-}
-
-inline void TextBoxAssert(ut::TextWriterBase<wchar_t>* pTextWriter, const wchar_t* str, int length) {
-    NW4HBMAssertPointerValid_Line(pTextWriter, 275);
-    NW4HBMAssertPointerValid_Line(str, 276);
-    NW4HBMAssertMinimumValue_Line(length, 0, 277);
-}
-
-template <typename charT>
-int CalcLineStrNum(f32* pWidth, ut::TextWriterBase<charT>* pTextWriter, const charT* str, int length, f32 maxWidth,
-                   bool* pbOver) {
-    ut::Rect rect;
-    ut::TextWriterBase<charT> myCopy = *pTextWriter;
-    myCopy.SetCursor(0.0f, 0.0f);
-
-    int ret = CalcLineRectImpl(&rect, &myCopy, str, length, maxWidth, pbOver);
-
-    *pWidth = rect.GetWidth();
-    return ret;
-}
-
-template <typename charT>
-int CalcLineRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, const charT* str, int length,
-                     f32 maxWidth, bool* pbOver) {
+template <typename T>
+int CalcLineRectImpl(ut::Rect* pRect, ut::TextWriterBase<T>* pTextWriter, const T* str, int length, f32 maxWidth,
+                     bool* pbOver) {
     NW4HBMAssertPointerValid_Line(pTextWriter, 71);
     NW4HBMAssertPointerValid_Line(pRect, 72);
     NW4HBMAssertPointerValid_Line(str, 73);
-    NW4HBMAssertMinimumValue_Line(length, 0, 74);
-    ut::PrintContext<charT> context = {pTextWriter, str, 0.0f, 0.0f, 0};
+    NW4HBMAssertHeaderMinimumValue_Line(length, 0, 74);
+    ut::PrintContext<T> context = {pTextWriter, str, 0.0f, 0.0f, 0};
     const ut::Font* font = pTextWriter->GetFont();
 
     f32 x = 0.0f;
@@ -97,8 +49,7 @@ int CalcLineRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, co
 
     NW4HBMAssertPointerValid_Line(font, 83);
     ut::CharStrmReader reader = font->GetCharStrmReader();
-
-    const charT* prStrPos = (const charT*)reader.GetCurrentPos();
+    const T* prStrPos = static_cast<const T*>(reader.GetCurrentPos());
 
     pRect->left = 0.0f;
     pRect->right = 0.0f;
@@ -108,17 +59,21 @@ int CalcLineRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, co
     *pbOver = false;
 
     reader.Set(str);
+
     ut::Rect prMaxRect = *pRect;
-    u16 code = reader.Next();
-    while (((const charT*)reader.GetCurrentPos() - str) <= length) {
-        if (code < ' ') {
+
+    for (u16 code = reader.Next(); static_cast<const T*>(reader.GetCurrentPos()) - str <= length;
+         prStrPos = static_cast<const T*>(reader.GetCurrentPos()), code = reader.Next(), prMaxRect = *pRect) {
+        if ((int)code < L' ') {
             ut::Operation operation;
             ut::Rect rect(x, 0.0f, 0.0f, 0.0f);
 
-            context.str = (const charT*)reader.GetCurrentPos();
-            context.flags = !bCharSpace;
+            context.str = static_cast<const T*>(reader.GetCurrentPos());
+            context.flags = 0;
+            context.flags |= bCharSpace ? 0 : 1;
 
             pTextWriter->SetCursorX(x);
+
             operation = pTextWriter->GetTagProcessor().CalcRect(&rect, code, &context);
 
             NW4HBMAssertPointerValid_Line(context.str, 123);
@@ -135,6 +90,7 @@ int CalcLineRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, co
                 *pbOver = true;
                 break;
             }
+
             if (operation == ut::OPERATION_END_DRAW) {
                 return length;
             } else if (operation == ut::OPERATION_NO_CHAR_SPACE) {
@@ -142,63 +98,48 @@ int CalcLineRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, co
             } else if (operation == ut::OPERATION_CHAR_SPACE) {
                 bCharSpace = true;
             } else if (operation == ut::OPERATION_NEXT_LINE) {
-                break;
+                goto end_draw;
             }
-
         } else {
             if (bCharSpace) {
                 x += pTextWriter->GetCharSpace();
             }
+
             bCharSpace = true;
+
             if (pTextWriter->IsWidthFixed()) {
                 x += pTextWriter->GetFixedWidth();
             } else {
                 x += pTextWriter->GetFont()->GetCharWidth(code) * pTextWriter->GetScaleH();
             }
+
             pRect->left = ut::Min(pRect->left, x);
             pRect->right = ut::Max(pRect->right, x);
 
             if (pRect->GetWidth() > maxWidth) {
                 *pbOver = true;
-                break;
+                goto end_draw;
             }
         }
-        prStrPos = (const charT*)reader.GetCurrentPos();
-        code = reader.Next();
-        prMaxRect = *pRect;
     }
 
-    if (*pbOver) {
-        if (prStrPos) {
-            *pRect = prMaxRect;
-            return (prStrPos - str);
-        }
+end_draw:
+    if (*pbOver && prStrPos) {
+        *pRect = prMaxRect;
+        return prStrPos - str;
+    } else {
+        return static_cast<const T*>(reader.GetCurrentPos()) - str;
     }
-
-    return ((const charT*)reader.GetCurrentPos() - str);
 }
 
-template <typename charT>
-inline void CalcStringRect(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, const charT* str, int length,
-                           f32 maxWidth) {
-    NW4HBMAssertPointerValid_Line(pTextWriter, 311);
-    NW4HBMAssertPointerValid_Line(pRect, 312);
-    NW4HBMAssertPointerValid_Line(str, 313);
-    NW4HBMAssertMinimumValue_Line(length, 0, 314);
-    ut::TextWriterBase<charT> myCopy = *pTextWriter;
-
-    CalcStringRectImpl(pRect, &myCopy, str, length, maxWidth);
-}
-
-template <typename charT>
-void CalcStringRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter, const charT* str, int length,
-                        f32 maxWidth) {
+template <typename T>
+void CalcStringRectImpl(ut::Rect* pRect, ut::TextWriterBase<T>* pTextWriter, const T* str, int length, f32 maxWidth) {
     NW4HBMAssertPointerValid_Line(pTextWriter, 218);
     NW4HBMAssertPointerValid_Line(pRect, 219);
     NW4HBMAssertPointerValid_Line(str, 220);
-    NW4HBMAssertMinimumValue_Line(length, 0, 221);
+    NW4HBMAssertHeaderMinimumValue_Line(length, 0, 221);
     int remain = length;
-    const charT* pos = str;
+    const T* pos = str;
 
     pRect->left = 0.0f;
     pRect->right = 0.0f;
@@ -225,20 +166,53 @@ void CalcStringRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter,
     } while (remain > 0);
 }
 
-} // unnamed namespace
+template <typename T>
+int CalcLineStrNum(f32* pWidth, ut::TextWriterBase<T>* pTextWriter, const T* str, int length, f32 maxWidth,
+                   bool* pbOver) {
+    NW4HBMAssertPointerValid_Line(pTextWriter, 275);
+    NW4HBMAssertPointerValid_Line(str, 276);
+    NW4HBMAssertHeaderMinimumValue_Line(length, 0, 277);   
+   
+    ut::Rect rect;
+    ut::TextWriterBase<T> myCopy = *pTextWriter;
+    myCopy.SetCursor(0.0f, 0.0f);
+
+    int ret = CalcLineRectImpl(&rect, &myCopy, str, length, maxWidth, pbOver);
+
+    *pWidth = rect.GetWidth();
+    return ret;
+}
+
+template <typename T>
+void CalcStringRect(ut::Rect* pRect, ut::TextWriterBase<T>* pTextWriter, const T* str, int length, f32 maxWidth) {
+    NW4HBMAssertPointerValid_Line(pTextWriter, 311);
+    NW4HBMAssertPointerValid_Line(pRect, 312);
+    NW4HBMAssertPointerValid_Line(str, 313);
+    NW4HBMAssertHeaderMinimumValue_Line(length, 0, 314);
+    ut::TextWriterBase<T> myCopy = *pTextWriter;
+    CalcStringRectImpl(pRect, &myCopy, str, length, maxWidth);
+}
+
+} // namespace
 
 namespace nw4hbm {
 namespace lyt {
 
+TextBox::TextBox(u16 allocStrLen, const wchar_t* str, const ut::Font* pFont) : Pane() {
+    Init(allocStrLen);
+    SetString(str);
+    SetFont(pFont);
+}
+
 TextBox::TextBox(const res::TextBox* pBlock, const ResBlockSet& resBlockSet) : Pane(pBlock) {
     u16 allocStrBufLen = pBlock->textBufBytes / sizeof(wchar_t);
     if (allocStrBufLen) {
-        allocStrBufLen = allocStrBufLen - 1; // NOTE: not a compound operator
+        allocStrBufLen = allocStrBufLen - 1;
     }
 
     Init(allocStrBufLen);
 
-    if (pBlock->textStrBytes >= 2 && mTextBuf) {
+    if (pBlock->textStrBytes >= 2 && mTextBuf != NULL) {
         const wchar_t* pBlockText = detail::ConvertOffsToPtr<wchar_t>(pBlock, pBlock->textStrOffset);
         const u16 resStrLen = pBlock->textStrBytes / sizeof(wchar_t) - 1;
 
@@ -257,7 +231,7 @@ TextBox::TextBox(const res::TextBox* pBlock, const ResBlockSet& resBlockSet) : P
     NW4HBMAssertPointerNonnull_Line(resBlockSet.pFontList, 395);
     NW4HBMAssert_Line(pBlock->fontIdx < resBlockSet.pFontList->fontNum, 396);
 
-    const res::Font* fonts = detail::ConvertOffsToPtr<res::Font>(resBlockSet.pFontList, sizeof *resBlockSet.pFontList);
+    const res::Font* fonts = detail::ConvertOffsToPtr<res::Font>(resBlockSet.pFontList, sizeof(*resBlockSet.pFontList));
 
     const char* fontName = detail::ConvertOffsToPtr<char>(fonts, fonts[pBlock->fontIdx].nameStrOffset);
 
@@ -279,7 +253,9 @@ TextBox::TextBox(const res::TextBox* pBlock, const ResBlockSet& resBlockSet) : P
 
     if (void* pMemMaterial = Layout::AllocMemory(sizeof(Material))) {
         NW4HBMAssertPointerNonnull_Line(resBlockSet.pMaterialList, 420);
-        const u32* matOffsTbl = detail::ConvertOffsToPtr<u32>(resBlockSet.pMaterialList, 12);
+
+        const u32* matOffsTbl =
+            detail::ConvertOffsToPtr<u32>(resBlockSet.pMaterialList, sizeof(*resBlockSet.pMaterialList));
 
         const res::Material* pResMaterial =
             detail::ConvertOffsToPtr<res::Material>(resBlockSet.pMaterialList, matOffsTbl[pBlock->materialIdx]);
@@ -296,14 +272,14 @@ void TextBox::Init(u16 allocStrLen) {
     mpFont = nullptr;
     mFontSize = Size(0.0f, 0.0f);
 
-    SetTextPositionH(1);
-    SetTextPositionV(1);
+    SetTextPositionH(HORIZONTALPOSITION_CENTER);
+    SetTextPositionV(VERTICALPOSITION_CENTER);
 
     mLineSpace = 0.0f;
     mCharSpace = 0.0f;
     mpTagProcessor = nullptr;
 
-    std::memset(&mTextBoxFlag, 0, sizeof mTextBoxFlag);
+    memset(&mTextBoxFlag, 0, sizeof(mTextBoxFlag));
 
     if (allocStrLen != 0) {
         AllocStringBuffer(allocStrLen);
@@ -313,7 +289,7 @@ void TextBox::Init(u16 allocStrLen) {
 TextBox::~TextBox() {
     SetFont(nullptr);
 
-    if (mpMaterial && !mpMaterial->IsUserAllocated()) {
+    if (mpMaterial != NULL && !mpMaterial->IsUserAllocated()) {
         mpMaterial->~Material();
         Layout::FreeMemory(mpMaterial);
         mpMaterial = nullptr;
@@ -322,49 +298,69 @@ TextBox::~TextBox() {
     FreeStringBuffer();
 }
 
-ut::Color TextBox::GetVtxColor(u32 idx) const {
+ut::Color TextBox::GetVtxColor(u32 idx) const  {
     NW4HBMAssert_Line(idx < VERTEXCOLOR_MAX, 467);
     return GetTextColor(idx / 2);
 }
 
-void TextBox::SetVtxColor(u32 idx, ut::Color value) {
+void TextBox::SetVtxColor(u32 idx, ut::Color value)  {
     NW4HBMAssert_Line(idx < VERTEXCOLOR_MAX, 478);
     SetTextColor(idx / 2, value);
 }
 
-// void TextBox::SetTextColor(u32 type, ut::Color value) { __SetTextColor(type, value); }
-
-u8 TextBox::GetVtxColorElement(u32 idx) const {
+u8 TextBox::GetVtxColorElement(u32 idx) const  {
     NW4HBMAssert_Line(idx < ANIMTARGET_VERTEXCOLOR_MAX, 486);
     return reinterpret_cast<const u8*>(mTextColors + idx / 8)[idx % 4];
 }
 
-void TextBox::SetVtxColorElement(u32 idx, u8 value) {
+void TextBox::SetVtxColorElement(u32 idx, u8 value)  {
     NW4HBMAssert_Line(idx < ANIMTARGET_VERTEXCOLOR_MAX, 494);
     reinterpret_cast<u8*>(mTextColors + idx / 8)[idx % 4] = value;
 }
 
-void TextBox::DrawSelf(const DrawInfo& drawInfo) {
-    if (!mTextBuf || !mpFont || !mpMaterial) {
-        return;
-    }
+const ut::Rect TextBox::GetTextDrawRect(const DrawInfo& drawInfo) const {
+    ut::WideTextWriter writer;
 
-    LoadMtx(drawInfo);
-
-    ut::TextWriterBase<wchar_t> writer;
     writer.SetFont(*mpFont);
     writer.SetFontSize(mFontSize.width, mFontSize.height);
     writer.SetLineSpace(mLineSpace);
     writer.SetCharSpace(mCharSpace);
 
-    ut::Color topCol = detail::MultipleAlpha(mTextColors[0], mGlbAlpha);
-    ut::Color btmCol = detail::MultipleAlpha(mTextColors[1], mGlbAlpha);
+    if (mpTagProcessor) {
+        writer.SetTagProcessor(mpTagProcessor);
+    }
+
+    ut::Rect rect = GetTextDrawRect(&writer);
+
+    if (drawInfo.IsYAxisUp()) {
+        rect.top = -rect.top;
+        rect.bottom = -rect.bottom;
+    }
+
+    return rect;
+}
+
+void TextBox::DrawSelf(const DrawInfo& drawInfo) {
+    if (mTextBuf == NULL || mpFont == NULL || mpMaterial == NULL) {
+        return;
+    }
+
+    LoadMtx(drawInfo);
+
+    ut::WideTextWriter writer;
+    writer.SetFont(*mpFont);
+    writer.SetFontSize(mFontSize.width, mFontSize.height);
+    writer.SetLineSpace(mLineSpace);
+    writer.SetCharSpace(mCharSpace);
+
+    ut::Color topCol = detail::MultipleAlpha(mTextColors[TEXTCOLOR_TOP], mGlbAlpha);
+    ut::Color btmCol = detail::MultipleAlpha(mTextColors[TEXTCOLOR_BOTTOM], mGlbAlpha);
     writer.SetGradationMode(topCol != btmCol ? ut::CharWriter::GRADMODE_V : ut::CharWriter::GRADMODE_NONE);
 
     writer.SetTextColor(topCol, btmCol);
 
-    ut::Color minCol = GetColor(mpMaterial->GetTevColor(0));
-    ut::Color maxCol = GetColor(mpMaterial->GetTevColor(1));
+    ut::Color minCol = GetColor(mpMaterial->GetTevColor(TEVCOLOR_REG0));
+    ut::Color maxCol = GetColor(mpMaterial->GetTevColor(TEVCOLOR_REG1));
     writer.SetColorMapping(minCol, maxCol);
 
     if (mpTagProcessor) {
@@ -382,7 +378,6 @@ void TextBox::DrawSelf(const DrawInfo& drawInfo) {
     writer.SetCursor(textRect.left, textRect.top);
 
     for (int remain = mTextLen; remain > 0;) {
-        TextBoxAssert(&writer, strPos, mTextLen);
         f32 lineWidth;
         bool bOver;
         int lineStrNum = CalcLineStrNum(&lineWidth, &writer, strPos, remain, mSize.width, &bOver);
@@ -401,7 +396,6 @@ void TextBox::DrawSelf(const DrawInfo& drawInfo) {
 }
 
 u16 TextBox::GetStringBufferLength() const {
-
     if (mTextBufBytes == 0) {
         return 0;
     } else {
@@ -424,13 +418,13 @@ void TextBox::AllocStringBuffer(u16 minLen) {
     FreeStringBuffer();
 
     mTextBuf = static_cast<wchar_t*>(Layout::AllocMemory(allocBytes));
-    if (mTextBuf) {
+    if (mTextBuf != NULL) {
         mTextBufBytes = allocBytes;
     }
 }
 
 void TextBox::FreeStringBuffer() {
-    if (mTextBuf) {
+    if (mTextBuf != NULL) {
         Layout::FreeMemory(mTextBuf);
         mTextBuf = nullptr;
         mTextBufBytes = 0;
@@ -440,7 +434,7 @@ void TextBox::FreeStringBuffer() {
 u16 TextBox::SetString(const wchar_t* str, u16 dstIdx) { return SetString(str, dstIdx, std::wcslen(str)); }
 
 u16 TextBox::SetString(const wchar_t* str, u16 dstIdx, u16 strLen) {
-    if (!mTextBuf) {
+    if (mTextBuf == NULL) {
         NW4HBMWarningMessage_Line(708, "mTextBuf is NULL.\n");
         return 0;
     }
@@ -465,6 +459,8 @@ u16 TextBox::SetString(const wchar_t* str, u16 dstIdx, u16 strLen) {
     return cpLen;
 }
 
+const ut::Font* TextBox::GetFont() const { return mpFont; }
+
 void TextBox::SetFont(const ut::Font* pFont) {
     if (mTextBoxFlag.allocFont) {
         NW4HBMAssertPointerNonnull_Line(mpFont, 775);
@@ -482,7 +478,7 @@ void TextBox::SetFont(const ut::Font* pFont) {
     }
 }
 
-const ut::Rect TextBox::GetTextDrawRect(ut::TextWriterBase<wchar_t>* pWriter) const {
+const ut::Rect TextBox::GetTextDrawRect(ut::WideTextWriter* pWriter) const {
     ut::Rect textRect;
 
     pWriter->SetCursor(0.0f, 0.0f);
@@ -501,17 +497,18 @@ f32 TextBox::GetTextMagH() const {
 
     switch (GetTextPositionH()) {
         default:
-        case 0:
+        case HORIZONTALPOSITION_LEFT: {
             hMag = 0.0f;
             break;
-
-        case 1:
+        }
+        case HORIZONTALPOSITION_CENTER: {
             hMag = 0.5f;
             break;
-
-        case 2:
+        }
+        case HORIZONTALPOSITION_RIGHT: {
             hMag = 1.0f;
             break;
+        }
     }
 
     return hMag;
@@ -522,21 +519,21 @@ f32 TextBox::GetTextMagV() const {
 
     switch (GetTextPositionV()) {
         default:
-        case 0:
+        case HORIZONTALPOSITION_LEFT: {
             vMag = 0.0f;
             break;
-
-        case 1:
+        }
+        case HORIZONTALPOSITION_CENTER: {
             vMag = 0.5f;
             break;
-
-        case 2:
+        }
+        case HORIZONTALPOSITION_RIGHT: {
             vMag = 1.0f;
             break;
+        }
     }
 
     return vMag;
 }
-
 } // namespace lyt
 } // namespace nw4hbm

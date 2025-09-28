@@ -3,9 +3,12 @@
 
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/ut/Font.h"
-
 namespace nw4hbm {
+
+namespace ut {
+class Font;
+}
+
 namespace lyt {
 class ResourceAccessor {
   public:

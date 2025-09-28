@@ -3,7 +3,10 @@
 
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/ut.h"
+#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
+#include "revolution/hbm/nw4hbm/ut/LinkList.h"
+#include "revolution/hbm/nw4hbm/ut/Color.h"
+#include "revolution/hbm/nw4hbm/ut/Rect.h"
 
 #include "revolution/hbm/nw4hbm/db.h"
 

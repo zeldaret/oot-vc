@@ -12,6 +12,7 @@
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
 #include "revolution/hbm/nw4hbm/ut/TagProcessorBase.h"
+#include "revolution/hbm/nw4hbm/ut/WideTagProcessor.h"
 
 #include "macros.h"
 

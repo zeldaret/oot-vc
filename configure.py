@@ -673,7 +673,7 @@ config.libs = [
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_pane.cpp", extra_cflags=["-fp_contract on"]),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_picture.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_textBox.cpp", mw_version="GC/3.0a5.2"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_textBox.cpp", mw_version="GC/3.0a5.2"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_window.cpp", mw_version="GC/3.0a5.2"),
         ],
     ),
