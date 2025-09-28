@@ -663,7 +663,7 @@ config.libs = [
         "nw4hbm/lyt",
         [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_animation.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_arcResourceAccessor.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_arcResourceAccessor.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_bounding.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_common.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_drawInfo.cpp"),

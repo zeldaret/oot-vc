@@ -3,30 +3,20 @@
 #include "revolution/arc.h"
 #include "revolution/hbm/nw4hbm/ut.h"
 
+#include "decomp.h"
 #include "string.h"
 
 namespace {
-// pretend this is nw4hbm::lyt
-using namespace nw4hbm;
-using namespace nw4hbm::lyt;
 
-s32 FindNameResource(ARCHandle* pArcHandle, const char* resName);
-void* GetResourceSub(ARCHandle* pArcHandle, const char* resRootDir, u32 resType, const char* name, u32* pSize);
-} // namespace
-
-namespace {
-
-#pragma push
-#pragma dont_inline on
-
-s32 FindNameResource(ARCHandle* pArcHandle, const char* resName) {
+s32 FindNameResource(ARCHandle* pArcHandle, const char* resName) NO_INLINE {
     s32 entryNum = -1;
 
     ARCDir dir;
-    bool bSuccess ATTRIBUTE_UNUSED = ARCOpenDir(pArcHandle, ".", &dir);
+    BOOL bSuccess = ARCOpenDir(pArcHandle, ".", &dir);
     NW4HBMAssert_Line(bSuccess, 48);
 
     ARCEntry dirEntry;
+
     while (ARCReadDir(&dir, &dirEntry)) {
         if (dirEntry.type != ARC_ENTRY_FILE) {
             bSuccess = ARCChangeDir(pArcHandle, dirEntry.name);
@@ -50,13 +40,7 @@ s32 FindNameResource(ARCHandle* pArcHandle, const char* resName) {
     return entryNum;
 }
 
-#pragma pop
-
-static char unused1[] = "NW4HBM:Failed assertion std::strlen(name) < FONTNAMEBUF_MAX";
-
 void* GetResourceSub(ARCHandle* pArcHandle, const char* resRootDir, u32 resType, const char* name, u32* pSize) {
-    (void)unused1; // necessary
-
     s32 entryNum = -1;
 
     if (ARCConvertPathToEntrynum(pArcHandle, resRootDir) != -1 && ARCChangeDir(pArcHandle, resRootDir)) {
@@ -72,18 +56,18 @@ void* GetResourceSub(ARCHandle* pArcHandle, const char* resRootDir, u32 resType,
 
             if (ARCConvertPathToEntrynum(pArcHandle, resTypeStr) != -1 && ARCChangeDir(pArcHandle, resTypeStr)) {
                 entryNum = ARCConvertPathToEntrynum(pArcHandle, name);
-                bool bSuccess ATTRIBUTE_UNUSED = ARCChangeDir(pArcHandle, "..");
+                BOOL bSuccess = ARCChangeDir(pArcHandle, "..");
                 NW4HBMAssert_Line(bSuccess, 117);
             }
         }
 
-        bool bSuccess ATTRIBUTE_UNUSED = ARCChangeDir(pArcHandle, "..");
+        BOOL bSuccess = ARCChangeDir(pArcHandle, "..");
         NW4HBMAssert_Line(bSuccess, 123);
     }
 
     if (entryNum != -1) {
         ARCFileInfo arcFileInfo;
-        bool bSuccess ATTRIBUTE_UNUSED = ARCFastOpen(pArcHandle, entryNum, &arcFileInfo);
+        BOOL bSuccess = ARCFastOpen(pArcHandle, entryNum, &arcFileInfo);
         NW4HBMAssert_Line(bSuccess, 131);
 
         void* resPtr = ARCGetStartAddrInMem(&arcFileInfo);
@@ -99,23 +83,29 @@ void* GetResourceSub(ARCHandle* pArcHandle, const char* resRootDir, u32 resType,
 
     return nullptr;
 }
-
-} // unnamed namespace
+} // namespace
 
 namespace nw4hbm {
 namespace lyt {
-
 ut::Font* detail::FindFont(FontRefLinkList* pFontRefList, const char* name) {
     for (FontRefLinkList::Iterator it = pFontRefList->GetBeginIter(); it != pFontRefList->GetEndIter(); it++) {
         if (strcmp(name, it->GetFontName()) == 0) {
             return it->GetFont();
         }
     }
-
     return nullptr;
 }
 
-ArcResourceAccessor::ArcResourceAccessor() : mArcBuf(nullptr) {}
+FontRefLink::FontRefLink() : mpFont(nullptr) {}
+
+void FontRefLink::Set(const char* name, ut::Font* pFont) {
+    strcpy(mFontName, name);
+    mpFont = pFont;
+}
+
+ArcResourceAccessor::ArcResourceAccessor() : mArcBuf(NULL) {}
+
+DECOMP_FORCE(NW4HBMAssert_String(std::strlen(name) < FONTNAMEBUF_MAX));
 
 bool ArcResourceAccessor::Attach(void* archiveStart, const char* resourceRootDirectory) {
     // clang-format off
@@ -123,39 +113,36 @@ bool ArcResourceAccessor::Attach(void* archiveStart, const char* resourceRootDir
     NW4HBMAssertPointerNonnull_Line(archiveStart, 221);
     NW4HBMAssertPointerNonnull_Line(resourceRootDirectory, 222);
     // clang-format on
-
-    bool bSuccess = ARCInitHandle(archiveStart, &mArcHandle);
+    
+    BOOL bSuccess = ARCInitHandle(archiveStart, &mArcHandle);
 
     if (!bSuccess) {
         return false;
     }
 
     mArcBuf = archiveStart;
-    std::strncpy(mResRootDir, resourceRootDirectory, ARRAY_COUNT(mResRootDir) - 1);
+
+    strncpy(mResRootDir, resourceRootDirectory, ARRAY_COUNT(mResRootDir) - 1);
     mResRootDir[ARRAY_COUNT(mResRootDir) - 1] = '\0';
 
     return true;
 }
 
-static char unused2[] = "NW4HBM:Failed assertion IsAttached()";
-static char unused3[] = "NW4HBM:Pointer must not be NULL (pLink)";
+DECOMP_FORCE(NW4HBMAssert_String(IsAttached()));
+DECOMP_FORCE(NW4HBMAssertPointerNonnull_String(pLink));
 
 void* ArcResourceAccessor::GetResource(u32 resType, const char* name, u32* pSize) {
-    // necessary
-    (void)unused2;
-    (void)unused3;
-
     return GetResourceSub(&mArcHandle, mResRootDir, resType, name, pSize);
 }
 
-bool ArcResourceLink::Set(void* archiveStart, const char* resourceRootDirectory) {
-    bool bSuccess = ARCInitHandle(archiveStart, &mArcHandle);
+bool ArcResourceLink::Set(void* archiveStart, const char* resRootDirectory) {
+    BOOL bSuccess = ARCInitHandle(archiveStart, &mArcHandle);
 
     if (!bSuccess) {
         return false;
     }
 
-    std::strncpy(mResRootDir, resourceRootDirectory, ARRAY_COUNT(mResRootDir) - 1);
+    strncpy(mResRootDir, resRootDirectory, ARRAY_COUNT(mResRootDir) - 1);
     mResRootDir[ARRAY_COUNT(mResRootDir) - 1] = '\0';
 
     return true;
@@ -169,6 +156,10 @@ MultiArcResourceAccessor::~MultiArcResourceAccessor() { DetachAll(); }
 
 void MultiArcResourceAccessor::Attach(ArcResourceLink* pLink) { mArcList.PushBack(pLink); }
 
+// it requires a type that wasn't used before to generate the string and avoid having it stripped
+typedef ut::LinkList<void*, 0> DummyLinkList;
+DECOMP_FORCE_CLASS_METHOD(nw4hbm::lyt::DummyLinkList, GetNodeFromPointer(nullptr));
+
 void* MultiArcResourceAccessor::GetResource(u32 resType, const char* name, u32* pSize) {
     for (ArcResourceLinkList::Iterator it = mArcList.GetBeginIter(); it != mArcList.GetEndIter(); it++) {
         ARCHandle* pArcHandle = it->GetArcHandle();
@@ -176,11 +167,12 @@ void* MultiArcResourceAccessor::GetResource(u32 resType, const char* name, u32* 
             return resPtr;
         }
     }
-
     return nullptr;
 }
+
+void MultiArcResourceAccessor::RegistFont(FontRefLink* pLink) { mFontList.PushBack(pLink); }
 
 ut::Font* MultiArcResourceAccessor::GetFont(const char* name) { return detail::FindFont(&mFontList, name); }
 
 } // namespace lyt
-} // namespace nw4hbm
+} // namespace nw4r

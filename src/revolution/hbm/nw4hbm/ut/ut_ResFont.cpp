@@ -3,6 +3,8 @@
 #include "revolution/hbm/nw4hbm/config.h"
 #include "revolution/hbm/nw4hbm/db.h"
 
+#include "decomp.h"
+
 #define MAGIC_FONT 'RFNT' // Revolution Font
 #define MAGIC_FONT_UNPACKED 'RFNU' // Revolution Font, unpacked
 
@@ -82,7 +84,7 @@ bool ResFont::SetResource(void* brfnt) {
     return true;
 }
 
-extern "C" char unused1[] = "ResFont::RemoveResource(): Res font is not loaded.\n";
+DECOMP_FORCE("ResFont::RemoveResource(): Res font is not loaded.\n");
 
 FontInformation* ResFont::Rebuild(BinaryFileHeader* fileHeader) {
     BinaryBlockHeader* blockHeader;
