@@ -318,7 +318,7 @@ void SeqTrack::ChannelCallbackFunc(Channel* dropChannel, Channel::ChannelCallbac
         channel = channel->GetNextTrackChannel();
     }
 
-    NW4HBMAssert_Line(false, 553);
+    NW4HBMPanic_Line(553);
 }
 void SeqTrack::SetMute(SeqMute mute) {
     ut::AutoInterruptLock lock;
@@ -488,7 +488,7 @@ Channel* SeqTrack::NoteOn(int key, int velocity, s32 portatime, bool tie) {
     }
 
     if (mParserTrackParam.portaTime == 0) {
-        NW4HBMAssertWarningMessage_Line(portatime != 0, 856, "portatime zero is invalid.");
+        NW4HBMCheckMessage_Line(portatime != 0, 856, "portatime zero is invalid.");
         channel->SetSweepParam(sweepPitch, portatime, false);
     } else {
         int time = mParserTrackParam.portaTime;

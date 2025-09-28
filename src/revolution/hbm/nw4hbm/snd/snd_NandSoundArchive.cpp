@@ -39,7 +39,7 @@ bool NandSoundArchive::Open(const char* path) {
 
     result = NANDOpen(path, &mFileInfo, NAND_ACCESS_READ);
     if (result != NAND_RESULT_OK) {
-        NW4HBMAssertWarningMessage_Line(result != NAND_RESULT_OK, 88, "Cannot find file %s\n", path);
+        NW4HBMCheckMessage_Line(result != NAND_RESULT_OK, 88, "Cannot find file %s\n", path);
         return false;
     }
 
@@ -47,7 +47,7 @@ bool NandSoundArchive::Open(const char* path) {
 
     bool bHeader = LoadFileHeader();
     if (!bHeader) {
-        NW4HBMAssertWarningMessage_Line(bHeader, 97, "Cannot load header\n");
+        NW4HBMCheckMessage_Line(bHeader, 97, "Cannot load header\n");
         return false;
     }
 
@@ -80,7 +80,7 @@ bool NandSoundArchive::Open(const char* path) {
 void NandSoundArchive::Close() {
     if (mOpen) {
         s32 result = NANDClose(&mFileInfo);
-        NW4HBMAssertWarningMessage_Line(result == NAND_RESULT_OK, 141, "Failed close mcs file. ErrID=%d\n", result);
+        NW4HBMCheckMessage_Line(result == NAND_RESULT_OK, 141, "Failed close mcs file. ErrID=%d\n", result);
         mOpen = false;
     }
 
@@ -154,7 +154,7 @@ bool NandSoundArchive::LoadHeader(void* buffer, u32 size) {
     u32 infoSize = mFileReader.GetInfoChunkSize();
 
     if (size < infoSize) {
-        NW4HBMAssertWarningMessage_Line(size >= infoSize, 249, "SoundArchive::LoadHeader buffer size is too small.\n");
+        NW4HBMCheckMessage_Line(size >= infoSize, 249, "SoundArchive::LoadHeader buffer size is too small.\n");
         return false;
     }
 
@@ -182,7 +182,7 @@ bool NandSoundArchive::LoadLabelStringData(void* buffer, u32 size) {
     s32 labelOffset = *reinterpret_cast<s32*>(&labelOffsetU);
 
     if (size < labelSize) {
-        NW4HBMAssertWarningMessage(size >= labelSize, "SoundArchive::LoadLabelStringData buffer size is too small.");
+        NW4HBMCheckMessage(size >= labelSize, "SoundArchive::LoadLabelStringData buffer size is too small.");
         return false;
     }
 

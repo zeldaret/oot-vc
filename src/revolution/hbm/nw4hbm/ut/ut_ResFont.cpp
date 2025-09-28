@@ -154,12 +154,12 @@ FontInformation* ResFont::Rebuild(BinaryFileHeader* fileHeader) {
                 NW4HBMAssertPointerValid_Line(glyph->sheetImage, 276);
                 NW4HBMAssertHeaderMinimumValue_Line(glyph->cellWidth, 1, 279);
                 NW4HBMAssertHeaderMinimumValue_Line(glyph->cellHeight, 1, 280);
-                NW4HBMAssertHeaderRangeValue_Line(glyph->sheetSize, 0x200, 0x400000, 281);
+                NW4HBMAssertHeaderClampedLRValue_Line(glyph->sheetSize, 0x200, 0x400000, 281);
                 NW4HBMAssertHeaderMinimumValue_Line(glyph->sheetNum, 1, 282);
                 NW4HBMAssertHeaderMinimumValue_Line(glyph->sheetRow, 1, 283);
                 NW4HBMAssertHeaderMinimumValue_Line(glyph->sheetLine, 1, 284);
-                NW4HBMAssertHeaderRangeValue_Line(glyph->sheetWidth, 0x20, 0x400, 285);
-                NW4HBMAssertHeaderRangeValue_Line(glyph->sheetHeight, 0x20, 0x400, 286);
+                NW4HBMAssertHeaderClampedLRValue_Line(glyph->sheetWidth, 0x20, 0x400, 285);
+                NW4HBMAssertHeaderClampedLRValue_Line(glyph->sheetHeight, 0x20, 0x400, 286);
             } break;
 
             case MAGIC_FONT_CHAR_WIDTH: {

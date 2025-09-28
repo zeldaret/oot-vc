@@ -137,7 +137,7 @@ void CharWriter::ResetTextureCache() {
 
 void CharWriter::SetGradationMode(GradationMode mode) {
     NW4HBMAssertPointerValid_Line(this, 355);
-    NW4HBMAssertHeaderRangeValue_Line(mode, 0, 2, 356);
+    NW4HBMAssertHeaderClampedLRValue_Line(mode, 0, 2, 356);
     mTextColor.gradationMode = mode;
     UpdateVertexColor();
 }

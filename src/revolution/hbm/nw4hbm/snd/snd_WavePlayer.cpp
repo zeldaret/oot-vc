@@ -104,7 +104,7 @@ bool WavePlayer::AppendWavePacket(WavePacket* packet) {
             break;
         }
         default: {
-            NW4HBMAssert(false);
+            NW4HBMPanic();
             return false;
         }
     }
@@ -215,7 +215,7 @@ void WavePlayer::StartVoice() {
             break;
         }
         default: {
-            NW4HBMAssert_Line(false, 523);
+            NW4HBMPanic_Line(523);
             return;
         }
     }

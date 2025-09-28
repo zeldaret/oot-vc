@@ -458,7 +458,7 @@ const void* SoundArchivePlayer::detail_GetFileWaveDataAddress(u32 id) const {
 
 const void* SoundArchivePlayer::GetGroupAddress(u32 groupId) const {
     if (mGroupTable == nullptr) {
-        NW4HBMAssertWarningMessage_Line(
+        NW4HBMCheckMessage_Line(
             mGroupTable != nullptr, 819,
             "Failed to SoundArchivePlayer::GetGroupAddress because group table is not allocated.\n");
         return nullptr;
@@ -473,7 +473,7 @@ const void* SoundArchivePlayer::GetGroupAddress(u32 groupId) const {
 
 void SoundArchivePlayer::SetGroupAddress(u32 groupId, const void* pAddr) {
     if (mGroupTable == nullptr) {
-        NW4HBMAssertWarningMessage_Line(
+        NW4HBMCheckMessage_Line(
             mGroupTable != nullptr, 845,
             "Failed to SoundArchivePlayer::SetGroupAddress because group table is not allocated.\n");
         return;
@@ -485,7 +485,7 @@ void SoundArchivePlayer::SetGroupAddress(u32 groupId, const void* pAddr) {
 
 const void* SoundArchivePlayer::GetGroupWaveDataAddress(u32 groupId) const {
     if (mGroupTable == nullptr) {
-        NW4HBMAssertWarningMessage_Line(
+        NW4HBMCheckMessage_Line(
             mGroupTable != nullptr, 870,
             "Failed to SoundArchivePlayer::GetGroupWaveDataAddress because group table is not allocated.\n");
         return nullptr;
@@ -500,7 +500,7 @@ const void* SoundArchivePlayer::GetGroupWaveDataAddress(u32 groupId) const {
 
 void SoundArchivePlayer::SetGroupWaveDataAddress(u32 groupId, const void* pAddr) {
     if (mGroupTable == nullptr) {
-        NW4HBMAssertWarningMessage_Line(
+        NW4HBMCheckMessage_Line(
             mGroupTable != nullptr, 896,
             "Failed to SoundArchivePlayer::SetGroupWaveDataAddress because group table is not allocated.\n");
         return;
@@ -1163,7 +1163,7 @@ void SoundArchivePlayer::StrmDataLoadTask::Execute() {
     }
 
     if (bytesRead != mSize) {
-        NW4HBMAssertWarningMessage_Line(bytesRead != 0, 1948, "failed to load stream\n");
+        NW4HBMCheckMessage_Line(bytesRead != 0, 1948, "failed to load stream\n");
         detail::TaskManager::GetInstance().CancelByTaskId(GetTaskId());
 
         if (mCallback != nullptr) {

@@ -62,7 +62,7 @@ void RemoteSpeakerManager::RemoteSpeakerAlarmProc(OSAlarm* alarm, OSContext* con
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
         if (manager.mSpeaker[i].IsAvailable()) {
             s32 sampleSize = AXRmtGetSamples(i, samples, RemoteSpeaker::SAMPLES_PER_AUDIO_PACKET);
-            NW4HBMAssertWarningMessage_Line(sampleSize == RemoteSpeaker::SAMPLES_PER_AUDIO_PACKET, 157,
+            NW4HBMCheckMessage_Line(sampleSize == RemoteSpeaker::SAMPLES_PER_AUDIO_PACKET, 157,
                                             "wrong remote sample size");
             manager.mSpeaker[i].Update(samples);
         }

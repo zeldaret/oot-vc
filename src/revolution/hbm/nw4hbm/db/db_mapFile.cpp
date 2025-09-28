@@ -17,6 +17,12 @@
 
 #include "revolution/hbm/HBMAssert.hpp"
 
+//! TODO: remove
+#define NW4HBMAssertPointerNonnull_FileLineMsg(ptr_, file_, line_, msg) \
+    NW4HBMAssertMessage_FileLine(file_, line_, (ptr_) != 0, msg)
+#define NW4HBMAssertPointerNonnull_FileLine(ptr_, file_, line_) \
+    NW4HBMAssertMessage_FileLine(file_, line_, (ptr_) != 0, "NW4HBM:Pointer must not be NULL (" #ptr_ ")")
+
 /*******************************************************************************
  * types
  */

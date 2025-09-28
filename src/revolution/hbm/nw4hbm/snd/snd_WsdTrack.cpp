@@ -259,7 +259,7 @@ void WsdTrack::ChannelCallbackFunc(Channel* dropChannel, Channel::ChannelCallbac
         channel = channel->GetNextTrackChannel();
     }
 
-    NW4HBMAssert_Line(false, 487);
+    NW4HBMPanic_Line(487);
 }
 
 } // namespace detail

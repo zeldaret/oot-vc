@@ -97,7 +97,7 @@ void RemoteSpeaker::Update(const s16* pRmtSamples) {
                           wencMode == 2 ? SAMPLES_PER_AUDIO_PACKET - 8 : SAMPLES_PER_AUDIO_PACKET, adpcmBuffer);
 
         s32 result = WPADSendStreamData(mChannelIndex, adpcmBuffer, SAMPLES_PER_ENCODED_PACKET);
-        NW4HBMAssertWarningMessage_Line(result == 0, 340, "WPADSendStreamData failed. %d", result);
+        NW4HBMCheckMessage_Line(result == 0, 340, "WPADSendStreamData failed. %d", result);
     }
 
     if (firstFlag) {

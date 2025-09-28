@@ -141,7 +141,7 @@ bool ResFontBase::SetAlternateChar(char16_t c) {
 void ResFontBase::SetLineFeed(int linefeed) {
     NW4HBMAssertPointerValid_Line(this, 375);
     NW4HBMAssertPointerValid_Line(mFontInfo, 376);
-    NW4HBMAssertHeaderRangeValue_Line(linefeed, -128, 127, 377);
+    NW4HBMAssertHeaderClampedLRValue_Line(linefeed, -128, 127, 377);
     mFontInfo->linefeed = linefeed;
 }
 

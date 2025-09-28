@@ -138,8 +138,8 @@ s32 NandFileStream::Read(void* buf, u32 length) {
 }
 
 bool NandFileStream::ReadAsync(void* buf, u32 length, IOStreamCallback pCallback, void* pCallbackArg) {
-    NW4HBMAlign32_2_Line(buf, 313);
-    NW4HBMAlign32_2_Line(length, 314);
+    NW4HBMAssertAligned_Line(313, buf, 32);
+    NW4HBMAssertAligned_Line(314, length, 32);
     NW4HBMAssertMessage_Line(this->IsAvailable() != 0, 315, "NandFileStream is not opened");
 
     return ReadAsyncImpl(buf, length, pCallback, pCallbackArg);

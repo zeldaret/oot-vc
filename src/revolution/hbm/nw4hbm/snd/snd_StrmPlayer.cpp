@@ -242,7 +242,7 @@ void StrmPlayer::UpdatePlayingBlockIndex() {
 
             UpdateLoopAddress(0, mPlayingBufferBlockCount * mStrmInfo.blockSamples);
         } else {
-            NW4HBMAssert_Line(false, 454);
+            NW4HBMPanic_Line(454);
         }
     }
 
