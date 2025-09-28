@@ -31,12 +31,23 @@ void ReverseYAxis(math::MTX34* pMtx) {
 
 namespace nw4hbm {
 namespace lyt {
-DECOMP_FORCE_CLASS_METHOD(nw4hbm::lyt::PaneLinkList, GetNodeFromPointer(nullptr));
-DECOMP_FORCE_CLASS_METHOD(nw4hbm::lyt::AnimTransformList, GetNodeFromPointer(nullptr));
-extern void __deadstrip1();
-extern void __deadstrip1() {
-    (void)0.0f;
-    (void)1.0f;
+
+Pane::Pane() {
+    Init();
+
+    mBasePosition = 4;
+    memset(mName, 0, sizeof(mName));
+    memset(mUserData, 0, sizeof(mUserData));
+
+    mTranslate = math::VEC3(0.0f, 0.0f, 0.0f);
+    mRotate = math::VEC3(0.0f, 0.0f, 0.0f);
+    mScale = math::VEC2(1.0f, 1.0f);
+    mSize = Size(0.0f, 0.0f);
+    mAlpha = ut::Color(255);
+    mGlbAlpha = mAlpha;
+    mFlag = 0;
+
+    SetVisible(true);
 }
 
 Pane::Pane(const res::Pane* pBlock) {
@@ -86,8 +97,8 @@ void Pane::SetUserData(const char* userData) { std::strncpy(mUserData, userData,
 
 void Pane::AppendChild(Pane* pChild) { InsertChild(mChildList.GetEndIter(), pChild); }
 
-// extern void _deadstrip2();
-// extern void _deadstrip2() { PaneList::GetNodeFromPointer(nullptr); }
+DECOMP_FORCE_CLASS_METHOD(nw4hbm::lyt::PaneLinkList, GetNodeFromPointer(nullptr));
+DECOMP_FORCE_CLASS_METHOD(nw4hbm::lyt::AnimTransformList, GetNodeFromPointer(nullptr));
 
 void Pane::InsertChild(PaneList::Iterator next, Pane* pChild) {
     NW4HBMAssertPointerNonnull_Line(pChild, 253);

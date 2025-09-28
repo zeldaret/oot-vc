@@ -670,7 +670,7 @@ config.libs = [
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_group.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_layout.cpp"),
             Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_material.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_pane.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_pane.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_picture.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/nw4hbm/lyt/lyt_textBox.cpp", mw_version="GC/3.0a5.2"),
