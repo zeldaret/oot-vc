@@ -97,8 +97,11 @@ void Pane::SetUserData(const char* userData) { std::strncpy(mUserData, userData,
 
 void Pane::AppendChild(Pane* pChild) { InsertChild(mChildList.GetEndIter(), pChild); }
 
-DECOMP_FORCE_CLASS_METHOD(nw4hbm::lyt::PaneLinkList, GetNodeFromPointer(nullptr));
-DECOMP_FORCE_CLASS_METHOD(nw4hbm::lyt::AnimTransformList, GetNodeFromPointer(nullptr));
+// it requires a type that wasn't used before to generate the string and avoid having it stripped
+typedef nw4hbm::ut::LinkList<void**, 0> DummyLinkList;
+DECOMP_FORCE_CLASS_METHOD(DummyLinkList, GetNodeFromPointer(nullptr));
+typedef nw4hbm::ut::LinkList<void***, 0> DummyLinkList2;
+DECOMP_FORCE_CLASS_METHOD(DummyLinkList2, GetNodeFromPointer(nullptr));
 
 void Pane::InsertChild(PaneList::Iterator next, Pane* pChild) {
     NW4HBMAssertPointerNonnull_Line(pChild, 253);
@@ -147,7 +150,9 @@ u8 Pane::GetColorElement(u32 idx) const {
     }
 }
 
-DECOMP_FORCE_CLASS_METHOD(nw4hbm::lyt::GroupList, GetNodeFromPointer(nullptr));
+// it requires a type that wasn't used before to generate the string and avoid having it stripped
+typedef nw4hbm::ut::LinkList<void****, 0> DummyLinkList3;
+DECOMP_FORCE_CLASS_METHOD(DummyLinkList3, GetNodeFromPointer(nullptr));
 
 void Pane::SetColorElement(u32 idx, u8 value) {
     NW4HBMAssert_Line(idx < ANIMTARGET_PANE_COLOR_MAX, 334);

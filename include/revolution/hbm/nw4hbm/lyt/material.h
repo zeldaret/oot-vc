@@ -11,6 +11,8 @@
 #include "revolution/hbm/nw4hbm/lyt/resources.h"
 #include "revolution/hbm/nw4hbm/lyt/types.h"
 
+#include "revolution/hbm/nw4hbm/ut/Color.h"
+
 namespace nw4hbm {
 namespace lyt {
 class Material;

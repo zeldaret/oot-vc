@@ -157,8 +157,8 @@ MultiArcResourceAccessor::~MultiArcResourceAccessor() { DetachAll(); }
 void MultiArcResourceAccessor::Attach(ArcResourceLink* pLink) { mArcList.PushBack(pLink); }
 
 // it requires a type that wasn't used before to generate the string and avoid having it stripped
-typedef ut::LinkList<void*, 0> DummyLinkList;
-DECOMP_FORCE_CLASS_METHOD(nw4hbm::lyt::DummyLinkList, GetNodeFromPointer(nullptr));
+typedef nw4hbm::ut::LinkList<void*, 0> DummyLinkList;
+DECOMP_FORCE_CLASS_METHOD(DummyLinkList, GetNodeFromPointer(nullptr));
 
 void* MultiArcResourceAccessor::GetResource(u32 resType, const char* name, u32* pSize) {
     for (ArcResourceLinkList::Iterator it = mArcList.GetBeginIter(); it != mArcList.GetEndIter(); it++) {
