@@ -20,7 +20,7 @@ namespace SoundArchiveFile {
 static const u32 SIGNATURE_FILE = 'RSAR';
 static const u32 SIGNATURE_INFO_BLOCK = 'INFO';
 static const u32 SIGNATURE_SYMB_BLOCK = 'SYMB';
-static const int FILE_VERSION = NW4R_VERSION(1, 1);
+static const int FILE_VERSION = NW4HBM_VERSION(1, 1);
 
 typedef struct StringTreeNode {
     u16 flags; // 0x00

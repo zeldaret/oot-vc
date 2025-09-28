@@ -39,7 +39,6 @@ inline u32 GetTexMtx(u32 texMtxIdx) { return texMtxIdx * 3 + 30; }
 inline u32 GetTexMtxIdx(u32 texMtx) { return (texMtx - 30) / 3; }
 } // unnamed namespace
 
-
 static const GXColorS10 DefaultBlackColor = {0x0000, 0x0000, 0x0000, 0x0000};
 
 // seems like this doesn't exist?
@@ -1142,11 +1141,10 @@ bool Material::SetupGX(bool bModVtxCol, u8 alpha) {
 void Material::BindAnimation(AnimTransform* pAnimTrans) { pAnimTrans->Bind(this); }
 
 void Material::UnbindAnimation(AnimTransform* pAnimTrans) {
-    NW4HBM_RANGE_FOR_NO_AUTO_INC(it, mAnimList) {
-        DECLTYPE(it) currIt = it++;
+    for (AnimationLinkList::Iterator it = mAnimList.GetBeginIter(); it != mAnimList.GetEndIter();) {
+        AnimationLinkList::Iterator currIt = it++;
 
-        // nullptr is for UnbindAllAnimation
-        if (pAnimTrans == nullptr || currIt->GetAnimTransform() == pAnimTrans) {
+        if (pAnimTrans == NULL || currIt->GetAnimTransform() == pAnimTrans) {
             mAnimList.Erase(currIt);
             currIt->Reset();
         }
@@ -1156,10 +1154,9 @@ void Material::UnbindAnimation(AnimTransform* pAnimTrans) {
 void Material::UnbindAllAnimation() { UnbindAnimation(nullptr); }
 
 void Material::Animate() {
-    NW4HBM_RANGE_FOR(it, mAnimList) {
+    for (AnimationLinkList::Iterator it = mAnimList.GetBeginIter(); it != mAnimList.GetEndIter(); it++) {
         if (it->IsEnable()) {
             AnimTransform* animTrans = it->GetAnimTransform();
-
             animTrans->Animate(it->GetIndex(), this);
         }
     }

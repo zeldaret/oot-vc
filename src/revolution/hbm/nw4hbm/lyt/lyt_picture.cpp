@@ -7,7 +7,7 @@
 namespace nw4hbm {
 namespace lyt {
 
-const ut::detail::RuntimeTypeInfo Picture::typeInfo(&Pane::typeInfo);
+NW4HBM_UT_GET_DERIVED_RUNTIME_TYPEINFO(Picture, Pane);
 
 Picture::Picture(const res::Picture* pResPic, const ResBlockSet& resBlockSet) : Pane(pResPic) {
     u8 texCoordNum = ut::Min<u8>(pResPic->texCoordNum, 8);

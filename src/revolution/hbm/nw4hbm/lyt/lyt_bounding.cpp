@@ -9,7 +9,7 @@
 namespace nw4hbm {
 namespace lyt {
 
-const ut::detail::RuntimeTypeInfo Bounding::typeInfo(&Pane::typeInfo);
+NW4HBM_UT_GET_DERIVED_RUNTIME_TYPEINFO(Bounding, Pane);
 
 Bounding::Bounding(const res::Bounding* pBlock, const ResBlockSet&) : Pane(pBlock) {}
 

@@ -13,7 +13,7 @@ void ReverseYAxis(math::MTX34* pMtx);
 
 namespace nw4hbm {
 namespace lyt {
-const ut::detail::RuntimeTypeInfo Pane::typeInfo(nullptr);
+NW4HBM_UT_GET_RUNTIME_TYPEINFO(Pane);
 }
 } // namespace nw4hbm
 
@@ -59,13 +59,13 @@ void Pane::Init() {
 }
 
 Pane::~Pane() {
-    NW4HBM_RANGE_FOR_NO_AUTO_INC(it, mChildList) {
+    for (PaneList::Iterator it = mChildList.GetBeginIter(); it != mChildList.GetEndIter();) {
         PaneList::Iterator currIt = it++;
         mChildList.Erase(currIt);
 
         if (!currIt->IsUserAllocated()) {
             currIt->~Pane();
-            Layout::FreeMemory(&(*currIt));
+            Layout::FreeMemory(&*currIt);
         }
     }
 
@@ -156,9 +156,9 @@ Pane* Pane::FindPaneByName(const char* findName, bool bRecursive) {
     }
 
     if (bRecursive) {
-        NW4HBM_RANGE_FOR(it, mChildList) {
-            if (Pane* pPane = it->FindPaneByName(findName, true)) {
-                return pPane;
+        for (PaneList::Iterator it = mChildList.GetBeginIter(); it != mChildList.GetEndIter(); it++) {
+            if (Pane* pane = it->FindPaneByName(findName, true)) {
+                return pane;
             }
         }
     }
@@ -172,9 +172,9 @@ Material* Pane::FindMaterialByName(const char* findName, bool bRecursive) {
     }
 
     if (bRecursive) {
-        NW4HBM_RANGE_FOR(it, mChildList) {
-            if (Material* pMat = it->FindMaterialByName(findName, true)) {
-                return pMat;
+        for (PaneList::Iterator it = mChildList.GetBeginIter(); it != mChildList.GetEndIter(); it++) {
+            if (Material* pMaterial = it->FindMaterialByName(findName, true)) {
+                return pMaterial;
             }
         }
     }
@@ -258,16 +258,18 @@ void Pane::CalculateMtx(const DrawInfo& drawInfo) {
 }
 
 void Pane::CalculateMtxChild(const DrawInfo& drawInfo) {
-    NW4HBM_RANGE_FOR(it, mChildList)
-    it->CalculateMtx(drawInfo);
+    for (PaneList::Iterator it = mChildList.GetBeginIter(); it != mChildList.GetEndIter(); it++) {
+        it->CalculateMtx(drawInfo);
+    }
 }
 
 void Pane::Draw(const DrawInfo& drawInfo) {
     if (detail::TestBit(mFlag, 0)) {
         DrawSelf(drawInfo);
 
-        NW4HBM_RANGE_FOR(it, mChildList)
-        it->Draw(drawInfo);
+        for (PaneList::Iterator it = mChildList.GetBeginIter(); it != mChildList.GetEndIter(); it++) {
+            it->Draw(drawInfo);
+        }
     }
 }
 
@@ -282,13 +284,14 @@ void Pane::Animate(u32 option) {
     AnimateSelf(option);
 
     if (detail::TestBit(mFlag, 0) || !(option & 1)) {
-        NW4HBM_RANGE_FOR(it, mChildList)
-        it->Animate(option);
+        for (PaneList::Iterator it = mChildList.GetBeginIter(); it != mChildList.GetEndIter(); it++) {
+            it->Animate(option);
+        }
     }
 }
 
 void Pane::AnimateSelf(u32 option) {
-    NW4HBM_RANGE_FOR(it, mAnimList) {
+    for (AnimationLinkList::Iterator it = mAnimList.GetBeginIter(); it != mAnimList.GetEndIter(); it++) {
         if (it->IsEnable()) {
             AnimTransform* animTrans = it->GetAnimTransform();
 
@@ -310,8 +313,9 @@ void Pane::UnbindAnimation(AnimTransform* pAnimTrans, bool bRecursive) {
     UnbindAnimationSelf(pAnimTrans);
 
     if (bRecursive) {
-        NW4HBM_RANGE_FOR(it, mChildList)
-        it->UnbindAnimation(pAnimTrans, bRecursive);
+        for (PaneList::Iterator it = mChildList.GetBeginIter(); it != mChildList.GetEndIter(); it++) {
+            it->UnbindAnimation(pAnimTrans, bRecursive);
+        }
     }
 }
 
@@ -322,11 +326,10 @@ void Pane::UnbindAnimationSelf(AnimTransform* pAnimTrans) {
         mpMaterial->UnbindAnimation(pAnimTrans);
     }
 
-    NW4HBM_RANGE_FOR_NO_AUTO_INC(it, mAnimList) {
-        DECLTYPE(it) currIt = it++;
+    for (AnimationLinkList::Iterator it = mAnimList.GetBeginIter(); it != mAnimList.GetEndIter();) {
+        AnimationLinkList::Iterator currIt = it++;
 
-        // nullptr is for UnbindAllAnimations
-        if (pAnimTrans == nullptr || currIt->GetAnimTransform() == pAnimTrans) {
+        if (pAnimTrans == NULL || currIt->GetAnimTransform() == pAnimTrans) {
             mAnimList.Erase(currIt);
             currIt->Reset();
         }
@@ -362,8 +365,9 @@ void Pane::SetAnimationEnable(AnimTransform* pAnimTrans, bool bEnable, bool bRec
     }
 
     if (bRecursive) {
-        NW4HBM_RANGE_FOR(it, mChildList)
-        it->SetAnimationEnable(pAnimTrans, bEnable, bRecursive);
+        for (PaneList::Iterator it = mChildList.GetBeginIter(); it != mChildList.GetEndIter(); it++) {
+            it->SetAnimationEnable(pAnimTrans, bEnable, bRecursive);
+        }
     }
 }
 

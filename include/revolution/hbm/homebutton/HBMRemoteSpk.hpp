@@ -8,11 +8,11 @@
 #include "revolution/wpad/WPAD.h"
 
 namespace homebutton {
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x47b924
+
 class RemoteSpk {
     // nested types
   private:
-    // [SGLEA4]/GormitiDebug.elf:.debug_info::0x47b992
+    
     struct ChanInfo {
         OSAlarm alarm; // size 0x30, offset 0x00
         WENCInfo wencinfo; // size 0x20, offset 0x30

@@ -12,7 +12,7 @@ class Group;
 } // namespace nw4hbm
 
 namespace homebutton {
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x475e60
+
 class GroupAnmController : public FrameController {
     // methods
   public:

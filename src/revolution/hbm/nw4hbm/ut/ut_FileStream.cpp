@@ -6,7 +6,7 @@
 namespace nw4hbm {
 namespace ut {
 
-const ut::detail::RuntimeTypeInfo FileStream::typeInfo(&IOStream::typeInfo);
+NW4HBM_UT_GET_DERIVED_RUNTIME_TYPEINFO(FileStream, IOStream);
 
 void FileStream::Seek(s32 offset, u32 origin) {
     NW4HBMAssertMessage_Line(CanSeek(), 44, "Stream don't support SEEK function\n");

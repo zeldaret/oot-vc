@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x47f750
+
 typedef enum HBMSelectBtnNum {
     HBM_SELECT_NULL = -1,
 
@@ -26,11 +26,11 @@ typedef enum HBMSelectBtnNum {
     HBM_SELECT_MAX
 } HBMSelectBtnNum;
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x30779a
+
 // Same arg names as UserCallback in HBMAxSound.cpp, so probably same type
 typedef int HBMSoundCallback(int evt, int num);
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x307646
+
 typedef struct HBMDataInfo {
     void* layoutBuf; // size 0x04, offset 0x00
     void* spkSeBuf; // size 0x04, offset 0x04
@@ -63,14 +63,14 @@ typedef struct HBMDataInfoEx {
 } HBMDataInfoEx; // size 0x??
 #endif
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x30790d
+
 typedef struct HBMKPadData {
     KPADStatus* kpad; // size 0x04, offset 0x00
     Vec2 pos; // size 0x08, offset 0x04
     u32 use_devtype; // size 0x04, offset 0x0c
 } HBMKPadData; // size 0x10
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x3078d4
+
 typedef struct HBMControllerData {
     HBMKPadData wiiCon[WPAD_MAX_CONTROLLERS]; // size 0x40, offset 0x00
 } HBMControllerData; // size 0x40

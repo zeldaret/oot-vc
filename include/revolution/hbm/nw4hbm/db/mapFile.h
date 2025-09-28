@@ -7,7 +7,7 @@
 
 namespace nw4hbm {
 namespace db {
-// [SPQE7T]/ISpyD.elf:.debug_info::0x39b5d8
+
 struct MapFile {
     byte_t* mapBuf; // size 0x04, offset 0x00
     OSModuleInfo* moduleInfo; // size 0x04, offset 0x04

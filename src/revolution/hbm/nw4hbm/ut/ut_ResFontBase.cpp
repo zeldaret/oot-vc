@@ -2,8 +2,6 @@
 
 #include "revolution/hbm/nw4hbm/db.h"
 
-#define GLYPH_INDEX_NOT_FOUND 0xFFFF
-
 struct CMapScanEntry {
     u16 ccode; // size 0x02, offset 0x00
     u16 index; // size 0x02, offset 0x02

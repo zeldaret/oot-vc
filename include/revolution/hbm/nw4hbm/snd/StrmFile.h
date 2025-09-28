@@ -20,7 +20,7 @@ namespace StrmFile {
 
 static const u32 SIGNATURE_FILE = 'RSTM';
 static const u32 SIGNATURE_HEAD_BLOCK = 'HEAD';
-static const int FILE_VERSION = NW4R_VERSION(1, 0);
+static const int FILE_VERSION = NW4HBM_VERSION(1, 0);
 
 typedef struct StrmDataInfo {
     u8 format; // 0x00

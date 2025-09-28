@@ -34,7 +34,7 @@ void GetRBTexCoord(math::VEC2* texCds, const Size& polSize, const Size& texSize,
 namespace nw4hbm {
 namespace lyt {
 
-const ut::detail::RuntimeTypeInfo Window::typeInfo(&Pane::typeInfo);
+NW4HBM_UT_GET_DERIVED_RUNTIME_TYPEINFO(Window, Pane);
 
 } // namespace lyt
 } // namespace nw4hbm
@@ -342,8 +342,9 @@ Material* Window::FindMaterialByName(const char* findName, bool bRecursive) {
     }
 
     if (bRecursive) {
-        NW4HBM_RANGE_FOR(it, mChildList) {
-            if (Material* pMat = it->FindMaterialByName(findName, true)) {
+        for (PaneList::Iterator it = mChildList.GetBeginIter(); it != mChildList.GetEndIter(); it++) {
+            Material* pMat = it->FindMaterialByName(findName, true);
+            if (pMat) {
                 return pMat;
             }
         }

@@ -21,7 +21,7 @@ namespace WsdFile {
 static const u32 SIGNATURE_FILE = 'RWSD';
 static const u32 SIGNATURE_DATA_BLOCK = 'DATA';
 static const u32 SIGNATURE_WAVE_BLOCK = 'WAVE';
-static const int FILE_VERSION = NW4R_VERSION(1, 2);
+static const int FILE_VERSION = NW4HBM_VERSION(1, 2);
 
 typedef struct WsdInfo {
     f32 pitch; // 0x00
@@ -92,7 +92,7 @@ typedef struct WaveBlock {
     u32 offsetTable[]; // 0x0C
 } WaveBlock;
 
-// <= NW4R_VERSION(1, 0)
+// <= NW4HBM_VERSION(1, 0)
 typedef struct WaveBlockOld {
     ut::BinaryBlockHeader blockHeader; // 0x00
     u32 offsetTable[]; // 0x08

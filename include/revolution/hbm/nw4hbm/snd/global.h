@@ -5,13 +5,12 @@
 
 namespace nw4hbm {
 namespace snd {
-// [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x25ec5
+
 enum PanMode {
     PAN_MODE_DUAL,
     PAN_MODE_BALANCE,
 };
 
-// [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x25f0e
 enum PanCurve {
     PAN_CURVE_SQRT,
     PAN_CURVE_SQRT_0DB,
@@ -26,7 +25,6 @@ enum PanCurve {
     PAN_CURVE_LINEAR_0DB_CLAMP,
 };
 
-// [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x273ea
 struct VoiceOutParam {
     // methods
   public:

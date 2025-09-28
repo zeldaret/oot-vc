@@ -9,6 +9,9 @@
 
 #include "macros.h"
 
+#define FONT_TYPE_NNGCTEXTURE 1
+#define GLYPH_INDEX_NOT_FOUND 0xFFFF
+
 namespace nw4hbm {
 namespace ut {
 typedef enum FontMapMethod {

@@ -30,7 +30,7 @@ bool SeqFileReader::IsValidFileHeader(const void* seqData) {
 
     u16 version = Util::ReadBigEndian(fileHeader->version);
 
-    if (version < NW4R_VERSION(1, 0)) {
+    if (version < NW4HBM_VERSION(1, 0)) {
         return false;
     }
 

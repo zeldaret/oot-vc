@@ -24,7 +24,7 @@ namespace gui {
 class Manager;
 class PaneComponent;
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x477921
+
 class Interface {
     // methods
   public:
@@ -46,7 +46,7 @@ class Interface {
     /* vtable */ // size 0x04, offset 0x00
 }; // size 0x04
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x4779b0
+
 class EventHandler // also see HBMBase.cpp
 {
     // methods
@@ -65,7 +65,7 @@ class EventHandler // also see HBMBase.cpp
     Manager* mpManager; // size 0x04, offset 0x04
 }; // size 0x08
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x47786a
+
 class Component : public Interface {
     // NOTE the misspelling of triggerTarget as triggerTarger
 
@@ -126,11 +126,11 @@ class Component : public Interface {
     Manager* mpManager; // size 0x04, offset 0x28
 }; // size 0x2c
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x477947
+
 class Manager : public Interface {
     // nested types
   private:
-    // [SGLEA4]/GormitiDebug.elf:.debug_info::0x477a9a
+    
     struct IDToComponent {
         // methods
       public:
@@ -193,11 +193,11 @@ class Manager : public Interface {
     MEMAllocator* mpAllocator; // size 0x04, offset 0x14
 }; // size 0x18
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x477bec
+
 class PaneManager : public Manager {
     // nested types
   private:
-    // [SGLEA4]/GormitiDebug.elf:.debug_info::0x477de8
+    
     struct PaneToComponent {
         // methods
       public:
@@ -250,7 +250,7 @@ class PaneManager : public Manager {
     static u32 suIDCounter;
 }; // size 0x2c
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x477e42
+
 class PaneComponent : public Component {
     // methods
   public:

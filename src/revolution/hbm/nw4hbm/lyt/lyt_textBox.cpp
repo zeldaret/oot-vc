@@ -33,7 +33,7 @@ void CalcStringRectImpl(ut::Rect* pRect, ut::TextWriterBase<charT>* pTextWriter,
 namespace nw4hbm {
 namespace lyt {
 
-const ut::detail::RuntimeTypeInfo TextBox::typeInfo(&Pane::typeInfo);
+NW4HBM_UT_GET_DERIVED_RUNTIME_TYPEINFO(TextBox, Pane);
 
 } // namespace lyt
 } // namespace nw4hbm

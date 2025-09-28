@@ -36,7 +36,7 @@ bool SoundArchiveFileReader::IsValidFileHeader(const void* soundArchiveData) {
 
     u16 version = Util::ReadBigEndian(fileHeader->version);
 
-    if (version < NW4R_VERSION(1, 0)) {
+    if (version < NW4HBM_VERSION(1, 0)) {
         return false;
     }
 
@@ -94,7 +94,7 @@ SoundType SoundArchiveFileReader::GetSoundType(u32 id) const {
         return SOUND_TYPE_INVALID;
     }
 
-    if (GetVersion() >= NW4R_VERSION(1, 1)) {
+    if (GetVersion() >= NW4HBM_VERSION(1, 1)) {
         const SoundArchiveFile::SoundCommonInfo* pCmnInfo = Util::GetDataRefAddress0(pTable->items[id], mInfo);
 
         if (pCmnInfo == NULL) {
@@ -481,7 +481,7 @@ const SoundArchiveFile::SoundCommonInfo* SoundArchiveFileReader::impl_GetSoundIn
         return nullptr;
     }
 
-    if (GetVersion() >= NW4R_VERSION(1, 1)) {
+    if (GetVersion() >= NW4HBM_VERSION(1, 1)) {
         return Util::GetDataRefAddress0(pTable->items[id], mInfo);
     } else {
         return static_cast<const SoundArchiveFile::SoundCommonInfo*>(
@@ -502,7 +502,7 @@ SoundArchiveFile::SoundInfoOffset SoundArchiveFileReader::impl_GetSoundInfoOffse
         return INVALID_DATA_REF;
     }
 
-    if (GetVersion() >= NW4R_VERSION(1, 1)) {
+    if (GetVersion() >= NW4HBM_VERSION(1, 1)) {
         const SoundArchiveFile::SoundCommonInfo* info = Util::GetDataRefAddress0(pTable->items[id], mInfo);
 
         if (info == NULL) {

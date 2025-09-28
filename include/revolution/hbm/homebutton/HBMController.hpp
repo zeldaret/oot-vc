@@ -10,7 +10,7 @@
 #include "revolution/types.h"
 #include "revolution/wpad/WPAD.h"
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x47b892
+
 struct HBController {
     int chan; // size 0x04, offset 0x00
     f32 spVol; // size 0x04, offset 0x04
@@ -24,7 +24,7 @@ struct HBController {
 }; // size 0x20
 
 namespace homebutton {
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x47b75e
+
 class Controller {
     // methods
   public:

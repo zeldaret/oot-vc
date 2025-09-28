@@ -95,7 +95,7 @@ typedef struct InstInfo {
 
 class BankFileReader {
   public:
-    static const int FILE_VERSION = NW4R_VERSION(1, 1);
+    static const int FILE_VERSION = NW4HBM_VERSION(1, 1);
 
   public:
     explicit BankFileReader(const void* bankData);

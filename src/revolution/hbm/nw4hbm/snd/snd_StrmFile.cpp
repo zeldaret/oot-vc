@@ -17,9 +17,9 @@ bool StrmFileReader::IsValidFileHeader(const void* strmData) {
         return false;
     }
 
-    NW4HBMAssertMessage_Line(fileHeader->version >= NW4R_VERSION(1, 0), 57,
+    NW4HBMAssertMessage_Line(fileHeader->version >= NW4HBM_VERSION(1, 0), 57,
                              "strm file is not supported version.\n  please reconvert file using new version tools.\n");
-    if (fileHeader->version < NW4R_VERSION(1, 0)) {
+    if (fileHeader->version < NW4HBM_VERSION(1, 0)) {
         return false;
     }
 

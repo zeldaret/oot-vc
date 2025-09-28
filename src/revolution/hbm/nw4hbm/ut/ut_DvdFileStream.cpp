@@ -3,7 +3,7 @@
 namespace nw4hbm {
 namespace ut {
 
-const ut::detail::RuntimeTypeInfo DvdFileStream::typeInfo(&FileStream::typeInfo);
+NW4HBM_UT_GET_DERIVED_RUNTIME_TYPEINFO(DvdFileStream, FileStream);
 
 }
 } // namespace nw4hbm

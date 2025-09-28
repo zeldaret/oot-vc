@@ -1,7 +1,7 @@
 #include "revolution/hbm/nw4hbm/lyt/arcResourceAccessor.h"
 
-#include "revolution/hbm/nw4hbm/ut.h"
 #include "revolution/arc.h"
+#include "revolution/hbm/nw4hbm/ut.h"
 
 #include "string.h"
 
@@ -106,8 +106,8 @@ namespace nw4hbm {
 namespace lyt {
 
 ut::Font* detail::FindFont(FontRefLinkList* pFontRefList, const char* name) {
-    NW4HBM_RANGE_FOR(it, *pFontRefList) {
-        if (std::strcmp(name, it->GetFontName()) == 0) {
+    for (FontRefLinkList::Iterator it = pFontRefList->GetBeginIter(); it != pFontRefList->GetEndIter(); it++) {
+        if (strcmp(name, it->GetFontName()) == 0) {
             return it->GetFont();
         }
     }
@@ -148,9 +148,6 @@ void* ArcResourceAccessor::GetResource(u32 resType, const char* name, u32* pSize
     return GetResourceSub(&mArcHandle, mResRootDir, resType, name, pSize);
 }
 
-/* [SPQE7T]/ISpyD.elf:.debug_info::0x3bd83a
- * nw4r version
- */
 bool ArcResourceLink::Set(void* archiveStart, const char* resourceRootDirectory) {
     bool bSuccess = ARCInitHandle(archiveStart, &mArcHandle);
 
@@ -166,28 +163,15 @@ bool ArcResourceLink::Set(void* archiveStart, const char* resourceRootDirectory)
 
 ut::Font* ArcResourceAccessor::GetFont(const char* name) { return detail::FindFont(&mFontList, name); }
 
-/* [SPQE7T]/ISpyD.elf:.debug_info::0x3bdb6b
- * nw4r version
- */
 MultiArcResourceAccessor::MultiArcResourceAccessor() {}
 
-/* [SPQE7T]/ISpyD.elf:.debug_info::0x3bdc4e
- * nw4r version
- */
 MultiArcResourceAccessor::~MultiArcResourceAccessor() { DetachAll(); }
 
-/* [SPQE7T]/ISpyD.elf:.debug_info::0x3bdcc4
- * nw4r version
- */
 void MultiArcResourceAccessor::Attach(ArcResourceLink* pLink) { mArcList.PushBack(pLink); }
 
-/* [SPQE7T]/ISpyD.elf:.debug_info::0x3be484
- * nw4r version
- */
 void* MultiArcResourceAccessor::GetResource(u32 resType, const char* name, u32* pSize) {
-    NW4HBM_RANGE_FOR(it, mArcList) {
+    for (ArcResourceLinkList::Iterator it = mArcList.GetBeginIter(); it != mArcList.GetEndIter(); it++) {
         ARCHandle* pArcHandle = it->GetArcHandle();
-
         if (void* resPtr = GetResourceSub(pArcHandle, it->GetResRootDir(), resType, name, pSize)) {
             return resPtr;
         }

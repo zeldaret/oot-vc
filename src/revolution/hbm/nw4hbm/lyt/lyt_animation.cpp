@@ -416,7 +416,7 @@ void AnimTransformBasic::Animate(u32 idx, Material* pMaterial) {
 AnimationLink* detail::FindAnimationLink(AnimationLinkList* pAnimList, AnimTransform* pAnimTrans) {
     NW4HBMAssertPointerNonnull_Line(pAnimList, 559);
     NW4HBMAssertPointerNonnull_Line(pAnimTrans, 560);
-    NW4HBM_RANGE_FOR(it, *pAnimList) {
+    for (AnimationLinkList::Iterator it = pAnimList->GetBeginIter(); it != pAnimList->GetEndIter(); it++) {
         if (pAnimTrans == it->GetAnimTransform()) {
             return &(*it);
         }

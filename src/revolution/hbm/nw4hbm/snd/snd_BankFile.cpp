@@ -22,7 +22,7 @@ bool BankFileReader::IsValidFileHeader(const void* bankData) {
 
     NW4HBMAssertMessage_Line(fileHeader->version >= NW4HBM_VERSION(1, 0), 62,
                              "bank file is not supported version.\n  please reconvert file using new version tools.\n");
-    if (fileHeader->version < NW4R_VERSION(1, 0)) {
+    if (fileHeader->version < NW4HBM_VERSION(1, 0)) {
         return false;
     }
 

@@ -3,7 +3,7 @@
 
 namespace nw4hbm {
 namespace snd {
-// [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x2bd7b3
+
 enum DebugWarningFlag {
     DEBUG_WARNING_NOT_ENOUGH_INSTANCE,
     DEBUG_WARNING_NOT_ENOUGH_SEQSOUND,
@@ -14,7 +14,7 @@ enum DebugWarningFlag {
 };
 
 namespace detail {
-// [R89JEL]:/bin/RVL/Debug/mainD.elf:.debug::0x2ec85
+
 enum DebugSoundType {
     DEBUG_SOUND_TYPE_SEQSOUND,
     DEBUG_SOUND_TYPE_STRMSOUND,

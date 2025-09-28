@@ -5,7 +5,7 @@
 namespace nw4hbm {
 namespace ut {
 
-const ut::detail::RuntimeTypeInfo IOStream::typeInfo(nullptr);
+NW4HBM_UT_GET_RUNTIME_TYPEINFO(IOStream);
 
 s32 IOStream::Read(void* pDst, u32 size) {
 #pragma unused(pDst)

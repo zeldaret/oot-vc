@@ -29,7 +29,7 @@ typedef struct DataBlock {
 
 static const u32 SIGNATURE_DATA_BLOCK = 'DATA';
 static const u32 SIGNATURE_FILE = 'RSEQ';
-static const int FILE_VERSION = NW4R_VERSION(1, 0);
+static const int FILE_VERSION = NW4HBM_VERSION(1, 0);
 static const int SUPPORTED_FILE_VERSION = NW4HBM_VERSION(1, 1);
 } // namespace SeqFile
 

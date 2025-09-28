@@ -49,7 +49,7 @@ class Controller;
 class GroupAnmController;
 class RemoteSpk;
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x47f957
+
 class HomeButtonEventHandler : public gui::EventHandler {
     // methods
   public:
@@ -69,11 +69,11 @@ class HomeButtonEventHandler : public gui::EventHandler {
     HomeButton* mpHomeButton; // size 0x04, offset 0x08
 }; // size 0x0c
 
-// [SGLEA4]/GormitiDebug.elf:.debug_info::0x47efb9
+
 class HomeButton {
     // enums
   private:
-    // [SGLEA4]/GormitiDebug.elf:.debug_info::0x47f6bb
+    
     typedef enum /* expliticly untagged */
     {
         eSeq_Normal,
@@ -87,7 +87,7 @@ class HomeButton {
 
     // nested classes
   private:
-    // [SGLEA4]/GormitiDebug.elf:.debug_info::0x47f9f8
+    
     class BlackFader {
         // methods
       public:

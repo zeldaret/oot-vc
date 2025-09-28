@@ -5,7 +5,7 @@
 namespace nw4hbm {
 namespace ut {
 
-const ut::detail::RuntimeTypeInfo NandFileStream::typeInfo(&FileStream::typeInfo);
+NW4HBM_UT_GET_DERIVED_RUNTIME_TYPEINFO(NandFileStream, FileStream);
 
 void NandFileStream::NandAsyncCallback_(s32 result, NANDCommandBlock* commandBlock) {
     NW4HBMAssertPointerNonnull_Line(commandBlock, 44);

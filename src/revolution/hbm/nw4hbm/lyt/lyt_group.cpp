@@ -28,11 +28,11 @@ Group::Group(const res::Group* pResGroup, Pane* pRootPane) {
 void Group::Init() { mbUserAllocated = false; }
 
 Group::~Group() {
-    NW4HBM_RANGE_FOR_NO_AUTO_INC(it, mPaneLinkList) {
-        DECLTYPE(it) currIt = it++;
+    for (PaneLinkList::Iterator it = mPaneLinkList.GetBeginIter(); it != mPaneLinkList.GetEndIter();) {
+        PaneLinkList::Iterator currIt = it++;
 
         mPaneLinkList.Erase(currIt);
-        Layout::FreeMemory(&(*currIt));
+        Layout::FreeMemory(&*currIt);
     }
 }
 
@@ -46,14 +46,14 @@ void Group::AppendPane(Pane* pPane) {
 }
 
 GroupContainer::~GroupContainer() {
-    NW4HBM_RANGE_FOR_NO_AUTO_INC(it, mGroupList) {
-        DECLTYPE(it) currIt = it++;
+    for (GroupList::Iterator it = mGroupList.GetBeginIter(); it != mGroupList.GetEndIter();) {
+        GroupList::Iterator currIt = it++;
 
         mGroupList.Erase(currIt);
 
         if (!currIt->IsUserAllocated()) {
             currIt->~Group();
-            Layout::FreeMemory(&(*currIt));
+            Layout::FreeMemory(&*currIt);
         }
     }
 }
@@ -61,7 +61,7 @@ GroupContainer::~GroupContainer() {
 void GroupContainer::AppendGroup(Group* pGroup) { mGroupList.PushBack(pGroup); }
 
 Group* GroupContainer::FindGroupByName(const char* findName) {
-    NW4HBM_RANGE_FOR(it, mGroupList) {
+    for (GroupList::Iterator it = mGroupList.GetBeginIter(); it != mGroupList.GetEndIter(); it++) {
         if (detail::EqualsPaneName(it->GetName(), findName)) {
             return &(*it);
         }

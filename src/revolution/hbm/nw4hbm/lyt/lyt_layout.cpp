@@ -63,8 +63,9 @@ void SetTagProcessorImpl(Pane* pPane, ut::TagProcessorBase<wchar_t>* pTagProcess
         pTextBox->SetTagProcessor(pTagProcessor);
     }
 
-    NW4HBM_RANGE_FOR(it, pPane->GetChildList())
-    SetTagProcessorImpl(&(*it), pTagProcessor);
+    for (PaneList::Iterator it = pPane->GetChildList().GetBeginIter(); it != pPane->GetChildList().GetEndIter(); ++it) {
+        SetTagProcessorImpl(&(*it), pTagProcessor);
+    }
 }
 
 } // anonymous namespace
@@ -85,12 +86,12 @@ Layout::~Layout() {
         FreeMemory(mpRootPane);
     }
 
-    NW4HBM_RANGE_FOR_NO_AUTO_INC(it, mAnimTransList) {
-        DECLTYPE(it) currIt = it++;
+    for (AnimTransformList::Iterator it = mAnimTransList.GetBeginIter(); it != mAnimTransList.GetEndIter();) {
+        AnimTransformList::Iterator currIt = it++;
 
         mAnimTransList.Erase(currIt);
         currIt->~AnimTransform();
-        FreeMemory(&(*currIt));
+        FreeMemory(&*currIt);
     }
 }
 

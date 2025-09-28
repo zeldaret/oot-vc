@@ -48,7 +48,7 @@ bool WsdFileReader::ReadWaveSoundInfo(WaveSoundInfo* soundInfo, int id) const {
     const WsdFile::Wsd* pWsd = Util::GetDataRefAddress0(mDataBlock->refWsd[id], &mDataBlock->wsdCount);
     const WsdFile::WsdInfo* pWsdInfo = Util::GetDataRefAddress0(pWsd->refWsdInfo, &mDataBlock->wsdCount);
 
-    if (mHeader->fileHeader.version == NW4R_VERSION(1, 2)) {
+    if (mHeader->fileHeader.version == NW4HBM_VERSION(1, 2)) {
         soundInfo->pitch = pWsdInfo->pitch;
         soundInfo->pan = pWsdInfo->pan;
         soundInfo->surroundPan = pWsdInfo->surroundPan;
@@ -56,7 +56,7 @@ bool WsdFileReader::ReadWaveSoundInfo(WaveSoundInfo* soundInfo, int id) const {
         soundInfo->fxSendB = pWsdInfo->fxSendB;
         soundInfo->fxSendC = pWsdInfo->fxSendC;
         soundInfo->mainSend = pWsdInfo->mainSend;
-    } else if (mHeader->fileHeader.version == NW4R_VERSION(1, 1)) {
+    } else if (mHeader->fileHeader.version == NW4HBM_VERSION(1, 1)) {
         soundInfo->pitch = pWsdInfo->pitch;
         soundInfo->pan = pWsdInfo->pan;
         soundInfo->surroundPan = pWsdInfo->surroundPan;
@@ -90,7 +90,7 @@ bool WsdFileReader::ReadWaveSoundNoteInfo(WaveSoundNoteInfo* soundNoteInfo, int 
     soundNoteInfo->originalKey = noteInfo->originalKey;
     soundNoteInfo->volume = noteInfo->volume;
 
-    if (mHeader->fileHeader.version >= NW4R_VERSION(1, 1)) {
+    if (mHeader->fileHeader.version >= NW4HBM_VERSION(1, 1)) {
         soundNoteInfo->pan = noteInfo->pan;
         soundNoteInfo->surroundPan = noteInfo->surroundPan;
         soundNoteInfo->pitch = noteInfo->pitch;
@@ -106,7 +106,7 @@ bool WsdFileReader::ReadWaveSoundNoteInfo(WaveSoundNoteInfo* soundNoteInfo, int 
 bool WsdFileReader::ReadWaveParam(int id, WaveData* waveData, const void* waveAddr) const {
     const WaveFile::WaveInfo* waveInfo;
 
-    if (mHeader->fileHeader.version == NW4R_VERSION(1, 0)) {
+    if (mHeader->fileHeader.version == NW4HBM_VERSION(1, 0)) {
         const WsdFile::WaveBlockOld* waveBlockOld = reinterpret_cast<const WsdFile::WaveBlockOld*>(mWaveBlock);
         waveInfo =
             static_cast<const WaveFile::WaveInfo*>(ut::AddOffsetToPtr(waveBlockOld, waveBlockOld->offsetTable[id]));
