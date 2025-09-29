@@ -807,7 +807,7 @@ revolution/hbm/homebutton/HBMBase.cpp:
 
 revolution/hbm/homebutton/HBMAnmController.cpp:
 	.text       start:0x80109B98 end:0x80109CB8
-	.data       start:0x801949B0 end:0x801949F0
+	.data       start:0x801949E0 end:0x801949F0
 
 revolution/hbm/homebutton/HBMFrameController.cpp:
 	.text       start:0x80109CB8 end:0x80109E58

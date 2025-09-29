@@ -643,7 +643,7 @@ config.libs = [
         "hbm",
         [
             Object(NotLinked, "revolution/hbm/homebutton/HBMBase.cpp"),
-            Object(NotLinked, "revolution/hbm/homebutton/HBMAnmController.cpp"),
+            Object(LinkedFor("oot-j"), "revolution/hbm/homebutton/HBMAnmController.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/homebutton/HBMFrameController.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/homebutton/HBMGUIManager.cpp"),
             Object(LinkedFor("oot-j"), "revolution/hbm/homebutton/HBMController.cpp"),
