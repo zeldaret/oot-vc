@@ -264,7 +264,7 @@ class PaneComponent : public Component {
     virtual nw4hbm::lyt::Pane* getPane() { return mpPane; }
 
     // members
-  private:
+  protected:
     /* base Component */ // size 0x2c, offset 0x00
     nw4hbm::lyt::Pane* mpPane; // size 0x04, offset 0x2c
 }; // size 0x30

@@ -8,6 +8,7 @@
 #include "revolution/vi.h"
 
 #include "new.hpp"
+#include "decomp.h"
 
 #define REVO_IPL_FONT "RevoIpl_UtrilloProGrecoStd_M_32_I4.brfnt"
 
@@ -101,6 +102,56 @@ static HBMAllocatorType getAllocatorType(const HBMDataInfo* pHBInfo) {
 }
 
 namespace homebutton {
+
+DECOMP_FORCE(__FILE__);
+DECOMP_FORCE(NW4HBMAssert_String(mpDvdSoundArchive));
+DECOMP_FORCE("Cannot open \"%s\"");
+DECOMP_FORCE(NW4HBMAssert_String(mpMemorySoundArchive));
+DECOMP_FORCE("Cannot setup MemorySoundArchive");
+
+void HomeButton::fn_80100CD8_impl(const char* path) {
+    if (!AICheckInit()) {
+        AIInit(NULL);
+        AXInit();
+    }
+
+    nw4hbm::snd::SoundSystem::InitSoundSystem();
+
+    void* pvVar4 = MEMAllocFromAllocator(&lbl_80243EE8, sizeof(nw4hbm::snd::NandSoundArchive));
+    if (pvVar4 != NULL) {
+        mpNandSoundArchive = new (pvVar4) nw4hbm::snd::NandSoundArchive();
+    }
+
+    NW4HBMAssert_Line(mpNandSoundArchive, 3884);
+    NW4HBMAssertMessage_Line(mpNandSoundArchive->Open(path), 3889, "Cannot open \"%s\"", path);
+
+    u32 size = mpNandSoundArchive->GetHeaderSize();
+    mpNandSoundArchive->LoadHeader(MEMAllocFromAllocator(&lbl_80243EE8, size), size);
+    fn_8010984C(mpNandSoundArchive, 1);
+}
+
+void HomeButton::fn_80100E40_impl() {
+    fn_80100B88_impl();
+
+    for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
+        if (i < ARRAY_COUNT(mpController)) {
+            mpController[i]->updateSound();
+        }
+    }
+}
+
+void fn_80100CD8(const char* path, void* param1, int param2) {
+    MEMInitAllocatorForFrmHeap(&lbl_80243EE8, MEMCreateFrmHeapEx(param1, param2, 0), DEFAULT_ALIGN);
+    gpHomeButton->fn_80100CD8_impl(path);
+}
+
+void fn_80100E0C(void) {
+    gpHomeButton->fn_80109A74();
+    MEMDestroyFrmHeap(lbl_80243EE8.heap);
+}
+
+void fn_80100E40(void) { gpHomeButton->fn_80100E40_impl(); }
+
 // clang-format off
 static const AnmControllerTable scAnmTable[12] =
 {
@@ -176,7 +227,7 @@ const char *HomeButton::scBtnName[4] =
 	"B_btnL_00",
 	"B_btnL_01",
 	"B_btnL_10",
-    nullptr
+	"B_btnL_11",
 };
 
 const char *HomeButton::scTxtName[4] =
@@ -184,7 +235,7 @@ const char *HomeButton::scTxtName[4] =
 	"T_btnL_00",
 	"T_btnL_01",
 	"T_btnL_10",
-    nullptr
+    "T_btnL_11",
 };
 
 const char *HomeButton::scGrName[8] =
@@ -367,49 +418,6 @@ const char *HomeButton::scBatteryPaneName[WPAD_MAX_CONTROLLERS][4] =
 	}
 };
 // clang-format on
-
-void HomeButton::fn_80100CD8_impl(const char* path) {
-    if (!AICheckInit()) {
-        AIInit(NULL);
-        AXInit();
-    }
-
-    nw4hbm::snd::SoundSystem::InitSoundSystem();
-
-    void* pvVar4 = MEMAllocFromAllocator(&lbl_80243EE8, sizeof(nw4hbm::snd::NandSoundArchive));
-    if (pvVar4 != NULL) {
-        mpNandSoundArchive = new (pvVar4) nw4hbm::snd::NandSoundArchive();
-    }
-
-    NW4HBMAssert_Line(mpNandSoundArchive, 3884);
-    NW4HBMAssertMessage_Line(mpNandSoundArchive->Open(path), 3889, "Cannot open \"%s\"", path);
-
-    u32 size = mpNandSoundArchive->GetHeaderSize();
-    mpNandSoundArchive->LoadHeader(MEMAllocFromAllocator(&lbl_80243EE8, size), size);
-    fn_8010984C(mpNandSoundArchive, 1);
-}
-
-void HomeButton::fn_80100E40_impl() {
-    fn_80100B88_impl();
-
-    for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
-        if (i < ARRAY_COUNT(mpController)) {
-            mpController[i]->updateSound();
-        }
-    }
-}
-
-void fn_80100CD8(const char* path, void* param1, int param2) {
-    MEMInitAllocatorForFrmHeap(&lbl_80243EE8, MEMCreateFrmHeapEx(param1, param2, 0), DEFAULT_ALIGN);
-    gpHomeButton->fn_80100CD8_impl(path);
-}
-
-void fn_80100E0C(void) {
-    gpHomeButton->fn_80109A74();
-    MEMDestroyFrmHeap(lbl_80243EE8.heap);
-}
-
-void fn_80100E40(void) { gpHomeButton->fn_80100E40_impl(); }
 
 void HomeButton::createInstance(const HBMDataInfo* pHBInfo) {
     if (void* pMem = HBMAllocMem(sizeof *spHomeButtonObj)) {
@@ -636,7 +644,7 @@ void HomeButton::create() {
         mpResAccessor = new (pMem) nw4hbm::lyt::ArcResourceAccessor();
     }
 
-    NW4HBMAssertPointerNonnull_Line(mpResAccessor, 623);
+    NW4HBMAssert_Line(mpResAccessor, 623);
     mpResAccessor->Attach(mpHBInfo->layoutBuf, "arc");
 
     if (!mpHBInfo->cursor) {
@@ -645,7 +653,7 @@ void HomeButton::create() {
                 mpCursorLayout[i] = new (pMem) nw4hbm::lyt::Layout();
             }
 
-            NW4HBMAssertPointerNonnull_Line(mpCursorLayout[i], 635);
+            NW4HBMAssert_Line(mpCursorLayout[i], 635);
 
             void* lytRes = mpResAccessor->GetResource(0, scCursorLytName[i], nullptr);
 
@@ -673,7 +681,7 @@ void HomeButton::create() {
             mpAnmController[i] = new (pMem) GroupAnmController();
         }
 
-        NW4HBMAssertPointerNonnull_Line(mpAnmController[i], 671);
+        NW4HBMAssert_Line(mpAnmController[i], 671);
 
         mpAnmController[i]->mpAnimGroup = mpLayout->CreateAnimTransform(lpaRes, mpResAccessor);
 
@@ -701,7 +709,7 @@ void HomeButton::create() {
             mpGroupAnmController[i] = new (pMem) GroupAnmController();
         }
 
-        NW4HBMAssertPointerNonnull_Line(mpGroupAnmController[i], 703);
+        NW4HBMAssert_Line(mpGroupAnmController[i], 703);
 
         mpGroupAnmController[i]->mpAnimGroup = mpLayout->CreateAnimTransform(lpaRes, mpResAccessor);
 
@@ -730,7 +738,7 @@ void HomeButton::create() {
             mpPairGroupAnmController[i] = new (pMem) GroupAnmController();
         }
 
-        NW4HBMAssertPointerNonnull_Line(mpPairGroupAnmController[i], 735);
+        NW4HBMAssert_Line(mpPairGroupAnmController[i], 735);
 
         mpPairGroupAnmController[i]->mpAnimGroup = mpLayout->CreateAnimTransform(lpaRes, mpResAccessor);
 
@@ -750,13 +758,13 @@ void HomeButton::create() {
         mpHomeButtonEventHandler = new (pMem) HomeButtonEventHandler(this);
     }
 
-    NW4HBMAssertPointerNonnull_Line(mpHomeButtonEventHandler, 758);
+    NW4HBMAssert_Line(mpHomeButtonEventHandler, 758);
 
     if (void* pMem = HBMAllocMem(sizeof *mpPaneManager)) {
         mpPaneManager = new (pMem) gui::PaneManager(mpHomeButtonEventHandler, nullptr, spAllocator);
     }
 
-    NW4HBMAssertPointerNonnull_Line(mpPaneManager, 765);
+    NW4HBMAssert_Line(mpPaneManager, 765);
 
     mpPaneManager->createLayoutScene(*mpLayout);
     mpPaneManager->setAllComponentTriggerTarget(false);
@@ -810,7 +818,7 @@ void HomeButton::set_config() {
 
     mpLayoutName = static_cast<char*>(HBMAllocMem(len + 1));
 
-    NW4HBMAssertPointerNonnull_Line(mpLayoutName, 827);
+    NW4HBMAssert_Line(mpLayoutName, 827);
 
     std::strncpy(mpLayoutName, pConfig, len);
     mpLayoutName[len] = '\0';
@@ -820,7 +828,7 @@ void HomeButton::set_config() {
     len = get_comma_length(pConfig);
     mpAnmName = static_cast<char*>(HBMAllocMem(len + 1));
 
-    NW4HBMAssertPointerNonnull_Line(mpAnmName, 837);
+    NW4HBMAssert_Line(mpAnmName, 837);
 
     std::strncpy(mpAnmName, pConfig, len);
     mpAnmName[len] = '\0';
@@ -1991,7 +1999,7 @@ void HomeButton::updateTrigPane() {
     }
 }
 
-void HomeButton::startPointEvent(const nw4hbm::lyt::Pane* pPane, void* pData) {
+void HomeButton::startPointEvent(const char* pPane, void* pData) {
     int anm_no;
     int btn_no = getPaneNo(pPane);
     HBController* pCon = static_cast<HBController*>(pData);
@@ -2148,7 +2156,7 @@ void HomeButton::startPointEvent(const nw4hbm::lyt::Pane* pPane, void* pData) {
     }
 }
 
-void HomeButton::startLeftEvent(const nw4hbm::lyt::Pane* pPane) {
+void HomeButton::startLeftEvent(const char* pPane) {
     int anm_no;
     int btn_no = getPaneNo(pPane);
 
@@ -2266,7 +2274,7 @@ void HomeButton::startLeftEvent(const nw4hbm::lyt::Pane* pPane) {
     }
 }
 
-void HomeButton::startTrigEvent(const nw4hbm::lyt::Pane* pPane) {
+void HomeButton::startTrigEvent(const char* pPane) {
     int anm_no;
     int btn_no;
 
@@ -2502,7 +2510,7 @@ void HomeButton::startTrigEvent(const nw4hbm::lyt::Pane* pPane) {
 
                     mpLayout->GetRootPane()->FindPaneByName(scFuncTextPaneName[0], true)->SetVisible(true);
 
-                    mpLayout->GetRootPane()->FindPaneByName(scFuncTextPaneName[1], true)->SetVisible(true);
+                    mpLayout->GetRootPane()->FindPaneByName(scFuncTextPaneName[0], true)->SetVisible(true);
 
                     play_sound(5);
                     play_sound(16);
@@ -2518,13 +2526,8 @@ void HomeButton::startTrigEvent(const nw4hbm::lyt::Pane* pPane) {
 
                     if (mSelectBtnNum == HBM_SELECT_BTN1) {
                         play_sound(2);
-                        // mFader.setFadeColorEnable(false);
                     } else if (mSelectBtnNum == HBM_SELECT_BTN2) {
                         play_sound(3);
-                        // mFader.setFadeColorEnable(true);
-                    } else if (mSelectBtnNum == HBM_SELECT_BTN4) {
-                        play_sound(3);
-                        // mFader.setFadeColorEnable(false);
                     }
 
                     break;
@@ -2646,8 +2649,7 @@ bool HomeButton::isDownBarActive() {
     return flag;
 }
 
-int HomeButton::getPaneNo(const nw4hbm::lyt::Pane* pPane) {
-    const char* panename = pPane->GetName();
+int HomeButton::getPaneNo(const char* panename) {
     int ret = -1;
 
     for (int i = 0; i < mButtonNum; i++) {
@@ -2724,8 +2726,8 @@ void HomeButton::setVibFlag(bool flag) { WPADEnableMotor(flag); }
 bool HomeButton::getVibFlag() { return WPADIsMotorEnabled() ? true : false; }
 
 void HomeButtonEventHandler::onEvent(u32 uID, u32 uEvent, void* pData) {
-    gui::PaneComponent* p_panecpt = static_cast<gui::PaneComponent*>(mpManager->getComponent(uID));
-    const nw4hbm::lyt::Pane* pPane = p_panecpt->getPane();
+    gui::PaneComponent* p_panecpt = (gui::PaneComponent*)mpManager->getComponent(uID);
+    const char* panename = p_panecpt->getPane()->GetName();
 
     HomeButton* p_hbtn = getHomeButton();
 
@@ -2733,18 +2735,17 @@ void HomeButtonEventHandler::onEvent(u32 uID, u32 uEvent, void* pData) {
 
     switch (uEvent) {
         case 1:
-            p_hbtn->startPointEvent(pPane, pData);
+            p_hbtn->startPointEvent(panename, pData);
             break;
 
         case 2:
-            p_hbtn->startLeftEvent(pPane);
+            p_hbtn->startLeftEvent(panename);
             break;
 
         case 0:
             if ((pCon->trig & WPAD_BUTTON_A) || (pCon->trig & 0x1000000)) {
-                p_hbtn->startTrigEvent(pPane);
+                p_hbtn->startTrigEvent(panename);
             }
-
             break;
     }
 }
@@ -2850,5 +2851,10 @@ static void initgx() {
     GXSetTevSwapModeTable(GX_TEV_SWAP0, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_ALPHA);
     GXSetTevSwapMode(GX_TEVSTAGE0, GX_TEV_SWAP0, GX_TEV_SWAP0);
 }
+
+DECOMP_FORCE(NW4HBMAssert_String(mpSoundArchivePlayer));
+DECOMP_FORCE(NW4HBMAssert_String(mpSoundHandle));
+DECOMP_FORCE(NW4HBMAssert_String(mpSoundHeap));
+DECOMP_FORCE(NW4HBMAssert_String(mpSoundHeap->IsValid()));
 
 } // namespace homebutton

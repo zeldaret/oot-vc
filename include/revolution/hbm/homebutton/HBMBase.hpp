@@ -169,7 +169,7 @@ class HomeButton {
 
     // get methods
     bool getVibFlag();
-    int getPaneNo(const nw4hbm::lyt::Pane*);
+    int getPaneNo(const char*);
 
     // set methods
     void setVibFlag(bool flag);
@@ -182,9 +182,9 @@ class HomeButton {
     void update(const HBMControllerData* pController);
     void updateTrigPane();
 
-    void startPointEvent(const nw4hbm::lyt::Pane* pPane, void* pData);
-    void startLeftEvent(const nw4hbm::lyt::Pane* pPane);
-    void startTrigEvent(const nw4hbm::lyt::Pane* pPane);
+    void startPointEvent(const char* pPane, void* pData);
+    void startLeftEvent(const char* pPane);
+    void startTrigEvent(const char* pPane);
 
     int findAnimator(int pane, int anm);
     int findGroupAnimator(int pane, int anm);
