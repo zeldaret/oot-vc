@@ -113,7 +113,7 @@ bool ArcResourceAccessor::Attach(void* archiveStart, const char* resourceRootDir
     NW4HBMAssertPointerNonnull_Line(archiveStart, 221);
     NW4HBMAssertPointerNonnull_Line(resourceRootDirectory, 222);
     // clang-format on
-    
+
     BOOL bSuccess = ARCInitHandle(archiveStart, &mArcHandle);
 
     if (!bSuccess) {
@@ -175,4 +175,4 @@ void MultiArcResourceAccessor::RegistFont(FontRefLink* pLink) { mFontList.PushBa
 ut::Font* MultiArcResourceAccessor::GetFont(const char* name) { return detail::FindFont(&mFontList, name); }
 
 } // namespace lyt
-} // namespace nw4r
+} // namespace nw4hbm
