@@ -1,10 +1,14 @@
 #include "revolution/hbm/nw4hbm/snd/NandSoundArchive.h"
+
+#include "revolution/hbm/nw4hbm/snd/PlayerHeap.h"
 #include "revolution/hbm/nw4hbm/ut.h"
 
 #include "revolution/nand.h"
 
 #include "cstring.hpp"
 #include "new.hpp"
+
+#include "decomp.h"
 
 namespace nw4hbm {
 namespace snd {
@@ -269,6 +273,9 @@ void NandSoundArchive::NandFileStream::Seek(s32 offset, u32 origin) {
 
     ut::NandFileStream::Seek(offset, SEEK_BEG);
 }
+
+DECOMP_FORCE_CLASS_METHOD(detail::PlayerHeapList, GetNodeFromPointer(nullptr));
+
 
 } // namespace snd
 } // namespace nw4hbm

@@ -1043,7 +1043,7 @@ revolution/hbm/nw4hbm/snd/snd_MmlSeqTrackAllocator.cpp:
 
 revolution/hbm/nw4hbm/snd/snd_NandSoundArchive.cpp:
 	.text       start:0x80128924 end:0x8012925C
-	.data       start:0x80199870 end:0x80199B68
+	.data       start:0x80199870 end:0x80199B98
 	.sbss       start:0x8025DC48 end:0x8025DC50
 
 revolution/hbm/nw4hbm/snd/snd_RemoteSpeaker.cpp:
