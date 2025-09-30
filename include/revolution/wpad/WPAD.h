@@ -206,11 +206,11 @@ typedef struct DPDObjEx {
 } DPDObjEx;
 
 typedef struct WPADInfo {
-    bool dpd; // at 0x0
-    bool speaker; // at 0x4
-    bool attach; // at 0x8
-    bool lowBat; // at 0xC
-    bool nearempty; // at 0x10
+    BOOL dpd; // at 0x0
+    BOOL speaker; // at 0x4
+    BOOL attach; // at 0x8
+    BOOL lowBat; // at 0xC
+    BOOL nearempty; // at 0x10
     u8 battery; // at 0x14
     u8 led; // at 0x15
     u8 protocol; // at 0x16

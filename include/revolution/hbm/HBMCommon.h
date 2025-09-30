@@ -39,11 +39,10 @@ typedef struct HBMDataInfo {
     int region; // size 0x04, offset 0x1c
     int cursor; // size 0x04, offset 0x20
     int messageFlag; // size 0x04, offset 0x24
-    u32 configBufSize; // size 0x04, offset 0x28
-    u32 memSize; // size 0x04, offset 0x2c
-    f32 frameDelta; // size 0x04, offset 0x30
-    Vec2 adjust; // size 0x08, offset 0x34
-    MEMAllocator* pAllocator; // size 0x04, offset 0x3c
+    u32 memSize; // size 0x04, offset 0x28
+    f32 frameDelta; // size 0x04, offset 0x2C
+    Vec2 adjust; // size 0x08, offset 0x30
+    MEMAllocator* pAllocator; // size 0x04, offset 0x34
 } HBMDataInfo; // size 0x40
 
 #if HBM_APP_TYPE == HBM_APP_TYPE_DVD
@@ -89,6 +88,15 @@ void HBMUpdateSound(void);
 void HBMCreateInfoEx(const HBMDataInfoEx* pHBInfoEx);
 void HBMDeleteInfoEx(void);
 #endif // HBM_APP_TYPE == HBM_APP_TYPE_NAND
+
+//! TODO: figure out names
+void fn_80100AEC(int num);
+void fn_80100B88(void);
+void fn_80100BA0(f32 volume);
+void fn_80100C38(void);
+void fn_80100CD8(const char* path, void* param1, int param2);
+void fn_80100E0C(void);
+void fn_80100E40(void);
 
 #ifdef __cplusplus
 }
