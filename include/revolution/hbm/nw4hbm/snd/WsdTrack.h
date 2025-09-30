@@ -15,10 +15,10 @@ class WsdTrack {
   public:
     class WsdCallback {
       public:
-        virtual ~WsdCallback() {} // 0x08
+        virtual ~WsdCallback()=0 {} // 0x08
 
         virtual bool GetWaveSoundData(WaveSoundInfo* info, WaveSoundNoteInfo* noteInfo, WaveData* waveData,
-                                      const void* waveSoundData, int index, int noteIndex, u32 userData) const;
+                                      const void* waveSoundData, int index, int noteIndex, u32 userData) const = 0;
     };
 
     typedef enum StartOffsetType {

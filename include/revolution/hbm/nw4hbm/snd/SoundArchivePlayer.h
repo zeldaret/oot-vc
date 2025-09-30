@@ -4,29 +4,34 @@
 #include "revolution/types.h"
 
 // WARNING: DO NOT REORDER these #include directives, data pooling depends on it
+// #undef MAKE_DTOR_ZERO
+#define MAKE_DTOR_ZERO
 
 // clang-format off
+
 #include "revolution/hbm/nw4hbm/snd/BasicSound.h" // needed for SoundStartable
 #include "revolution/hbm/nw4hbm/snd/PlayerHeap.h" // PlayerHeap needs to be before DisposeCallbackManager
-
-#define MAKE_DTOR_ZERO
-#include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h" // DisposeCallbackManager needs to be before MmlSeqTrackAllocator
-#undef MAKE_DTOR_ZERO
-
+#include "revolution/hbm/nw4hbm/snd/AxVoice.h"
+#include "revolution/hbm/nw4hbm/snd/SoundStartable.h"
 #include "revolution/hbm/nw4hbm/snd/MmlSeqTrackAllocator.h" // MmlSeqTrackAllocator needs to be before NoteOnCallback
-#include "revolution/hbm/nw4hbm/snd/NoteOnCallback.h"
+#include "revolution/hbm/nw4hbm/snd/SoundArchive.h"
+#include "revolution/hbm/nw4hbm/snd/SoundInstanceManager.h"
+
 #include "revolution/hbm/nw4hbm/snd/MmlParser.h"
 
 #include "revolution/hbm/nw4hbm/snd/SeqPlayer.h"
 #include "revolution/hbm/nw4hbm/snd/SeqSound.h"
-#include "revolution/hbm/nw4hbm/snd/SoundArchive.h"
-#include "revolution/hbm/nw4hbm/snd/SoundInstanceManager.h"
-#include "revolution/hbm/nw4hbm/snd/SoundStartable.h"
-#include "revolution/hbm/nw4hbm/snd/WsdTrack.h"
+#include "revolution/hbm/nw4hbm/snd/StrmSound.h" // StrmSound needs to be before Task
+#include "revolution/hbm/nw4hbm/snd/NoteOnCallback.h"
+#include "revolution/hbm/nw4hbm/snd/Task.h"
+
+
 #include "revolution/hbm/nw4hbm/snd/WaveSound.h"
 
-#include "revolution/hbm/nw4hbm/snd/StrmSound.h" // StrmSound needs to be before Task
-#include "revolution/hbm/nw4hbm/snd/Task.h"
+// #include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h" // DisposeCallbackManager needs to be before MmlSeqTrackAllocator
+// #include "revolution/hbm/nw4hbm/snd/StrmPlayer.h"
+// #include "revolution/hbm/nw4hbm/snd/WsdTrack.h"
+
 // clang-format on
 
 #include "revolution/hbm/HBMAssert.hpp"
