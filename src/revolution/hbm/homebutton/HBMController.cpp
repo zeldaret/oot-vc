@@ -187,7 +187,7 @@ void Controller::setSpeakerVol(f32 vol) { mHBController.spVol = vol; }
 
 f32 Controller::getSpeakerVol() const { return mHBController.spVol; }
 
-void Controller::playSound(int arg1, int id) {
+void Controller::playSound(nw4hbm::snd::SoundArchivePlayer* pSoundArchivePlayer, int id) {
     if (!mSoundOffFlag) {
         getRemoteSpk()->Play(getChan(), id, getSpeakerVol() * 10.0f);
 

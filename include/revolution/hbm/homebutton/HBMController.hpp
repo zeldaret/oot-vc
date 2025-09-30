@@ -4,6 +4,7 @@
 #include "revolution/hbm/homebutton/HBMCommon.hpp"
 #include "revolution/hbm/homebutton/HBMRemoteSpk.hpp"
 #include "revolution/hbm/nw4hbm/snd/SoundHandle.h"
+#include "revolution/hbm/nw4hbm/snd/SoundArchivePlayer.h"
 #include "revolution/mtx/mtx.h" // Vec2
 #include "revolution/os/OSAlarm.h"
 #include "revolution/os/OSTime.h"
@@ -58,7 +59,7 @@ class Controller {
 
     void initSound();
     void updateSound();
-    void playSound(int arg1, int id);
+    void playSound(nw4hbm::snd::SoundArchivePlayer* pSoundArchivePlayer, int id);
 
     void soundOn();
     void soundOff(int msec);

@@ -1596,8 +1596,7 @@ static void SpeakerCallback(OSAlarm* alm, OSContext*) {
     if (!WPADIsSpeakerEnabled(chan) || !pHBObj->getController(chan)->isPlayReady()) {
         pHBObj->setSpeakerAlarm(chan, 50);
     } else {
-        //! TODO: fake match
-        pHBObj->getController(chan)->playSound((int)pHBObj->mpSoundArchivePlayer, id);
+        pHBObj->getController(chan)->playSound(pHBObj->mpSoundArchivePlayer, id);
     }
 }
 
@@ -1655,7 +1654,8 @@ void HomeButton::callSimpleSyncCallback(s32 result, s32 num) {
 }
 
 void HomeButton::update(const HBMControllerData* pController) {
-#define IsValidDevType_(x) ((x)->use_devtype == WPAD_DEV_CLASSIC && (x)->kpad->dev_type == WPAD_DEV_CLASSIC)
+#define IsValidDevType_(x) ((x)->use_devtype != WPAD_DEV_CLASSIC && (x)->kpad->dev_type != WPAD_DEV_CLASSIC)
+#define IsValidDevType2_(x) ((x)->use_devtype == WPAD_DEV_CLASSIC && (x)->kpad->dev_type == WPAD_DEV_CLASSIC)
 
     int i, anm_no;
 
@@ -1664,12 +1664,11 @@ void HomeButton::update(const HBMControllerData* pController) {
     for (i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
         if (pController->wiiCon[i].kpad) {
             if (pController->wiiCon[i].kpad->wpad_err != WPAD_ENODEV) {
-                if (mPadDrawTime[i] > static_cast<int>(5.0f / getInstance()->getHBMDataInfo()->frameDelta + 0.5f)) {
-                    if (pController->wiiCon[i].kpad->wpad_err == WPAD_ESUCCESS ||
-                        pController->wiiCon[i].kpad->wpad_err == WPAD_EBADE) {
+                if (mPadDrawTime[i] > 5) {
+                    if (pController->wiiCon[i].kpad->wpad_err == WPAD_ESUCCESS) {
                         bool pointerEnableFlag;
 
-                        if (!IsValidDevType_(&pController->wiiCon[i])) {
+                        if (IsValidDevType_(&pController->wiiCon[i])) {
                             if (pController->wiiCon[i].kpad->dpd_valid_fg > 0) {
                                 pointerEnableFlag = true;
                             } else {
@@ -1689,7 +1688,7 @@ void HomeButton::update(const HBMControllerData* pController) {
                     mPadDrawTime[i]++;
                 }
 
-                if (!IsValidDevType_(&pController->wiiCon[i]) && pController->wiiCon[i].kpad->dpd_valid_fg <= 0) {
+                if (IsValidDevType_(&pController->wiiCon[i]) && pController->wiiCon[i].kpad->dpd_valid_fg <= 0) {
                     WPADResult result;
                     WPADDeviceType type;
 
@@ -1708,7 +1707,6 @@ void HomeButton::update(const HBMControllerData* pController) {
             }
 
             if (!mControllerFlag[i]) {
-                // mConnectNum = i;
                 mControllerFlag[i] = true;
 
                 getController(i)->getInfoAsync(&mWpadInfo[i]);
@@ -1733,10 +1731,10 @@ void HomeButton::update(const HBMControllerData* pController) {
                 setSpeakerAlarm(i, 400);
             }
 
-            if (pController->wiiCon[i].kpad->wpad_err == 0 || pController->wiiCon[i].kpad->wpad_err == -7) {
+            if (pController->wiiCon[i].kpad->wpad_err == WPAD_ESUCCESS) {
                 nw4hbm::math::VEC3 vec;
 
-                if (IsValidDevType_(&pController->wiiCon[i])) {
+                if (IsValidDevType2_(&pController->wiiCon[i])) {
                     vec = nw4hbm::math::VEC3(0.0f, 0.0f, 15.0f);
                 } else {
                     Vec2 v = pController->wiiCon[i].kpad->horizon;
@@ -1798,6 +1796,7 @@ void HomeButton::update(const HBMControllerData* pController) {
     } else {
         mGetPadInfoTime++;
     }
+#undef IsValidDevType2_
 #undef IsValidDevType_
 }
 
@@ -1817,13 +1816,13 @@ void HomeButton::update_controller(int id) {
 
         mpPaneManager->update(id, x, -y, pCon->trig, pCon->hold, pCon->release, pCon);
 
-        if (pCon->trig & WPAD_BUTTON_HOME && isActive()) {
+        //! @bug: probably meant to be the or operator instead of an OR?
+        if (((pCon->trig & 0x10000000) | (pCon->trig & WPAD_BUTTON_HOME)) && isActive()) {
             if (mSequence == eSeq_Control) {
-                // mpLayout->GetRootPane()->FindPaneByName("bar_00", true)->SetVisible(true);
-
                 mpPaneManager->update(id, 0.0f, -180.0f, 0, 0, 0, 0);
 
-                mpPairGroupAnmController[4]->start();
+                mSelectAnmNum = 4;
+                mpPairGroupAnmController[mSelectAnmNum]->start();
 
                 mSelectAnmNum = 2;
                 mpPairGroupAnmController[mSelectAnmNum]->start();
@@ -1852,7 +1851,7 @@ void HomeButton::update_controller(int id) {
                 play_sound(1);
             }
         } else if (mSequence == eSeq_Control && isActive()) {
-            if (pCon->trig & WPAD_BUTTON_MINUS) {
+            if ((pCon->trig & WPAD_BUTTON_MINUS) || (pCon->trig & 0x10000)) {
                 if (mVolumeNum > 0) {
                     mVolumeNum--;
 
@@ -1870,20 +1869,20 @@ void HomeButton::update_controller(int id) {
 
                         for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
                             getController(i)->setSpeakerVol(mVolumeNum / 10.0f);
-                            getController(i)->playSound(i, 1);
+                            getController(i)->playSound(mpSoundArchivePlayer, 1);
                         }
                     } else {
                         play_sound(10);
 
                         for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
                             getController(i)->setSpeakerVol(mVolumeNum / 10.0f);
-                            getController(i)->playSound(i, 1);
+                            getController(i)->playSound(mpSoundArchivePlayer, 1);
                         }
                     }
                 } else {
                     play_sound(13);
                 }
-            } else if (pCon->trig & WPAD_BUTTON_PLUS) {
+            } else if ((pCon->trig & WPAD_BUTTON_PLUS) || (pCon->trig & 0x20000)) {
                 if (mVolumeNum < 10) {
                     anm_no = findGroupAnimator(mVolumeNum + 21, 9);
                     mpGroupAnmController[anm_no]->stop();
@@ -1901,14 +1900,14 @@ void HomeButton::update_controller(int id) {
 
                         for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
                             getController(i)->setSpeakerVol(mVolumeNum / 10.0f);
-                            getController(i)->playSound(i, 1);
+                            getController(i)->playSound(mpSoundArchivePlayer, 1);
                         }
                     } else {
                         play_sound(9);
 
                         for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
                             getController(i)->setSpeakerVol(mVolumeNum / 10.0f);
-                            getController(i)->playSound(i, 1);
+                            getController(i)->playSound(mpSoundArchivePlayer, 1);
                         }
                     }
                 } else {
@@ -1919,7 +1918,7 @@ void HomeButton::update_controller(int id) {
     } else if (mSequence == eSeq_Control && mState == 5 && !mpPairGroupAnmController[mSelectAnmNum]->isPlaying()) {
         HBController* pCon = mpController[id]->getController();
         if (pCon->trig) {
-            // mMsgCount = iReConnectTime;
+            mMsgCount = 0xE10;
         }
     }
 }
@@ -2382,14 +2381,14 @@ void HomeButton::startTrigEvent(const nw4hbm::lyt::Pane* pPane) {
 
                             for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
                                 getController(i)->setSpeakerVol(mVolumeNum / 10.0f);
-                                getController(i)->playSound(i, 1);
+                                getController(i)->playSound(mpSoundArchivePlayer, 1);
                             }
                         } else {
                             play_sound(10);
 
                             for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
                                 getController(i)->setSpeakerVol(mVolumeNum / 10.0f);
-                                getController(i)->playSound(i, 1);
+                                getController(i)->playSound(mpSoundArchivePlayer, 1);
                             }
                         }
 
@@ -2416,14 +2415,14 @@ void HomeButton::startTrigEvent(const nw4hbm::lyt::Pane* pPane) {
 
                             for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
                                 getController(i)->setSpeakerVol(mVolumeNum / 10.0f);
-                                getController(i)->playSound(i, 1);
+                                getController(i)->playSound(mpSoundArchivePlayer, 1);
                             }
                         } else {
                             play_sound(9);
 
                             for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
                                 getController(i)->setSpeakerVol(mVolumeNum / 10.0f);
-                                getController(i)->playSound(i, 1);
+                                getController(i)->playSound(mpSoundArchivePlayer, 1);
                             }
                         }
 
