@@ -285,11 +285,15 @@ class HomeButton {
         }
     }
 
-    void fn_80100C38_impl() {
+    void fn_80100C38_impl(bool checkFlag) {
         if (mpSoundArchivePlayer != NULL) {
             for (int i = 0; i < mpSoundArchivePlayer->GetSoundPlayerCount(); i++) {
                 mpSoundArchivePlayer->GetSoundPlayer(i).StopAllSound(0);
             }
+        }
+
+        if (checkFlag && !mEndInitSoundFlag) {
+            return;
         }
 
         AXFXReverbHiShutdown(&mAxFxReverb);

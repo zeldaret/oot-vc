@@ -283,8 +283,8 @@ void WPADInit(void);
 void WPADShutdown(void);
 
 bool WPADStartSimpleSync(void);
-bool WPADStartFastSimpleSync(void);
-bool WPADStopSimpleSync(void);
+BOOL WPADStartFastSimpleSync(void);
+BOOL WPADStopSimpleSync(void);
 bool WPADStartClearDevice(void);
 
 WPADSyncDeviceCallback WPADSetSimpleSyncCallback(WPADSyncDeviceCallback pCallback);
@@ -316,7 +316,7 @@ s32 WPADGetInfoAsync(s32 chan, WPADInfo* pInfo, WPADCallback pCallback);
 
 void WPADControlMotor(s32 chan, u32 command);
 void WPADEnableMotor(bool enable);
-bool WPADIsMotorEnabled(void);
+BOOL WPADIsMotorEnabled(void);
 
 s32 WPADControlLed(s32 chan, u8 flags, WPADCallback pCallback);
 
