@@ -1146,7 +1146,7 @@ void HomeButton::calc(const HBMControllerData* pController) {
                 mpLayout->GetRootPane()->FindPaneByName(scFuncPaneName[0], true)->SetVisible(true);
                 mpPairGroupAnmController[0]->setAnimType(2);
                 mpPairGroupAnmController[0]->start();
-            } else if (!mState) {
+            } else if (!mLetterFlag) {
                 mpLayout->GetRootPane()->FindPaneByName(scFuncPaneName[0], true)->SetVisible(false);
                 mpPairGroupAnmController[0]->setState(0);
             }

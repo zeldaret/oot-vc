@@ -231,6 +231,7 @@ class HomeButton {
 
     //! TODO: cleanup
     int GetState() { return mState; }
+    int GetState2() { return mLetterFlag; }
     HBMSelectBtnNum GetSelectBtnNum() { return mSelectBtnNum; }
     BlackFader* GetFader() { return &mFader; }
     nw4hbm::lyt::Layout* GetLayout() { return mpLayout; }
