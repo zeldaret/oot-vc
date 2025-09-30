@@ -7,8 +7,8 @@
 #include "revolution/mem.h"
 #include "revolution/vi.h"
 
-#include "new.hpp"
 #include "decomp.h"
+#include "new.hpp"
 
 #define REVO_IPL_FONT "RevoIpl_UtrilloProGrecoStd_M_32_I4.brfnt"
 
@@ -199,16 +199,6 @@ static const AnmControllerTable scGroupAnmTable[74] =
 	{ 33, 15 }, { 33, 16 }, { 33, 17 }, { 33, 18 }, { 33, 21 },
 	{ 34, 15 }, { 34, 16 }, { 34, 17 }, { 34, 18 }, { 34, 21 }
 };
-
-const int HomeButton::scReConnectTime = 3600;
-const int HomeButton::scReConnectTime2 = 3570;
-const int HomeButton::scPadDrawWaitTime = 5;
-const int HomeButton::scGetPadInfoTime = 100;
-const int HomeButton::scForcusSEWaitTime = 2;
-const f32 HomeButton::scOnPaneVibTime = 3.0f;
-const f32 HomeButton::scOnPaneVibWaitTime = 9.0f;
-const int HomeButton::scWaitStopMotorTime = 30;
-const int HomeButton::scWaitDisConnectTime = 180;
 
 const char *HomeButton::scCursorLytName[WPAD_MAX_CONTROLLERS] =
 {
@@ -467,24 +457,25 @@ bool HomeButton::BlackFader::isDone() {
     return false;
 }
 
-void HomeButton::BlackFader::draw() {
+void HomeButton::draw_impl() {
     u8 alpha;
-    HomeButton* pHBM = gpHomeButton;
-    int i;
     BlackFader* pFader;
+    HomeButton* pHBM;
+    int i;
 
-    pHBM->mpLayout->Draw(pHBM->mDrawInfo);
+    mpLayout->Draw(mDrawInfo);
 
-    if (pHBM->mpHBInfo->cursor == 0) {
+    if (mpHBInfo->cursor == 0) {
         for (i = WPAD_MAX_CONTROLLERS - 1; i >= WPAD_CHAN0; i--) {
-            pHBM->mpCursorLayout[i]->Draw(pHBM->mDrawInfo);
+            mpCursorLayout[i]->Draw(mDrawInfo);
         }
     }
 
-    pFader = &pHBM->mFader;
-    alpha = pFader->frame_ * 255 / pFader->maxFrame_;
+    pFader = &mFader;
+    alpha = pFader->getFrame() * 255 / pFader->getMaxFrame();
     initgx();
-    drawBlackPlate(-1000.0f, -1000.0f, 1000.0f, 1000.0f, (GXColor){pFader->red_, pFader->green_, pFader->blue_, alpha});
+    GXSetTevColor(GX_TEVREG0, pFader->GetColor(alpha));
+    drawBlackPlate(-1000.0f, -1000.0f, 1000.0f, 1000.0f);
 }
 
 int HomeButton::findGroupAnimator(int pane, int anm) {
@@ -1150,7 +1141,6 @@ void HomeButton::calc(const HBMControllerData* pController) {
 
             break;
 
-        default:
         case 2:
             if (mLetterFlag && !mpPairGroupAnmController[0]->isPlaying()) {
                 mpLayout->GetRootPane()->FindPaneByName(scFuncPaneName[0], true)->SetVisible(true);
@@ -1512,6 +1502,8 @@ void HomeButton::calc(const HBMControllerData* pController) {
                 fadeout_sound(restFrame / mFadeOutSeTime);
             }
 
+            break;
+        default:
             break;
     }
 
@@ -2293,11 +2285,10 @@ void HomeButton::startTrigEvent(const char* pPane) {
                 mSequence = eSeq_Cmn;
 
                 nw4hbm::lyt::Pane* p_pane = mpLayout->GetRootPane()->FindPaneByName(scFuncTextPaneName[2], true);
-
                 nw4hbm::lyt::TextBox* p_text = nw4hbm::ut::DynamicCast<nw4hbm::lyt::TextBox*>(p_pane);
 
                 u16 len;
-                if (mpHBInfo->messageFlag & btn_no + 1) {
+                if (mpHBInfo->messageFlag & (btn_no + 1)) {
                     for (len = 0; true; len++) {
                         // U+FF1F FULLWIDTH QUESTION MARK
                         if (mpText[mpHBInfo->region][btn_no + 2][len] == L'？') {
@@ -2309,16 +2300,11 @@ void HomeButton::startTrigEvent(const char* pPane) {
                             break;
                         }
                     }
-                } else {
-                    for (len = 0; true; len++) {
-                        // U+0022 QUOTATION MARK
-                        if (mpText[mpHBInfo->region][btn_no + 2][len + 1] == L'\"') {
-                            break;
-                        }
-                    }
-                }
 
-                p_text->SetString(mpText[mpHBInfo->region][btn_no + 2], 0, ++len);
+                    p_text->SetString(mpText[mpHBInfo->region][btn_no + 2], 0, ++len);
+                } else {
+                    p_text->SetString(mpText[mpHBInfo->region][btn_no + 2], 0);
+                }
 
                 mpLayout->GetRootPane()->FindPaneByName(scFuncTextPaneName[2], true)->SetVisible(true);
             } else {
@@ -2347,19 +2333,20 @@ void HomeButton::startTrigEvent(const char* pPane) {
                 case 1:
                 case 9:
                     if (mSequence == eSeq_Control) {
-                        // mpLayout->GetRootPane()->FindPaneByName("bar_00", true)->SetVisible(true);
-
-                        mpPairGroupAnmController[4]->start();
-                        mpPairGroupAnmController[11]->start();
+                        mSelectAnmNum = 4;
+                        mpPairGroupAnmController[mSelectAnmNum]->start();
 
                         mSelectAnmNum = 2;
                         mpPairGroupAnmController[mSelectAnmNum]->start();
+
+                        mpPairGroupAnmController[11]->start();
 
                         mState = 10;
                         mSequence = eSeq_Normal;
                         play_sound(8);
                     } else if (mSequence == eSeq_Normal) {
                         mpPairGroupAnmController[1]->start();
+
                         mSelectAnmNum = 9;
                         mpPairGroupAnmController[mSelectAnmNum]->start();
                         mState = 10;
@@ -2503,14 +2490,13 @@ void HomeButton::startTrigEvent(const char* pPane) {
                         mOnPaneVibFrame[i] = 0.0f;
                         mOnPaneVibWaitFrame[i] = 0.0f;
                         getController(i)->stopMotor();
-                        // getController(i)->setEnableRumble(false);
                     }
 
-                    mWaitStopMotorCount = 30.0f / getInstance()->getHBMDataInfo()->frameDelta;
+                    mWaitStopMotorCount = 30;
 
                     mpLayout->GetRootPane()->FindPaneByName(scFuncTextPaneName[0], true)->SetVisible(true);
 
-                    mpLayout->GetRootPane()->FindPaneByName(scFuncTextPaneName[0], true)->SetVisible(true);
+                    mpLayout->GetRootPane()->FindPaneByName(scFuncTextPaneName[1], true)->SetVisible(true);
 
                     play_sound(5);
                     play_sound(16);
@@ -2650,9 +2636,10 @@ bool HomeButton::isDownBarActive() {
 }
 
 int HomeButton::getPaneNo(const char* panename) {
+    int buttonNum = mButtonNum;
     int ret = -1;
 
-    for (int i = 0; i < mButtonNum; i++) {
+    for (int i = 0; i < buttonNum; i++) {
         if (!std::strcmp(panename, getPaneName(i))) {
             ret = i;
             break;
@@ -2661,7 +2648,7 @@ int HomeButton::getPaneNo(const char* panename) {
 
     for (int i = 0; i < 10; i++) {
         if (!std::strcmp(panename, getFuncPaneName(i))) {
-            ret = i + mButtonNum;
+            ret = i + buttonNum;
             break;
         }
     }
@@ -2807,9 +2794,7 @@ void HomeButton::startBlackOut() {
     }
 }
 
-static void drawBlackPlate(f32 left, f32 top, f32 right, f32 bottom, GXColor clr) {
-    GXSetTevColor(GX_TEVREG0, clr);
-
+static void drawBlackPlate(f32 left, f32 top, f32 right, f32 bottom) {
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
     GXPosition2f32(left, top);
     GXPosition2f32(left, bottom);

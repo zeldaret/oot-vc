@@ -22,7 +22,7 @@
 
 namespace homebutton {
 static void initgx();
-static void drawBlackPlate(f32 left, f32 top, f32 right, f32 bottom, GXColor clr);
+static void drawBlackPlate(f32 left, f32 top, f32 right, f32 bottom);
 static u32 get_comma_length(char* pBuf);
 static void SpeakerCallback(OSAlarm* alm, OSContext* ctx);
 static void MotorCallback(OSAlarm* alm, OSContext* ctx);
@@ -238,24 +238,7 @@ class HomeButton {
     void fn_80109A74();
     void fn_8010984C(nw4hbm::snd::NandSoundArchive* pNandSoundArchive, int param2);
 
-    void draw_impl() {
-        u8 alpha;
-        int i;
-        BlackFader* pFader;
-
-        mpLayout->Draw(mDrawInfo);
-
-        if (mpHBInfo->cursor == 0) {
-            for (i = WPAD_MAX_CONTROLLERS - 1; i >= WPAD_CHAN0; i--) {
-                mpCursorLayout[i]->Draw(mDrawInfo);
-            }
-        }
-
-        pFader = &mFader;
-        alpha = pFader->getFrame() * 255 / pFader->getMaxFrame();
-        initgx();
-        drawBlackPlate(-1000.0f, -1000.0f, 1000.0f, 1000.0f, pFader->GetColor(alpha));
-    }
+    void draw_impl();
 
     static void createInstance_impl(const HBMDataInfo* pHBInfo) {
         if (void* pMem = HBMAllocMem(sizeof(*spHomeButtonObj))) {
@@ -357,11 +340,10 @@ class HomeButton {
     /* 0x0B0 */ HBMSelectBtnNum mSelectBtnNum;
     /* 0x0B4 */ wchar_t* mpText[7][6];
     /* 0x15C */ WPADInfo mWpadInfo[WPAD_MAX_CONTROLLERS];
-    WPADSyncDeviceCallback mSimpleSyncCallback;
-    /* 0x1BC */ f32 mOnPaneVibFrame[4];
-    /* 0x1CC */ f32 mOnPaneVibWaitFrame[4];
-    /* 0x1DC */ int mWaitStopMotorCount;
-    // /* 0x1E0 */ int mDisConnectCount;
+    /* 0x1BC */ WPADSyncDeviceCallback mSimpleSyncCallback;
+    /* 0x1CC */ f32 mOnPaneVibFrame[4];
+    /* 0x1DC */ f32 mOnPaneVibWaitFrame[4];
+    /* 0x1E0 */ int mWaitStopMotorCount;
     /* 0x1E4 */ nw4hbm::lyt::Layout* mpLayout;
     /* 0x1E8 */ nw4hbm::lyt::Layout* mpCursorLayout[WPAD_MAX_CONTROLLERS];
     /* 0x1F8 */ nw4hbm::lyt::ArcResourceAccessor* mpResAccessor;
