@@ -235,8 +235,8 @@ class HomeButton {
     BlackFader* GetFader() { return &mFader; }
     nw4hbm::lyt::Layout* GetLayout() { return mpLayout; }
     nw4hbm::lyt::DrawInfo* GetDrawInfo() { return &mDrawInfo; }
+    void fn_8010984C(nw4hbm::snd::NandSoundArchive* pNandSoundArchive, bool bCreateSoundHeap);
     void fn_80109A74();
-    void fn_8010984C(nw4hbm::snd::NandSoundArchive* pNandSoundArchive, int param2);
 
     void draw_impl();
 

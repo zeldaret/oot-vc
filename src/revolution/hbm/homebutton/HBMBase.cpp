@@ -2738,59 +2738,55 @@ void HomeButtonEventHandler::onEvent(u32 uID, u32 uEvent, void* pData) {
 }
 
 void HomeButton::startBlackOut() {
-    if (/* !mStartBlackOutFlag */ 1) {
-        // mStartBlackOutFlag = true;
+    mForceSttInitProcFlag = false;
+    mForceSttFadeInProcFlag = false;
+    mForceStopSyncFlag = false;
+    mForceEndMsgAnmFlag = false;
 
-        mForceSttInitProcFlag = false;
-        mForceSttFadeInProcFlag = false;
-        mForceStopSyncFlag = false;
-        mForceEndMsgAnmFlag = false;
+    switch (mState) {
+        case 0:
+            mForceSttInitProcFlag = true;
 
-        switch (mState) {
-            case 0:
-                mForceSttInitProcFlag = true;
+        case 1:
+            mForceSttFadeInProcFlag = true;
+            break;
 
-            case 1:
-                mForceSttFadeInProcFlag = true;
-                break;
+        case 3:
+        case 5:
+        case 6:
+        case 7:
+            if ((mState == 3 && mSelectAnmNum == 5) || (mState == 5 && !mSimpleSyncFlag)) {
+                OSCancelAlarm(&mSimpleSyncAlarm);
+                WPADSetSimpleSyncCallback(mSimpleSyncCallback);
+                mSimpleSyncCallback = nullptr;
+            } else if (!mEndSimpleSyncFlag && mState > 3) {
+                mForceStopSyncFlag = true;
 
-            case 3:
-            case 5:
-            case 6:
-            case 7:
-                if ((mState == 3 && mSelectAnmNum == 5) || (mState == 5 && !mSimpleSyncFlag)) {
+                if (!WPADStopSimpleSync()) {
                     OSCancelAlarm(&mSimpleSyncAlarm);
-                    WPADSetSimpleSyncCallback(mSimpleSyncCallback);
-                    mSimpleSyncCallback = nullptr;
-                } else if (!mEndSimpleSyncFlag && mState > 3) {
-                    mForceStopSyncFlag = true;
 
-                    if (!WPADStopSimpleSync()) {
-                        OSCancelAlarm(&mSimpleSyncAlarm);
-
-                        OSSetAlarmUserDataAny(&mSimpleSyncAlarm, 1);
-                        OSSetAlarm(&mSimpleSyncAlarm, OSMillisecondsToTicks(100), &RetrySimpleSyncCallback);
-                    }
-                } else {
-                    WPADSetSimpleSyncCallback(mSimpleSyncCallback);
-                    mSimpleSyncCallback = nullptr;
+                    OSSetAlarmUserDataAny(&mSimpleSyncAlarm, 1);
+                    OSSetAlarm(&mSimpleSyncAlarm, OSMillisecondsToTicks(100), &RetrySimpleSyncCallback);
                 }
+            } else {
+                WPADSetSimpleSyncCallback(mSimpleSyncCallback);
+                mSimpleSyncCallback = nullptr;
+            }
 
-                mForceEndMsgAnmFlag = true;
-                break;
-        }
+            mForceEndMsgAnmFlag = true;
+            break;
+    }
 
-        mState = 19;
-        mFader.start();
+    mState = 19;
+    mFader.start();
 
-        mSelectBtnNum = HBM_SELECT_BTN2;
+    mSelectBtnNum = HBM_SELECT_BTN2;
 
-        f32 maxFrame = mFader.getMaxFrame();
-        mFadeOutSeTime = maxFrame;
+    f32 maxFrame = mFader.getMaxFrame();
+    mFadeOutSeTime = maxFrame;
 
-        if (mpHBInfo->sound_callback != NULL) {
-            mpHBInfo->sound_callback(3, maxFrame);
-        }
+    if (mpHBInfo->sound_callback != NULL) {
+        mpHBInfo->sound_callback(3, maxFrame);
     }
 }
 
@@ -2837,9 +2833,77 @@ static void initgx() {
     GXSetTevSwapMode(GX_TEVSTAGE0, GX_TEV_SWAP0, GX_TEV_SWAP0);
 }
 
-DECOMP_FORCE(NW4HBMAssert_String(mpSoundArchivePlayer));
-DECOMP_FORCE(NW4HBMAssert_String(mpSoundHandle));
-DECOMP_FORCE(NW4HBMAssert_String(mpSoundHeap));
-DECOMP_FORCE(NW4HBMAssert_String(mpSoundHeap->IsValid()));
+void HomeButton::fn_8010984C(nw4hbm::snd::NandSoundArchive* pNandSoundArchive, bool bCreateSoundHeap) {
+    void* buffer = MEMAllocFromAllocator(&lbl_80243EE8, sizeof(nw4hbm::snd::SoundArchivePlayer));
+    if (buffer != NULL) {
+        mpSoundArchivePlayer = new (buffer) nw4hbm::snd::SoundArchivePlayer();
+    }
+    NW4HBMAssert_Line(mpSoundArchivePlayer, 3695);
+
+    void* memBuffer;
+    void* strmBuffer;
+    u32 memSize = mpSoundArchivePlayer->GetRequiredMemSize(pNandSoundArchive);
+    u32 strmSize = mpSoundArchivePlayer->GetRequiredStrmBufferSize(pNandSoundArchive);
+    strmBuffer = MEMAllocFromAllocator(&lbl_80243EE8, strmSize);
+    memBuffer = MEMAllocFromAllocator(&lbl_80243EE8, memSize);
+    bool result = mpSoundArchivePlayer->Setup(pNandSoundArchive, memBuffer, memSize, strmBuffer, strmSize);
+    NW4HBMAssert_Line(result, 3713);
+
+    buffer = MEMAllocFromAllocator(&lbl_80243EE8, sizeof(nw4hbm::snd::SoundHandle));
+    if (buffer != NULL) {
+        mpSoundHandle = new (buffer) nw4hbm::snd::SoundHandle();
+    }
+    NW4HBMAssert_Line(mpSoundHandle, 3720);
+
+    if (bCreateSoundHeap) {
+        buffer = MEMAllocFromAllocator(&lbl_80243EE8, sizeof(nw4hbm::snd::SoundHeap));
+        if (buffer != NULL) {
+            mpSoundHeap = new (buffer) nw4hbm::snd::SoundHeap();
+        }
+        NW4HBMAssert_Line(mpSoundHeap, 3729);
+
+        u32 size = mButtonNum == 2 ? 0x60000 : 0x6F800;
+        mpSoundHeap->Create(MEMAllocFromAllocator(&lbl_80243EE8, size), size);
+        NW4HBMAssert_Line(mpSoundHeap->IsValid(), 3737);
+
+        bool result = mpSoundArchivePlayer->LoadGroup(0, mpSoundHeap, 0);
+        NW4HBMAssert_Line(result, 3740);
+    } else {
+        mpSoundHeap = nullptr;
+    }
+}
+
+void HomeButton::fn_80109A74() {
+    if (mpDvdSoundArchive != NULL) {
+        mpDvdSoundArchive->Close();
+        mpDvdSoundArchive->~DvdSoundArchive();
+    }
+
+    if (mpMemorySoundArchive != NULL) {
+        mpMemorySoundArchive->Shutdown();
+        mpMemorySoundArchive->~MemorySoundArchive();
+    }
+
+    if (mpNandSoundArchive != NULL) {
+        mpNandSoundArchive->Close();
+        mpNandSoundArchive->~NandSoundArchive();
+    }
+
+    if (mpSoundHeap != NULL) {
+        mpSoundHeap->Destroy();
+        mpSoundHeap->~SoundHeap();
+    }
+
+    if (mpSoundArchivePlayer != NULL) {
+        mpSoundArchivePlayer->Shutdown();
+        mpSoundArchivePlayer->~SoundArchivePlayer();
+    }
+
+    if (mpSoundHandle != NULL) {
+        mpSoundHandle->~SoundHandle();
+    }
+
+    nw4hbm::snd::SoundSystem::ShutdownSoundSystem();
+}
 
 } // namespace homebutton
