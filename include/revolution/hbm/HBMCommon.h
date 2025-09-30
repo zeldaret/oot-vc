@@ -29,21 +29,21 @@ typedef enum HBMSelectBtnNum {
 typedef int HBMSoundCallback(int evt, int num);
 
 typedef struct HBMDataInfo {
-    void* layoutBuf; // size 0x04, offset 0x00
-    void* spkSeBuf; // size 0x04, offset 0x04
-    void* msgBuf; // size 0x04, offset 0x08
-    void* configBuf; // size 0x04, offset 0x0c
-    void* mem; // size 0x04, offset 0x10
-    HBMSoundCallback* sound_callback; // size 0x04, offset 0x14
-    int backFlag; // size 0x04, offset 0x18
-    int region; // size 0x04, offset 0x1c
-    int cursor; // size 0x04, offset 0x20
-    int messageFlag; // size 0x04, offset 0x24
-    u32 memSize; // size 0x04, offset 0x28
-    f32 frameDelta; // size 0x04, offset 0x2C
-    Vec2 adjust; // size 0x08, offset 0x30
-    MEMAllocator* pAllocator; // size 0x04, offset 0x34
-} HBMDataInfo; // size 0x40
+    /* 0x00 */ void* layoutBuf;
+    /* 0x04 */ void* spkSeBuf;
+    /* 0x08 */ void* msgBuf;
+    /* 0x0C */ void* configBuf;
+    /* 0x10 */ void* mem;
+    /* 0x14 */ HBMSoundCallback* sound_callback;
+    /* 0x18 */ int backFlag;
+    /* 0x1C */ int region;
+    /* 0x20 */ int cursor;
+    /* 0x24 */ int messageFlag;
+    /* 0x28 */ u32 memSize;
+    /* 0x2C */ f32 frameDelta;
+    /* 0x30 */ Vec2 adjust;
+    /* 0x38 */ MEMAllocator* pAllocator;
+} HBMDataInfo; // size 0x3C
 
 #if HBM_APP_TYPE == HBM_APP_TYPE_DVD
 #define HBMDataInfoEx void
