@@ -11,37 +11,37 @@ namespace math {
 //
 
 struct _VEC2 {
-    f32 x; // size 0x04, offset 0x00
-    f32 y; // size 0x04, offset 0x04
+    /* 0x00 */ f32 x;
+    /* 0x04 */ f32 y;
 }; // size 0x08
 
 struct _VEC3 {
-    f32 x; // size 0x04, offset 0x00
-    f32 y; // size 0x04, offset 0x04
-    f32 z; // size 0x04, offset 0x08
+    /* 0x00 */ f32 x;
+    /* 0x04 */ f32 y;
+    /* 0x08 */ f32 z;
 }; // size 0x0c
 
 struct _MTX34 {
     union {
         struct {
-            f32 _00; // size 0x04, offset 0x00
-            f32 _01; // size 0x04, offset 0x04
-            f32 _02; // size 0x04, offset 0x08
-            f32 _03; // size 0x04, offset 0x0c
-            f32 _10; // size 0x04, offset 0x10
-            f32 _11; // size 0x04, offset 0x14
-            f32 _12; // size 0x04, offset 0x18
-            f32 _13; // size 0x04, offset 0x1c
-            f32 _20; // size 0x04, offset 0x20
-            f32 _21; // size 0x04, offset 0x24
-            f32 _22; // size 0x04, offset 0x28
-            f32 _23; // size 0x04, offset 0x2c
+            /* 0x00 */ f32 _00;
+            /* 0x04 */ f32 _01;
+            /* 0x08 */ f32 _02;
+            /* 0x0C */ f32 _03;
+            /* 0x10 */ f32 _10;
+            /* 0x14 */ f32 _11;
+            /* 0x18 */ f32 _12;
+            /* 0x1C */ f32 _13;
+            /* 0x20 */ f32 _20;
+            /* 0x24 */ f32 _21;
+            /* 0x28 */ f32 _22;
+            /* 0x2C */ f32 _23;
         }; // size 0x30
 
         f32 m[3][4]; // size 0x30
         f32 a[12]; // size 0x30
         Mtx mtx; // size 0x30
-    }; // size 0x30, offset 0x00
+    /* 0x00 */ };
 }; // size 0x30
 
 //

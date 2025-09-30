@@ -524,7 +524,7 @@ static void fn_8005F1A0(void) {
     }
 }
 
-static bool fn_8005F1EC(int event, int num) { return false; }
+static bool fn_8005F1EC(s32 event, s32 num) { return false; }
 
 void fn_8005F1F4_UnknownInline1(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
     s32 nLength = fn_8005E2D0(&sHandleNAND, szPath, ppBuffer, &sMemAllocator2, &sMemAllocator1);

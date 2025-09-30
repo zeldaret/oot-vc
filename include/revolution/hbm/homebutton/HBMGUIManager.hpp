@@ -60,7 +60,7 @@ class EventHandler // also see HBMBase.cpp
     // members
   protected: // HomeButtonEventHandler::onEvent
     /* vtable */ // size 0x04, offset 0x00
-    Manager* mpManager; // size 0x04, offset 0x04
+    /* 0x04 */ Manager* mpManager;
 }; // size 0x08
 
 class Component : public Interface {
@@ -112,15 +112,15 @@ class Component : public Interface {
     // members
   protected: // PaneComponent::contain
     /* base Interface */ // size 0x04, offset 0x00
-    bool mabPointed[8]; // size 0x08, offset 0x04
-    Vec mDragStartPos; // size 0x0c, offset 0x0c
-    bool mbDragging; // size 0x01, offset 0x18
+    /* 0x04 */ bool mabPointed[8];
+    /* 0x0C */ Vec mDragStartPos;
+    /* 0x18 */ bool mbDragging;
     /* 3 bytes padding */
-    u32 muDraggingButton; // size 0x04, offset 0x1c
-    u32 muID; // size 0x04, offset 0x20
-    bool mbTriggerTarger; // size 0x01, offset 0x24
+    /* 0x1C */ u32 muDraggingButton;
+    /* 0x20 */ u32 muID;
+    /* 0x24 */ bool mbTriggerTarger;
     /* 3 bytes padding */
-    Manager* mpManager; // size 0x04, offset 0x28
+    /* 0x28 */ Manager* mpManager;
 }; // size 0x2c
 
 class Manager : public Interface {
@@ -134,9 +134,9 @@ class Manager : public Interface {
 
         // members
       public:
-        u32 muID; // size 0x04, offset 0x00
-        Component* mpComponent; // size 0x04, offset 0x04
-        nw4hbm::ut::Link mLink; // size 0x08, offset 0x08
+        /* 0x00 */ u32 muID;
+        /* 0x04 */ Component* mpComponent;
+        /* 0x08 */ nw4hbm::ut::Link mLink;
     }; // size 0x10
 
     // methods
@@ -183,9 +183,9 @@ class Manager : public Interface {
     // members
   protected: // PaneManager::~PaneManager
     /* base Interface */ // size 0x04, offset 0x00
-    EventHandler* mpEventHandler; // size 0x04, offset 0x04
-    nw4hbm::ut::List mIDToComponent; // size 0x0c, offset 0x08
-    MEMAllocator* mpAllocator; // size 0x04, offset 0x14
+    /* 0x04 */ EventHandler* mpEventHandler;
+    /* 0x08 */ nw4hbm::ut::List mIDToComponent;
+    /* 0x14 */ MEMAllocator* mpAllocator;
 }; // size 0x18
 
 class PaneManager : public Manager {
@@ -199,9 +199,9 @@ class PaneManager : public Manager {
 
         // members
       public:
-        nw4hbm::lyt::Pane* mpPane; // size 0x04, offset 0x00
-        PaneComponent* mpComponent; // size 0x04, offset 0x04
-        nw4hbm::ut::Link mLink; // size 0x08, offset 0x08
+        /* 0x00 */ nw4hbm::lyt::Pane* mpPane;
+        /* 0x04 */ PaneComponent* mpComponent;
+        /* 0x08 */ nw4hbm::ut::Link mLink;
     }; // size 0x10
 
     // methods
@@ -234,9 +234,9 @@ class PaneManager : public Manager {
     // members
   private:
     /* base Manager */ // size 0x18, offset 0x00
-    nw4hbm::ut::List mPaneToComponent; // size 0x0c, offset 0x18
-    const nw4hbm::lyt::DrawInfo* mpDrawInfo; // size 0x04, offset 0x24
-    u16 muNumPoint; // size 0x02, offset 0x28
+    /* 0x18 */ nw4hbm::ut::List mPaneToComponent;
+    /* 0x24 */ const nw4hbm::lyt::DrawInfo* mpDrawInfo;
+    /* 0x28 */ u16 muNumPoint;
     byte2_t muPadding;
 
     // static members
@@ -266,7 +266,7 @@ class PaneComponent : public Component {
     // members
   protected:
     /* base Component */ // size 0x2c, offset 0x00
-    nw4hbm::lyt::Pane* mpPane; // size 0x04, offset 0x2c
+    /* 0x2C */ nw4hbm::lyt::Pane* mpPane;
 }; // size 0x30
 } // namespace gui
 } // namespace homebutton

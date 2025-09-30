@@ -276,6 +276,5 @@ void NandSoundArchive::NandFileStream::Seek(s32 offset, u32 origin) {
 
 DECOMP_FORCE_CLASS_METHOD(detail::PlayerHeapList, GetNodeFromPointer(nullptr));
 
-
 } // namespace snd
 } // namespace nw4hbm

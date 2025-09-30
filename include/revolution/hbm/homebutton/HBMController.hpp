@@ -12,14 +12,14 @@
 #include "revolution/wpad/WPAD.h"
 
 struct HBController {
-    int chan; // size 0x04, offset 0x00
-    f32 spVol; // size 0x04, offset 0x04
-    f32 x; // size 0x04, offset 0x08
-    f32 y; // size 0x04, offset 0x0c
-    u32 trig; // size 0x04, offset 0x10
-    u32 hold; // size 0x04, offset 0x14
-    u32 release; // size 0x04, offset 0x18
-    bool rumble; // size 0x01, offset 0x1c
+    /* 0x00 */ int chan;
+    /* 0x04 */ f32 spVol;
+    /* 0x08 */ f32 x;
+    /* 0x0C */ f32 y;
+    /* 0x10 */ u32 trig;
+    /* 0x14 */ u32 hold;
+    /* 0x18 */ u32 release;
+    /* 0x1C */ bool rumble;
     /* 3 bytes padding */
 }; // size 0x20
 

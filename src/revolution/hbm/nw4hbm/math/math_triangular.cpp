@@ -2,15 +2,15 @@
 #include "revolution/types.h"
 
 typedef struct {
-    f32 sin_val; // size 0x04, offset 0x00
-    f32 cos_val; // size 0x04, offset 0x04
-    f32 sin_delta; // size 0x04, offset 0x08
-    f32 cos_delta; // size 0x04, offset 0x0c
+    /* 0x00 */ f32 sin_val;
+    /* 0x04 */ f32 cos_val;
+    /* 0x08 */ f32 sin_delta;
+    /* 0x0C */ f32 cos_delta;
 } SinCosSample; // size 0x10
 
 typedef struct {
-    f32 atan_val; // size 0x04, offset 0x00
-    f32 atan_delta; // size 0x04, offset 0x04
+    /* 0x00 */ f32 atan_val;
+    /* 0x04 */ f32 atan_delta;
 } ArcTanSample; // size 0x08
 
 namespace nw4hbm {

@@ -1,6 +1,5 @@
 #include "revolution/hbm/nw4hbm/db/assert.h"
 
-#include "revolution/hbm/HBMConfig.h"
 #include "revolution/hbm/nw4hbm/db/console.h"
 #include "revolution/hbm/nw4hbm/db/directPrint.h"
 #include "revolution/hbm/nw4hbm/db/mapFile.h"
@@ -15,11 +14,7 @@ namespace nw4hbm {
 namespace db {
 
 static void Assertion_Printf_(char const* fmt, ...);
-
-#if HBM_APP_TYPE == HBM_APP_TYPE_DVD
 static bool ShowMapInfoSubroutine_(u32 address, bool preCRFlag);
-#endif // HBM_APP_TYPE == HBM_APP_TYPE_DVD
-
 static void ShowStack_(register_t sp) NO_INLINE;
 static void WarningAlarmFunc_(OSAlarm* alarm, OSContext* ctx);
 
@@ -32,22 +27,15 @@ static void Assertion_Printf_(char const* fmt, ...) {
 
     va_start(vlist, fmt);
 
-#if HBM_APP_TYPE == HBM_APP_TYPE_DVD
     if (sAssertionConsole) {
         Console_VPrintf(sAssertionConsole, fmt, vlist);
     } else {
         OSVReport(fmt, vlist);
     }
-#elif HBM_APP_TYPE == HBM_APP_TYPE_NAND
-    if (!sAssertionConsole) {
-        OSVReport(fmt, vlist);
-    }
-#endif // HBM_APP_TYPE
 
     va_end(vlist);
 }
 
-#if HBM_APP_TYPE == HBM_APP_TYPE_DVD
 static bool ShowMapInfoSubroutine_(u32 address, bool preCRFlag) {
     u8 strBuf[260];
 
@@ -69,7 +57,6 @@ static bool ShowMapInfoSubroutine_(u32 address, bool preCRFlag) {
 
     return false;
 }
-#endif // HBM_APP_TYPE == HBM_APP_TYPE_DVD
 
 static void ShowStack_(register_t sp) {
     u32 i;
@@ -95,10 +82,7 @@ static void ShowStack_(register_t sp) {
 
         Assertion_Printf_("%08X:  %08X    %08X ", p, p[0], p[1]);
 
-#if HBM_APP_TYPE == HBM_APP_TYPE_DVD
-        if (!ShowMapInfoSubroutine_(p[1], false))
-#endif // HBM_APP_TYPE == HBM_APP_TYPE_DVD
-        {
+        if (!ShowMapInfoSubroutine_(p[1], false)) {
             Assertion_Printf_("\n");
         }
 
@@ -118,26 +102,20 @@ WEAK void VPanic(const char* file, int line, const char* fmt, std::va_list vlist
     VISetPreRetraceCallback(nullptr);
     VISetPostRetraceCallback(nullptr);
 
-#if HBM_APP_TYPE == HBM_APP_TYPE_DVD
     if (sAssertionConsole) {
         detail::DirectPrint_SetupFB(nullptr);
     }
-#endif // HBM_APP_TYPE == HBM_APP_TYPE_DVD
 
     ShowStack_(stackPointer);
 
     if (sAssertionConsole) {
         Console_Printf(sAssertionConsole, "%s:%d Panic:", file, line);
-#if !defined(NDEBUG)
         Console_VPrintf(sAssertionConsole, fmt, vlist);
-#endif // !defined(NDEBUG)
         Console_Printf(sAssertionConsole, "\n");
 
         Console_ShowLatestLine(sAssertionConsole);
         Console_SetVisible(sAssertionConsole, true);
-#if HBM_APP_TYPE == HBM_APP_TYPE_DVD
         Console_DrawDirect(sAssertionConsole);
-#endif // HBM_APP_TYPE == HBM_APP_TYPE_DVD
     } else {
         OSReport("%s:%d Panic:", file, line);
         OSVReport(fmt, vlist);

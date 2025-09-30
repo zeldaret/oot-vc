@@ -33,12 +33,12 @@ struct VoiceOutParam {
 
     // members
   public:
-    f32 volume; // size 0x04, offset 0x00
-    f32 pitch; // size 0x04, offset 0x04
-    f32 pan; // size 0x04, offset 0x08
-    f32 surroundPan; // size 0x04, offset 0x0c
-    f32 fxSend; // size 0x04, offset 0x10
-    f32 lpf; // size 0x04, offset 0x14
+    /* 0x00 */ f32 volume;
+    /* 0x04 */ f32 pitch;
+    /* 0x08 */ f32 pan;
+    /* 0x0C */ f32 surroundPan;
+    /* 0x10 */ f32 fxSend;
+    /* 0x14 */ f32 lpf;
 }; // size 0x18
 } // namespace snd
 } // namespace nw4hbm

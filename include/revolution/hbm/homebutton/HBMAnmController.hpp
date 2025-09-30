@@ -5,30 +5,24 @@
 
 // forward declarations
 namespace nw4hbm {
-namespace lyt {
-class AnimTransform;
-class Group;
-} // namespace lyt
+    namespace lyt {
+        class AnimTransform;
+        class Group;
+    } // namespace lyt
 } // namespace nw4hbm
 
 namespace homebutton {
+    class GroupAnmController : public FrameController {
+      public:
+        /* 0x00 (base) */
+        /* 0x20 */ nw4hbm::lyt::Group* mpGroup;
+        /* 0x24 */ nw4hbm::lyt::AnimTransform* mpAnimGroup;
 
-class GroupAnmController : public FrameController {
-    // methods
-  public:
-    // cdtors
-    GroupAnmController();
-    virtual ~GroupAnmController();
+        GroupAnmController();
+        virtual ~GroupAnmController();
 
-    // methods
-    void do_calc();
-
-    // members
-  public: // HomeButton::create
-    /* base FrameController */ // size 0x20, offset 0x00
-    nw4hbm::lyt::Group* mpGroup; // size 0x04, offset 0x20
-    nw4hbm::lyt::AnimTransform* mpAnimGroup; // size 0x04, offset 0x24
-}; // size 0x28
+        void do_calc();
+    }; // size = 0x28
 } // namespace homebutton
 
 #endif // RVL_SDK_HBM_HOMEBUTTON_ANM_CONTROLLER_HPP

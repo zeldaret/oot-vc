@@ -3,12 +3,12 @@
 #include "revolution/hbm/nw4hbm/db.h"
 
 struct CMapScanEntry {
-    u16 ccode; // size 0x02, offset 0x00
-    u16 index; // size 0x02, offset 0x02
+    /* 0x00 */ u16 ccode;
+    /* 0x02 */ u16 index;
 }; // size 0x04
 
 struct CMapInfoScan {
-    u16 num; // size 0x02, offset 0x00
+    /* 0x00 */ u16 num;
     CMapScanEntry entries[]; // flexible,  offset 0x02 (unit size 0x04)
 }; // size 0x02
 

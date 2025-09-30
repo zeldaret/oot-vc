@@ -3,7 +3,6 @@
 
 #include "revolution/ax.h"
 #include "revolution/axfx.h"
-#include "revolution/hbm/HBMConfig.h"
 #include "revolution/hbm/homebutton/HBMCommon.hpp"
 #include "revolution/hbm/homebutton/HBMController.hpp"
 #include "revolution/hbm/homebutton/HBMGUIManager.hpp"
@@ -85,7 +84,7 @@ class HomeButtonEventHandler : public gui::EventHandler {
     // members
   private:
     /* base EventHandler */ // size 0x08, offset 0x00
-    HomeButton* mpHomeButton; // size 0x04, offset 0x08
+    /* 0x08 */ HomeButton* mpHomeButton;
 }; // size 0x0c
 
 class HomeButton {
@@ -130,12 +129,12 @@ class HomeButton {
 
         // members
       private:
-        int frame_; // size 0x04, offset 0x00
-        int maxFrame_; // size 0x04, offset 0x04
-        int state_; // size 0x04, offset 0x08
-        u8 red_; // size 0x01, offset 0x0d
-        u8 green_; // size 0x01, offset 0x0e
-        u8 blue_; // size 0x01, offset 0x0f
+        /* 0x00 */ int frame_;
+        /* 0x04 */ int maxFrame_;
+        /* 0x08 */ int state_;
+        /* 0x0D */ u8 red_;
+        /* 0x0E */ u8 green_;
+        /* 0x0F */ u8 blue_;
     }; // size 0x10
 
     // methods

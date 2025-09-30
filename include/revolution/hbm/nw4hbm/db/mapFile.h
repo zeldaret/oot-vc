@@ -9,10 +9,10 @@ namespace nw4hbm {
 namespace db {
 
 struct MapFile {
-    byte_t* mapBuf; // size 0x04, offset 0x00
-    OSModuleInfo* moduleInfo; // size 0x04, offset 0x04
-    s32 fileEntry; // size 0x04, offset 0x08
-    MapFile* next; // size 0x04, offset 0x0c
+    /* 0x00 */ byte_t* mapBuf;
+    /* 0x04 */ OSModuleInfo* moduleInfo;
+    /* 0x08 */ s32 fileEntry;
+    /* 0x0C */ MapFile* next;
 }; // size 0x10
 } // namespace db
 } // namespace nw4hbm

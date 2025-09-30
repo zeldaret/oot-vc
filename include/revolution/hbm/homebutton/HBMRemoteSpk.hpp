@@ -13,17 +13,17 @@ class RemoteSpk {
     // nested types
   private:
     struct ChanInfo {
-        OSAlarm alarm; // size 0x30, offset 0x00
-        WENCInfo wencinfo; // size 0x20, offset 0x30
-        const s16* in_pcm; // size 0x04, offset 0x50
-        int length; // size 0x04, offset 0x54
-        int seId; // size 0x04, offset 0x58
-        bool first; // size 0x01, offset 0x5c
-        s8 vol; // size 0x01, offset 0x5d
-        s8 cannotSendCnt; // size 0x01, offset 0x5e
+        /* 0x00 */ OSAlarm alarm;
+        /* 0x30 */ WENCInfo wencinfo;
+        /* 0x50 */ const s16* in_pcm;
+        /* 0x54 */ int length;
+        /* 0x58 */ int seId;
+        /* 0x5C */ bool first;
+        /* 0x5D */ s8 vol;
+        /* 0x5E */ s8 cannotSendCnt;
         /* 1 byte padding */
         u16 pad; // is this padding??? it's not used
-        bool playReady; // size 0x01, offset 0x62
+        /* 0x62 */ bool playReady;
         /* 5 bytes padding */
     }; // size 0x68
 
@@ -60,10 +60,10 @@ class RemoteSpk {
 
     // members
   private:
-    ChanInfo info[WPAD_MAX_CONTROLLERS]; // size 0x1a0, offset 0x000
-    OSAlarm speakerAlarm; // size 0x030, offset 0x1a0
-    ARCHandle handle; // size 0x01c, offset 0x1d0
-    bool available; // size 0x001, offset 0x1ec
+    /* 0x000 */ ChanInfo info[WPAD_MAX_CONTROLLERS];
+    /* 0x1A0 */ OSAlarm speakerAlarm;
+    /* 0x1D0 */ ARCHandle handle;
+    /* 0x1EC */ bool available;
     /* 3 bytes padding */
     /* vtable */ // size 0x004, offset 0x1f0
     /* 4 bytes padding */

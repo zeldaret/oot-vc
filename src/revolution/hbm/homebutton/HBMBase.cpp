@@ -13,8 +13,8 @@
 #define REVO_IPL_FONT "RevoIpl_UtrilloProGrecoStd_M_32_I4.brfnt"
 
 struct AnmControllerTable {
-    int pane; // size 0x04, offset 0x00
-    int anm; // size 0x04, offset 0x04
+    /* 0x00 */ int pane;
+    /* 0x04 */ int anm;
 }; // size 0x08
 
 static MEMAllocator sAllocator;

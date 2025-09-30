@@ -5,8 +5,8 @@
 #include "new.hpp"
 
 struct TextureFlipInfo {
-    u8 coords[4][2]; // size 0x08, offset 0x00
-    u8 idx[2]; // size 0x02, offset 0x08
+    /* 0x00 */ u8 coords[4][2];
+    /* 0x08 */ u8 idx[2];
 }; // size 0x0a
 
 namespace {
