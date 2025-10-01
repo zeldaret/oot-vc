@@ -6,6 +6,7 @@
 
 namespace nw4hbm {
 namespace ut {
+
 typedef struct Link {
     /* 0x00 */ void* prevObject;
     /* 0x04 */ void* nextObject;
@@ -15,9 +16,8 @@ typedef struct List {
     /* 0x00 */ void* headObject;
     /* 0x04 */ void* tailObject;
     /* 0x08 */ u16 numObjects;
-
     /* 0x0A */ u16 offset;
-} List;
+} List; // size = 0x0C
 
 void List_Init(List* list, u16 offset);
 void List_Append(List* list, void* object);
@@ -30,13 +30,13 @@ void* List_GetPrev(const List* list, const void* object);
 void* List_GetNth(const List* list, u16 index);
 
 static void* List_GetFirst(const List* list) { return List_GetNext(list, NULL); }
-
 static void* List_GetLast(const List* list) { return List_GetPrev(list, NULL); }
 
 inline u16 List_GetSize(const List* list) {
     NW4HBMAssertPointerNonnull_Line(list, 207);
     return list->numObjects;
 }
+
 } // namespace ut
 } // namespace nw4hbm
 

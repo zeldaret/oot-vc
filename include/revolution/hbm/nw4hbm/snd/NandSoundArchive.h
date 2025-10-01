@@ -19,8 +19,8 @@ public:
     NandSoundArchive();
     /* 0x08 */ virtual ~NandSoundArchive();
 
-    virtual const void* detail_GetFileAddress(u32 id) const { return NULL; } // 0x0C
-    virtual const void* detail_GetWaveDataFileAddress(u32 id) const { return NULL; } // 0x10
+    /* 0x0C */ virtual const void* detail_GetFileAddress(u32 id) const { return NULL; }
+    /* 0x10 */ virtual const void* detail_GetWaveDataFileAddress(u32 id) const { return NULL; }
 
     /* 0x14 */ virtual int detail_GetRequiredStreamBufferSize() const;
 

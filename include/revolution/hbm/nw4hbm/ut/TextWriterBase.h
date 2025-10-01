@@ -15,8 +15,10 @@
 
 namespace nw4hbm {
 namespace ut {
+
 struct Rect;
 template <typename> class TagProcessorBase;
+
 template <typename T> class TextWriterBase : public CharWriter {
 public:
     enum DrawFlag {
@@ -43,6 +45,7 @@ public:
 
         DRAWFLAG_MASK_ALIGN_V = DRAWFLAG_ALIGN_V_BASELINE | DRAWFLAG_ALIGN_V_CENTER | DRAWFLAG_ALIGN_V_TOP,
     };
+
     TextWriterBase();
     ~TextWriterBase();
 
@@ -80,7 +83,6 @@ public:
     void CalcStringRect(Rect* pRect, const T* str, int length) const;
     void CalcStringRect(Rect* pRect, const T* str) const;
 
-    // f32 PrintMutable(const T* str, int length);
     f32 Printf(const T* format, ...);
     f32 VPrintf(const T* format, va_list args);
     f32 Print(const T* str, int length);
@@ -105,9 +107,7 @@ public:
     f32 CalcLineWidth(const T* str, int length);
     int CalcLineRectImpl(Rect* pRect, const T* str, int length);
     void CalcStringRectImpl(Rect* pRect, const T* str, int length);
-
     f32 PrintImpl(const T* str, int length);
-
     f32 AdjustCursor(f32* xOrigin, f32* yOrigin, const T* str, int length);
 
     bool IsDrawFlagSet(u32 mask, u32 flag) const { return (mDrawFlag & mask) == flag; }
@@ -115,23 +115,18 @@ public:
 private:
     /* 0x4C */ f32 mCharSpace;
     /* 0x50 */ f32 mLineSpace;
-
     /* 0x54 */ int mTabWidth;
-
     /* 0x58 */ u32 mDrawFlag;
-
     /* 0x5C */ TagProcessorBase<T>* mTagProcessor;
 
 private:
     static T* mFormatBuffer;
     static u32 mFormatBufferSize;
-
     static TagProcessorBase<T> mDefaultTagProcessor;
-
     static const int DEFAULT_FORMAT_BUFFER_SIZE = 256;
-
     static const u32 DRAWFLAG_MASK_ALL = DRAWFLAG_MASK_ALIGN_TEXT | DRAWFLAG_MASK_ALIGN_H | DRAWFLAG_MASK_ALIGN_V;
-};
+}; // size = 0x60
+
 } // namespace ut
 } // namespace nw4hbm
 

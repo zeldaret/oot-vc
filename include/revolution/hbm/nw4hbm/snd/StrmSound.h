@@ -34,8 +34,8 @@ public:
     /* 0x5C */ virtual bool IsAttachedTempSpecialHandle();
     /* 0x60 */ virtual void DetachTempSpecialHandle();
 
-    virtual BasicPlayer& GetBasicPlayer() { return mStrmPlayer; } // 0x68
-    virtual const BasicPlayer& GetBasicPlayer() const { return mStrmPlayer; } // 0x6C
+    /* 0x68 */ virtual BasicPlayer& GetBasicPlayer() { return mStrmPlayer; }
+    /* 0x6C */ virtual const BasicPlayer& GetBasicPlayer() const { return mStrmPlayer; }
 
     void Setup(const StrmPlayer::StrmHeader* header);
 

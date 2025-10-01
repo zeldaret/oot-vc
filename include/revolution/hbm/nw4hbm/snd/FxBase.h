@@ -14,7 +14,7 @@ class FxBase : ut::NonCopyable {
 public:
     virtual ~FxBase() {} // 0x08
 
-    virtual bool StartUp() { return true; } // 0x0C
+    /* 0x0C */ virtual bool StartUp() { return true; }
     virtual void Shutdown() {} // 0x10
 
     virtual void UpdateBuffer(int channels, void** buffer, u32 size, SampleFormat format, f32 sampleRate,

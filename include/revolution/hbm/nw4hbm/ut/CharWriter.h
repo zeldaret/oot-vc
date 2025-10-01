@@ -18,11 +18,10 @@ class Font;
 class CharWriter {
 public:
     typedef enum GradationMode {
-        GRADMODE_NONE = 0,
-        GRADMODE_H,
-        GRADMODE_V,
-
-        NUM_OF_GRADMODE
+        /* 0 */ GRADMODE_NONE = 0,
+        /* 1 */ GRADMODE_H,
+        /* 2 */ GRADMODE_V,
+        /* 3 */ NUM_OF_GRADMODE
     } GradationMode;
 
 private:
@@ -137,17 +136,13 @@ private:
     /* 0x00 */ ColorMapping mColorMapping;
     /* 0x08 */ VertexColor mVertexColor;
     /* 0x18 */ TextColor mTextColor;
-
     /* 0x24 */ math::VEC2 mScale;
     /* 0x2C */ math::VEC3 mCursorPos;
-
     /* 0x38 */ TextureFilter mFilter;
-
     /* 0x40 */ u8 padding_[2];
     /* 0x42 */ u8 mAlpha;
     /* 0x43 */ bool mIsWidthFixed;
     /* 0x44 */ f32 mFixedWidth;
-
     /* 0x48 */ const Font* mFont;
 
     static const u32 DEFAULT_COLOR_MAPPING_MIN = 0x00000000;
@@ -155,7 +150,8 @@ private:
 
 private:
     static LoadingTexture mLoadingTexture;
-};
+}; // size = 0x4C
+
 } // namespace ut
 } // namespace nw4hbm
 

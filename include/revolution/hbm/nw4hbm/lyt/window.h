@@ -21,11 +21,10 @@ private:
     } Frame;
 
 public:
-    NW4HBM_UT_RUNTIME_TYPEINFO;
-
     Window(const res::Window* pBlock, const ResBlockSet& resBlockSet);
 
     /* 0x08 */ virtual ~Window();
+    /* 0x0C */ NW4HBM_UT_RUNTIME_TYPEINFO;
     /* 0x18 */ virtual void DrawSelf(const DrawInfo& drawInfo);
     /* 0x20 */ virtual void AnimateSelf(u32 option);
     /* 0x24 */ virtual ut::Color GetVtxColor(u32 idx) const;

@@ -25,15 +25,15 @@ public:
     /* 0x14 */ virtual s32 Read(void* dst, u32 size);
     /* 0x44 */ virtual void Seek(s32 offset, u32 origin);
 
-    virtual bool CanSeek() const { return true; } // 0x50
-    virtual bool CanCancel() const { return true; } // 0x54
-    virtual bool CanAsync() const { return false; } // 0x28
-    virtual bool CanRead() const { return true; } // 0x2C
-    virtual bool CanWrite() const { return false; } // 0x30
+    /* 0x50 */ virtual bool CanSeek() const { return true; }
+    /* 0x54 */ virtual bool CanCancel() const { return true; }
+    /* 0x28 */ virtual bool CanAsync() const { return false; }
+    /* 0x2C */ virtual bool CanRead() const { return true; }
+    /* 0x30 */ virtual bool CanWrite() const { return false; }
 
-    virtual u32 Tell() const { return mOffset; } // 0x58
+    /* 0x58 */ virtual u32 Tell() const { return mOffset; }
 
-    virtual u32 GetSize() const { return mSize; } // 0x40
+    /* 0x40 */ virtual u32 GetSize() const { return mSize; }
 
 private:
     /* 0x14 */ const void* mData;

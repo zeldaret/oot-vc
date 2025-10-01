@@ -13,9 +13,8 @@ public:
     Picture(u8 num);
     Picture(const res::Picture* pResPic, const ResBlockSet& resBlockSet);
 
-    NW4HBM_UT_RUNTIME_TYPEINFO;
-
     /* 0x08 */ virtual ~Picture();
+    /* 0x0C */ NW4HBM_UT_RUNTIME_TYPEINFO;
     /* 0x18 */ virtual void DrawSelf(const DrawInfo& drawInfo);
     /* 0x24 */ virtual ut::Color GetVtxColor(u32 idx) const;
     /* 0x28 */ virtual void SetVtxColor(u32 idx, ut::Color value);

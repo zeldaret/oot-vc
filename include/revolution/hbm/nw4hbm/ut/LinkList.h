@@ -10,6 +10,7 @@
 
 namespace nw4hbm {
 namespace ut {
+
 namespace detail {
 class LinkListImpl;
 }
@@ -33,7 +34,7 @@ public:
 private:
     /* 0x00 */ LinkListNode* mNext;
     /* 0x04 */ LinkListNode* mPrev;
-};
+}; // size = 0x08
 
 namespace detail {
 
@@ -77,7 +78,7 @@ public:
 
     private:
         /* 0x00 */ LinkListNode* mPointer;
-    };
+    }; // size = 0x04
 
     /******************************************************************************
      * Iterator implementation (const-view)
@@ -107,7 +108,7 @@ public:
 
     private:
         /* 0x00 */ LinkListNode* mNode;
-    };
+    }; // size = 0x04
 
 protected:
     static Iterator GetIteratorFromPointer(LinkListNode* pNode) { return Iterator(pNode); }
@@ -145,7 +146,7 @@ private:
 private:
     /* 0x00 */ u32 mSize;
     /* 0x04 */ LinkListNode mNode;
-};
+}; // size = 0x0C
 
 /******************************************************************************
  *
@@ -322,6 +323,7 @@ public:
         NW4HBMAssert_Line(!IsEmpty(), 497);
         return *GetBeginIter();
     }
+
     const T& GetFront() const {
         NW4HBMAssert_Line(!IsEmpty(), 502);
         return *GetBeginIter();
@@ -331,6 +333,7 @@ public:
         NW4HBMAssert_Line(!IsEmpty(), 507);
         return *--GetEndIter();
     }
+
     const T& GetBack() const {
         NW4HBMAssert_Line(!IsEmpty(), 512); // assumed line number
         return *--GetEndIter();
@@ -357,6 +360,7 @@ public:
         return reinterpret_cast<const T*>(reinterpret_cast<const char*>(p) - Ofs);
     }
 };
+
 } // namespace ut
 } // namespace nw4hbm
 

@@ -5,6 +5,7 @@
 
 namespace nw4hbm {
 namespace ut {
+
 #define NW4HBM_UT_RUNTIME_TYPEINFO                                                                      \
     virtual const nw4hbm::ut::detail::RuntimeTypeInfo* GetRuntimeTypeInfo() const { return &typeInfo; } \
     static const nw4hbm::ut::detail::RuntimeTypeInfo typeInfo
@@ -27,8 +28,9 @@ struct RuntimeTypeInfo {
         }
         return false;
     }
+
     /* 0x00 */ const RuntimeTypeInfo* mParentTypeInfo;
-};
+}; // size = 0x04
 
 template <typename T> inline const RuntimeTypeInfo* GetTypeInfoFromPtr_(T* pPtr) { return &pPtr->typeInfo; }
 } // namespace detail
@@ -40,6 +42,7 @@ template <typename TDerived, typename TBase> inline TDerived DynamicCast(TBase* 
     }
     return nullptr;
 }
+
 } // namespace ut
 } // namespace nw4hbm
 

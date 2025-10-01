@@ -21,9 +21,9 @@ public:
     /* 0x14 */ virtual s32 Read(void* buf, u32 size);
     /* 0x44 */ virtual void Seek(s32 offset, u32 origin);
 
-    virtual u32 Tell() const { return ut::NandFileStream::Tell() - mOffset; } // 0x58
+    /* 0x58 */ virtual u32 Tell() const { return ut::NandFileStream::Tell() - mOffset; }
 
-    virtual u32 GetSize() const { return mSize; } // 0x40
+    /* 0x40 */ virtual u32 GetSize() const { return mSize; }
 
 private:
     /* 0x16C */ s32 mOffset;

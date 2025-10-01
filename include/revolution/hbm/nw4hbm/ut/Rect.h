@@ -7,6 +7,7 @@
 
 namespace nw4hbm {
 namespace ut {
+
 class Rect {
 public:
     Rect() :
@@ -48,9 +49,12 @@ public:
         bottom = math::FSelect(b - t, b, t);
     }
 
-    /* 0x00 */ f32 left, top;
-    /* 0x08 */ f32 right, bottom;
-};
+    /* 0x00 */ f32 left;
+    /* 0x04 */ f32 top;
+    /* 0x08 */ f32 right;
+    /* 0x0C */ f32 bottom;
+}; // size = 0x10
+
 }; // namespace ut
 }; // namespace nw4hbm
 

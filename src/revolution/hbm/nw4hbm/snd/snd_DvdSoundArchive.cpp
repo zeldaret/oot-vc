@@ -15,9 +15,9 @@ public:
     /* 0x14 */ virtual s32 Read(void* dst, u32 size);
     /* 0x44 */ virtual void Seek(s32 offset, u32 origin);
 
-    virtual u32 Tell() const { return ut::DvdFileStream::Tell() - mOffset; } // 0x58
+    /* 0x58 */ virtual u32 Tell() const { return ut::DvdFileStream::Tell() - mOffset; }
 
-    virtual u32 GetSize() const { return mSize; } // 0x40
+    /* 0x40 */ virtual u32 GetSize() const { return mSize; }
 
 private:
     /* 0x70 */ s32 mOffset;

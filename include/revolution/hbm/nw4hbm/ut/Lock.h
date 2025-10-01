@@ -8,6 +8,7 @@
 namespace nw4hbm {
 namespace ut {
 namespace detail {
+
 inline void Lock(OSMutex& rMutex) { OSLockMutex(&rMutex); }
 inline void Unlock(OSMutex& rMutex) { OSUnlockMutex(&rMutex); }
 
@@ -21,7 +22,8 @@ public:
 
 private:
     /* 0x00 */ T& mLockObj;
-};
+}; // size = 0x04
+
 } // namespace detail
 
 typedef detail::AutoLock<OSMutex> AutoMutexLock;
@@ -34,7 +36,8 @@ public:
 
 private:
     /* 0x00 */ BOOL mOldState;
-};
+}; // size = 0x04
+
 } // namespace ut
 } // namespace nw4hbm
 

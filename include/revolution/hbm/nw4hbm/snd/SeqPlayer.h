@@ -56,7 +56,7 @@ public:
     /* 0x0C */ virtual bool Start();
     /* 0x10 */ virtual void Stop();
     /* 0x14 */ virtual void Pause(bool flag);
-    virtual bool IsActive() const { return mActiveFlag; } // 0x18
+    /* 0x18 */ virtual bool IsActive() const { return mActiveFlag; }
     /* 0x1C */ virtual bool IsPrepared() const { return mPreparedFlag; };
     /* 0x20 */ virtual bool IsStarted() const { return mStartedFlag; };
     /* 0x24 */ virtual bool IsPause() const { return mPauseFlag; };

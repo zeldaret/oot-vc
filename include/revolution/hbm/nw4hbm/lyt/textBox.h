@@ -14,12 +14,11 @@ namespace lyt {
 
 class TextBox : public Pane {
 public:
-    NW4HBM_UT_RUNTIME_TYPEINFO;
-
     TextBox(u16 allocStrLen, const wchar_t* str, const ut::Font* pFont);
     TextBox(const res::TextBox* pBlock, const ResBlockSet& resBlockSet);
 
     /* 0x08 */ virtual ~TextBox();
+    /* 0x0C */ NW4HBM_UT_RUNTIME_TYPEINFO;
     /* 0x18 */ virtual void DrawSelf(const DrawInfo& drawInfo);
     /* 0x24 */ virtual ut::Color GetVtxColor(u32 idx) const;
     /* 0x28 */ virtual void SetVtxColor(u32 idx, ut::Color value);

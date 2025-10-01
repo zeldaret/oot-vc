@@ -29,8 +29,8 @@ public:
     /* 0x5C */ virtual bool IsAttachedTempSpecialHandle();
     /* 0x60 */ virtual void DetachTempSpecialHandle();
 
-    virtual BasicPlayer& GetBasicPlayer() { return mWsdPlayer; } // 0x68
-    virtual const BasicPlayer& GetBasicPlayer() const { return mWsdPlayer; } // 0x6C
+    /* 0x68 */ virtual BasicPlayer& GetBasicPlayer() { return mWsdPlayer; }
+    /* 0x6C */ virtual const BasicPlayer& GetBasicPlayer() const { return mWsdPlayer; }
 
     bool Prepare(const void* waveSoundBase, s32 waveSoundOffset, int voices, const WsdTrack::WsdCallback* callback,
                  u32 callbackData);

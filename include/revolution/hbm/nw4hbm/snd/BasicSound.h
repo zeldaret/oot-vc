@@ -29,14 +29,12 @@ class PlayerHeap;
 namespace detail {
 class BasicSound {
 public:
-    NW4HBM_UT_RUNTIME_TYPEINFO;
-
     typedef struct AmbientParamUpdateCallback {
         typedef enum ParamUpdateFlags {
-            PARAM_UPDATE_VOLUME = (1 << 0),
-            PARAM_UPDATE_PAN = (1 << 1),
-            PARAM_UPDATE_SURROUND_PAN = (1 << 2),
-            PARAM_UPDATE_PRIORITY = (1 << 3),
+            /* 1 */ PARAM_UPDATE_VOLUME = (1 << 0),
+            /* 2 */ PARAM_UPDATE_PAN = (1 << 1),
+            /* 4 */ PARAM_UPDATE_SURROUND_PAN = (1 << 2),
+            /* 8 */ PARAM_UPDATE_PRIORITY = (1 << 3),
         } ParamUpdateFlags;
 
         virtual void detail_Update(SoundParam* param, u32 id, BasicSound* sound, const void* arg,
@@ -65,32 +63,30 @@ public:
 
 public:
     BasicSound();
-    virtual ~BasicSound() {} // 0x08
 
-    /* 0x0C */ virtual void Update();
-    /* 0x10 */ virtual void StartPrepared();
-    /* 0x14 */ virtual void Stop(int frames = 0);
-    /* 0x18 */ virtual void Pause(bool flag, int frames);
-    /* 0x1C */ virtual void SetAutoStopCounter(int count);
-    /* 0x20 */ virtual void FadeIn(int frames);
-    /* 0x24 */ virtual void Shutdown();
-    /* 0x28 */ virtual bool IsPrepared() const;
-    /* 0x2C */ virtual bool IsPause() const;
-
-    /* 0x30 */ virtual void SetInitialVolume(f32 volume);
-    /* 0x34 */ virtual void SetVolume(f32 volume, int frames);
-    /* 0x38 */ virtual void SetPitch(f32 pitch);
-    /* 0x3C */ virtual void SetPan(f32 pan);
-    /* 0x40 */ virtual void SetSurroundPan(f32 pan);
-    /* 0x44 */ virtual void SetLpfFreq(f32 freq);
-    /* 0x48 */ virtual void SetPlayerPriority(int priority);
-
-    /* 0x4C */ virtual bool IsAttachedTempSpecialHandle() = 0;
-    /* 0x50 */ virtual void DetachTempSpecialHandle() = 0;
-
-    /* 0x54 */ virtual void InitParam();
-    /* 0x58 */ virtual BasicPlayer& GetBasicPlayer() = 0;
-    /* 0x5C */ virtual const BasicPlayer& GetBasicPlayer() const = 0;
+    /* 0x08 */ NW4HBM_UT_RUNTIME_TYPEINFO;
+    /* 0x0C */ virtual ~BasicSound() {}
+    /* 0x10 */ virtual void Update();
+    /* 0x14 */ virtual void StartPrepared();
+    /* 0x18 */ virtual void Stop(int frames = 0);
+    /* 0x1C */ virtual void Pause(bool flag, int frames);
+    /* 0x20 */ virtual void SetAutoStopCounter(int count);
+    /* 0x24 */ virtual void FadeIn(int frames);
+    /* 0x28 */ virtual void Shutdown();
+    /* 0x2C */ virtual bool IsPrepared() const;
+    /* 0x30 */ virtual bool IsPause() const;
+    /* 0x34 */ virtual void SetInitialVolume(f32 volume);
+    /* 0x38 */ virtual void SetVolume(f32 volume, int frames);
+    /* 0x3C */ virtual void SetPitch(f32 pitch);
+    /* 0x40 */ virtual void SetPan(f32 pan);
+    /* 0x44 */ virtual void SetSurroundPan(f32 pan);
+    /* 0x48 */ virtual void SetLpfFreq(f32 freq);
+    /* 0x4C */ virtual void SetPlayerPriority(int priority);
+    /* 0x50 */ virtual bool IsAttachedTempSpecialHandle() = 0;
+    /* 0x54 */ virtual void DetachTempSpecialHandle() = 0;
+    /* 0x58 */ virtual void InitParam();
+    /* 0x5C */ virtual BasicPlayer& GetBasicPlayer() = 0;
+    /* 0x60 */ virtual const BasicPlayer& GetBasicPlayer() const = 0;
 
     PlayerHeap* GetPlayerHeap() { return mHeap; }
     void SetPlayerHeap(PlayerHeap* heap) { mHeap = heap; }

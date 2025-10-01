@@ -6,6 +6,7 @@
 
 namespace nw4hbm {
 namespace ut {
+
 class CharStrmReader {
 public:
     typedef u16 (CharStrmReader::*ReadFunc)();

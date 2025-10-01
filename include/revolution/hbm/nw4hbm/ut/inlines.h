@@ -5,6 +5,7 @@
 
 namespace nw4hbm {
 namespace ut {
+
 class NonCopyable {
 protected:
     NonCopyable() {}
@@ -16,9 +17,7 @@ private:
 };
 
 template <typename T> inline T Min(T a, T b) { return (a > b) ? b : a; }
-
 template <typename T> inline T Max(T a, T b) { return (a < b) ? b : a; }
-
 template <typename T> inline T Clamp(T x, T low, T high) { return (x > high) ? high : ((x < low) ? low : x); }
 
 template <typename T> inline T Abs(T x) {
@@ -63,6 +62,7 @@ template <typename T> inline void* RoundDown(T* pPtr, u32 alignment) {
     u32 rounded = value & ~(alignment - 1);
     return reinterpret_cast<void*>(rounded);
 }
+
 } // namespace ut
 } // namespace nw4hbm
 

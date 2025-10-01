@@ -44,16 +44,15 @@ private:
     enum {
         /* 0 */ BIT_VISIBLE = 0,
         /* 1 */ BIT_INFLUENCED_ALPHA,
-        /*  */ BIT_LOCATION_ADJUST
+        /* 2 */ BIT_LOCATION_ADJUST
     };
 
 public:
-    NW4HBM_UT_RUNTIME_TYPEINFO;
-
     Pane();
     Pane(const res::Pane* pBlock);
 
     /* 0x08 */ virtual ~Pane();
+    /* 0x0C */ NW4HBM_UT_RUNTIME_TYPEINFO;
     /* 0x10 */ virtual void CalculateMtx(const DrawInfo& drawInfo);
     /* 0x14 */ virtual void Draw(const DrawInfo& drawInfo);
     /* 0x18 */ virtual void DrawSelf(const DrawInfo& drawInfo);

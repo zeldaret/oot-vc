@@ -91,17 +91,17 @@ public:
     /* 0x0C */ virtual bool Start();
     /* 0x10 */ virtual void Stop();
     /* 0x14 */ virtual void Pause(bool flag);
-    virtual bool IsActive() const { return mActiveFlag; } // 0x18
+    /* 0x18 */ virtual bool IsActive() const { return mActiveFlag; }
     /* 0x1C */ virtual bool IsPrepared() const { return mPreparedFlag; };
     /* 0x20 */ virtual bool IsStarted() const { return mStartedFlag; };
     /* 0x24 */ virtual bool IsPause() const { return mPauseFlag; };
-    virtual void SetVolume(f32 volume) { mExtVolume = volume; } // 0x28
-    virtual void SetPitch(f32 pitch) { mExtPitch = pitch; } // 0x2C
-    virtual void SetPan(f32 pan) { mExtPan = pan; } // 0x30
-    virtual void SetSurroundPan(f32 surroundPan) { mExtSurroundPan = surroundPan; } // 0x34
-    virtual void SetPan2(f32 pan2) { mExtPan2 = pan2; } // 0x38
-    virtual void SetSurroundPan2(f32 surroundPan2) { mExtSurroundPan2 = surroundPan2; } // 0x3C
-    virtual void SetLpfFreq(f32 lpfFreq) { mExtLpfFreq = lpfFreq; } // 0x40
+    /* 0x28 */ virtual void SetVolume(f32 volume) { mExtVolume = volume; }
+    /* 0x2C */ virtual void SetPitch(f32 pitch) { mExtPitch = pitch; }
+    /* 0x30 */ virtual void SetPan(f32 pan) { mExtPan = pan; }
+    /* 0x34 */ virtual void SetSurroundPan(f32 surroundPan) { mExtSurroundPan = surroundPan; }
+    /* 0x38 */ virtual void SetPan2(f32 pan2) { mExtPan2 = pan2; }
+    /* 0x3C */ virtual void SetSurroundPan2(f32 surroundPan2) { mExtSurroundPan2 = surroundPan2; }
+    /* 0x40 */ virtual void SetLpfFreq(f32 lpfFreq) { mExtLpfFreq = lpfFreq; }
     /* 0x44 */ virtual f32 GetVolume() const { return mExtVolume; };
     /* 0x48 */ virtual f32 GetPitch() const { return mExtPitch; };
     /* 0x4C */ virtual f32 GetPan() const { return mExtPan; };
