@@ -178,26 +178,9 @@ private:
     void reset_window();
 
 public:
-    int GetState() { return mState; }
-    HBMSelectBtnNum GetSelectBtnNum() { return mSelectBtnNum; }
-    BlackFader* GetFader() { return &mFader; }
-    nw4hbm::lyt::Layout* GetLayout() { return mpLayout; }
-    nw4hbm::lyt::DrawInfo* GetDrawInfo() { return &mDrawInfo; }
     void fn_8010984C(nw4hbm::snd::NandSoundArchive* pNandSoundArchive, bool bCreateSoundHeap);
     void fn_80109A74();
     void draw_impl();
-
-    static void createInstance_impl(const HBMDataInfo* pHBInfo) {
-        if (void* pMem = HBMAllocMem(sizeof(*spHomeButtonObj))) {
-            spHomeButtonObj = new (pMem) HomeButton(pHBInfo);
-        }
-    }
-
-    static void deleteInstance_impl() {
-        spHomeButtonObj->~HomeButton();
-        HBMFreeMem(spHomeButtonObj);
-        spHomeButtonObj = nullptr;
-    }
 
     void fn_80100B88_impl() {
         if (mpSoundArchivePlayer != NULL) {

@@ -35,12 +35,12 @@ void HBMCreate(const HBMDataInfo* pHBInfo) {
     MEMInitAllocatorForExpHeap(&sAllocator, hExpHeap, 32);
     spAllocator = &sAllocator;
     nw4hbm::lyt::Layout::SetAllocator(&sAllocator);
-    homebutton::HomeButton::createInstance_impl(pHBInfo);
+    homebutton::HomeButton::createInstance(pHBInfo);
     gpHomeButton->create();
 }
 
 void HBMDelete() {
-    homebutton::HomeButton::deleteInstance_impl();
+    homebutton::HomeButton::deleteInstance();
     MEMDestroyExpHeap(spAllocator->heap);
 }
 
@@ -54,11 +54,7 @@ HBMSelectBtnNum HBMCalc(const HBMControllerData* pController) {
 void HBMDraw() { gpHomeButton->draw_impl(); }
 
 HBMSelectBtnNum HBMGetSelectBtnNum() {
-    if (gpHomeButton->GetState() != 18) {
-        return HBM_SELECT_NULL;
-    }
-
-    return gpHomeButton->GetSelectBtnNum();
+    return gpHomeButton->getSelectBtnNum();
 }
 
 void HBMSetAdjustFlag(bool flag) { gpHomeButton->setAdjustFlag(flag); }
@@ -239,7 +235,7 @@ const char* HomeButton::scBatteryPaneName[WPAD_MAX_CONTROLLERS][4] = {
 };
 
 void HomeButton::createInstance(const HBMDataInfo* pHBInfo) {
-    if (void* pMem = HBMAllocMem(sizeof *spHomeButtonObj)) {
+    if (void* pMem = HBMAllocMem(sizeof(*spHomeButtonObj))) {
         spHomeButtonObj = new (pMem) HomeButton(pHBInfo);
     }
 }
@@ -318,11 +314,11 @@ int HomeButton::findGroupAnimator(int pane, int anm) {
 }
 
 HBMSelectBtnNum HomeButton::getSelectBtnNum() {
-    if (gpHomeButton->mState != 18) {
+    if (mState != 18) {
         return HBM_SELECT_NULL;
     }
 
-    return gpHomeButton->mSelectBtnNum;
+    return mSelectBtnNum;
 }
 
 void HomeButton::fadeout_sound(f32 gain) {
