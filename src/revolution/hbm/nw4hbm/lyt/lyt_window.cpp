@@ -45,15 +45,15 @@ namespace {
 
 TextureFlipInfo& GetTexutreFlipInfo(u8 textureFlip) {
     // clang-format off
-    static TextureFlipInfo flipInfos[] =			//    0    1    2    3
-	{									// in order of    LT    RT    LB    RB
-		{{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, {0, 1}},	//    0    1    2    3			    no flip
-		{{{1, 0}, {0, 0}, {1, 1}, {0, 1}}, {0, 1}},	//    1    0    3    2			    horizontal flip
-		{{{0, 1}, {1, 1}, {0, 0}, {1, 0}}, {0, 1}},	//    2    3    0    1			    vertical flip
-		{{{0, 1}, {0, 0}, {1, 1}, {1, 0}}, {1, 0}},	//    2    0    3    1, index flip    cw  90 deg
-		{{{1, 1}, {0, 1}, {1, 0}, {0, 0}}, {0, 1}},	//    3    2    1    0			    cw 180 deg
-		{{{1, 0}, {1, 1}, {0, 0}, {0, 1}}, {1, 0}}	//    1    3    0    2, index flip    cw 270 deg (ccw 90 deg)
-	};
+    static TextureFlipInfo flipInfos[] =            //    0    1    2    3
+    {                                    // in order of    LT    RT    LB    RB
+        {{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, {0, 1}},    //    0    1    2    3                no flip
+        {{{1, 0}, {0, 0}, {1, 1}, {0, 1}}, {0, 1}},    //    1    0    3    2                horizontal flip
+        {{{0, 1}, {1, 1}, {0, 0}, {1, 0}}, {0, 1}},    //    2    3    0    1                vertical flip
+        {{{0, 1}, {0, 0}, {1, 1}, {1, 0}}, {1, 0}},    //    2    0    3    1, index flip    cw  90 deg
+        {{{1, 1}, {0, 1}, {1, 0}, {0, 0}}, {0, 1}},    //    3    2    1    0                cw 180 deg
+        {{{1, 0}, {1, 1}, {0, 0}, {0, 1}}, {1, 0}}    //    1    3    0    2, index flip    cw 270 deg (ccw 90 deg)
+    };
     // clang-format on
 
     NW4HBMAssert_Line(textureFlip < TEXTUREFLIP_MAX, 50);
@@ -355,17 +355,17 @@ void Window::DrawContent(const math::VEC2& basePt, const WindowFrameSize& frameS
 
     // clang-format off
     detail::DrawQuad(
-	    math::VEC2(basePt.x + frameSize.l - mContentInflation.l,
-		           basePt.y + frameSize.t - mContentInflation.t),
-	    Size(mSize.width    - frameSize.l + mContentInflation.l
-		                    - frameSize.r + mContentInflation.r,
-		     mSize.height   - frameSize.t + mContentInflation.t
-		                    - frameSize.b + mContentInflation.b),
-	    mContent.texCoordAry.GetSize(),
-	    mContent.texCoordAry.GetArray(),
-	    bUseVtxCol ? mContent.vtxColors : nullptr,
-	    alpha
-	);
+        math::VEC2(basePt.x + frameSize.l - mContentInflation.l,
+                   basePt.y + frameSize.t - mContentInflation.t),
+        Size(mSize.width    - frameSize.l + mContentInflation.l
+                            - frameSize.r + mContentInflation.r,
+             mSize.height   - frameSize.t + mContentInflation.t
+                            - frameSize.b + mContentInflation.b),
+        mContent.texCoordAry.GetSize(),
+        mContent.texCoordAry.GetArray(),
+        bUseVtxCol ? mContent.vtxColors : nullptr,
+        alpha
+    );
     // clang-format on
 }
 

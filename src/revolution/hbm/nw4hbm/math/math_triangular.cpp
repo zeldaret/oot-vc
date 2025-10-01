@@ -362,90 +362,67 @@ f32 Atan2FIdx(f32 y, f32 x) {
         return 0.0f;
     }
 
-    // clang-format off
-    if (x >= 0.0f)
-	{
-	    if (y >= 0.0f)
-		{
-		    if (x >= y)
-			{
-			    a = x;
-			    b = y;
-			    c = 0.0f;
+    if (x >= 0.0f) {
+        if (y >= 0.0f) {
+            if (x >= y) {
+                a = x;
+                b = y;
+                c = 0.0f;
 
-			    minus = false;
-			}
-		    else
-			{
-			    a = y;
-			    b = x;
-			    c = 64.0f;
+                minus = false;
+            } else {
+                a = y;
+                b = x;
+                c = 64.0f;
 
-			    minus = true;
-			}
-		}
-	    else
-		{
-		    if (x >= -y)
-			{
-			    a = x;
-			    b = -y;
-			    c = 0.0f;
+                minus = true;
+            }
+        } else {
+            if (x >= -y) {
+                a = x;
+                b = -y;
+                c = 0.0f;
 
-			    minus = true;
-			}
-		    else
-			{
-			    a = -y;
-			    b = x;
-			    c = -64.0f;
+                minus = true;
+            } else {
+                a = -y;
+                b = x;
+                c = -64.0f;
 
-			    minus = false;
-			}
-		}
-	}
-    else
-	{
-	    if (y >= 0.0f)
-		{
-		    if (-x >= y)
-			{
-			    a = -x;
-			    b = y;
-			    c = 128.0f;
+                minus = false;
+            }
+        }
+    } else {
+        if (y >= 0.0f) {
+            if (-x >= y) {
+                a = -x;
+                b = y;
+                c = 128.0f;
 
-			    minus = true;
-			}
-		    else
-			{
-			    a = y;
-			    b = -x;
-			    c = 64.0f;
+                minus = true;
+            } else {
+                a = y;
+                b = -x;
+                c = 64.0f;
 
-			    minus = false;
-			}
-		}
-	    else
-		{
-		    if (-x >= -y)
-			{
-			    a = -x;
-			    b = -y;
-			    c = -128.0f;
+                minus = false;
+            }
+        } else {
+            if (-x >= -y) {
+                a = -x;
+                b = -y;
+                c = -128.0f;
 
-			    minus = false;
-			}
-		    else
-			{
-			    a = -y;
-			    b = -x;
-			    c = -64.0f;
+                minus = false;
+            } else {
+                a = -y;
+                b = -x;
+                c = -64.0f;
 
-			    minus = true;
-			}
-		}
-	}
-    // clang-format on
+                minus = true;
+            }
+        }
+    }
 
     return minus ? c - AtanFIdx_(b / a) : c + AtanFIdx_(b / a);
 }

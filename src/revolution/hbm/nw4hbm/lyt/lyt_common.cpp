@@ -59,12 +59,12 @@ void TexCoordAry::SetSize(u8 num) {
 
     // clang-format off
     static TexCoords texCoords =
-	{
-	    math::VEC2(0.0f, 0.0f),
-	    math::VEC2(1.0f, 0.0f),
-	    math::VEC2(0.0f, 1.0f),
-	    math::VEC2(1.0f, 1.0f)
-	};
+    {
+        math::VEC2(0.0f, 0.0f),
+        math::VEC2(1.0f, 0.0f),
+        math::VEC2(0.0f, 1.0f),
+        math::VEC2(1.0f, 1.0f)
+    };
     // clang-format on
 
     for (int j = mNum; j < num; j++) {
@@ -156,29 +156,29 @@ void DrawQuad(const math::VEC2& basePt, const Size& size, u8 texCoordNum, const 
     // clang-format off
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
 
-	    GXPosition2f32(basePt.x, basePt.y);
-	    if (vtxColors)
-		    GXColor1u32(vtxColors[0]);
-	    for (int i = 0; i < texCoordNum; i++)
-		    GXTexCoord2f32(texCoords[i][0].x, texCoords[i][0].y);
+        GXPosition2f32(basePt.x, basePt.y);
+        if (vtxColors)
+            GXColor1u32(vtxColors[0]);
+        for (int i = 0; i < texCoordNum; i++)
+            GXTexCoord2f32(texCoords[i][0].x, texCoords[i][0].y);
 
-	    GXPosition2f32(basePt.x + size.width, basePt.y);
-	    if (vtxColors)
-		    GXColor1u32(vtxColors[1]);
-	    for (int i = 0; i < texCoordNum; i++)
-		    GXTexCoord2f32(texCoords[i][1].x, texCoords[i][1].y);
+        GXPosition2f32(basePt.x + size.width, basePt.y);
+        if (vtxColors)
+            GXColor1u32(vtxColors[1]);
+        for (int i = 0; i < texCoordNum; i++)
+            GXTexCoord2f32(texCoords[i][1].x, texCoords[i][1].y);
 
-	    GXPosition2f32(basePt.x + size.width, basePt.y + size.height);
-	    if (vtxColors)
-		    GXColor1u32(vtxColors[3]);
-	    for (int i = 0; i < texCoordNum; i++)
-		    GXTexCoord2f32(texCoords[i][3].x, texCoords[i][3].y);
+        GXPosition2f32(basePt.x + size.width, basePt.y + size.height);
+        if (vtxColors)
+            GXColor1u32(vtxColors[3]);
+        for (int i = 0; i < texCoordNum; i++)
+            GXTexCoord2f32(texCoords[i][3].x, texCoords[i][3].y);
 
-	    GXPosition2f32(basePt.x, basePt.y + size.height);
-	    if (vtxColors)
-		    GXColor1u32(vtxColors[2]);
-	    for (int i = 0; i < texCoordNum; i++)
-		    GXTexCoord2f32(texCoords[i][2].x, texCoords[i][2].y);
+        GXPosition2f32(basePt.x, basePt.y + size.height);
+        if (vtxColors)
+            GXColor1u32(vtxColors[2]);
+        for (int i = 0; i < texCoordNum; i++)
+            GXTexCoord2f32(texCoords[i][2].x, texCoords[i][2].y);
 
     GXEnd();
     // clang-format on
@@ -225,11 +225,11 @@ void DrawLine(const math::VEC2& pos, const Size& size, ut::Color color) {
 
     // clang-format off
     GXBegin(GX_LINESTRIP, GX_VTXFMT0, 5);
-	    GXPosition2f32(pos.x             , pos.y              );
-	    GXPosition2f32(pos.x + size.width, pos.y              );
-	    GXPosition2f32(pos.x + size.width, pos.y + size.height);
-	    GXPosition2f32(pos.x             , pos.y + size.height);
-	    GXPosition2f32(pos.x             , pos.y              );
+        GXPosition2f32(pos.x             , pos.y              );
+        GXPosition2f32(pos.x + size.width, pos.y              );
+        GXPosition2f32(pos.x + size.width, pos.y + size.height);
+        GXPosition2f32(pos.x             , pos.y + size.height);
+        GXPosition2f32(pos.x             , pos.y              );
     GXEnd();
     // clang-format on
 }
