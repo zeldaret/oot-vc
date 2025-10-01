@@ -21,7 +21,7 @@ public:
 #ifdef MAKE_DTOR_ZERO
         = 0
 #endif
-    {};
+        {};
 
     /* 0x0C */ virtual void InvalidateData(const void* start, const void* end) = 0;
     /* 0x10 */ virtual void InvalidateWaveData(const void* start, const void* end) = 0;
