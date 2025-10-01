@@ -24,7 +24,6 @@ force_active:
 - TRKOpenFile
 - TRKCloseFile
 - TRKPositionFile
-# TODO: remove once matched completely?
 - sSetInfoAsync__Q210homebutton10Controller
 - lbl_8025DBBC__Q210homebutton10Controller
 
