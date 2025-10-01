@@ -23,7 +23,6 @@ AllowShortEnumsOnASingleLine: false
 AlignEscapedNewlines: Left
 AlignTrailingComments: false
 SortIncludes: true
-InsertBraces: true
 CompactNamespaces: false
 NamespaceIndentation: None
 BreakConstructorInitializers: AfterColon

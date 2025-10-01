@@ -6,12 +6,4 @@
 #include "revolution/mtx.h"
 #include "revolution/types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif

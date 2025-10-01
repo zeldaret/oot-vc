@@ -182,9 +182,6 @@ config.ldflags = [
     "-fp hardware",
     "-nodefaults",
     "-warn off",
-    "-mapunused",
-    "-listclosure",
-    "-listdwarf",
 ]
 
 cflags_base = [
@@ -200,9 +197,6 @@ cflags_base = [
     "-nodefaults",
     "-msgstyle gcc",
     "-sym on",
-    '-pragma "cats off"',
-    '-pragma "warn_notinlined off"',
-    "-maxerrors 1",
     "-DREVOLUTION",  # BTE changes
     "-i include",
     "-i libc",
@@ -243,7 +237,7 @@ def RevolutionHBMLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
         "lib": lib_name,
         "mw_version": "GC/3.0a5",
         "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off", "-lang c++", "-DHBM_ASSERT", "-sym off"],
-        "progress_category": "nw4hbm",
+        "progress_category": "hbm",
         "objects": objects,
     }
 
@@ -892,7 +886,7 @@ config.libs = [
 config.progress_categories = [
     ProgressCategory("emulator", "Emulator"),
     ProgressCategory("revolution", "Revolution SDK"),
-    ProgressCategory("nw4hbm", "NW4HBM Lib"),
+    ProgressCategory("hbm", "Home Menu Lib"),
     ProgressCategory("libc", "Libc"),
     ProgressCategory("runtime", "Runtime"),
     ProgressCategory("metrotrk", "MetroTRK"),
