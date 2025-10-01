@@ -3,8 +3,8 @@
 
 #include "revolution/hbm/nw4hbm/snd/SoundArchive.h"
 #include "revolution/hbm/nw4hbm/snd/SoundArchiveFile.h"
-#include "revolution/hbm/nw4hbm/ut.h" // IWYU pragma: export
-#include "revolution/nand.h" // IWYU pragma: export
+#include "revolution/hbm/nw4hbm/ut.h"
+#include "revolution/nand.h"
 
 #include "macros.h"
 
@@ -17,17 +17,17 @@ class NandSoundArchive : public SoundArchive {
 
   public:
     NandSoundArchive();
-    virtual ~NandSoundArchive(); // 0x08
+    /* 0x08 */ virtual ~NandSoundArchive();
 
     virtual const void* detail_GetFileAddress(u32 id) const { return NULL; } // 0x0C
     virtual const void* detail_GetWaveDataFileAddress(u32 id) const { return NULL; } // 0x10
 
-    virtual int detail_GetRequiredStreamBufferSize() const; // 0x14
+    /* 0x14 */ virtual int detail_GetRequiredStreamBufferSize() const;
 
-    virtual ut::FileStream* OpenStream(void* buffer, int size, u32 offset, u32 length) const; // 0x18
+    /* 0x18 */ virtual ut::FileStream* OpenStream(void* buffer, int size, u32 offset, u32 length) const;
 
     virtual ut::FileStream* OpenExtStream(void* buffer, int size, const char* extPath, u32 offset,
-                                          u32 length) const; // 0x1C
+                                          /* 0x1C */ u32 length) const;
 
     bool Open(const char* path);
     void Close();
@@ -42,9 +42,9 @@ class NandSoundArchive : public SoundArchive {
     bool LoadFileHeader() NO_INLINE;
 
   private:
-    detail::SoundArchiveFileReader mFileReader; // 0x108
-    NANDFileInfo mFileInfo; // 0x14C
-    bool mOpen; // 0x1D8
+    /* 0x108 */ detail::SoundArchiveFileReader mFileReader;
+    /* 0x14C */ NANDFileInfo mFileInfo;
+    /* 0x1D8 */ bool mOpen;
 };
 
 } // namespace snd

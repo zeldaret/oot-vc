@@ -3,7 +3,7 @@
 
 #include "revolution/types.h"
 
-#include "revolution/os/OSLink.h" // OSModuleInfo
+#include "revolution/os/OSLink.h"
 
 namespace nw4hbm {
 namespace db {
@@ -13,7 +13,8 @@ struct MapFile {
     /* 0x04 */ OSModuleInfo* moduleInfo;
     /* 0x08 */ s32 fileEntry;
     /* 0x0C */ MapFile* next;
-}; // size 0x10
+}; // size = 0x10
+
 } // namespace db
 } // namespace nw4hbm
 
@@ -24,4 +25,4 @@ bool MapFile_QuerySymbol(u32 address, u8* strBuf, u32 strBufSize);
 } // namespace db
 } // namespace nw4hbm
 
-#endif // NW4R_DB_MAP_FILE_H
+#endif

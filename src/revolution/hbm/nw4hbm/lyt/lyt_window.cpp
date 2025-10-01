@@ -7,7 +7,7 @@
 struct TextureFlipInfo {
     /* 0x00 */ u8 coords[4][2];
     /* 0x08 */ u8 idx[2];
-}; // size 0x0a
+}; // size = 0x0A
 
 namespace {
 // pretend this is nw4hbm::lyt

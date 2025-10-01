@@ -1,7 +1,7 @@
 #ifndef NW4R_SND_UTIL_H
 #define NW4R_SND_UTIL_H
 
-#include "macros.h" // static_assert
+#include "macros.h"
 #include "revolution/types.h"
 
 #include "revolution/hbm/HBMAssert.hpp"
@@ -33,10 +33,10 @@ class Util {
     } DataType;
 
     template <typename T0, typename T1 = void, typename T2 = void, typename T3 = void> struct DataRef {
-        u8 refType; // 0x00
-        u8 dataType; // 0x01
-        u16 reserved; // 0x02
-        u32 value; // 0x04
+        /* 0x00 */ u8 refType;
+        /* 0x01 */ u8 dataType;
+        /* 0x02 */ u16 reserved;
+        /* 0x04 */ u32 value;
     };
 
     template <typename T0, typename T1, typename T2, typename T3>
@@ -64,8 +64,8 @@ class Util {
     }
 
     template <typename T> struct Table {
-        u32 count; // 0x00
-        T items[1]; // 0x04
+        /* 0x00 */ u32 count;
+        /* 0x04 */ T items[1];
     };
 
 #ifdef NW4R_LITLE_ENDIAN
@@ -113,4 +113,4 @@ class Util {
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_UTIL_H
+#endif

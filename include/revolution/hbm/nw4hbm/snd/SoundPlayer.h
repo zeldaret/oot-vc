@@ -1,11 +1,11 @@
 #ifndef NW4R_SND_SOUND_PLAYER_H
 #define NW4R_SND_SOUND_PLAYER_H
 
-#include "revolution/types.h" // f32
+#include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/BasicSound.h"
 #include "revolution/hbm/nw4hbm/snd/PlayerHeap.h"
-#include "revolution/hbm/nw4hbm/snd/global.h" // AUX_BUS_NUM
+#include "revolution/hbm/nw4hbm/snd/global.h"
 
 namespace nw4hbm {
 namespace snd {
@@ -87,22 +87,22 @@ class SoundPlayer {
     f32 detail_GetMainOutVolume() const { return mMainOutVolume; }
 
   private:
-    detail::BasicSoundPlayerPlayList mSoundList; // 0x00
-    detail::BasicSoundPlayerPrioList mPriorityList; // 0x0C
-    detail::PlayerHeapList mHeapList; // 0x18
+    /* 0x00 */ detail::BasicSoundPlayerPlayList mSoundList;
+    /* 0x0C */ detail::BasicSoundPlayerPrioList mPriorityList;
+    /* 0x18 */ detail::PlayerHeapList mHeapList;
 
-    u16 mPlayableCount; // 0x24
-    u16 mPlayableLimit; // 0x26
+    /* 0x24 */ u16 mPlayableCount;
+    /* 0x26 */ u16 mPlayableLimit;
 
-    f32 mVolume; // 0x28
-    bool mOutputLineFlagEnable; // 0x2C
-    bool mUsePlayerHeap; // 0x2D
-    int mOutputLineFlag; // 0x30
-    f32 mMainOutVolume; // 0x34
-    f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS]; // 0x38
+    /* 0x28 */ f32 mVolume;
+    /* 0x2C */ bool mOutputLineFlagEnable;
+    /* 0x2D */ bool mUsePlayerHeap;
+    /* 0x30 */ int mOutputLineFlag;
+    /* 0x34 */ f32 mMainOutVolume;
+    /* 0x38 */ f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS];
 };
 
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_SOUND_PLAYER_H
+#endif

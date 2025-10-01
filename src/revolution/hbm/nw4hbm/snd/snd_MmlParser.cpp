@@ -1,7 +1,7 @@
 #include "revolution/hbm/nw4hbm/snd/MmlParser.h"
 #include "revolution/hbm/nw4hbm/snd/MmlSeqTrack.h"
 #include "revolution/hbm/nw4hbm/snd/SeqPlayer.h"
-#include "revolution/hbm/nw4hbm/snd/Util.h" // Util::CalcRandom
+#include "revolution/hbm/nw4hbm/snd/Util.h"
 
 namespace nw4hbm {
 namespace snd {

@@ -18,16 +18,16 @@ class Task : private ut::NonCopyable {
 
     virtual ~Task() {} // 0x08
 
-    virtual void Execute() = 0; // 0x0C
-    virtual void Cancel() = 0; // 0x10
+    /* 0x0C */ virtual void Execute() = 0;
+    /* 0x10 */ virtual void Cancel() = 0;
 
     u32 GetTaskId() const { return mTaskId; }
 
   public:
-    ut::LinkListNode mTaskLink; // 0x04
+    /* 0x04 */ ut::LinkListNode mTaskLink;
 
   private:
-    u32 mTaskId; // 0x0C
+    /* 0x0C */ u32 mTaskId;
 };
 
 typedef ut::LinkList<Task, offsetof(Task, mTaskLink)> TaskList;
@@ -36,4 +36,4 @@ typedef ut::LinkList<Task, offsetof(Task, mTaskLink)> TaskList;
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_TASK_H
+#endif

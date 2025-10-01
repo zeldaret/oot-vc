@@ -9,4 +9,4 @@ typedef TextWriterBase<wchar_t> WideTextWriter;
 }
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_WIDE_TEXT_WRITER_H
+#endif

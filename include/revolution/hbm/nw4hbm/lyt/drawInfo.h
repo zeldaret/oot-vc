@@ -9,10 +9,12 @@
 
 namespace nw4hbm {
 namespace lyt {
+
 class DrawInfo {
-  public:
+public:
     DrawInfo();
-    virtual ~DrawInfo();
+  
+    /* 0x08 */ virtual ~DrawInfo();
 
     void SetViewRect(const ut::Rect& rect) { mViewRect = rect; }
 
@@ -42,22 +44,22 @@ class DrawInfo {
     f32 GetGlobalAlpha() const { return mGlobalAlpha; }
     void SetGlobalAlpha(f32 alpha) { mGlobalAlpha = alpha; }
 
-  protected:
-    math::MTX34 mViewMtx; // 0x04
-    ut::Rect mViewRect; // 0x34
-
-    math::VEC2 mLocationAdjustScale; // 0x44
-    f32 mGlobalAlpha; // 0x4C
-
-    struct {
+protected:
+    /* 0x00 (vtable) */
+    /* 0x04 */ math::MTX34 mViewMtx;
+    /* 0x34 */ ut::Rect mViewRect;
+    /* 0x44 */ math::VEC2 mLocationAdjustScale;
+    /* 0x4C */ f32 mGlobalAlpha;
+    /* 0x50 */ struct {
         u8 mulViewDraw : 1; // 10000000
         u8 influencedAlpha : 1; // 01000000
         u8 locationAdjust : 1; // 00100000
         u8 invisiblePaneCalculateMtx : 1; // 00010000
         u8 debugDrawMode : 1; // 00001000
-    } mFlag; // 0x50
+    } mFlag;
 };
+
 } // namespace lyt
 } // namespace nw4hbm
 
-#endif // NW4HBM_LYT_DRAW_INFO_H
+#endif

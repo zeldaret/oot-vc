@@ -7,16 +7,16 @@
 namespace nw4hbm {
 namespace ut {
 typedef struct Link {
-    void* prevObject; // 0x00
-    void* nextObject; // 0x04
-} Link;
+    /* 0x00 */ void* prevObject;
+    /* 0x04 */ void* nextObject;
+} Link; // size = 0x08
 
 typedef struct List {
-    void* headObject; // 0x00
-    void* tailObject; // 0x04
-    u16 numObjects; // 0x08
+    /* 0x00 */ void* headObject;
+    /* 0x04 */ void* tailObject;
+    /* 0x08 */ u16 numObjects;
 
-    u16 offset; // 0x0A
+    /* 0x0A */ u16 offset;
 } List;
 
 void List_Init(List* list, u16 offset);
@@ -40,4 +40,4 @@ inline u16 List_GetSize(const List* list) {
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_LIST_H
+#endif

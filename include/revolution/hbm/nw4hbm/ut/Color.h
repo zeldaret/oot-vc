@@ -63,4 +63,4 @@ typedef struct Color : public GXColor {
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_COLOR_H
+#endif

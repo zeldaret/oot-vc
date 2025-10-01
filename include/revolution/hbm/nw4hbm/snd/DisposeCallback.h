@@ -15,16 +15,16 @@ namespace {
 
 class DisposeCallback : public DisposeCallbackBase {
   public:
-    ut::LinkListNode mDisposeLink; // 0x00
+    /* 0x00 */ ut::LinkListNode mDisposeLink;
 
     virtual ~DisposeCallback()
 #ifdef MAKE_DTOR_ZERO
         = 0
 #endif
-    {}; // 0x08
+    /* 0x08 */ {};
 
-    virtual void InvalidateData(const void* start, const void* end) = 0; // 0x0C
-    virtual void InvalidateWaveData(const void* start, const void* end) = 0; // 0x10
+    /* 0x0C */ virtual void InvalidateData(const void* start, const void* end) = 0;
+    /* 0x10 */ virtual void InvalidateWaveData(const void* start, const void* end) = 0;
 };
 
 } // namespace
@@ -35,4 +35,4 @@ typedef ut::LinkList<DisposeCallback, offsetof(DisposeCallback, mDisposeLink)> D
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_DISPOSE_CALLBACK_H
+#endif

@@ -39,4 +39,4 @@ class SoundSystem {
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_SOUND_SYSTEM_H
+#endif

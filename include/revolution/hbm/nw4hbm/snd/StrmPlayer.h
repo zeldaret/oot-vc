@@ -29,8 +29,8 @@ class StrmPlayer : public BasicPlayer {
         // TODO: Why 8 if the player only supports 2???
         static const int STRM_CHANNEL_MAX = 8;
 
-        StrmInfo strmInfo; // 0x00
-        AdpcmInfo adpcmInfo[STRM_CHANNEL_MAX]; // 0x38
+        /* 0x00 */ StrmInfo strmInfo;
+        /* 0x38 */ AdpcmInfo adpcmInfo[STRM_CHANNEL_MAX];
     } StrmHeader;
 
     // TODO: How is this calculated?
@@ -50,14 +50,14 @@ class StrmPlayer : public BasicPlayer {
             STATE_INTERVAL,
         } Status;
 
-        StrmPlayer* mPlayer; // 0x04
-        Status mStatus; // 0x08
+        /* 0x04 */ StrmPlayer* mPlayer;
+        /* 0x08 */ Status mStatus;
 
-        s32 mStreamBlockIndex; // 0x0C
-        s32 mBufferBlockIndex; // 0x10
+        /* 0x0C */ s32 mStreamBlockIndex;
+        /* 0x10 */ s32 mBufferBlockIndex;
 
       public:
-        ut::LinkListNode mLinkNode; // 0x14
+        /* 0x14 */ ut::LinkListNode mLinkNode;
 
         static u8 mMramBuf[LOAD_BUFFER_SIZE] ATTRIBUTE_ALIGN(32);
     };
@@ -88,13 +88,13 @@ class StrmPlayer : public BasicPlayer {
   public:
     StrmPlayer();
 
-    virtual bool Start(); // 0x0C
-    virtual void Stop(); // 0x10
-    virtual void Pause(bool flag); // 0x14
+    /* 0x0C */ virtual bool Start();
+    /* 0x10 */ virtual void Stop();
+    /* 0x14 */ virtual void Pause(bool flag);
     virtual bool IsActive() const { return mActiveFlag; } // 0x18
-    virtual bool IsPrepared() const { return mPreparedFlag; }; // 0x1C
-    virtual bool IsStarted() const { return mStartedFlag; }; // 0x20
-    virtual bool IsPause() const { return mPauseFlag; }; // 0x24
+    /* 0x1C */ virtual bool IsPrepared() const { return mPreparedFlag; };
+    /* 0x20 */ virtual bool IsStarted() const { return mStartedFlag; };
+    /* 0x24 */ virtual bool IsPause() const { return mPauseFlag; };
     virtual void SetVolume(f32 volume) { mExtVolume = volume; } // 0x28
     virtual void SetPitch(f32 pitch) { mExtPitch = pitch; } // 0x2C
     virtual void SetPan(f32 pan) { mExtPan = pan; } // 0x30
@@ -102,27 +102,27 @@ class StrmPlayer : public BasicPlayer {
     virtual void SetPan2(f32 pan2) { mExtPan2 = pan2; } // 0x38
     virtual void SetSurroundPan2(f32 surroundPan2) { mExtSurroundPan2 = surroundPan2; } // 0x3C
     virtual void SetLpfFreq(f32 lpfFreq) { mExtLpfFreq = lpfFreq; } // 0x40
-    virtual f32 GetVolume() const { return mExtVolume; }; // 0x44
-    virtual f32 GetPitch() const { return mExtPitch; }; // 0x48
-    virtual f32 GetPan() const { return mExtPan; }; // 0x4C
-    virtual f32 GetSurroundPan() const { return mExtSurroundPan; }; // 0x50
-    virtual f32 GetPan2() const { return mExtPan2; }; // 0x54
-    virtual f32 GetSurroundPan2() const { return mExtSurroundPan2; }; // 0x58
-    virtual f32 GetLpfFreq() const { return mExtLpfFreq; }; // 0x5C
-    virtual void SetOutputLine(int lineFlag); // 0x60
-    virtual void SetMainOutVolume(f32 volume); // 0x64
-    virtual void SetMainSend(f32 send); // 0x68
-    virtual void SetFxSend(AuxBus bus, f32 send); // 0x6C
-    virtual void SetRemoteOutVolume(int remoteIndex, f32 volume); // 0x70
-    virtual void SetRemoteSend(int remoteIndex, f32 send); // 0x74
-    virtual void SetRemoteFxSend(int remoteIndex, f32 send); // 0x78
-    virtual int GetOutputLine() const; // 0x7C
-    virtual f32 GetMainOutVolume() const; // 0x80
-    virtual f32 GetMainSend() const; // 0x84
-    virtual f32 GetFxSend(AuxBus bus) const; // 0x88
-    virtual f32 GetRemoteOutVolume(int remoteIndex) const; // 0x8C
-    virtual f32 GetRemoteSend(int remoteIndex) const; // 0x90
-    virtual f32 GetRemoteFxSend(int remoteIndex) const; // 0x94
+    /* 0x44 */ virtual f32 GetVolume() const { return mExtVolume; };
+    /* 0x48 */ virtual f32 GetPitch() const { return mExtPitch; };
+    /* 0x4C */ virtual f32 GetPan() const { return mExtPan; };
+    /* 0x50 */ virtual f32 GetSurroundPan() const { return mExtSurroundPan; };
+    /* 0x54 */ virtual f32 GetPan2() const { return mExtPan2; };
+    /* 0x58 */ virtual f32 GetSurroundPan2() const { return mExtSurroundPan2; };
+    /* 0x5C */ virtual f32 GetLpfFreq() const { return mExtLpfFreq; };
+    /* 0x60 */ virtual void SetOutputLine(int lineFlag);
+    /* 0x64 */ virtual void SetMainOutVolume(f32 volume);
+    /* 0x68 */ virtual void SetMainSend(f32 send);
+    /* 0x6C */ virtual void SetFxSend(AuxBus bus, f32 send);
+    /* 0x70 */ virtual void SetRemoteOutVolume(int remoteIndex, f32 volume);
+    /* 0x74 */ virtual void SetRemoteSend(int remoteIndex, f32 send);
+    /* 0x78 */ virtual void SetRemoteFxSend(int remoteIndex, f32 send);
+    /* 0x7C */ virtual int GetOutputLine() const;
+    /* 0x80 */ virtual f32 GetMainOutVolume() const;
+    /* 0x84 */ virtual f32 GetMainSend() const;
+    /* 0x88 */ virtual f32 GetFxSend(AuxBus bus) const;
+    /* 0x8C */ virtual f32 GetRemoteOutVolume(int remoteIndex) const;
+    /* 0x90 */ virtual f32 GetRemoteSend(int remoteIndex) const;
+    /* 0x94 */ virtual f32 GetRemoteFxSend(int remoteIndex) const;
 
     void Setup(const StrmHeader* header);
     bool SetupPlayer(const StrmHeader* header);
@@ -164,84 +164,84 @@ class StrmPlayer : public BasicPlayer {
     static void NotifyStrmHeaderAsyncEndCallback(bool result, const StrmHeader* header, void* userData);
 
   public:
-    ut::LinkListNode mPlayerLink; // 0x08
+    /* 0x08 */ ut::LinkListNode mPlayerLink;
 
   private:
-    StrmInfo mStrmInfo; // 0x10
+    /* 0x10 */ StrmInfo mStrmInfo;
 
-    u8 mActiveFlag; // 0x48
-    u8 mStartedFlag; // 0x49
-    u8 mPreparedFlag; // 0x4A
-    u8 mPauseFlag; // 0x4B
-    u8 mDiskErrorFlag; // 0x4C
-    u8 mPauseStatus; // 0x4D
-    u8 mLoadWaitFlag; // 0x4E
-    u8 mNoRealtimeLoadFlag; // 0x4F
+    /* 0x48 */ u8 mActiveFlag;
+    /* 0x49 */ u8 mStartedFlag;
+    /* 0x4A */ u8 mPreparedFlag;
+    /* 0x4B */ u8 mPauseFlag;
+    /* 0x4C */ u8 mDiskErrorFlag;
+    /* 0x4D */ u8 mPauseStatus;
+    /* 0x4E */ u8 mLoadWaitFlag;
+    /* 0x4F */ u8 mNoRealtimeLoadFlag;
 
-    u8 mSkipUpdateAdpcmLoop; // 0x50
-    u8 mValidAdpcmLoop; // 0x51
+    /* 0x50 */ u8 mSkipUpdateAdpcmLoop;
+    /* 0x51 */ u8 mValidAdpcmLoop;
 
-    u8 mPlayFinishFlag; // 0x52
-    u8 mLoadFinishFlag; // 0x53
-    s32 mLoopCounter; // 0x54
+    /* 0x52 */ u8 mPlayFinishFlag;
+    /* 0x53 */ u8 mLoadFinishFlag;
+    /* 0x54 */ s32 mLoopCounter;
 
-    int mPrepareCounter; // 0x58
+    /* 0x58 */ int mPrepareCounter;
 
-    int mChangeNumBlocks; // 0x5C
-    int mDataBlockSize; // 0x60
+    /* 0x5C */ int mChangeNumBlocks;
+    /* 0x60 */ int mDataBlockSize;
 
-    int mBufferBlockCount; // 0x64
-    int mBufferBlockCountBase; // 0x68
+    /* 0x64 */ int mBufferBlockCount;
+    /* 0x68 */ int mBufferBlockCountBase;
 
-    int mLoadingBufferBlockCount; // 0x6C
-    int mLoadingBufferBlockIndex; // 0x70
-    int mLoadingDataBlockIndex; // 0x74
+    /* 0x6C */ int mLoadingBufferBlockCount;
+    /* 0x70 */ int mLoadingBufferBlockIndex;
+    /* 0x74 */ int mLoadingDataBlockIndex;
 
-    int mPlayingBufferBlockCount; // 0x78
-    int mPlayingBufferBlockIndex; // 0x7C
-    int mPlayingDataBlockIndex; // 0x80
+    /* 0x78 */ int mPlayingBufferBlockCount;
+    /* 0x7C */ int mPlayingBufferBlockIndex;
+    /* 0x80 */ int mPlayingDataBlockIndex;
 
-    int mLoopStartBlockIndex; // 0x84
-    int mLastBlockIndex; // 0x88
+    /* 0x84 */ int mLoopStartBlockIndex;
+    /* 0x88 */ int mLastBlockIndex;
 
-    StartOffsetType mStartOffsetType; // 0x8C
-    int mStartOffset; // 0x90
+    /* 0x8C */ StartOffsetType mStartOffsetType;
+    /* 0x90 */ int mStartOffset;
 
-    LoadCommandList mFreeLoadCommandList; // 0x94
-    LoadCommandList mFillBufferCommandList; // 0xA0
-    LoadCommand mLoadCoammndArray[32]; // 0xAC
+    /* 0x94 */ LoadCommandList mFreeLoadCommandList;
+    /* 0xA0 */ LoadCommandList mFillBufferCommandList;
+    /* 0xAC */ LoadCommand mLoadCoammndArray[32];
 
-    StrmBufferPool* mBufferPool; // 0x42C
+    /* 0x42C */ StrmBufferPool* mBufferPool;
 
-    StrmCallback* mCallback; // 0x430
-    u32 mCallbackData; // 0x434
+    /* 0x430 */ StrmCallback* mCallback;
+    /* 0x434 */ u32 mCallbackData;
 
-    AxVoice* mVoice; // 0x438
+    /* 0x438 */ AxVoice* mVoice;
 
-    f32 mExtVolume; // 0x43C
-    f32 mExtPan; // 0x440
-    f32 mExtSurroundPan; // 0x444
-    f32 mExtPan2; // 0x448
-    f32 mExtSurroundPan2; // 0x44C
-    f32 mExtPitch; // 0x450
-    f32 mExtLpfFreq; // 0x454
+    /* 0x43C */ f32 mExtVolume;
+    /* 0x440 */ f32 mExtPan;
+    /* 0x444 */ f32 mExtSurroundPan;
+    /* 0x448 */ f32 mExtPan2;
+    /* 0x44C */ f32 mExtSurroundPan2;
+    /* 0x450 */ f32 mExtPitch;
+    /* 0x454 */ f32 mExtLpfFreq;
 
-    int mOutputLineFlag; // 0x458
+    /* 0x458 */ int mOutputLineFlag;
 
-    f32 mMainOutVolume; // 0x45C
-    f32 mMainSend; // 0x460
+    /* 0x45C */ f32 mMainOutVolume;
+    /* 0x460 */ f32 mMainSend;
 
-    f32 mFxSend[AUX_BUS_NUM]; // 0x464
+    /* 0x464 */ f32 mFxSend[AUX_BUS_NUM];
 
-    f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS]; // 0x470
-    f32 mRemoteSend[WPAD_MAX_CONTROLLERS]; // 0x480
-    f32 mRemoteFxSend[WPAD_MAX_CONTROLLERS]; // 0x490
+    /* 0x470 */ f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS];
+    /* 0x480 */ f32 mRemoteSend[WPAD_MAX_CONTROLLERS];
+    /* 0x490 */ f32 mRemoteFxSend[WPAD_MAX_CONTROLLERS];
 
-    s32 mChannelCount; // 0x4A0
-    s32 mVoiceOutCount; // 0x4A4
+    /* 0x4A0 */ s32 mChannelCount;
+    /* 0x4A4 */ s32 mVoiceOutCount;
 
-    StrmChannel mChannels[CHANNEL_MAX]; // 0x4A8
-    u16 mAdpcmPredScale[CHANNEL_MAX]; // 0x518
+    /* 0x4A8 */ StrmChannel mChannels[CHANNEL_MAX];
+    /* 0x518 */ u16 mAdpcmPredScale[CHANNEL_MAX];
 };
 
 typedef ut::LinkList<StrmPlayer, offsetof(StrmPlayer, mPlayerLink)> StrmPlayerList;
@@ -250,4 +250,4 @@ typedef ut::LinkList<StrmPlayer, offsetof(StrmPlayer, mPlayerLink)> StrmPlayerLi
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_STRM_PLAYER_H
+#endif

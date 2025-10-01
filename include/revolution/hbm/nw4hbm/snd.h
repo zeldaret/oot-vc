@@ -12,4 +12,4 @@
 #include "revolution/hbm/nw4hbm/snd/StrmSoundHandle.h"
 #include "revolution/hbm/nw4hbm/snd/WaveSoundHandle.h"
 
-#endif // NW4HBM_SND_H
+#endif

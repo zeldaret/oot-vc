@@ -25,65 +25,55 @@ namespace detail {
 class PaneBase {
   public:
     inline PaneBase() : mLink() {}
-    virtual ~PaneBase() {}
 
-    ut::LinkListNode mLink;
+    /* 0x08 */ virtual ~PaneBase() {}
+
+    /* 0x00 (vtable) */
+    /* 0x04 */ ut::LinkListNode mLink;
 };
 } // namespace detail
 typedef ut::LinkList<Pane, offsetof(detail::PaneBase, mLink)> PaneList;
 
 enum {
-    ANIMOPTION_SKIP_INVISIBLE = (1 << 0),
+    /* 1 */ ANIMOPTION_SKIP_INVISIBLE = (1 << 0),
 };
 
 class Pane : detail::PaneBase {
   private:
     enum {
-        BIT_VISIBLE = 0,
-        BIT_INFLUENCED_ALPHA,
-        BIT_LOCATION_ADJUST
+        /* 0 */ BIT_VISIBLE = 0,
+        /* 1 */ BIT_INFLUENCED_ALPHA,
+        /*  */ BIT_LOCATION_ADJUST
     };
 
   public:
+    NW4HBM_UT_RUNTIME_TYPEINFO;
+  
     Pane();
     Pane(const res::Pane* pBlock);
-    virtual ~Pane(); // 0x08
 
-    NW4HBM_UT_RUNTIME_TYPEINFO;
-
-    virtual void CalculateMtx(const DrawInfo& drawInfo); // 0x10
-
-    virtual void Draw(const DrawInfo& drawInfo); // 0x14
-    virtual void DrawSelf(const DrawInfo& drawInfo); // 0x18
-
-    virtual void Animate(u32 option = 0); // 0x1C
-    virtual void AnimateSelf(u32 option = 0); // 0x20
-
-    virtual ut::Color GetVtxColor(u32 idx) const; // 0x24
-    virtual void SetVtxColor(u32 idx, ut::Color valuw); // 0x28
-
-    virtual u8 GetColorElement(u32 idx) const; // 0x2c
-    virtual void SetColorElement(u32 idx, u8 color); // 0x30
-
-    virtual u8 GetVtxColorElement(u32 idx) const; // 0x34
-    virtual void SetVtxColorElement(u32 idx, u8 element); // 0x38
-
-    virtual Pane* FindPaneByName(const char* findName, bool bRecursive = true); // 0x3C
-    virtual Material* FindMaterialByName(const char* findName, bool bRecursive = true); // 0x40
-
-    virtual void BindAnimation(AnimTransform* animTrans, bool bRecursive = true); // 0x44
-
-    virtual void UnbindAnimation(AnimTransform* animTrans, bool bRecursive = true); // 0x48
-    virtual void UnbindAllAnimation(bool bRecursive = true); // 0x4C
-    virtual void UnbindAnimationSelf(AnimTransform* animTrans); // 0x50
-
-    virtual AnimationLink* FindAnimationLink(AnimTransform* animTrans); // 0x54
-
-    virtual void SetAnimationEnable(AnimTransform* animTrans, bool bEnable, bool bRecursive = true); // 0x58
-
-    virtual Material* GetMaterial() const; // 0x5C
-
-    virtual void LoadMtx(const DrawInfo& drawInfo); // 0x60
+    /* 0x08 */ virtual ~Pane();
+    /* 0x10 */ virtual void CalculateMtx(const DrawInfo& drawInfo);
+    /* 0x14 */ virtual void Draw(const DrawInfo& drawInfo);
+    /* 0x18 */ virtual void DrawSelf(const DrawInfo& drawInfo);
+    /* 0x1C */ virtual void Animate(u32 option = 0);
+    /* 0x20 */ virtual void AnimateSelf(u32 option = 0);
+    /* 0x24 */ virtual ut::Color GetVtxColor(u32 idx) const;
+    /* 0x28 */ virtual void SetVtxColor(u32 idx, ut::Color valuw);
+    /* 0x2C */ virtual u8 GetColorElement(u32 idx) const;
+    /* 0x30 */ virtual void SetColorElement(u32 idx, u8 color);
+    /* 0x34 */ virtual u8 GetVtxColorElement(u32 idx) const;
+    /* 0x38 */ virtual void SetVtxColorElement(u32 idx, u8 element);
+    /* 0x3C */ virtual Pane* FindPaneByName(const char* findName, bool bRecursive = true);
+    /* 0x40 */ virtual Material* FindMaterialByName(const char* findName, bool bRecursive = true);
+    /* 0x44 */ virtual void BindAnimation(AnimTransform* animTrans, bool bRecursive = true);
+    /* 0x48 */ virtual void UnbindAnimation(AnimTransform* animTrans, bool bRecursive = true);
+    /* 0x4C */ virtual void UnbindAllAnimation(bool bRecursive = true);
+    /* 0x50 */ virtual void UnbindAnimationSelf(AnimTransform* animTrans);
+    /* 0x54 */ virtual AnimationLink* FindAnimationLink(AnimTransform* animTrans);
+    /* 0x58 */ virtual void SetAnimationEnable(AnimTransform* animTrans, bool bEnable, bool bRecursive = true);
+    /* 0x5C */ virtual Material* GetMaterial() const;
+    /* 0x60 */ virtual void LoadMtx(const DrawInfo& drawInfo);
 
     Pane* GetParent() const { return mpParent; }
     PaneList& GetChildList() { return mChildList; }
@@ -150,31 +140,27 @@ class Pane : detail::PaneBase {
     void AddAnimationLink(AnimationLink* animationLink);
 
   protected:
-    Pane* mpParent; // 0x0C
+    /* 0x00 (base) */
+    /* 0x0C */ Pane* mpParent;
+    /* 0x10 */ PaneList mChildList;
+    /* 0x1C */ AnimationLinkList mAnimList;
+    /* 0x28 */ Material* mpMaterial;
+    /* 0x2C */ math::VEC3 mTranslate;
+    /* 0x38 */ math::VEC3 mRotate;
+    /* 0x44 */ math::VEC2 mScale;
+    /* 0x4C */ Size mSize;
+    /* 0x54 */ math::MTX34 mMtx;
+    /* 0x84 */ math::MTX34 mGlbMtx;
+    /* 0xB4 */ char mName[16];
+    /* 0xC4 */ char mUserData[8];
+    /* 0xCC */ u8 mBasePosition;
+    /* 0xCD */ u8 mAlpha;
+    /* 0xCE */ u8 mGlbAlpha;
+    /* 0xCF */ u8 mFlag;
+    /* 0xD0 */ bool mbUserAllocated;
+}; // size = 0xD4
 
-    PaneList mChildList; // 0x10
-    AnimationLinkList mAnimList; // 0x1C
-
-    Material* mpMaterial; // 0x28
-
-    math::VEC3 mTranslate; // 0x2C
-    math::VEC3 mRotate; // 0x38
-    math::VEC2 mScale; // 0x44
-    Size mSize; // 0x4C
-
-    math::MTX34 mMtx; // 0x54
-    math::MTX34 mGlbMtx; // 0x84
-
-    char mName[16]; // 0xB4
-    char mUserData[8]; // 0xC4
-
-    u8 mBasePosition; // 0xCC
-    u8 mAlpha; // 0xCD
-    u8 mGlbAlpha; // 0xCE
-    u8 mFlag; // 0xCF
-    bool mbUserAllocated; // 0xD0
-};
 } // namespace lyt
 } // namespace nw4hbm
 
-#endif // NW4HBM_LYT_PANE_H
+#endif

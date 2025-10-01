@@ -9,4 +9,4 @@ typedef TagProcessorBase<wchar_t> WideTagProcessor;
 }
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_WIDE_TAG_PROCESSOR_H
+#endif

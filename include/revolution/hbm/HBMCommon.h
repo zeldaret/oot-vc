@@ -10,6 +10,8 @@
 extern "C" {
 #endif
 
+#define NW4HBM_VERSION(major, minor) ((major & 0xFF) << 8 | minor & 0xFF)
+
 typedef enum HBMSelectBtnNum {
     /* -1 */ HBM_SELECT_NULL = -1,
     /* 0 */ HBM_SELECT_HOMEBTN,
@@ -73,4 +75,4 @@ void fn_80100C38(void);
 }
 #endif
 
-#endif // RVL_SDK_HBM_HOMEBUTTON_COMMON_H
+#endif

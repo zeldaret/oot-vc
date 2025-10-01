@@ -10,136 +10,129 @@
 
 namespace nw4hbm {
 namespace lyt {
+
 class Pane;
 class Material;
 
 enum {
-    ANIMTARGET_PANE_TRANSX = 0,
-    ANIMTARGET_PANE_TRANSY,
-    ANIMTARGET_PANE_TRANSZ,
+    /* 0 */ ANIMTARGET_PANE_TRANSX = 0,
+    /* 1 */ ANIMTARGET_PANE_TRANSY,
+    /* 2 */ ANIMTARGET_PANE_TRANSZ,
 
-    ANIMTARGET_PANE_ROTX,
-    ANIMTARGET_PANE_ROTY,
-    ANIMTARGET_PANE_ROTZ,
+    /* 3 */ ANIMTARGET_PANE_ROTX,
+    /* 4 */ ANIMTARGET_PANE_ROTY,
+    /* 5 */ ANIMTARGET_PANE_ROTZ,
 
-    ANIMTARGET_PANE_SCALEX,
-    ANIMTARGET_PANE_SCALEY,
+    /* 6 */ ANIMTARGET_PANE_SCALEX,
+    /* 7 */ ANIMTARGET_PANE_SCALEY,
 
-    ANIMTARGET_PANE_SIZEX,
-    ANIMTARGET_PANE_SIZEY,
+    /* 8 */ ANIMTARGET_PANE_SIZEX,
+    /* 9 */ ANIMTARGET_PANE_SIZEY,
 
-    ANIMTARGET_PANE_MAX,
-
-    ANIMTARGET_PANE_COLOR_ALPHA = 16,
-    ANIMTARGET_PANE_COLOR_MAX,
+    /* 10 */ ANIMTARGET_PANE_MAX,
+    /* 16 */ ANIMTARGET_PANE_COLOR_ALPHA = 16,
+    /* 17 */ ANIMTARGET_PANE_COLOR_MAX,
 };
 
 enum {
-    ANIMTARGET_VERTEXCOLOR_LT_RED = 0,
-    ANIMTARGET_VERTEXCOLOR_LT_GREEN,
-    ANIMTARGET_VERTEXCOLOR_LT_BLUE,
-    ANIMTARGET_VERTEXCOLOR_LT_ALPHA,
+    /* 0 */ ANIMTARGET_VERTEXCOLOR_LT_RED = 0,
+    /* 1 */ ANIMTARGET_VERTEXCOLOR_LT_GREEN,
+    /* 2 */ ANIMTARGET_VERTEXCOLOR_LT_BLUE,
+    /* 3 */ ANIMTARGET_VERTEXCOLOR_LT_ALPHA,
 
-    ANIMTARGET_VERTEXCOLOR_RT_RED,
-    ANIMTARGET_VERTEXCOLOR_RT_GREEN,
-    ANIMTARGET_VERTEXCOLOR_RT_BLUE,
-    ANIMTARGET_VERTEXCOLOR_RT_ALPHA,
+    /* 4 */ ANIMTARGET_VERTEXCOLOR_RT_RED,
+    /* 5 */ ANIMTARGET_VERTEXCOLOR_RT_GREEN,
+    /* 6 */ ANIMTARGET_VERTEXCOLOR_RT_BLUE,
+    /* 7 */ ANIMTARGET_VERTEXCOLOR_RT_ALPHA,
 
-    ANIMTARGET_VERTEXCOLOR_LB_RED,
-    ANIMTARGET_VERTEXCOLOR_LB_GREEN,
-    ANIMTARGET_VERTEXCOLOR_LB_BLUE,
-    ANIMTARGET_VERTEXCOLOR_LB_ALPHA,
+    /* 8 */ ANIMTARGET_VERTEXCOLOR_LB_RED,
+    /* 9 */ ANIMTARGET_VERTEXCOLOR_LB_GREEN,
+    /* 10 */ ANIMTARGET_VERTEXCOLOR_LB_BLUE,
+    /* 11 */ ANIMTARGET_VERTEXCOLOR_LB_ALPHA,
 
-    ANIMTARGET_VERTEXCOLOR_RB_RED,
-    ANIMTARGET_VERTEXCOLOR_RB_GREEN,
-    ANIMTARGET_VERTEXCOLOR_RB_BLUE,
-    ANIMTARGET_VERTEXCOLOR_RB_ALPHA,
+    /* 12 */ ANIMTARGET_VERTEXCOLOR_RB_RED,
+    /* 13 */ ANIMTARGET_VERTEXCOLOR_RB_GREEN,
+    /* 14 */ ANIMTARGET_VERTEXCOLOR_RB_BLUE,
+    /* 15 */ ANIMTARGET_VERTEXCOLOR_RB_ALPHA,
 
-    ANIMTARGET_VERTEXCOLOR_MAX
+    /* 16 */ ANIMTARGET_VERTEXCOLOR_MAX
 };
 
 enum {
-    ANIMTARGET_MATCOLOR_MATR = 0,
-    ANIMTARGET_MATCOLOR_MATG,
-    ANIMTARGET_MATCOLOR_MATB,
-    ANIMTARGET_MATCOLOR_MATA,
+    /* 0 */ ANIMTARGET_MATCOLOR_MATR = 0,
+    /* 1 */ ANIMTARGET_MATCOLOR_MATG,
+    /* 2 */ ANIMTARGET_MATCOLOR_MATB,
+    /* 3 */ ANIMTARGET_MATCOLOR_MATA,
 
-    ANIMTARGET_MATCOLOR_TEV0R,
-    ANIMTARGET_MATCOLOR_TEV0G,
-    ANIMTARGET_MATCOLOR_TEV0B,
-    ANIMTARGET_MATCOLOR_TEV0A,
+    /* 4 */ ANIMTARGET_MATCOLOR_TEV0R,
+    /* 5 */ ANIMTARGET_MATCOLOR_TEV0G,
+    /* 6 */ ANIMTARGET_MATCOLOR_TEV0B,
+    /* 7 */ ANIMTARGET_MATCOLOR_TEV0A,
 
-    ANIMTARGET_MATCOLOR_TEV1R,
-    ANIMTARGET_MATCOLOR_TEV1G,
-    ANIMTARGET_MATCOLOR_TEV1B,
-    ANIMTARGET_MATCOLOR_TEV1A,
+    /* 8 */ ANIMTARGET_MATCOLOR_TEV1R,
+    /* 9 */ ANIMTARGET_MATCOLOR_TEV1G,
+    /* 10 */ ANIMTARGET_MATCOLOR_TEV1B,
+    /* 11 */ ANIMTARGET_MATCOLOR_TEV1A,
 
-    ANIMTARGET_MATCOLOR_TEV2R,
-    ANIMTARGET_MATCOLOR_TEV2G,
-    ANIMTARGET_MATCOLOR_TEV2B,
-    ANIMTARGET_MATCOLOR_TEV2A,
+    /* 12 */ ANIMTARGET_MATCOLOR_TEV2R,
+    /* 13 */ ANIMTARGET_MATCOLOR_TEV2G,
+    /* 14 */ ANIMTARGET_MATCOLOR_TEV2B,
+    /* 15 */ ANIMTARGET_MATCOLOR_TEV2A,
 
-    ANIMTARGET_MATCOLOR_TEVK0R,
-    ANIMTARGET_MATCOLOR_TEVK0G,
-    ANIMTARGET_MATCOLOR_TEVK0B,
-    ANIMTARGET_MATCOLOR_TEVK0A,
+    /* 16 */ ANIMTARGET_MATCOLOR_TEVK0R,
+    /* 17 */ ANIMTARGET_MATCOLOR_TEVK0G,
+    /* 18 */ ANIMTARGET_MATCOLOR_TEVK0B,
+    /* 19 */ ANIMTARGET_MATCOLOR_TEVK0A,
 
-    ANIMTARGET_MATCOLOR_TEVK1R,
-    ANIMTARGET_MATCOLOR_TEVK1G,
-    ANIMTARGET_MATCOLOR_TEVK1B,
-    ANIMTARGET_MATCOLOR_TEVK1A,
+    /* 20 */ ANIMTARGET_MATCOLOR_TEVK1R,
+    /* 21 */ ANIMTARGET_MATCOLOR_TEVK1G,
+    /* 22 */ ANIMTARGET_MATCOLOR_TEVK1B,
+    /* 23 */ ANIMTARGET_MATCOLOR_TEVK1A,
 
-    ANIMTARGET_MATCOLOR_TEVK2R,
-    ANIMTARGET_MATCOLOR_TEVK2G,
-    ANIMTARGET_MATCOLOR_TEVK2B,
-    ANIMTARGET_MATCOLOR_TEVK2A,
+    /* 24 */ ANIMTARGET_MATCOLOR_TEVK2R,
+    /* 25 */ ANIMTARGET_MATCOLOR_TEVK2G,
+    /* 26 */ ANIMTARGET_MATCOLOR_TEVK2B,
+    /* 27 */ ANIMTARGET_MATCOLOR_TEVK2A,
 
-    ANIMTARGET_MATCOLOR_TEVK3R,
-    ANIMTARGET_MATCOLOR_TEVK3G,
-    ANIMTARGET_MATCOLOR_TEVK3B,
-    ANIMTARGET_MATCOLOR_TEVK3A,
+    /* 28 */ ANIMTARGET_MATCOLOR_TEVK3R,
+    /* 29 */ ANIMTARGET_MATCOLOR_TEVK3G,
+    /* 30 */ ANIMTARGET_MATCOLOR_TEVK3B,
+    /* 31 */ ANIMTARGET_MATCOLOR_TEVK3A,
 
-    ANIMTARGET_MATCOLOR_MAX
+    /* 32 */ ANIMTARGET_MATCOLOR_MAX
 };
 
 enum {
-    ANIMTARGET_TEXSRT_TRANSX = 0,
-    ANIMTARGET_TEXSRT_TRANSY,
-
-    ANIMTARGET_TEXSRT_ROT,
-
-    ANIMTARGET_TEXSRT_SCALEX,
-    ANIMTARGET_TEXSRT_SCALEY,
-
-    ANIMTARGET_TEXSRT_MAX
+    /* 0 */ ANIMTARGET_TEXSRT_TRANSX = 0,
+    /* 1 */ ANIMTARGET_TEXSRT_TRANSY,
+    /* 2 */ ANIMTARGET_TEXSRT_ROT,
+    /* 3 */ ANIMTARGET_TEXSRT_SCALEX,
+    /* 4 */ ANIMTARGET_TEXSRT_SCALEY,
+    /* 5 */ ANIMTARGET_TEXSRT_MAX
 };
 
 enum {
-    ANIMTARGET_TEXPATTURN_IMAGE = 0,
-
-    ANIMTARGET_TEXPATTURN_MAX
+    /* 0 */ ANIMTARGET_TEXPATTURN_IMAGE = 0,
+    /* 1 */ ANIMTARGET_TEXPATTURN_MAX
 };
 
 enum {
-    ANIMCURVE_NONE = 0,
-    ANIMCURVE_STEP,
-    ANIMCURVE_HERMITE,
-
-    ANIMCURVE_MAX
+    /* 0 */ ANIMCURVE_NONE = 0,
+    /* 1 */ ANIMCURVE_STEP,
+    /* 2 */ ANIMCURVE_HERMITE,
+    /* 3 */ ANIMCURVE_MAX
 };
 
 class AnimTransform {
   public:
     AnimTransform();
-    virtual ~AnimTransform();
 
-    virtual void SetResource(const res::AnimationBlock* pRes, ResourceAccessor* pResAccessor) = 0;
-
-    virtual void Bind(Pane* pane, bool bRecursive) = 0;
-    virtual void Bind(Material* pMaterial) = 0;
-
-    virtual void Animate(u32 idx, Pane* pane) = 0;
-    virtual void Animate(u32 idx, Material* pMaterial) = 0;
+    /* 0x08 */ virtual ~AnimTransform();
+    /* 0x0C */ virtual void SetResource(const res::AnimationBlock* pRes, ResourceAccessor* pResAccessor) = 0;
+    /* 0x10 */ virtual void Bind(Pane* pane, bool bRecursive) = 0;
+    /* 0x14 */ virtual void Bind(Material* pMaterial) = 0;
+    /* 0x18 */ virtual void Animate(u32 idx, Pane* pane) = 0;
+    /* 0x1C */ virtual void Animate(u32 idx, Material* pMaterial) = 0;
 
     f32 GetFrameMax() const { return GetFrameSize(); }
     u16 GetFrameSize() const;
@@ -148,12 +141,13 @@ class AnimTransform {
 
     bool IsLoopData() const;
 
-    ut::LinkListNode mLink; // 0x04
+    /* 0x00 (vtable) */
+    /* 0x04 */ ut::LinkListNode mLink;
 
   protected:
-    const res::AnimationBlock* mpRes; // 0x0C
-    f32 mFrame; // 0x10
-};
+    /* 0x0C */ const res::AnimationBlock* mpRes;
+    /* 0x10 */ f32 mFrame;
+}; // size = 0x14
 typedef ut::LinkList<AnimTransform, offsetof(AnimTransform, mLink)> AnimTransformList;
 
 class AnimationLink {
@@ -175,40 +169,38 @@ class AnimationLink {
         mIdx = idx;
     }
 
-    ut::LinkListNode mLink; // 0x00
+    /* 0x00 */ ut::LinkListNode mLink;
 
   private:
-    AnimTransform* mAnimTrans; // 0x08
-
-    u16 mIdx; // 0x0C
-    bool mbDisable; // 0x0E
-};
+    /* 0x08 */ AnimTransform* mAnimTrans;
+    /* 0x0C */ u16 mIdx;
+    /* 0x0E */ bool mbDisable;
+}; // size = 0x10
 typedef ut::LinkList<AnimationLink, offsetof(AnimationLink, mLink)> AnimationLinkList;
 
 class AnimTransformBasic : public AnimTransform {
   public:
     AnimTransformBasic();
-    virtual ~AnimTransformBasic();
 
-    virtual void SetResource(const res::AnimationBlock* pRes, ResourceAccessor* pResAccessor);
-
-    virtual void Bind(Pane* pane, bool bRecursive);
-    virtual void Bind(Material* pMaterial);
-
-    virtual void Animate(u32 idx, Pane* pane);
-    virtual void Animate(u32 idx, Material* pMaterial);
+    /* 0x08 */ virtual ~AnimTransformBasic();
+    /* 0x0C */ virtual void SetResource(const res::AnimationBlock* pRes, ResourceAccessor* pResAccessor);
+    /* 0x10 */ virtual void Bind(Pane* pane, bool bRecursive);
+    /* 0x14 */ virtual void Bind(Material* pMaterial);
+    /* 0x18 */ virtual void Animate(u32 idx, Pane* pane);
+    /* 0x1C */ virtual void Animate(u32 idx, Material* pMaterial);
 
   private:
-    void** mpFileResAry; // 0x14
-
-    AnimationLink* mAnimLinkAry; // 0x18
-    u16 mAnimLinkNum; // 0x1C
-};
+    /* 0x00 (base) */
+    /* 0x14 */ void** mpFileResAry;
+    /* 0x18 */ AnimationLink* mAnimLinkAry;
+    /* 0x1C */ u16 mAnimLinkNum;
+}; // size = 0x20
 
 namespace detail {
 AnimationLink* FindAnimationLink(AnimationLinkList* animList, AnimTransform* animTrans);
 }
+
 } // namespace lyt
 } // namespace nw4hbm
 
-#endif // NW4HBM_LYT_ANIMATION_H
+#endif

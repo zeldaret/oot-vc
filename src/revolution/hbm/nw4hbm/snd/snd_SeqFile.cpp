@@ -2,13 +2,13 @@
 
 #include <cstring.hpp>
 
-#include "macros.h" // NW4HBM_VERSION
+#include "macros.h"
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/Util.h"
 
 #include "revolution/hbm/nw4hbm/ut/binaryFileFormat.h"
-#include "revolution/hbm/nw4hbm/ut/inlines.h" // ut::AddOffsetToPtr
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
 
 #include "revolution/hbm/HBMAssert.hpp"
 

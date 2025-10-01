@@ -34,4 +34,4 @@ char const* Debug_GetSoundTypeString(DebugSoundType type);
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_DEBUG_H
+#endif

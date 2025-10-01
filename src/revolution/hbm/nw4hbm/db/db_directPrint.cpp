@@ -8,24 +8,24 @@
 #include "string.h"
 
 typedef struct FrameBufferInfo {
-    u8* frameMemory; // 0x00
-    u32 frameSize; // 0x04
-    u16 frameWidth; // 0x08
-    u16 frameHeight; // 0x0A
-    u16 frameRow; // 0x0C
-    u16 reserved; // 0x0E
+    /* 0x00 */ u8* frameMemory;
+    /* 0x04 */ u32 frameSize;
+    /* 0x08 */ u16 frameWidth;
+    /* 0x0A */ u16 frameHeight;
+    /* 0x0C */ u16 frameRow;
+    /* 0x0E */ u16 reserved;
 } FrameBufferInfo;
 
 typedef struct YUVColorInfo {
-    GXColor colorRGBA; // 0x00
-    u16 colorY256; // 0x04
-    u16 colorU; // 0x06
-    u16 colorU2; // 0x08
-    u16 colorU4; // 0x0A
-    u16 colorV; // 0x0C
-    u16 colorV2; // 0x0E
-    u16 colorV4; // 0x10
-    u16 reserved; // 0x12
+    /* 0x00 */ GXColor colorRGBA;
+    /* 0x04 */ u16 colorY256;
+    /* 0x06 */ u16 colorU;
+    /* 0x08 */ u16 colorU2;
+    /* 0x0A */ u16 colorU4;
+    /* 0x0C */ u16 colorV;
+    /* 0x0E */ u16 colorV2;
+    /* 0x10 */ u16 colorV4;
+    /* 0x12 */ u16 reserved;
 } YUVColorInfo;
 
 namespace nw4hbm {
@@ -246,7 +246,7 @@ static void DrawStringToXfb_(int posh, int posv, char const* str, bool turnOver,
         str++;
 
         if (!turnOver) {
-            str = /* std:: */ strchr(str, '\n');
+            str = strchr(str, '\n');
 
             if (str) {
                 str++;
@@ -336,12 +336,10 @@ static void DrawCharToXfb_(int posh, int posv, int code) {
         }
 
         for (int cnth = 0; cnth < wH * 6;) {
-            // clang-format off
-		    u16 pixColor = (fontBits & (1u << 30) ? sFrameBufferColor.colorY256 : 0x00)
-				        | ((fontBits & (1u << 31) ? sFrameBufferColor.colorU4 : 0x20)
-				        +  (fontBits & (1u << 30) ? sFrameBufferColor.colorU2 : 0x40)
-				        +  (fontBits & (1u << 29) ? sFrameBufferColor.colorU4 : 0x20));
-            // clang-format on
+            u16 pixColor = (fontBits & (1u << 30) ? sFrameBufferColor.colorY256 : 0x00) |
+                           ((fontBits & (1u << 31) ? sFrameBufferColor.colorU4 : 0x20) +
+                            (fontBits & (1u << 30) ? sFrameBufferColor.colorU2 : 0x40) +
+                            (fontBits & (1u << 29) ? sFrameBufferColor.colorU4 : 0x20));
 
             *pixel = pixColor;
 
@@ -351,12 +349,10 @@ static void DrawCharToXfb_(int posh, int posv, int code) {
 
             pixel++;
 
-            // clang-format off
-		    pixColor = (fontBits & (1u << 29) ? sFrameBufferColor.colorY256 : 0x00)
-				    | ((fontBits & (1u << 30) ? sFrameBufferColor.colorV4 : 0x20)
-				    +  (fontBits & (1u << 29) ? sFrameBufferColor.colorV2 : 0x40)
-				    +  (fontBits & (1u << 28) ? sFrameBufferColor.colorV4 : 0x20));
-            // clang-format on
+            pixColor = (fontBits & (1u << 29) ? sFrameBufferColor.colorY256 : 0x00) |
+                       ((fontBits & (1u << 30) ? sFrameBufferColor.colorV4 : 0x20) +
+                        (fontBits & (1u << 29) ? sFrameBufferColor.colorV2 : 0x40) +
+                        (fontBits & (1u << 28) ? sFrameBufferColor.colorV4 : 0x20));
 
             *pixel = pixColor;
 

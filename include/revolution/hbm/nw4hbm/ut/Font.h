@@ -84,9 +84,9 @@ class Font {
     }
 
   private:
-    CharStrmReader::ReadFunc mReaderFunc; // 0x04
+    /* 0x04 */ CharStrmReader::ReadFunc mReaderFunc;
 };
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_CHAR_STREAM_READER_H
+#endif

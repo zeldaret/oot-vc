@@ -1,7 +1,7 @@
 #ifndef NW4R_SND_SOUND_STARTABLE_H
 #define NW4R_SND_SOUND_STARTABLE_H
 
-#include "revolution/types.h" // u32
+#include "revolution/types.h"
 
 namespace nw4hbm {
 namespace snd {
@@ -43,13 +43,13 @@ class SoundStartable {
             START_OFFSET_TYPE_MILLISEC,
         } StartOffsetType;
 
-        StartOffsetType startOffsetType; // 0x00
-        int startOffset; // 0x04
+        /* 0x00 */ StartOffsetType startOffsetType;
+        /* 0x04 */ int startOffset;
 
-        u32 playerId; // 0x08
-        int playerPriority; // 0x0C
+        /* 0x08 */ u32 playerId;
+        /* 0x0C */ int playerPriority;
 
-        int voiceOutCount; // 0x10
+        /* 0x10 */ int voiceOutCount;
     } StartInfo;
 
   public:
@@ -58,9 +58,9 @@ class SoundStartable {
     virtual StartResult detail_SetupSound(SoundHandle* soundHandle, u32 id,
                                           detail::BasicSound::AmbientArgInfo* ambientArgInfo,
                                           detail::ExternalSoundPlayer* extPlayer, bool hold,
-                                          const StartInfo* startInfo) = 0; // 0x0C
+                                          /* 0x0C */ const StartInfo* startInfo) = 0;
 
-    virtual u32 detail_ConvertLabelStringToSoundId(const char* label) = 0; // 0x10
+    /* 0x10 */ virtual u32 detail_ConvertLabelStringToSoundId(const char* label) = 0;
 
     bool StartSound(SoundHandle* soundHandle, u32 id) {
         return detail_StartSound(soundHandle, id, nullptr, nullptr, nullptr) == START_SUCCESS;
@@ -107,4 +107,4 @@ class SoundStartable {
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_SOUND_STARTABLE_H
+#endif

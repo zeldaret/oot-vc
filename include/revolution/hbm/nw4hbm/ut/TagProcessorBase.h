@@ -20,13 +20,13 @@ typedef enum Operation {
 template <typename> class TextWriterBase;
 
 template <typename T> struct PrintContext {
-    TextWriterBase<T>* writer; // 0x00
-    const T* str; // 0x04
+    /* 0x00 */ TextWriterBase<T>* writer;
+    /* 0x04 */ const T* str;
 
-    f32 xOrigin; // 0x08
-    f32 yOrigin; // 0x0c
+    /* 0x08 */ f32 xOrigin;
+    /* 0x0C */ f32 yOrigin;
 
-    u32 flags; // 0x10
+    /* 0x10 */ u32 flags;
 };
 
 template <typename T> class TagProcessorBase {
@@ -43,4 +43,4 @@ template <typename T> class TagProcessorBase {
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_TAG_PROCESSOR_BASE_H
+#endif

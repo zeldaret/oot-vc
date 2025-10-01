@@ -32,18 +32,18 @@ class TaskThread {
   private:
     static const int MSG_QUEUE_CAPACITY = 8;
 
-    OSThread mThread; // 0x00
-    u64 mThreadStack[THREAD_STACK_SIZE]; // 0x318
-    OSThreadQueue mThreadQueue; // 0x2318
+    /* 0x00 */ OSThread mThread;
+    /* 0x318 */ u64 mThreadStack[THREAD_STACK_SIZE];
+    /* 0x2318 */ OSThreadQueue mThreadQueue;
 
-    OSMessageQueue mMsgQueue; // 0x2320
-    OSMessage mMsgBuffer[MSG_QUEUE_CAPACITY]; // 0x2340
+    /* 0x2320 */ OSMessageQueue mMsgQueue;
+    /* 0x2340 */ OSMessage mMsgBuffer[MSG_QUEUE_CAPACITY];
 
-    bool mCreateFlag; // 0x2360
-    u8 mPadding[3]; // 0x2361
+    /* 0x2360 */ bool mCreateFlag;
+    /* 0x2361 */ u8 mPadding[3];
 };
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_TASK_THREAD_H
+#endif

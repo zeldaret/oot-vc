@@ -6,10 +6,10 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/SoundArchive.h"
-#include "revolution/hbm/nw4hbm/snd/SoundArchiveFile.h" // SoundArchiveFileReader
+#include "revolution/hbm/nw4hbm/snd/SoundArchiveFile.h"
 
 #include "revolution/hbm/nw4hbm/ut/FileStream.h"
-#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h" // IWYU pragma: keep (need the complete type)
+#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
 #include "revolution/hbm/nw4hbm/ut/inlines.h"
 
 #include "revolution/hbm/HBMAssert.hpp"
@@ -21,9 +21,9 @@ class MemorySoundArchive::MemoryFileStream : public ut::FileStream {
   public:
     MemoryFileStream(const void* buffer, u32 size);
 
-    virtual void Close(); // 0x10
-    virtual s32 Read(void* dst, u32 size); // 0x14
-    virtual void Seek(s32 offset, u32 origin); // 0x44
+    /* 0x10 */ virtual void Close();
+    /* 0x14 */ virtual s32 Read(void* dst, u32 size);
+    /* 0x44 */ virtual void Seek(s32 offset, u32 origin);
 
     virtual bool CanSeek() const { return true; } // 0x50
     virtual bool CanCancel() const { return true; } // 0x54
@@ -36,9 +36,9 @@ class MemorySoundArchive::MemoryFileStream : public ut::FileStream {
     virtual u32 GetSize() const { return mSize; } // 0x40
 
   private:
-    const void* mData; // 0x14
-    s32 mSize; // 0x18
-    s32 mOffset; // 0x1C
+    /* 0x14 */ const void* mData;
+    /* 0x18 */ s32 mSize;
+    /* 0x1C */ s32 mOffset;
 };
 
 MemorySoundArchive::MemorySoundArchive() : mData(NULL) {}

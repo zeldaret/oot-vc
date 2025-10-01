@@ -20,10 +20,10 @@ class SeqSoundHandle : private ut::NonCopyable {
     bool IsAttachedSound() const { return mSound != NULL; }
 
   private:
-    detail::SeqSound* mSound; // 0x00
+    /* 0x00 */ detail::SeqSound* mSound;
 };
 
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_SEQ_SOUND_HANDLE_H
+#endif

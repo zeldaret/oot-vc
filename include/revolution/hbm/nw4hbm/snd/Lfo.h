@@ -12,10 +12,10 @@ typedef struct LfoParam {
 
     void Init();
 
-    f32 depth; // 0x00
-    f32 speed; // 0x04
-    u32 delay; // 0x08
-    u8 range; // 0x0C
+    /* 0x00 */ f32 depth;
+    /* 0x04 */ f32 speed;
+    /* 0x08 */ u32 delay;
+    /* 0x0C */ u8 range;
 
     u8 padding[3];
 } LfoParam;
@@ -37,9 +37,9 @@ class Lfo {
 
     static s8 GetSinIdx(int idx);
 
-    LfoParam mParam; // 0x00
-    u32 mDelayCounter; // 0x10
-    f32 mCounter; // 0x14
+    /* 0x00 */ LfoParam mParam;
+    /* 0x10 */ u32 mDelayCounter;
+    /* 0x14 */ f32 mCounter;
 };
 
 } // namespace detail

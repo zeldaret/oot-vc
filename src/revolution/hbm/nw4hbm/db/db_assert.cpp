@@ -161,9 +161,7 @@ WEAK void Panic(char const* file, int line, char const* msg, ...) {
 WEAK void VWarning(char const* file, int line, char const* fmt, std::va_list vlist) {
     if (sAssertionConsole) {
         Console_Printf(sAssertionConsole, "%s:%d Warning:", file, line);
-#if !defined(NDEBUG)
         Console_VPrintf(sAssertionConsole, fmt, vlist);
-#endif // !defined(NDEBUG)
         Console_Printf(sAssertionConsole, "\n");
 
         Console_ShowLatestLine(sAssertionConsole);

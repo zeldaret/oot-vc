@@ -288,15 +288,15 @@ template <typename charT> void TextWriterBase<charT>::CalcStringRectImpl(Rect* p
 
 template <typename charT>
 void TextWriterBase<charT>::ut_TextWriterBase_unused1(Rect* pRect, const charT* str, int length) {
-    void* buffer;
-    int size;
+    void* buffer = 0;
+    int size = 0;
 
     NW4HBMAssertPointerValid(this);
     NW4HBMAssertPointerValid(pRect);
     NW4HBMAssertPointerValid(str);
     NW4HBMAssertHeaderMinimumValue(length, 0);
     NW4HBMAssertPointerValid(buffer);
-    NW4HBMAssertHeaderMinimumValue(size, 0);
+    NW4HBMAssertHeaderMinimumValue(size, 1);
 }
 
 template <typename charT> int TextWriterBase<charT>::CalcLineRectImpl(Rect* pRect, const charT* str, int length) {

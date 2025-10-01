@@ -465,8 +465,8 @@ Channel* SeqPlayer::NoteOn(int bankNo, const NoteOnInfo& noteOnInfo) {
     return mParserParam.callback->NoteOn(this, bankNo, noteOnInfo);
 }
 
-// Blank. Not sure if this was explicitly defined here but if the function is defined in the header, it would link to
-// MidiSeqPlayer instead.
+// Blank. Not sure if this was explicitly defined here but if the function is defined in the header, it
+// would link to MidiSeqPlayer instead.
 void SeqPlayer::ChannelCallback(Channel* channel) {}
 
 } // namespace detail

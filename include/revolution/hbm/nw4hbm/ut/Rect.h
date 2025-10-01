@@ -40,10 +40,10 @@ class Rect {
         bottom = math::FSelect(b - t, b, t);
     }
 
-    f32 left, top; // 0x00
-    f32 right, bottom; // 0x08
+    /* 0x00 */ f32 left, top;
+    /* 0x08 */ f32 right, bottom;
 };
 }; // namespace ut
 }; // namespace nw4hbm
 
-#endif // NW4HBM_RECT_H
+#endif

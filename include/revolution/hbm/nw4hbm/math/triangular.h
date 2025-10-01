@@ -9,6 +9,7 @@
 
 namespace nw4hbm {
 namespace math {
+
 #define NW4HBM_MATH_PI M_PI
 #define NW4HBM_MATH_LN_2 0.69314718056f
 
@@ -41,7 +42,8 @@ inline f32 AtanRad(f32 x) { return NW4HBM_MATH_FIDX_TO_RAD(AtanFIdx(x)); }
 f32 Atan2FIdx(f32 y, f32 x);
 inline f32 Atan2Deg(f32 y, f32 x) { return NW4HBM_MATH_FIDX_TO_DEG(Atan2FIdx(y, x)); }
 inline f32 Atan2Rad(f32 y, f32 x) { return NW4HBM_MATH_FIDX_TO_RAD(Atan2FIdx(y, x)); }
+
 } // namespace math
 } // namespace nw4hbm
 
-#endif // NW4HBM_MATH_TRIANGULAR_H
+#endif

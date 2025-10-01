@@ -9,17 +9,17 @@ namespace snd {
 namespace detail {
 
 typedef struct NoteOnInfo {
-    int prgNo; // 0x00
+    /* 0x00 */ int prgNo;
 
-    int key; // 0x04
-    int velocity; // 0x08
-    int length; // 0x0C
-    int initPan; // 0x10
-    int priority; // 0x14
-    int voiceOutCount; // 0x18
+    /* 0x04 */ int key;
+    /* 0x08 */ int velocity;
+    /* 0x0C */ int length;
+    /* 0x10 */ int initPan;
+    /* 0x14 */ int priority;
+    /* 0x18 */ int voiceOutCount;
 
-    Channel::ChannelCallback channelCallback; // 0x1C
-    u32 channelCallbackData; // 0x20
+    /* 0x1C */ Channel::ChannelCallback channelCallback;
+    /* 0x20 */ u32 channelCallbackData;
 };
 
 class SeqPlayer;
@@ -27,7 +27,7 @@ class NoteOnCallback {
   public:
     virtual ~NoteOnCallback() {} // 0x08
 
-    virtual Channel* NoteOn(SeqPlayer* player, int bankNo, const NoteOnInfo& noteOnInfo) = 0; // 0x0C
+    /* 0x0C */ virtual Channel* NoteOn(SeqPlayer* player, int bankNo, const NoteOnInfo& noteOnInfo) = 0;
 };
 
 } // namespace detail

@@ -4,28 +4,29 @@
 #include "revolution/types.h"
 
 namespace homebutton {
+
 enum {
-    ANIM_TYPE_FORWARD = 0,
-    ANIM_TYPE_BACKWARD,
-    ANIM_TYPE_LOOP,
-    ANIM_TYPE_ALTERNATE
+    /* 0 */ ANIM_TYPE_FORWARD = 0,
+    /* 1 */ ANIM_TYPE_BACKWARD,
+    /* 2 */ ANIM_TYPE_LOOP,
+    /* 3 */ ANIM_TYPE_ALTERNATE
 };
 
 enum {
-    ANIM_STATE_STOP = 0,
-    ANIM_STATE_PLAY,
-    ANIM_STATE_STOP_REQ,
+    /* 0 */ ANIM_STATE_STOP = 0,
+    /* 1 */ ANIM_STATE_PLAY,
+    /* 2 */ ANIM_STATE_STOP_REQ,
 };
 
 class FrameController {
   public:
     FrameController() {}
-    virtual ~FrameController() {}
+
+    /* 0x08 */ virtual ~FrameController() {}
+    /* 0x0C */ virtual void calc();
 
     void init(int type, f32 maxFrame, f32 minFrame, f32 delta);
     void initFrame();
-
-    virtual void calc();
 
     void setMaxFrame(f32 value) { mMaxFrame = value; }
     f32 getMaxFrame() const { return mMaxFrame; }
@@ -58,19 +59,18 @@ class FrameController {
     void stop() { mState = ANIM_STATE_STOP; }
 
   protected:
-    f32 mMaxFrame; // 0x04
-    f32 mMinFrame; // 0x08
-    f32 mFrame; // 0x0C
-
-    f32 mDelta; // 0x10
-
-    int mState; // 0x14
-
-    int mAnmType; // 0x18
+    /* 0x00 (vtable) */
+    /* 0x04 */ f32 mMaxFrame;
+    /* 0x08 */ f32 mMinFrame;
+    /* 0x0C */ f32 mFrame;
+    /* 0x10 */ f32 mDelta;
+    /* 0x14 */ int mState;
+    /* 0x18 */ int mAnmType;
 
   private:
-    bool mbAlternateBack; // 0x1C
+    /* 0x1C */ bool mbAlternateBack;
 };
+
 } // namespace homebutton
 
-#endif // RVL_SDK_HBM_HOMEBUTTON_FRAME_CONTROLLER_HPP
+#endif

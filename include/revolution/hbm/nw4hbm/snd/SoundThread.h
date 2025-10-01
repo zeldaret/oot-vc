@@ -6,7 +6,7 @@
 #include "revolution/hbm/nw4hbm/snd/AxManager.h"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
-#include "revolution/hbm/nw4hbm/ut/inlines.h" // ut::NonCopyable
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
 
 #include "revolution/os/OSMessage.h"
 #include "revolution/os/OSMutex.h"
@@ -20,7 +20,7 @@ class SoundThread {
   public:
     class Callback {
       public:
-        ut::LinkListNode mLink; // 0x00
+        /* 0x00 */ ut::LinkListNode mLink;
 
         virtual ~Callback() {} // 0x08
 
@@ -58,24 +58,24 @@ class SoundThread {
     void Unlock() { OSUnlockMutex(&mMutex); }
 
   private:
-    OSThread mThread; // 0x00
-    u64 mThreadStack[THREAD_STACK_SIZE]; // 0x318
-    OSThreadQueue mThreadQueue; // 0x2318
+    /* 0x00 */ OSThread mThread;
+    /* 0x318 */ u64 mThreadStack[THREAD_STACK_SIZE];
+    /* 0x2318 */ OSThreadQueue mThreadQueue;
 
-    mutable OSMutex mMutex; // 0x2320
+    /* 0x2320 */ mutable OSMutex mMutex;
 
-    OSMessageQueue mMsgQueue; // 0x2338
-    OSMessage mMsgBuffer[MSG_QUEUE_CAPACITY]; // 0x2358
+    /* 0x2338 */ OSMessageQueue mMsgQueue;
+    /* 0x2358 */ OSMessage mMsgBuffer[MSG_QUEUE_CAPACITY];
 
-    AxManager::CallbackListNode mAxCallbackNode; // 0x2378
-    CallbackList mCallbackList; // 0x2384
+    /* 0x2378 */ AxManager::CallbackListNode mAxCallbackNode;
+    /* 0x2384 */ CallbackList mCallbackList;
 
-    u32 mProcessTick; // 0x2390
-    bool mCreateFlag; // 0x2394
+    /* 0x2390 */ u32 mProcessTick;
+    /* 0x2394 */ bool mCreateFlag;
 };
 
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_SOUND_THREAD_H
+#endif

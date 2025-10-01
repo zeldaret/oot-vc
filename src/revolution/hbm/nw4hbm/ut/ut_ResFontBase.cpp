@@ -5,12 +5,12 @@
 struct CMapScanEntry {
     /* 0x00 */ u16 ccode;
     /* 0x02 */ u16 index;
-}; // size 0x04
+}; // size = 0x04
 
 struct CMapInfoScan {
     /* 0x00 */ u16 num;
     CMapScanEntry entries[]; // flexible,  offset 0x02 (unit size 0x04)
-}; // size 0x02
+}; // size = 0x02
 
 namespace nw4hbm {
 namespace ut {

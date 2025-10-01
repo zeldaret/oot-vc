@@ -12,10 +12,11 @@
 
 namespace nw4hbm {
 namespace lyt {
+
 static const int RESOURCE_NAME_MAX = 128;
 
 class FontRefLink {
-  public:
+public:
     FontRefLink();
 
     void Set(const char* name, ut::Font* pFont);
@@ -23,16 +24,16 @@ class FontRefLink {
     const char* GetFontName() const { return mFontName; }
     ut::Font* GetFont() const { return mpFont; }
 
-    ut::LinkListNode mLink; // 0x00
+    /* 0x00 */ ut::LinkListNode mLink;
 
-  protected:
-    char mFontName[RESOURCE_NAME_MAX]; // 0x08
-    ut::Font* mpFont; // 0x88
+protected:
+    /* 0x08 */ char mFontName[RESOURCE_NAME_MAX];
+    /* 0x88 */ ut::Font* mpFont;
 };
 typedef ut::LinkList<FontRefLink, offsetof(FontRefLink, mLink)> FontRefLinkList;
 
 class ArcResourceLink {
-  public:
+public:
     ArcResourceLink() {}
 
     bool Set(void* archiveStart, const char* resRootDirectory);
@@ -40,58 +41,58 @@ class ArcResourceLink {
     char* GetResRootDir() { return mResRootDir; }
     ARCHandle* GetArcHandle() { return &mArcHandle; }
 
-    ut::LinkListNode mLink; // 0x00
+    /* 0x00 */ ut::LinkListNode mLink;
 
-  protected:
-    ARCHandle mArcHandle; // 0x08
+protected:
+    /* 0x08 */ ARCHandle mArcHandle;
 
-    char mResRootDir[RESOURCE_NAME_MAX]; // 0x24
+    /* 0x24 */ char mResRootDir[RESOURCE_NAME_MAX];
 };
 typedef ut::LinkList<ArcResourceLink, offsetof(ArcResourceLink, mLink)> ArcResourceLinkList;
 
 class ArcResourceAccessor : public ResourceAccessor {
-  public:
+public:
     ArcResourceAccessor();
-    virtual ~ArcResourceAccessor() {}
 
-    virtual void* GetResource(u32 resType, const char* name, u32* pSize = nullptr);
-    virtual ut::Font* GetFont(const char* name);
+    /* 0x08 */ virtual ~ArcResourceAccessor() {}
+    /* 0x0C */ virtual void* GetResource(u32 resType, const char* name, u32* pSize = nullptr);
+    /* 0x10 */ virtual ut::Font* GetFont(const char* name);
 
     bool Attach(void* archiveStart, const char* resourceRootDirectory);
 
     bool IsAttached(void) { return this->mArcBuf != nullptr; }
 
-  private:
-    ARCHandle mArcHandle; // 0x04
-    void* mArcBuf; // 0x20,
-
-    FontRefLinkList mFontList; // 0x24
-
-    char mResRootDir[RESOURCE_NAME_MAX]; // 0x30
+private:
+    /* 0x00 (base) */
+    /* 0x04 */ ARCHandle mArcHandle;
+    /* 0x20 */ void* mArcBuf;
+    /* 0x24 */ FontRefLinkList mFontList;
+    /* 0x30 */ char mResRootDir[RESOURCE_NAME_MAX];
 };
 
 class MultiArcResourceAccessor : public ResourceAccessor {
-  public:
+public:
     MultiArcResourceAccessor();
-    virtual ~MultiArcResourceAccessor();
+
+    /* 0x08 */ virtual ~MultiArcResourceAccessor();
+    /* 0x0C */ virtual void* GetResource(u32 resType, const char* name, u32* pSize = nullptr);
+    /* 0x10 */ virtual ut::Font* GetFont(const char* name);
 
     void Attach(ArcResourceLink* pLink);
     void DetachAll() { reinterpret_cast<ut::detail::LinkListImpl*>(&mArcList)->Clear(); }
-
     void RegistFont(FontRefLink* pLink);
 
-    virtual void* GetResource(u32 resType, const char* name, u32* pSize = nullptr);
-    virtual ut::Font* GetFont(const char* name);
-
-  protected:
-    ArcResourceLinkList mArcList; // 0x04
-    FontRefLinkList mFontList; // 0x10
+protected:
+    /* 0x00 (base) */
+    /* 0x04 */ ArcResourceLinkList mArcList;
+    /* 0x10 */ FontRefLinkList mFontList;
 };
 
 namespace detail {
 ut::Font* FindFont(FontRefLinkList* pFontRefList, const char* name);
 }
+
 } // namespace lyt
 } // namespace nw4hbm
 
-#endif // NW4HBM_LYT_ARC_RESOURCE_ACCESSOR_H
+#endif

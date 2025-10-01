@@ -9,4 +9,4 @@ typedef TextWriterBase<char> TextWriter;
 }
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_TEXT_WRITER_H
+#endif

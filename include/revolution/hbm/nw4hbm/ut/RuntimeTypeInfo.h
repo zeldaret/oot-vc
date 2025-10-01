@@ -26,7 +26,7 @@ struct RuntimeTypeInfo {
         }
         return false;
     }
-    const RuntimeTypeInfo* mParentTypeInfo; // 0x00
+    /* 0x00 */ const RuntimeTypeInfo* mParentTypeInfo;
 };
 
 template <typename T> inline const RuntimeTypeInfo* GetTypeInfoFromPtr_(T* pPtr) { return &pPtr->typeInfo; }
@@ -42,4 +42,4 @@ template <typename TDerived, typename TBase> inline TDerived DynamicCast(TBase* 
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_RUNTIME_TYPE_INFO_H
+#endif

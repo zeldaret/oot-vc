@@ -12,12 +12,12 @@ class SeqTrackAllocator {
   public:
     virtual ~SeqTrackAllocator() {} // 0x08
 
-    virtual SeqTrack* AllocTrack(SeqPlayer* player) = 0; // 0x0C
-    virtual void FreeTrack(SeqTrack* track) = 0; // 0x10
+    /* 0x0C */ virtual SeqTrack* AllocTrack(SeqPlayer* player) = 0;
+    /* 0x10 */ virtual void FreeTrack(SeqTrack* track) = 0;
 };
 
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_SEQ_TRACK_ALLOCATOR_H
+#endif

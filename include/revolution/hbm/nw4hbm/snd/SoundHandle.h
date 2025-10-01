@@ -5,7 +5,7 @@
 
 #include "revolution/hbm/nw4hbm/snd/BasicSound.h"
 
-#include "revolution/hbm/nw4hbm/ut/inlines.h" // ut::NonCopyable
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
 
 namespace nw4hbm {
 namespace snd {
@@ -97,9 +97,9 @@ class SoundHandle : private ut::NonCopyable {
     }
 
   private:
-    detail::BasicSound* mSound; // 0x00
+    /* 0x00 */ detail::BasicSound* mSound;
 };
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_SOUND_HANDLE_H
+#endif

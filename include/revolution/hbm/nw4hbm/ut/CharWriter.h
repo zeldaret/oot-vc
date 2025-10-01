@@ -27,27 +27,27 @@ class CharWriter {
 
   private:
     typedef struct ColorMapping {
-        Color min; // 0x00
-        Color max; // 0x04
+        /* 0x00 */ Color min;
+        /* 0x04 */ Color max;
     } ColorMapping;
 
     typedef struct VertexColor {
-        Color lu, ru; // 0x00
-        Color ld, rd; // 0x08
+        /* 0x00 */ Color lu, ru;
+        /* 0x08 */ Color ld, rd;
     } VertexColor;
 
     typedef struct TextureFilter {
       public:
         bool operator!=(const TextureFilter& rhs) const { return atSmall != rhs.atSmall || atLarge != rhs.atLarge; }
 
-        GXTexFilter atSmall; // 0x00
-        GXTexFilter atLarge; // 0x04
+        /* 0x00 */ GXTexFilter atSmall;
+        /* 0x04 */ GXTexFilter atLarge;
     } TextureFilter;
 
     typedef struct TextColor {
-        Color start; // 0x00
-        Color end; // 0x04
-        GradationMode gradationMode; // 0x08
+        /* 0x00 */ Color start;
+        /* 0x04 */ Color end;
+        /* 0x08 */ GradationMode gradationMode;
     } TextColor;
 
     typedef struct LoadingTexture {
@@ -61,9 +61,9 @@ class CharWriter {
             texture = nullptr;
         }
 
-        GXTexMapID slot; // 0x00
-        void* texture; // 0x04
-        TextureFilter filter; // 0x08
+        /* 0x00 */ GXTexMapID slot;
+        /* 0x04 */ void* texture;
+        /* 0x08 */ TextureFilter filter;
     } LoadingTexture;
 
   public:
@@ -134,21 +134,21 @@ class CharWriter {
     static void SetupGXForI();
     static void SetupGXForRGBA();
 
-    ColorMapping mColorMapping; // 0x00
-    VertexColor mVertexColor; // 0x08
-    TextColor mTextColor; // 0x18
+    /* 0x00 */ ColorMapping mColorMapping;
+    /* 0x08 */ VertexColor mVertexColor;
+    /* 0x18 */ TextColor mTextColor;
 
-    math::VEC2 mScale; // 0x24
-    math::VEC3 mCursorPos; // 0x2C
+    /* 0x24 */ math::VEC2 mScale;
+    /* 0x2C */ math::VEC3 mCursorPos;
 
-    TextureFilter mFilter; // 0x38
+    /* 0x38 */ TextureFilter mFilter;
 
-    u8 padding_[2]; // 0x40
-    u8 mAlpha; // 0x42
-    bool mIsWidthFixed; // 0x43
-    f32 mFixedWidth; // 0x44
+    /* 0x40 */ u8 padding_[2];
+    /* 0x42 */ u8 mAlpha;
+    /* 0x43 */ bool mIsWidthFixed;
+    /* 0x44 */ f32 mFixedWidth;
 
-    const Font* mFont; // 0x48
+    /* 0x48 */ const Font* mFont;
 
     static const u32 DEFAULT_COLOR_MAPPING_MIN = 0x00000000;
     static const u32 DEFAULT_COLOR_MAPPING_MAX = 0xFFFFFFFF;
@@ -159,4 +159,4 @@ class CharWriter {
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_CHAR_WRITER_H
+#endif

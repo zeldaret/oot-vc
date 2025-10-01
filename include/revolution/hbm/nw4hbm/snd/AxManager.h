@@ -15,8 +15,8 @@ namespace detail {
 class AxManager {
   public:
     typedef struct CallbackListNode {
-        ut::LinkListNode link; // 0x00
-        AXOutCallback callback; // 0x08
+        /* 0x00 */ ut::LinkListNode link;
+        /* 0x08 */ AXOutCallback callback;
     } CallbackListNode;
 
     typedef ut::LinkList<CallbackListNode, offsetof(CallbackListNode, link)> CallbackList;
@@ -87,40 +87,40 @@ class AxManager {
     static void AxCallbackFunc();
     static void AuxCallbackFunc(void* chans, void* context);
 
-    OutputMode mOutputMode; // 0x00
+    /* 0x00 */ OutputMode mOutputMode;
 
-    void* mZeroBufferAddress; // 0x04
+    /* 0x04 */ void* mZeroBufferAddress;
 
-    CallbackList mCallbackList; // 0x08
-    AxVoiceList mPrioVoiceList; // 0x14
-    AxVoiceList mFreeVoiceList; // 0x20
+    /* 0x08 */ CallbackList mCallbackList;
+    /* 0x14 */ AxVoiceList mPrioVoiceList;
+    /* 0x20 */ AxVoiceList mFreeVoiceList;
 
-    AxVoice mVoices[AX_VOICE_MAX]; // 0x2C
+    /* 0x2C */ AxVoice mVoices[AX_VOICE_MAX];
 
-    AXOutCallback mNextAxRegisterCallback; // 0xA22C
+    /* 0xA22C */ AXOutCallback mNextAxRegisterCallback;
 
-    bool mInitialized; // 0xA230
+    /* 0xA230 */ bool mInitialized;
 
-    bool mUpdateVoicePrioFlag; // 0xA231
-    bool mHomeButtonMuteFlag; // 0xA232
-    bool mDiskErrorFlag; // 0xA233
+    /* 0xA231 */ bool mUpdateVoicePrioFlag;
+    /* 0xA232 */ bool mHomeButtonMuteFlag;
+    /* 0xA233 */ bool mDiskErrorFlag;
 
-    MoveValue<f32, int> mHomeButtonMenuVolume; // 0xA234
-    MoveValue<f32, int> mMasterVolume; // 0xA244
-    MoveValue<f32, int> mVolumeForReset; // 0xA254
+    /* 0xA234 */ MoveValue<f32, int> mHomeButtonMenuVolume;
+    /* 0xA244 */ MoveValue<f32, int> mMasterVolume;
+    /* 0xA254 */ MoveValue<f32, int> mVolumeForReset;
 
-    AIDMACallback mOldAidCallback; // 0xA264
+    /* 0xA264 */ AIDMACallback mOldAidCallback;
 
-    vs32 mResetReadyCounter; // 0xA268
+    /* 0xA268 */ vs32 mResetReadyCounter;
 
-    MoveValue<f32, int> mAuxFadeVolume[AUX_BUS_NUM]; // 0xA26C
-    MoveValue<f32, int> mAuxUserVolume[AUX_BUS_NUM]; // 0xA29C
+    /* 0xA26C */ MoveValue<f32, int> mAuxFadeVolume[AUX_BUS_NUM];
+    /* 0xA29C */ MoveValue<f32, int> mAuxUserVolume[AUX_BUS_NUM];
 
-    FxList mFxList[AUX_BUS_NUM]; // 0xA2CC
+    /* 0xA2CC */ FxList mFxList[AUX_BUS_NUM];
 
-    AXAuxCallback mAuxCallback[AUX_BUS_NUM]; // 0xA2F0
-    void* mAuxCallbackContext[AUX_BUS_NUM]; // 0xA2FC
-    u8 mAuxCallbackWaitCounter[AUX_BUS_NUM]; // 0xA308
+    /* 0xA2F0 */ AXAuxCallback mAuxCallback[AUX_BUS_NUM];
+    /* 0xA2FC */ void* mAuxCallbackContext[AUX_BUS_NUM];
+    /* 0xA308 */ u8 mAuxCallbackWaitCounter[AUX_BUS_NUM];
 
     static u8 sZeroBuffer[ZERO_BUFFER_SIZE];
 };

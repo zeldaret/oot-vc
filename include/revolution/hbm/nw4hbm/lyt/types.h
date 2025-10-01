@@ -118,27 +118,36 @@ template <typename T> T GetBits(T bits, int pos, int len) {
 } // namespace detail
 
 typedef struct Size {
-    Size() : width(), height() {}
+    Size() :
+        width(),
+        height() {}
 
-    Size(f32 aWidth, f32 aHeight) : width(aWidth), height(aHeight) {}
+    Size(f32 aWidth, f32 aHeight) :
+        width(aWidth),
+        height(aHeight) {}
 
-    Size(const Size& other) : width(other.width), height(other.height) {}
+    Size(const Size& other) :
+        width(other.width),
+        height(other.height) {}
 
     friend bool operator==(const Size& a, const Size& b) { return a.width == b.width && a.height == b.height; }
 
-    f32 width; // 0x00
-    f32 height; // 0x04
-} Size;
+    /* 0x00 */ f32 width;
+    /* 0x04 */ f32 height;
+} Size; // size = 0x08
 
 typedef struct TexSRT {
-    math::VEC2 translate; // 0x00
-    f32 rotate; // 0x08
-    math::VEC2 scale; // 0x0c
+    /* 0x00 */ math::VEC2 translate;
+    /* 0x08 */ f32 rotate;
+    /* 0x0C */ math::VEC2 scale;
 } TexSRT;
 
 class TexCoordGen {
-  public:
-    TexCoordGen() : reserve(0) { Set(GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY); }
+public:
+    TexCoordGen() :
+        reserve(0) {
+        Set(GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+    }
 
     u32 GetTexMtx() const { return texMtx; }
 
@@ -151,15 +160,15 @@ class TexCoordGen {
         texMtx = aTexMtx;
     }
 
-  private:
-    u8 texGenType; // 0x00
-    u8 texGenSrc; // 0x01
-    u8 texMtx; // 0x02
-    u8 reserve; // 0x03
+private:
+    /* 0x00 */ u8 texGenType;
+    /* 0x01 */ u8 texGenSrc;
+    /* 0x02 */ u8 texMtx;
+    /* 0x03 */ u8 reserve;
 };
 
 class IndirectStage {
-  public:
+public:
     IndirectStage() { Set(GX_TEXCOORD0, GX_TEXMAP0, GX_ITS_1, GX_ITS_1); }
 
     GXTexCoordID GetTexCoordGen() const { return static_cast<GXTexCoordID>(texCoordGen); }
@@ -177,15 +186,15 @@ class IndirectStage {
         scaleT = aScaleT;
     }
 
-  private:
-    u8 texCoordGen; // 0x00
-    u8 texMap; // 0x01
-    u8 scaleS; // 0x02
-    u8 scaleT; // 0x03
+private:
+    /* 0x00 */ u8 texCoordGen;
+    /* 0x01 */ u8 texMap;
+    /* 0x02 */ u8 scaleS;
+    /* 0x03 */ u8 scaleT;
 };
 
 class TevSwapMode {
-  public:
+public:
     GXTevColorChan GetR() const { return static_cast<GXTevColorChan>((swap) & 0x03); }
     GXTevColorChan GetG() const { return static_cast<GXTevColorChan>((swap >> 2) & 0x03); }
     GXTevColorChan GetB() const { return static_cast<GXTevColorChan>((swap >> 4) & 0x03); }
@@ -195,12 +204,12 @@ class TevSwapMode {
         swap = r | g << 2 | b << 4 | a << 6;
     }
 
-  private:
-    u8 swap; // 0x00
+private:
+    /* 0x00 */ u8 swap;
 };
 
 class TevStageInOp {
-  public:
+public:
     u8 GetA() const { return ab & 0x0F; }
     u8 GetB() const { return (ab >> 4) & 0x0F; }
     u8 GetC() const { return cd & 0x0F; }
@@ -224,15 +233,15 @@ class TevStageInOp {
         cl = (clamp ? 1 : 0) | outReg << 1 | kSel << 3;
     }
 
-  private:
-    u8 ab; // 0x00
-    u8 cd; // 0x01
-    u8 op; // 0x02
-    u8 cl; // 0x03
+private:
+    /* 0x00 */ u8 ab;
+    /* 0x01 */ u8 cd;
+    /* 0x02 */ u8 op;
+    /* 0x03 */ u8 cl;
 };
 
 class TevStage {
-  public:
+public:
     TevStage() {
         SetOrder(GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR0A0, GX_TEV_SWAP0, GX_TEV_SWAP0);
         SetColorIn(GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_RASC);
@@ -323,27 +332,26 @@ class TevStage {
         indFoAdUtAl = format | (addPrev ? 1 : 0) << 2 | (utcLod ? 1 : 0) << 3 | alphaSel << 4;
     }
 
-  private:
-    u8 texCoordGen; // 0x00
-
-    u8 colChan; // 0x01
-
-    u8 texMap; // 0x02
-
-    u8 swapSel; // 0x03
-
-    TevStageInOp colIn; // 0x04
-    TevStageInOp alpIn; // 0x08
-
-    u8 indStage; // 0x0C
-    u8 indBiMt; // 0x0D
-    u8 indWrap; // 0x0e
-    u8 indFoAdUtAl; // 0x0F
+private:
+    /* 0x00 */ u8 texCoordGen;
+    /* 0x01 */ u8 colChan;
+    /* 0x02 */ u8 texMap;
+    /* 0x03 */ u8 swapSel;
+    /* 0x04 */ TevStageInOp colIn;
+    /* 0x08 */ TevStageInOp alpIn;
+    /* 0x0C */ u8 indStage;
+    /* 0x0D */ u8 indBiMt;
+    /* 0x0E */ u8 indWrap;
+    /* 0x0F */ u8 indFoAdUtAl;
 };
 
 class ChanCtrl {
-  public:
-    ChanCtrl() : reserve1(0), reserve2(0) { Set(GX_SRC_VTX, GX_SRC_VTX); }
+public:
+    ChanCtrl() :
+        reserve1(0),
+        reserve2(0) {
+        Set(GX_SRC_VTX, GX_SRC_VTX);
+    }
 
     GXColorSrc GetColorSrc() const { return static_cast<GXColorSrc>(matSrcCol); }
     GXColorSrc GetAlphaSrc() const { return static_cast<GXColorSrc>(matSrcAlp); }
@@ -353,16 +361,15 @@ class ChanCtrl {
         matSrcAlp = alpSrc;
     }
 
-  private:
-    u8 matSrcCol; // 0x00
-    u8 matSrcAlp; // 0x01
-
-    u8 reserve1; // 0x02
-    u8 reserve2; // 0x03
+private:
+    /* 0x00 */ u8 matSrcCol;
+    /* 0x01 */ u8 matSrcAlp;
+    /* 0x02 */ u8 reserve1;
+    /* 0x03 */ u8 reserve2;
 };
 
 class AlphaCompare {
-  public:
+public:
     AlphaCompare() { Set(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0); }
 
     GXCompare GetComp0() const { return static_cast<GXCompare>(comp & 0x0F); }
@@ -380,15 +387,15 @@ class AlphaCompare {
         ref1 = aRef1;
     }
 
-  private:
-    u8 comp; // 0x00
-    u8 op; // 0x01
-    u8 ref0; // 0x02
-    u8 ref1; // 0x03
+private:
+    /* 0x00 */ u8 comp;
+    /* 0x01 */ u8 op;
+    /* 0x02 */ u8 ref0;
+    /* 0x03 */ u8 ref1;
 };
 
 class BlendMode {
-  public:
+public:
     BlendMode() { Set(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_SET); }
 
     GXBlendMode GetType() const { return static_cast<GXBlendMode>(type); }
@@ -403,13 +410,14 @@ class BlendMode {
         op = aOp;
     }
 
-  private:
-    u8 type; // 0x00
-    u8 srcFactor; // 0x01
-    u8 dstFactor; // 0x02
-    u8 op; // 0x03
+private:
+    /* 0x00 */ u8 type;
+    /* 0x01 */ u8 srcFactor;
+    /* 0x02 */ u8 dstFactor;
+    /* 0x03 */ u8 op;
 };
+
 } // namespace lyt
 } // namespace nw4hbm
 
-#endif // NW4HBM_LYT_TYPES_H
+#endif

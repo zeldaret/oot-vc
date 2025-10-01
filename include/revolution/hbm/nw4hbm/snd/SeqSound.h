@@ -10,7 +10,7 @@
 
 namespace nw4hbm {
 namespace snd {
-// Forward declarations
+
 class SeqSoundHandle;
 
 namespace detail {
@@ -46,14 +46,14 @@ class SeqSound : public BasicSound {
     };
     explicit SeqSound(SoundInstanceManager<SeqSound>* nanager);
 
-    virtual void Shutdown(); // 0x28
+    /* 0x28 */ virtual void Shutdown();
 
-    virtual void SetPlayerPriority(int priority); // 0x4C
+    /* 0x4C */ virtual void SetPlayerPriority(int priority);
 
-    virtual bool IsAttachedTempSpecialHandle(); // 0x5C
-    virtual void DetachTempSpecialHandle(); // 0x60
+    /* 0x5C */ virtual bool IsAttachedTempSpecialHandle();
+    /* 0x60 */ virtual void DetachTempSpecialHandle();
 
-    virtual void InitParam(); // 0x64
+    /* 0x64 */ virtual void InitParam();
 
     virtual BasicPlayer& GetBasicPlayer() { return mSeqPlayer; } // 0x68
     virtual const BasicPlayer& GetBasicPlayer() const { return mSeqPlayer; } // 0x6C
@@ -69,16 +69,16 @@ class SeqSound : public BasicSound {
   private:
     static void NotifyLoadAsyncEndSeqData(bool result, const void* seqBase, s32 seqOffset, void* userData);
 
-    SeqPlayer mSeqPlayer; // 0xD8
-    SeqSoundHandle* mTempSpecialHandle; // 0x1F4
-    SoundInstanceManager<SeqSound>* mManager; // 0x1F8
+    /* 0xD8 */ SeqPlayer mSeqPlayer;
+    /* 0x1F4 */ SeqSoundHandle* mTempSpecialHandle;
+    /* 0x1F8 */ SoundInstanceManager<SeqSound>* mManager;
 
-    bool mLoadingFlag; // 0x1E8
-    const SeqLoadCallback* mCallback; // 0x1EC
-    u32 mCallbackData; // 0x1F0
+    /* 0x1E8 */ bool mLoadingFlag;
+    /* 0x1EC */ const SeqLoadCallback* mCallback;
+    /* 0x1F0 */ u32 mCallbackData;
 };
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_SEQ_SOUND_H
+#endif

@@ -1,6 +1,6 @@
 #include "revolution/hbm/nw4hbm/ut/ResFont.h"
 
-#include "revolution/hbm/nw4hbm/config.h"
+#include "revolution/hbm/HBMCommon.h"
 #include "revolution/hbm/nw4hbm/db.h"
 
 #include "decomp.h"

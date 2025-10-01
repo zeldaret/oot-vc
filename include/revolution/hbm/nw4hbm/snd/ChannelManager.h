@@ -20,4 +20,4 @@ class ChannelManager : public InstanceManager<Channel, 0> {
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_CHANNEL_MANAGER_H
+#endif

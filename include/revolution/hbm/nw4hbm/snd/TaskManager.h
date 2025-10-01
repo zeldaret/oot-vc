@@ -40,15 +40,15 @@ class TaskManager {
   private:
     TaskManager();
 
-    OSMutex mMutex; // 0x00
-    MEMHeapHandle mHeapHandle; // 0x18
+    /* 0x00 */ OSMutex mMutex;
+    /* 0x18 */ MEMHeapHandle mHeapHandle;
 
-    Task* mCurrentTask; // 0x1C
-    TaskList mTaskList[PRIORITY_MAX]; // 0x20
+    /* 0x1C */ Task* mCurrentTask;
+    /* 0x20 */ TaskList mTaskList[PRIORITY_MAX];
 };
 
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_TASK_MANAGER_H
+#endif

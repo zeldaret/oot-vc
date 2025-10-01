@@ -19,4 +19,4 @@
 
 #include "revolution/hbm/nw4hbm/lyt/layout.h"
 
-#endif // NW4HBM_LYT_H
+#endif

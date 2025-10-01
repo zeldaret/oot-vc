@@ -8,10 +8,10 @@ namespace snd {
 namespace detail {
 
 typedef struct StrmChannel {
-    void* mBuffer; // 0x00
-    u32 mBufferSize; // 0x04
+    /* 0x00 */ void* mBuffer;
+    /* 0x04 */ u32 mBufferSize;
 
-    AdpcmInfo mAdpcmInfo; // 0x08
+    /* 0x08 */ AdpcmInfo mAdpcmInfo;
 } StrmChannel;
 
 class StrmBufferPool {
@@ -28,18 +28,18 @@ class StrmBufferPool {
     static const int BLOCK_MAX = 32;
     static const int BITS_PER_BYTE = 8;
 
-    void* mBuffer; // 0x00
-    u32 mBufferSize; // 0x04
+    /* 0x00 */ void* mBuffer;
+    /* 0x04 */ u32 mBufferSize;
 
-    u32 mBlockSize; // 0x08
-    int mBlockCount; // 0x0C
+    /* 0x08 */ u32 mBlockSize;
+    /* 0x0C */ int mBlockCount;
 
-    int mAllocCount; // 0x10
-    u8 mAllocFlags[BLOCK_MAX / BITS_PER_BYTE]; // 0x14
+    /* 0x10 */ int mAllocCount;
+    /* 0x14 */ u8 mAllocFlags[BLOCK_MAX / BITS_PER_BYTE];
 };
 
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_STRM_CHANNEL_H
+#endif

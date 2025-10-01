@@ -9,7 +9,6 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-// Forward declarations
 class Channel;
 
 class Bank {
@@ -25,8 +24,8 @@ class Bank {
     }
 
   private:
-    BankFileReader mBankReader; // 0x00
-    const void* mWaveDataAddress; // 0x0C
+    /* 0x00 */ BankFileReader mBankReader;
+    /* 0x0C */ const void* mWaveDataAddress;
 };
 
 } // namespace detail

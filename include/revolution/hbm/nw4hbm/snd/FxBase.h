@@ -21,7 +21,7 @@ class FxBase : ut::NonCopyable {
                               OutputMode mode) {} // 0x14
 
   public:
-    ut::LinkListNode mFxLink; // 0x04
+    /* 0x04 */ ut::LinkListNode mFxLink;
 };
 
 typedef ut::LinkList<FxBase, offsetof(FxBase, mFxLink)> FxList;

@@ -6,15 +6,15 @@
 
 namespace nw4hbm {
 namespace math {
+
 inline f32 FSelect(register f32 cond, register f32 ifPos, register f32 ifNeg) {
     register f32 ret;
 
-#ifdef __clang__
-    asm("fsel %0, %1, %2, %3" : "=f"(ret) : "f"(cond), "f"(ifPos), "f"(ifNeg));
-#else
-    asm { fsel ret, cond, ifPos, ifNeg }
-    ;
-#endif // __clang__
+#ifdef __MWERKS__ // clang-format off
+    asm { 
+        fsel ret, cond, ifPos, ifNeg
+    }
+#endif // clang-format on
 
     return ret;
 }
@@ -42,7 +42,8 @@ inline f32 U16ToF32(u16 x) {
 
     return rval;
 }
+
 } // namespace math
 } // namespace nw4hbm
 
-#endif // RVL_SDK_HBM_NW4HBM_MATH_ARITHMETIC_HPP
+#endif

@@ -5,7 +5,7 @@
 #include "revolution/hbm/homebutton/HBMRemoteSpk.hpp"
 #include "revolution/hbm/nw4hbm/snd/SoundArchivePlayer.h"
 #include "revolution/hbm/nw4hbm/snd/SoundHandle.h"
-#include "revolution/mtx/mtx.h" // Vec2
+#include "revolution/mtx/mtx.h"
 #include "revolution/os/OSAlarm.h"
 #include "revolution/os/OSTime.h"
 #include "revolution/types.h"
@@ -20,19 +20,15 @@ struct HBController {
     /* 0x14 */ u32 hold;
     /* 0x18 */ u32 release;
     /* 0x1C */ bool rumble;
-    /* 3 bytes padding */
-}; // size 0x20
+}; // size = 0x20
 
 namespace homebutton {
 
 class Controller {
-    // methods
   public:
-    // cdtors
     Controller(int chan, RemoteSpk* spk);
     ~Controller();
 
-    // methods
     HBController* getController();
     int getChan() const;
     f32 getSpeakerVol() const;
@@ -73,14 +69,12 @@ class Controller {
     static RemoteSpk* GetInstance() { return sPInstance; }
     static void SetInstance(RemoteSpk* p) { sPInstance = p; }
 
-    // static methods
   private:
     static void wpadConnectCallback(WPADChannel chan, WPADResult result);
     static void wpadExtensionCallback(WPADChannel chan, s32 result);
     static void soundOnCallback(OSAlarm* alm, OSContext* context);
     static void ControllerCallback(WPADChannel chan, WPADResult result);
 
-    // members
   private:
     /* 0x00 */ HBController mHBController;
     /* 0x20 */ nw4hbm::snd::SoundHandle mSoundHandle;
@@ -94,7 +88,6 @@ class Controller {
     /* 0x42 */ bool mCheckSoundTimeFlag;
     /* 0x43 */ bool mCheckSoundIntervalFlag;
 
-    // static members
   private:
     static bool sBatteryFlag[WPAD_MAX_CONTROLLERS];
     static OSAlarm sAlarm[WPAD_MAX_CONTROLLERS];
@@ -103,7 +96,8 @@ class Controller {
     static bool sSetInfoAsync[WPAD_MAX_CONTROLLERS];
     static RemoteSpk* sPInstance;
     static s32 lbl_8025DBBC;
-}; // size 0x44
+}; // size = 0x44
+
 } // namespace homebutton
 
-#endif // RVL_SDK_HBM_HOMEBUTTON_CONTROLLER_HPP
+#endif

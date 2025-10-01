@@ -12,16 +12,16 @@ class DvdSoundArchive::DvdFileStream : public ut::DvdLockedFileStream {
     DvdFileStream(const DVDFileInfo* fileInfo, u32 offset, u32 size);
     DvdFileStream(s32 entrynum, u32 offset, u32 size);
 
-    virtual s32 Read(void* dst, u32 size); // 0x14
-    virtual void Seek(s32 offset, u32 origin); // 0x44
+    /* 0x14 */ virtual s32 Read(void* dst, u32 size);
+    /* 0x44 */ virtual void Seek(s32 offset, u32 origin);
 
     virtual u32 Tell() const { return ut::DvdFileStream::Tell() - mOffset; } // 0x58
 
     virtual u32 GetSize() const { return mSize; } // 0x40
 
   private:
-    s32 mOffset; // 0x70
-    s32 mSize; // 0x74
+    /* 0x70 */ s32 mOffset;
+    /* 0x74 */ s32 mSize;
 };
 
 DvdSoundArchive::DvdSoundArchive() : mOpen(false) {}

@@ -47,21 +47,21 @@ class WsdTrack {
     const void* GetWsdDataAddress() const { return mWsdData; }
 
   private:
-    const void* mWsdData; // 0x00
-    int mIndex; // 0x04
+    /* 0x00 */ const void* mWsdData;
+    /* 0x04 */ int mIndex;
 
-    u32 mCounter; // 0x08
-    LfoParam mLfoParam; // 0x0C
-    u8 mBendRange; // 0x1C
-    u8 mPriority; // 0x1D
+    /* 0x08 */ u32 mCounter;
+    /* 0x0C */ LfoParam mLfoParam;
+    /* 0x1C */ u8 mBendRange;
+    /* 0x1D */ u8 mPriority;
 
-    WaveSoundInfo mWaveSoundInfo; // 0x20
-    WsdPlayer* mWsdPlayer; // 0x2C
+    /* 0x20 */ WaveSoundInfo mWaveSoundInfo;
+    /* 0x2C */ WsdPlayer* mWsdPlayer;
 
-    Channel* mChannelList; // 0x30
+    /* 0x30 */ Channel* mChannelList;
 };
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_WSD_TRACK_H
+#endif

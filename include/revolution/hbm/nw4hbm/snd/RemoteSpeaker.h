@@ -1,9 +1,9 @@
 #ifndef NW4R_SND_REMOTE_SPEAKER_H
 #define NW4R_SND_REMOTE_SPEAKER_H
 
-#include "revolution/os.h" // IWYU pragma: export
-#include "revolution/wenc.h" // IWYU pragma: export
-#include "revolution/wpad.h" // IWYU pragma: export
+#include "revolution/os.h"
+#include "revolution/wenc.h"
+#include "revolution/wpad.h"
 
 namespace nw4hbm {
 namespace snd {
@@ -49,26 +49,26 @@ class RemoteSpeaker {
     static void ContinueAlarmHandler(OSAlarm* alarm, OSContext* context);
     static void IntervalAlarmHandler(OSAlarm* alarm, OSContext* context);
 
-    bool mInitFlag; // 0x00
-    bool mRemoteInitFlag; // 0x01
-    bool mPlayFlag; // 0x02
-    bool mEnableFlag; // 0x03
-    bool mSetupBusyFlag; // 0x04
-    bool mFirstEncodeFlag; // 0x05
-    bool mForceResumeFlag; // 0x06
-    bool mContinueFlag; // 0x07
-    bool mIntervalFlag; // 0x08
+    /* 0x00 */ bool mInitFlag;
+    /* 0x01 */ bool mRemoteInitFlag;
+    /* 0x02 */ bool mPlayFlag;
+    /* 0x03 */ bool mEnableFlag;
+    /* 0x04 */ bool mSetupBusyFlag;
+    /* 0x05 */ bool mFirstEncodeFlag;
+    /* 0x06 */ bool mForceResumeFlag;
+    /* 0x07 */ bool mContinueFlag;
+    /* 0x08 */ bool mIntervalFlag;
 
-    WENCInfo mEncodeInfo; // 0x09
+    /* 0x09 */ WENCInfo mEncodeInfo;
 
-    int mChannelIndex; // 0x2C
+    /* 0x2C */ int mChannelIndex;
 
-    WPADCallback mSetupCallback; // 0x30
+    /* 0x30 */ WPADCallback mSetupCallback;
 
-    OSAlarm mContinueAlarm; // 0x38
-    OSAlarm mInvervalAlarm; // 0x68
+    /* 0x38 */ OSAlarm mContinueAlarm;
+    /* 0x68 */ OSAlarm mInvervalAlarm;
 
-    OSTime mContinueBeginTime; // 0x98
+    /* 0x98 */ OSTime mContinueBeginTime;
 };
 
 } // namespace snd

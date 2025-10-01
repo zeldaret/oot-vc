@@ -1,7 +1,7 @@
 #ifndef NW4R_SND_GLOBAL_H
 #define NW4R_SND_GLOBAL_H
 
-#include "revolution/types.h" // f32
+#include "revolution/types.h"
 
 namespace nw4hbm {
 namespace snd {
@@ -26,12 +26,9 @@ enum PanCurve {
 };
 
 struct VoiceOutParam {
-    // methods
   public:
-    // cdtors
     VoiceOutParam() : volume(1.0f), pitch(1.0f), pan(0.0f), surroundPan(0.0f), fxSend(0.0f), lpf(0.0f) {}
 
-    // members
   public:
     /* 0x00 */ f32 volume;
     /* 0x04 */ f32 pitch;
@@ -39,8 +36,8 @@ struct VoiceOutParam {
     /* 0x0C */ f32 surroundPan;
     /* 0x10 */ f32 fxSend;
     /* 0x14 */ f32 lpf;
-}; // size 0x18
+}; // size = 0x18
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_GLOBAL_H
+#endif

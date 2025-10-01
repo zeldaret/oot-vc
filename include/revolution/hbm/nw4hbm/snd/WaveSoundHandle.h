@@ -5,7 +5,6 @@
 #include "revolution/hbm/nw4hbm/snd/types.h"
 #include "revolution/hbm/nw4hbm/ut.h"
 
-// forward declarations
 namespace nw4hbm {
 namespace snd {
 
@@ -18,10 +17,10 @@ class WaveSoundHandle : private ut::NonCopyable {
     bool IsAttachedSound() const { return mSound != NULL; }
 
   private:
-    detail::WaveSound* mSound; // 0x00
+    /* 0x00 */ detail::WaveSound* mSound;
 };
 
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_WAVE_SOUND_HANDLE_H
+#endif

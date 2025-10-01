@@ -14,7 +14,6 @@
 #include "revolution/hbm/nw4hbm/snd/SoundArchivePlayer.h"
 #include "revolution/hbm/nw4hbm/snd/SoundPlayer.h"
 #include "revolution/hbm/nw4hbm/snd/SoundSystem.h"
-#include "revolution/types.h"
 #include "revolution/wpad/WPAD.h"
 
 #include "new.hpp"
@@ -29,105 +28,73 @@ static void RetrySimpleSyncCallback(OSAlarm* alm, OSContext* ctx);
 static void SimpleSyncCallback(s32 result, s32 num);
 } // namespace homebutton
 
-// forward declarations
 namespace nw4hbm {
+
 namespace lyt {
 class ArcResourceAccessor;
-}
-} // namespace nw4hbm
-namespace nw4hbm {
-namespace lyt {
 class ArcResourceLink;
-}
-} // namespace nw4hbm
-namespace nw4hbm {
-namespace lyt {
 class Layout;
-}
-} // namespace nw4hbm
-namespace nw4hbm {
-namespace lyt {
 class MultiArcResourceAccessor;
-}
-} // namespace nw4hbm
-namespace nw4hbm {
-namespace lyt {
 class Pane;
-}
-} // namespace nw4hbm
-namespace nw4hbm {
+} // namespace lyt
+
 namespace ut {
 class ResFont;
 }
+
 } // namespace nw4hbm
 
 namespace homebutton {
-// forward declarations
+
 class HomeButton;
 class Controller;
 class GroupAnmController;
 class RemoteSpk;
 
 class HomeButtonEventHandler : public gui::EventHandler {
-    // methods
   public:
-    // cdtors
     HomeButtonEventHandler(homebutton::HomeButton* pHomeButton) : mpHomeButton(pHomeButton) {}
 
-    // virtual function ordering
-    // vtable EventHandler
-    virtual void onEvent(u32 uID, u32 uEvent, void* pData);
+    /* 0x08 */ virtual void onEvent(u32 uID, u32 uEvent, void* pData);
 
-    // methods
     homebutton::HomeButton* getHomeButton() { return mpHomeButton; }
 
-    // members
   private:
-    /* base EventHandler */ // size 0x08, offset 0x00
+    /* 0x00 (base) */
     /* 0x08 */ HomeButton* mpHomeButton;
-}; // size 0x0c
+}; // size = 0x0C
 
 class HomeButton {
-    // enums
   private:
-    typedef enum /* expliticly untagged */
-    {
-        eSeq_Normal,
-        eSeq_Control,
-        eSeq_Cmn,
+    typedef enum {
+        /* 0 */ eSeq_Normal,
+        /* 1 */ eSeq_Control,
+        /* 2 */ eSeq_Cmn,
     } eSeq;
 
-    // nested classes
-  private:
     class BlackFader {
-        // methods
       public:
-        // cdtors
         BlackFader(int maxFrame) {
             init(maxFrame);
             setColor(0, 0, 0);
         }
-
-        // methods
-        int getFrame() const { return frame_; }
-        int getMaxFrame() const { return maxFrame_; }
 
         void setColor(u8 r, u8 g, u8 b) {
             red_ = r;
             green_ = g;
             blue_ = b;
         }
+
+        int getFrame() const { return frame_; }
+        int getMaxFrame() const { return maxFrame_; }
+        void start() { state_ = 1; }
         GXColor GetColor(u8 alpha) { return (GXColor){red_, green_, blue_, alpha}; }
 
         bool isDone();
-
         void init(int maxFrame);
         void calc();
         void draw();
 
-        void start() { state_ = 1; }
-
-        // members
       private:
         /* 0x00 */ int frame_;
         /* 0x04 */ int maxFrame_;
@@ -135,69 +102,54 @@ class HomeButton {
         /* 0x0D */ u8 red_;
         /* 0x0E */ u8 green_;
         /* 0x0F */ u8 blue_;
-    }; // size 0x10
+    }; // size = 0x10
 
-    // methods
   public:
-    // cdtors
     HomeButton(const HBMDataInfo* dataInfo);
     ~HomeButton();
 
-    // gethods
-    const HBMDataInfo* getHBMDataInfo() { return mpHBInfo; }
-    Controller* getController(int chan) { return mpController[chan]; }
     int getVolume();
     HBMSelectBtnNum getSelectBtnNum();
-    const char* getFuncPaneName(int no) { return scFuncTouchPaneName[no]; }
-    const char* getPaneName(int no) { return scBtnName[no]; }
-    bool getReassignedFlag() const { return mReassignedFlag; }
-    HomeButtonEventHandler* getEventHandler() const { return mpHomeButtonEventHandler; }
     bool isActive() const;
     bool isUpBarActive() const;
     bool isDownBarActive();
-
-    // sethods
     void setAdjustFlag(int flag);
-    void setEndSimpleSyncFlag(bool flag) { mEndSimpleSyncFlag = flag; }
     void setForcusSE();
-    void setReassignedFlag(bool flag) { mReassignedFlag = flag; }
     void setSimpleSyncAlarm(int type);
-    void setSimpleSyncFlag(bool flag) { mSimpleSyncFlag = flag; }
     void setSpeakerAlarm(int chan, int msec);
     void setVolume(int vol);
-
-    // get methods
     bool getVibFlag();
     int getPaneNo(const char*);
-
-    // set methods
     void setVibFlag(bool flag);
-
-    // methods
     void create();
     void init();
     void calc(const HBMControllerData* pController);
     void draw();
     void update(const HBMControllerData* pController);
     void updateTrigPane();
-
     void startPointEvent(const char* pPane, void* pData);
     void startLeftEvent(const char* pPane);
     void startTrigEvent(const char* pPane);
-
     int findAnimator(int pane, int anm);
     int findGroupAnimator(int pane, int anm);
-
     void callSimpleSyncCallback(s32 result, s32 num);
-
     void startBlackOut();
 
-    // static methods
+    const HBMDataInfo* getHBMDataInfo() { return mpHBInfo; }
+    Controller* getController(int chan) { return mpController[chan]; }
+    const char* getFuncPaneName(int no) { return scFuncTouchPaneName[no]; }
+    const char* getPaneName(int no) { return scBtnName[no]; }
+    bool getReassignedFlag() const { return mReassignedFlag; }
+    HomeButtonEventHandler* getEventHandler() const { return mpHomeButtonEventHandler; }
+    nw4hbm::snd::SoundArchivePlayer* GetSoundArchivePlayer() { return mpSoundArchivePlayer; }
+    void setEndSimpleSyncFlag(bool flag) { mEndSimpleSyncFlag = flag; }
+    void setReassignedFlag(bool flag) { mReassignedFlag = flag; }
+    void setSimpleSyncFlag(bool flag) { mSimpleSyncFlag = flag; }
+
     static void createInstance(const HBMDataInfo* dataInfo);
     static HomeButton* getInstance() { return spHomeButtonObj; }
     static void deleteInstance();
 
-    // implementation details? at least i think that's what the snake case means
   private:
     void init_battery(const HBMControllerData* pController);
     void calc_battery(int chan);
@@ -224,20 +176,14 @@ class HomeButton {
     void reset_guiManager(int num);
     void reset_window();
 
-    // exception
-  public: // HBMUpdateSound
-    void update_sound();
-
-    //! TODO: cleanup
+  public:
     int GetState() { return mState; }
-    int GetState2() { return mLetterFlag; }
     HBMSelectBtnNum GetSelectBtnNum() { return mSelectBtnNum; }
     BlackFader* GetFader() { return &mFader; }
     nw4hbm::lyt::Layout* GetLayout() { return mpLayout; }
     nw4hbm::lyt::DrawInfo* GetDrawInfo() { return &mDrawInfo; }
     void fn_8010984C(nw4hbm::snd::NandSoundArchive* pNandSoundArchive, bool bCreateSoundHeap);
     void fn_80109A74();
-
     void draw_impl();
 
     static void createInstance_impl(const HBMDataInfo* pHBInfo) {
@@ -296,13 +242,8 @@ class HomeButton {
 
     void fn_80100CD8_impl(const char* path);
     void fn_80100E40_impl();
-    static void fn_80100CD8(const char* path, void* param1, int param2);
-    static void fn_80100E0C(void);
-    static void fn_80100E40(void);
 
-    // members
-    // private: // offset goes dvd/nand
-  public: // TEMP
+  private:
     /* 0x000 */ eSeq mSequence;
     /* 0x004 */ const HBMDataInfo* mpHBInfo;
     /* 0x008 */ int mButtonNum;
@@ -376,23 +317,6 @@ class HomeButton {
     // static members
   private:
     static HomeButton* spHomeButtonObj;
-    static OSMutex sMutex;
-
-    // tables and stuff
-    static const int scSoundHeapSize_but2;
-    static const int scSoundHeapSize_but3;
-    static const int scSoundThreadPrio;
-    static const int scDvdThreadPrio;
-
-    static const int scReConnectTime;
-    static const int scReConnectTime2;
-    static const int scPadDrawWaitTime;
-    static const int scGetPadInfoTime;
-    static const int scForcusSEWaitTime;
-    static const f32 scOnPaneVibTime;
-    static const f32 scOnPaneVibWaitTime;
-    static const int scWaitStopMotorTime;
-    static const int scWaitDisConnectTime;
 
     static const char* scCursorLytName[WPAD_MAX_CONTROLLERS];
     static const char* scCursorPaneName;
@@ -411,7 +335,8 @@ class HomeButton {
     static const char* scFuncTouchPaneName[10];
     static const char* scFuncTextPaneName[3];
     static const char* scBatteryPaneName[WPAD_MAX_CONTROLLERS][4];
-}; // size 0x740/0x7c8
+}; // size = 0x740
+
 } // namespace homebutton
 
-#endif // RVL_SDK_HBM_HOMEBUTTON_BASE_HPP
+#endif

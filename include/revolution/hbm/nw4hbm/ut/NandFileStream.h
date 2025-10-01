@@ -13,20 +13,20 @@ class NandFileStream : public FileStream {
 
     NandFileStream(const char* path, u32 mode);
     NandFileStream(const NANDFileInfo* info, u32 mode, bool enableClose);
-    virtual ~NandFileStream(); // 0x0C
+    /* 0x0C */ virtual ~NandFileStream();
 
     bool Open(const char* path, u32 mode);
     bool Open(const NANDFileInfo* info, u32 mode, bool enableClose) NO_INLINE;
 
-    virtual void Close(); // 0x10
+    /* 0x10 */ virtual void Close();
 
-    virtual s32 Read(void* pDst, u32 size); // 0x14
-    virtual bool ReadAsync(void* pDst, u32 size, IOStreamCallback pCallback, void* pCallbackArg); // 0x18
+    /* 0x14 */ virtual s32 Read(void* pDst, u32 size);
+    /* 0x18 */ virtual bool ReadAsync(void* pDst, u32 size, IOStreamCallback pCallback, void* pCallbackArg);
 
-    virtual void Write(const void* pSrc, u32 size); // 0x1C
-    virtual bool WriteAsync(const void* pSrc, u32 size, IOStreamCallback pCallback, void* pCallbackArg); // 0x20
+    /* 0x1C */ virtual void Write(const void* pSrc, u32 size);
+    /* 0x20 */ virtual bool WriteAsync(const void* pSrc, u32 size, IOStreamCallback pCallback, void* pCallbackArg);
 
-    virtual void Seek(s32 offset, u32 origin); // 0x44
+    /* 0x44 */ virtual void Seek(s32 offset, u32 origin);
 
     virtual bool IsBusy() const { return mIsBusy; } // 0x24
 
@@ -45,9 +45,9 @@ class NandFileStream : public FileStream {
 
   private:
     typedef struct NandFileStreamInfo {
-        NANDCommandBlock nandBlock; // 0x00
-        NANDFileInfo nandInfo; // 0xB8
-        NandFileStream* stream; // 0x144
+        /* 0x00 */ NANDCommandBlock nandBlock;
+        /* 0xB8 */ NANDFileInfo nandInfo;
+        /* 0x144 */ NandFileStream* stream;
     } NandFileStreamInfo;
 
     static void NandAsyncCallback_(s32 result, NANDCommandBlock* pBlock);
@@ -56,18 +56,18 @@ class NandFileStream : public FileStream {
     bool ReadAsyncImpl(void* buf, u32 length, IOStreamCallback pCallback, void* pCallbackArg);
     void ReadAsyncSetArgs(IOStreamCallback pCallback, void* pCallbackArg);
 
-    FilePosition mFilePosition; // 0x14
-    NandFileStreamInfo mFileInfo; // 0x1C
+    /* 0x14 */ FilePosition mFilePosition;
+    /* 0x1C */ NandFileStreamInfo mFileInfo;
 
-    bool mCanRead; // 0x164
-    bool mCanWrite; // 0x165
+    /* 0x164 */ bool mCanRead;
+    /* 0x165 */ bool mCanWrite;
 
-    volatile bool mIsBusy; // 0x166
+    /* 0x166 */ volatile bool mIsBusy;
 
-    bool mCloseOnDestroyFlg; // 0x167
-    bool mCloseEnableFlg; // 0x168
+    /* 0x167 */ bool mCloseOnDestroyFlg;
+    /* 0x168 */ bool mCloseEnableFlg;
 };
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_NAND_FILE_STREAM_H
+#endif

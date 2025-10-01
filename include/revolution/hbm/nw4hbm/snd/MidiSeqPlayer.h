@@ -17,4 +17,4 @@ class MidiSeqPlayer : public SeqPlayer {
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_MIDI_SEQ_PLAYER_H
+#endif

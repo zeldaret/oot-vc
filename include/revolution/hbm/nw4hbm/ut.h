@@ -28,4 +28,4 @@
 #include "revolution/hbm/nw4hbm/ut/FileStream.h"
 #include "revolution/hbm/nw4hbm/ut/NandFileStream.h"
 
-#endif // NW4HBM_UT_H
+#endif

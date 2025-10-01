@@ -66,4 +66,4 @@ template <typename T> inline void* RoundDown(T* pPtr, u32 alignment) {
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_INLINE_FUNCTIONS_H
+#endif

@@ -4,27 +4,27 @@
 #include "macros.h"
 #include "revolution/types.h"
 
-#include "revolution/hbm/nw4hbm/snd/Util.h" // Util::Table
+#include "revolution/hbm/nw4hbm/snd/Util.h"
 
 #include "revolution/hbm/nw4hbm/ut/binaryFileFormat.h"
 
-#include "revolution/hbm/nw4hbm/config.h"
+#include "revolution/hbm/HBMCommon.h"
 
 namespace nw4hbm {
 namespace snd {
 namespace detail {
 namespace SeqFile {
 typedef struct Header {
-    ut::BinaryFileHeader fileHeader; // 0x00
-    u32 dataBlockOffset; // 0x10
-    u32 dataBlockSize; // 0x14
-    u32 labelBlockOffset; // 0x18
-    u32 labelBlockSize; // 0x1C
+    /* 0x00 */ ut::BinaryFileHeader fileHeader;
+    /* 0x10 */ u32 dataBlockOffset;
+    /* 0x14 */ u32 dataBlockSize;
+    /* 0x18 */ u32 labelBlockOffset;
+    /* 0x1C */ u32 labelBlockSize;
 } Header;
 
 typedef struct DataBlock {
-    ut::BinaryBlockHeader blockHeader; // 0x00
-    u32 baseOffset; // 0x08
+    /* 0x00 */ ut::BinaryBlockHeader blockHeader;
+    /* 0x08 */ u32 baseOffset;
 } DataBlock;
 
 static const u32 SIGNATURE_DATA_BLOCK = 'DATA';
@@ -42,12 +42,12 @@ class SeqFileReader {
     const void* GetBaseAddress() const;
 
   private:
-    const SeqFile::Header* mHeader; // 0x00
-    const SeqFile::DataBlock* mDataBlock; // 0x04
+    /* 0x00 */ const SeqFile::Header* mHeader;
+    /* 0x04 */ const SeqFile::DataBlock* mDataBlock;
 };
 
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_SEQ_FILE_H
+#endif

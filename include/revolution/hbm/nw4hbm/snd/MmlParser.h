@@ -24,9 +24,10 @@ class MmlParser {
     static const int CALL_STACK_MAX_DEPTH = 3;
 
   public:
-    virtual void CommandProc(MmlSeqTrack* track, u32 command, s32 commandArg1, s32 commandArg2) const; // 0x8
+    virtual void CommandProc(MmlSeqTrack* track, u32 command, s32 commandArg1,
+                             /* 0x8 */ s32 commandArg2) const;
     virtual Channel* NoteOnCommandProc(MmlSeqTrack* track, int key, int velocity, s32 length,
-                                       bool tieFlag) const; // 0xC
+                                       /* 0xC */ bool tieFlag) const;
 
     ParseResult Parse(MmlSeqTrack* track, bool doNoteOn) const;
 
@@ -148,4 +149,4 @@ class MmlParser {
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_MML_PARSER_H
+#endif

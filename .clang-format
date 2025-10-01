@@ -24,3 +24,9 @@ AlignEscapedNewlines: Left
 AlignTrailingComments: false
 SortIncludes: true
 InsertBraces: true
+CompactNamespaces: false
+NamespaceIndentation: None
+BreakConstructorInitializers: AfterColon
+PackConstructorInitializers: Never
+IndentAccessModifiers: false
+AccessModifierOffset: -4

@@ -38,19 +38,15 @@ class Material {
   public:
     Material();
     Material(const res::Material* pRes, const ResBlockSet& resBlockSet);
-    virtual ~Material();
 
-    virtual bool SetupGX(bool bModVtxCol, u8 alpha);
-
-    virtual void BindAnimation(AnimTransform* animTrans);
-    virtual void UnbindAnimation(AnimTransform* animTrans);
-    virtual void UnbindAllAnimation();
-
-    virtual void Animate();
-
-    virtual AnimationLink* FindAnimationLink(AnimTransform* animTrans);
-
-    virtual void SetAnimationEnable(AnimTransform* animTrans, bool bEnable);
+    /* 0x08 */ virtual ~Material();
+    /* 0x0C */ virtual bool SetupGX(bool bModVtxCol, u8 alpha);
+    /* 0x10 */ virtual void BindAnimation(AnimTransform* animTrans);
+    /* 0x14 */ virtual void UnbindAnimation(AnimTransform* animTrans);
+    /* 0x18 */ virtual void UnbindAllAnimation();
+    /* 0x1C */ virtual void Animate();
+    /* 0x20 */ virtual AnimationLink* FindAnimationLink(AnimTransform* animTrans);
+    /* 0x24 */ virtual void SetAnimationEnable(AnimTransform* animTrans, bool bEnable);
 
     const char* GetName() const { return mName; }
     GXColorS10 GetTevColor(u32 idx) const { return mTevCols[idx]; }
@@ -142,21 +138,18 @@ class Material {
     static const int MAX_TEX_SRT = (GX_TEXMTX9 - GX_TEXMTX0) / 3 + 1;
     static const int MAX_IND_SRT = (GX_ITM_2 - GX_ITM_0) + 1;
 
-    char mName[20]; // 0x04
-
-    AnimationLinkList mAnimList; // 0x18
-
-    GXColorS10 mTevCols[TEVCOLOR_MAX]; // 0x24
-    ut::Color mTevKCols[GX_MAX_KCOLOR]; // 0x3C
-
-    detail::BitGXNums mGXMemCap; // 0x4C
-    detail::BitGXNums mGXMemNum; // 0x50
-
-    bool mbUserAllocated; // 0x54
-
-    void* mpGXMem; // 0x58
+    /* 0x00 (vtable) */
+    /* 0x04 */ char mName[20];
+    /* 0x18 */ AnimationLinkList mAnimList;
+    /* 0x24 */ GXColorS10 mTevCols[TEVCOLOR_MAX];
+    /* 0x3C */ ut::Color mTevKCols[GX_MAX_KCOLOR];
+    /* 0x4C */ detail::BitGXNums mGXMemCap;
+    /* 0x50 */ detail::BitGXNums mGXMemNum;
+    /* 0x54 */ bool mbUserAllocated;
+    /* 0x58 */ void* mpGXMem;
 };
+
 } // namespace lyt
 } // namespace nw4hbm
 
-#endif // NW4HBM_LYT_MATERIAL_H
+#endif

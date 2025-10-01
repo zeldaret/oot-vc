@@ -59,8 +59,8 @@ class ResFontBase : public Font {
     bool IsManaging(const void* ptr) const { return mResource == ptr; }
 
   private:
-    void* mResource; // 0x10
-    FontInformation* mFontInfo; // 0x14
+    /* 0x10 */ void* mResource;
+    /* 0x14 */ FontInformation* mFontInfo;
 };
 } // namespace detail
 
@@ -86,4 +86,4 @@ class ResFont : public detail::ResFontBase {
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_RES_FONT_H
+#endif

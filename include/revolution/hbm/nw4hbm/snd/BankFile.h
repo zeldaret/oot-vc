@@ -7,7 +7,7 @@
 
 #include "revolution/hbm/nw4hbm/ut.h"
 
-#include "revolution/hbm/nw4hbm/config.h"
+#include "revolution/hbm/HBMCommon.h"
 
 namespace nw4hbm {
 namespace snd {
@@ -22,30 +22,30 @@ static const u32 SIGNATURE_DATA_BLOCK = 'DATA';
 static const u32 SIGNATURE_WAVE_BLOCK = 'WAVE';
 
 typedef struct InstParam {
-    s32 waveIndex; // 0x00
+    /* 0x00 */ s32 waveIndex;
 
-    u8 attack; // 0x04
-    u8 decay; // 0x05
-    u8 sustain; // 0x06
-    u8 release; // 0x07
-    u16 hold; // 0x08
-    u16 padding; // 0x0A
-    u8 originalKey; // 0x0C
-    u8 volume; // 0x0D
-    u8 pan; // 0x0E
-    u8 padding2; // 0x0F
-    f32 tune; // 0x10
+    /* 0x04 */ u8 attack;
+    /* 0x05 */ u8 decay;
+    /* 0x06 */ u8 sustain;
+    /* 0x07 */ u8 release;
+    /* 0x08 */ u16 hold;
+    /* 0x0A */ u16 padding;
+    /* 0x0C */ u8 originalKey;
+    /* 0x0D */ u8 volume;
+    /* 0x0E */ u8 pan;
+    /* 0x0F */ u8 padding2;
+    /* 0x10 */ f32 tune;
 
-    Util::DataRef<void> lfoTableRef; // 0x14
-    Util::DataRef<void> graphEnvTablevRef; // 0x1C
-    Util::DataRef<void> randomizerTableRef; // 0x24
+    /* 0x14 */ Util::DataRef<void> lfoTableRef;
+    /* 0x1C */ Util::DataRef<void> graphEnvTablevRef;
+    /* 0x24 */ Util::DataRef<void> randomizerTableRef;
 
-    u32 reserved; // 0x2C
+    /* 0x2C */ u32 reserved;
 } InstParam;
 
 typedef struct RangeTable {
-    u8 tableSize; // 0x00
-    u8 key[]; // 0x01
+    /* 0x00 */ u8 tableSize;
+    /* 0x01 */ u8 key[];
 } RangeTable;
 
 typedef struct IndexTable IndexTable;
@@ -54,43 +54,43 @@ typedef Util::DataRef<void, InstParam, RangeTable, IndexTable> DataRegion;
 typedef Util::DataRef<WaveFile::WaveInfo> WaveRegion;
 
 struct IndexTable {
-    u8 min; // 0x00
-    u8 max; // 0x01
-    u16 reserved; // 0x02
-    DataRegion ref[]; // 0x04
+    /* 0x00 */ u8 min;
+    /* 0x01 */ u8 max;
+    /* 0x02 */ u16 reserved;
+    /* 0x04 */ DataRegion ref[];
 };
 
 typedef struct Header {
-    ut::BinaryFileHeader fileHeader; // 0x00
+    /* 0x00 */ ut::BinaryFileHeader fileHeader;
 
-    u32 dataBlockOffset; // 0x10
-    u32 dataBlockSize; // 0x14
-    u32 waveBlockOffset; // 0x18
-    u32 waveBlockSize; // 0x1C
+    /* 0x10 */ u32 dataBlockOffset;
+    /* 0x14 */ u32 dataBlockSize;
+    /* 0x18 */ u32 waveBlockOffset;
+    /* 0x1C */ u32 waveBlockSize;
 } Header;
 
 typedef struct DataBlock {
-    ut::BinaryBlockHeader blockHeader; // 0x00
-    Util::Table<DataRegion> instTable; // 0x08
+    /* 0x00 */ ut::BinaryBlockHeader blockHeader;
+    /* 0x08 */ Util::Table<DataRegion> instTable;
 } DataBlock;
 
 typedef struct WaveBlock {
-    ut::BinaryBlockHeader blockHeader; // 0x00
-    Util::Table<WaveRegion> waveInfoTable; // 0x08
+    /* 0x00 */ ut::BinaryBlockHeader blockHeader;
+    /* 0x08 */ Util::Table<WaveRegion> waveInfoTable;
 } WaveBlock;
 
 } // namespace BankFile
 
 typedef struct InstInfo {
-    s32 waveIndex; // 0x00
-    u8 attack; // 0x04
-    u8 decay; // 0x05
-    u8 sustain; // 0x06
-    u8 release; // 0x07
-    u8 originalKey; // 0x08
-    u8 pan; // 0x09
-    u8 volume; // 0x0A
-    f32 tune; // 0x0C
+    /* 0x00 */ s32 waveIndex;
+    /* 0x04 */ u8 attack;
+    /* 0x05 */ u8 decay;
+    /* 0x06 */ u8 sustain;
+    /* 0x07 */ u8 release;
+    /* 0x08 */ u8 originalKey;
+    /* 0x09 */ u8 pan;
+    /* 0x0A */ u8 volume;
+    /* 0x0C */ f32 tune;
 } InstInfo;
 
 class BankFileReader {
@@ -109,9 +109,9 @@ class BankFileReader {
     const BankFile::DataRegion* GetReferenceToSubRegion(const BankFile::DataRegion* ref, int splitKey) const;
 
   private:
-    const BankFile::Header* mHeader; // 0x00
-    const BankFile::DataBlock* mDataBlock; // 0x04
-    const BankFile::WaveBlock* mWaveBlock; // 0x08
+    /* 0x00 */ const BankFile::Header* mHeader;
+    /* 0x04 */ const BankFile::DataBlock* mDataBlock;
+    /* 0x08 */ const BankFile::WaveBlock* mWaveBlock;
 };
 
 } // namespace detail

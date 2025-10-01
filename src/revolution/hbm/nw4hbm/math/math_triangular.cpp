@@ -6,12 +6,12 @@ typedef struct {
     /* 0x04 */ f32 cos_val;
     /* 0x08 */ f32 sin_delta;
     /* 0x0C */ f32 cos_delta;
-} SinCosSample; // size 0x10
+} SinCosSample; // size = 0x10
 
 typedef struct {
     /* 0x00 */ f32 atan_val;
     /* 0x04 */ f32 atan_delta;
-} ArcTanSample; // size 0x08
+} ArcTanSample; // size = 0x08
 
 namespace nw4hbm {
 namespace math {

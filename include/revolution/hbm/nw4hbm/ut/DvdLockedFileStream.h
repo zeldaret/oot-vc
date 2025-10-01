@@ -11,14 +11,14 @@ class DvdLockedFileStream : public DvdFileStream {
 
     explicit DvdLockedFileStream(s32 entrynum);
     DvdLockedFileStream(const DVDFileInfo* info, bool close);
-    virtual ~DvdLockedFileStream(); // 0x0C
+    /* 0x0C */ virtual ~DvdLockedFileStream();
 
-    virtual s32 Read(void* pDst, u32 size); // 0x14
+    /* 0x14 */ virtual s32 Read(void* pDst, u32 size);
     virtual bool ReadAsync(void* pDst, u32 size, IOStreamCallback pCallback, void* pCallbackArg) {
         return false;
     } // 0x18
 
-    virtual s32 Peek(void* pDst, u32 size); // 0x5C
+    /* 0x5C */ virtual s32 Peek(void* pDst, u32 size);
     virtual bool PeekAsync(void* pDst, u32 size, IOStreamCallback pCallback, void* pCallbackArg) {
         return false;
     } // 0x60
@@ -29,7 +29,7 @@ class DvdLockedFileStream : public DvdFileStream {
     static void InitMutex_();
 
   private:
-    bool mCancelFlag; // 0x6F
+    /* 0x6F */ bool mCancelFlag;
 
     static bool sInitialized;
     static OSMutex sMutex;
@@ -37,4 +37,4 @@ class DvdLockedFileStream : public DvdFileStream {
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_DVD_LOCKED_FILE_STREAM_H
+#endif

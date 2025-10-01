@@ -51,9 +51,9 @@ class ExternalSoundPlayer {
     }
 
   private:
-    BasicSoundExtPlayList mSoundList; // 0x00
-    u16 mPlayableCount; // 0x0C
-    f32 mVolume; // 0x10
+    /* 0x00 */ BasicSoundExtPlayList mSoundList;
+    /* 0x0C */ u16 mPlayableCount;
+    /* 0x10 */ f32 mVolume;
 };
 } // namespace detail
 } // namespace snd

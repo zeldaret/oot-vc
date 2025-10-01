@@ -9,4 +9,4 @@ typedef TagProcessorBase<char> TagProcessor;
 }
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_TAG_PROCESSOR_H
+#endif

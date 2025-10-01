@@ -4,9 +4,9 @@
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/Channel.h"
-#include "revolution/hbm/nw4hbm/snd/Lfo.h" // LfoParam
+#include "revolution/hbm/nw4hbm/snd/Lfo.h"
 #include "revolution/hbm/nw4hbm/snd/MoveValue.h"
-#include "revolution/hbm/nw4hbm/snd/global.h" // AUX_BUS_NUM
+#include "revolution/hbm/nw4hbm/snd/global.h"
 
 namespace nw4hbm {
 namespace snd {
@@ -31,56 +31,56 @@ class SeqTrack {
     static const int PRGNO_MAX = 0xFFFF;
 
     typedef struct ParserTrackParam { // 50
-        const u8* baseAddr; // 0x00
-        const u8* currentAddr; // 0x04
+        /* 0x00 */ const u8* baseAddr;
+        /* 0x04 */ const u8* currentAddr;
 
-        s32 wait; // 0x08
-        u8 muteFlag; // 0x0C
-        u8 silenceFlag; // 0x0D
-        u8 noteFinishWait; // 0x0E
-        u8 portaFlag; // 0x0F
+        /* 0x08 */ s32 wait;
+        /* 0x0C */ u8 muteFlag;
+        /* 0x0D */ u8 silenceFlag;
+        /* 0x0E */ u8 noteFinishWait;
+        /* 0x0F */ u8 portaFlag;
 
-        int bankNo; // 0x10
-        int prgNo; // 0x14
+        /* 0x10 */ int bankNo;
+        /* 0x14 */ int prgNo;
 
-        LfoParam lfoParam; // 0x18
-        u8 lfoTarget; // 0x28
+        /* 0x18 */ LfoParam lfoParam;
+        /* 0x28 */ u8 lfoTarget;
 
-        f32 sweepPitch; // 0x2C
+        /* 0x2C */ f32 sweepPitch;
 
-        u8 volume; // 0x30
-        u8 volume2; // 0x31
+        /* 0x30 */ u8 volume;
+        /* 0x31 */ u8 volume2;
 
-        s8 pitchBend; // 0x32
-        u8 bendRange; // 0x33
+        /* 0x32 */ s8 pitchBend;
+        /* 0x33 */ u8 bendRange;
 
-        s8 pan; // 0x34
-        s8 initPan; // 0x35
-        s8 surroundPan; // 0x36
+        /* 0x34 */ s8 pan;
+        /* 0x35 */ s8 initPan;
+        /* 0x36 */ s8 surroundPan;
 
-        s8 transpose; // 0x37
+        /* 0x37 */ s8 transpose;
 
-        u8 priority; // 0x38
+        /* 0x38 */ u8 priority;
 
-        u8 portaKey; // 0x39
-        u8 portaTime; // 0x3A
+        /* 0x39 */ u8 portaKey;
+        /* 0x3A */ u8 portaTime;
 
-        u8 attack; // 0x3B
-        u8 decay; // 0x3C
-        u8 sustain; // 0x3D
-        u8 release; // 0x3E
-        u8 mainSend; // 0x3F
+        /* 0x3B */ u8 attack;
+        /* 0x3C */ u8 decay;
+        /* 0x3D */ u8 sustain;
+        /* 0x3E */ u8 release;
+        /* 0x3F */ u8 mainSend;
 
-        u8 fxSend[AUX_BUS_NUM]; // 0x40
+        /* 0x40 */ u8 fxSend[AUX_BUS_NUM];
 
-        u8 lpfFreq; // 0x43
+        /* 0x43 */ u8 lpfFreq;
     } ParserTrackParam;
 
   public:
     SeqTrack() : mSeqPlayer(nullptr) { InitParam(); }
     virtual ~SeqTrack() {} // 0x08
 
-    virtual ParseResult Parse(bool doNoteOn) = 0; // 0x0C
+    /* 0x0C */ virtual ParseResult Parse(bool doNoteOn) = 0;
 
     void SetPlayerTrackNo(int playerTrackNo);
     u8 GetPlayerTrackNo() const { return mPlayerTrackNo; }
@@ -141,27 +141,27 @@ class SeqTrack {
     static void ChannelCallbackFunc(Channel* dropChannel, Channel::ChannelCallbackStatus status, u32 userData);
 
   private:
-    u8 mPlayerTrackNo; // 0x04
+    /* 0x04 */ u8 mPlayerTrackNo;
 
-    f32 mExtVolume; // 0x08
-    f32 mExtPitch; // 0x0C
-    f32 mExtPan; // 0x10
-    f32 mExtSurroundPan; // 0x14
-    f32 mPanRange; // 0x18
-    f32 mExtLpfFreq; // 0x1C
-    f32 mExtMainSend; // 0x20
-    f32 mExtFxSend[AUX_BUS_NUM]; // 0x24
-    f32 mExtRemoteSend[WPAD_MAX_CONTROLLERS]; // 0x30
-    f32 mExtRemoteFxSend[WPAD_MAX_CONTROLLERS]; // 0x40
+    /* 0x08 */ f32 mExtVolume;
+    /* 0x0C */ f32 mExtPitch;
+    /* 0x10 */ f32 mExtPan;
+    /* 0x14 */ f32 mExtSurroundPan;
+    /* 0x18 */ f32 mPanRange;
+    /* 0x1C */ f32 mExtLpfFreq;
+    /* 0x20 */ f32 mExtMainSend;
+    /* 0x24 */ f32 mExtFxSend[AUX_BUS_NUM];
+    /* 0x30 */ f32 mExtRemoteSend[WPAD_MAX_CONTROLLERS];
+    /* 0x40 */ f32 mExtRemoteFxSend[WPAD_MAX_CONTROLLERS];
 
-    ParserTrackParam mParserTrackParam; // 0x50
-    vs16 mTrackVariable[VARIABLE_NUM]; // 0x94
-    SeqPlayer* mSeqPlayer; // 0xB4
-    Channel* mChannelList; // 0xB8
+    /* 0x50 */ ParserTrackParam mParserTrackParam;
+    /* 0x94 */ vs16 mTrackVariable[VARIABLE_NUM];
+    /* 0xB4 */ SeqPlayer* mSeqPlayer;
+    /* 0xB8 */ Channel* mChannelList;
 };
 
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_SEQ_TRACK_H
+#endif

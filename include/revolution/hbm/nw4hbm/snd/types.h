@@ -9,7 +9,7 @@ namespace nw4hbm {
 namespace snd {
 class LinkedInstance {
   public:
-    ut::LinkListNode mInstanceLink; // 0x00
+    /* 0x00 */ ut::LinkListNode mInstanceLink;
 };
 template <typename T, int Ofs> class InstanceManager {
   public:
@@ -37,8 +37,8 @@ template <typename T, int Ofs> class InstanceManager {
     Iterator GetEndIter() { return mActiveList.GetEndIter(); }
 
   private:
-    ut::LinkList<T, Ofs> mFreeList; // 0x00
-    ut::LinkList<T, Ofs> mActiveList; // 0x0C
+    /* 0x00 */ ut::LinkList<T, Ofs> mFreeList;
+    /* 0x0C */ ut::LinkList<T, Ofs> mActiveList;
 };
 
 static const int THREAD_STACK_SIZE = 1024;
@@ -84,42 +84,42 @@ typedef enum SampleFormat {
 } SampleFormat;
 
 typedef struct SoundParam {
-    f32 volume; // 0x00
-    f32 pitch; // 0x04
-    f32 pan; // 0x08
-    f32 surroundPan; // 0x0C
-    f32 fxSend; // 0x10
-    f32 lpf; // 0x14
-    s32 priority; // 0x18
+    /* 0x00 */ f32 volume;
+    /* 0x04 */ f32 pitch;
+    /* 0x08 */ f32 pan;
+    /* 0x0C */ f32 surroundPan;
+    /* 0x10 */ f32 fxSend;
+    /* 0x14 */ f32 lpf;
+    /* 0x18 */ s32 priority;
 } SoundParam;
 
 namespace detail {
 typedef struct AdpcmParam {
-    u16 coef[16]; // 0x00
-    u16 gain; // 0x20
-    u16 pred_scale; // 0x22
-    u16 yn1; // 0x24
-    u16 yn2; // 0x26
+    /* 0x00 */ u16 coef[16];
+    /* 0x20 */ u16 gain;
+    /* 0x22 */ u16 pred_scale;
+    /* 0x24 */ u16 yn1;
+    /* 0x26 */ u16 yn2;
 } AdpcmParam;
 
 typedef struct AdpcmLoopParam {
-    u16 loop_pred_scale; // 0x00
-    u16 loop_yn1; // 0x02
-    u16 loop_yn2; // 0x04
+    /* 0x00 */ u16 loop_pred_scale;
+    /* 0x02 */ u16 loop_yn1;
+    /* 0x04 */ u16 loop_yn2;
 } AdpcmLoopParam;
 
 typedef struct AdpcmInfo {
-    AdpcmParam adpcm; // 0x08
-    AdpcmLoopParam adpcmloop; // 0x28
-    u16 padding; // 0x2E
+    /* 0x08 */ AdpcmParam adpcm;
+    /* 0x28 */ AdpcmLoopParam adpcmloop;
+    /* 0x2E */ u16 padding;
 } AdpcmInfo;
 
 typedef struct VoiceChannelParam {
-    void* waveData; // 0x00
-    AdpcmInfo adpcmInfo; // 0x04
+    /* 0x00 */ void* waveData;
+    /* 0x04 */ AdpcmInfo adpcmInfo;
 } VoiceChannelParam;
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4HBM_SND_TYPES_H
+#endif

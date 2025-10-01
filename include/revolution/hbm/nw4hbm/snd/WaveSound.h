@@ -23,11 +23,11 @@ class WaveSound : public BasicSound {
 
     explicit WaveSound(SoundInstanceManager<WaveSound>* manager);
 
-    virtual void Shutdown(); // 0x28
+    /* 0x28 */ virtual void Shutdown();
 
-    virtual void SetPlayerPriority(int priority); // 0x4C
-    virtual bool IsAttachedTempSpecialHandle(); // 0x5C
-    virtual void DetachTempSpecialHandle(); // 0x60
+    /* 0x4C */ virtual void SetPlayerPriority(int priority);
+    /* 0x5C */ virtual bool IsAttachedTempSpecialHandle();
+    /* 0x60 */ virtual void DetachTempSpecialHandle();
 
     virtual BasicPlayer& GetBasicPlayer() { return mWsdPlayer; } // 0x68
     virtual const BasicPlayer& GetBasicPlayer() const { return mWsdPlayer; } // 0x6C
@@ -39,13 +39,13 @@ class WaveSound : public BasicSound {
     void SetReleasePriorityFix(bool flag);
 
   private:
-    WsdPlayer mWsdPlayer; // 0xD8
-    WaveSoundHandle* mTempSpecialHandle; // 0x1B0
-    SoundInstanceManager<WaveSound>* mManager; // 0x1B4
+    /* 0xD8 */ WsdPlayer mWsdPlayer;
+    /* 0x1B0 */ WaveSoundHandle* mTempSpecialHandle;
+    /* 0x1B4 */ SoundInstanceManager<WaveSound>* mManager;
 };
 
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_WAVE_SOUND_H
+#endif

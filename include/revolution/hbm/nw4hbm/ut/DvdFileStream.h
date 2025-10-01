@@ -13,25 +13,25 @@ class DvdFileStream : public FileStream {
 
     explicit DvdFileStream(s32 entrynum);
     DvdFileStream(const DVDFileInfo* info, bool close);
-    virtual ~DvdFileStream(); // 0x0C
+    /* 0x0C */ virtual ~DvdFileStream();
 
     bool Open(s32 entrynum);
     bool Open(const DVDFileInfo* info, bool close);
 
     void SetPriority(s32 priority) { mPriority = priority; }
 
-    virtual void Close(); // 0x10
+    /* 0x10 */ virtual void Close();
 
-    virtual s32 Read(void* pDst, u32 size); // 0x14
-    virtual bool ReadAsync(void* pDst, u32 size, IOStreamCallback pCallback, void* pCallbackArg); // 0x18
+    /* 0x14 */ virtual s32 Read(void* pDst, u32 size);
+    /* 0x18 */ virtual bool ReadAsync(void* pDst, u32 size, IOStreamCallback pCallback, void* pCallbackArg);
 
-    virtual s32 Peek(void* pDst, u32 size); // 0x5C
-    virtual bool PeekAsync(void* pDst, u32 size, IOStreamCallback pCallback, void* pCallbackArg); // 0x60
+    /* 0x5C */ virtual s32 Peek(void* pDst, u32 size);
+    /* 0x60 */ virtual bool PeekAsync(void* pDst, u32 size, IOStreamCallback pCallback, void* pCallbackArg);
 
-    virtual void Seek(s32 offset, u32 origin); // 0x44
+    /* 0x44 */ virtual void Seek(s32 offset, u32 origin);
 
-    virtual void Cancel(); // 0x48
-    virtual bool CancelAsync(IOStreamCallback pCallback, void* pCallbackArg); // 0x4C
+    /* 0x48 */ virtual void Cancel();
+    /* 0x4C */ virtual bool CancelAsync(IOStreamCallback pCallback, void* pCallbackArg);
 
     virtual bool IsBusy() const { return mIsBusy; } // 0x24
 
@@ -50,8 +50,8 @@ class DvdFileStream : public FileStream {
 
   private:
     typedef struct DvdFileStreamInfo {
-        DVDFileInfo dvdInfo; // 0x00
-        DvdFileStream* stream; // 0x3C
+        /* 0x00 */ DVDFileInfo dvdInfo;
+        /* 0x3C */ DvdFileStream* stream;
     } DvdFileStreamInfo;
 
   private:
@@ -62,22 +62,22 @@ class DvdFileStream : public FileStream {
     u32 AdjustReadLength_(u32 len);
 
   private:
-    FilePosition mFilePosition; // 0x14
+    /* 0x14 */ FilePosition mFilePosition;
 
-    IOStreamCallback mCancelCallback; // 0x1C
-    void* mCancelArg; // 0x20
-    volatile bool mIsCanceling; // 0x24
+    /* 0x1C */ IOStreamCallback mCancelCallback;
+    /* 0x20 */ void* mCancelArg;
+    /* 0x24 */ volatile bool mIsCanceling;
 
-    DvdFileStreamInfo mFileInfo; // 0x28
+    /* 0x28 */ DvdFileStreamInfo mFileInfo;
 
-    s32 mPriority; // 0x68
+    /* 0x68 */ s32 mPriority;
 
-    volatile bool mIsBusy; // 0x6C
+    /* 0x6C */ volatile bool mIsBusy;
 
-    bool mCloseOnDestroyFlg; // 0x6D
-    bool mCloseEnableFlg; // 0x6E
+    /* 0x6D */ bool mCloseOnDestroyFlg;
+    /* 0x6E */ bool mCloseEnableFlg;
 };
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_DVD_FILE_STREAM_H
+#endif

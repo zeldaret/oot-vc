@@ -17,7 +17,7 @@ template <typename T> class AutoLock : private NonCopyable {
     ~AutoLock() { Unlock(mLockObj); }
 
   private:
-    T& mLockObj; // 0x00
+    /* 0x00 */ T& mLockObj;
 };
 } // namespace detail
 
@@ -29,9 +29,9 @@ class AutoInterruptLock : private NonCopyable {
     ~AutoInterruptLock() { OSRestoreInterrupts(mOldState); }
 
   private:
-    BOOL mOldState; // 0x00
+    /* 0x00 */ BOOL mOldState;
 };
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_LIST_H
+#endif

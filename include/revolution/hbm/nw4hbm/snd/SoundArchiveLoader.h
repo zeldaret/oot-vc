@@ -1,9 +1,9 @@
 #ifndef NW4R_SND_SOUND_ARCHIVE_LOADER_H
 #define NW4R_SND_SOUND_ARCHIVE_LOADER_H
 
-#include "revolution/hbm/nw4hbm/snd/types.h" // IWYU pragma: export
-#include "revolution/hbm/nw4hbm/ut.h" // IWYU pragma: export
-#include "revolution/os.h" // IWYU pragma: export
+#include "revolution/hbm/nw4hbm/snd/types.h"
+#include "revolution/hbm/nw4hbm/ut.h"
+#include "revolution/os.h"
 
 namespace nw4hbm {
 namespace snd {
@@ -29,7 +29,7 @@ class FileStreamHandle {
     operator bool() const { return mStream; }
 
   private:
-    ut::FileStream* mStream; // 0x00
+    /* 0x00 */ ut::FileStream* mStream;
 };
 
 class SoundArchiveLoader {
@@ -44,10 +44,10 @@ class SoundArchiveLoader {
     void Cancel();
 
   private:
-    mutable OSMutex mMutex; // 0x00
-    const SoundArchive& mArc; // 0x18
-    u8 mStreamArea[STREAM_BUFFER_SIZE]; // 0x1C
-    ut::FileStream* mStream; // 0x21C
+    /* 0x00 */ mutable OSMutex mMutex;
+    /* 0x18 */ const SoundArchive& mArc;
+    /* 0x1C */ u8 mStreamArea[STREAM_BUFFER_SIZE];
+    /* 0x21C */ ut::FileStream* mStream;
 };
 
 } // namespace detail

@@ -45,7 +45,10 @@ void RemoteSpeaker::ClearParam() {
     mIntervalFlag = false;
 }
 
-bool RemoteSpeaker::Setup(WPADCallback pCallback) { NW4HBMWarningMessage("RemoteSpeaker::Setup is busy."); }
+bool RemoteSpeaker::Setup(WPADCallback pCallback) {
+    NW4HBMWarningMessage("RemoteSpeaker::Setup is busy.");
+    return false;
+}
 
 void RemoteSpeaker::Update(const s16* pRmtSamples) {
     NW4HBMAssert_Line(IsAvailable(), 257);

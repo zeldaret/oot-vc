@@ -5,4 +5,4 @@
 #include "revolution/hbm/nw4hbm/math/triangular.h"
 #include "revolution/hbm/nw4hbm/math/types.h"
 
-#endif // NW4HBM_MATH_H
+#endif

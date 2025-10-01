@@ -8,83 +8,83 @@
 namespace nw4hbm {
 namespace ut {
 typedef struct CharWidths {
-    s8 left; // 0x00
-    u8 glyphWidth; // 0x01
-    s8 charWidth; // 0x02
+    /* 0x00 */ s8 left;
+    /* 0x01 */ u8 glyphWidth;
+    /* 0x02 */ s8 charWidth;
 } CharWidths;
 
 typedef struct FontWidth {
-    u16 indexBegin; // 0x00
-    u16 indexEnd; // 0x02
+    /* 0x00 */ u16 indexBegin;
+    /* 0x02 */ u16 indexEnd;
 
-    FontWidth* pNext; // 0x04
-    CharWidths widthTable[]; // 0x08
+    /* 0x04 */ FontWidth* pNext;
+    /* 0x08 */ CharWidths widthTable[];
 } FontWidth;
 
 typedef struct Glyph {
-    void* pTexture; // 0x00
+    /* 0x00 */ void* pTexture;
 
-    CharWidths widths; // 0x04
-    u8 height; // 0x07
+    /* 0x04 */ CharWidths widths;
+    /* 0x07 */ u8 height;
 
-    GXTexFmt texFormat; // 0x08
-    u16 texWidth; // 0x0C
-    u16 texHeight; // 0x0E
+    /* 0x08 */ GXTexFmt texFormat;
+    /* 0x0C */ u16 texWidth;
+    /* 0x0E */ u16 texHeight;
 
-    u16 cellX; // 0x10
-    u16 cellY; // 0x12
+    /* 0x10 */ u16 cellX;
+    /* 0x12 */ u16 cellY;
 } Glyph;
 
 typedef struct FontTextureGlyph {
-    u8 cellWidth; // 0x00
-    u8 cellHeight; // 0x01
+    /* 0x00 */ u8 cellWidth;
+    /* 0x01 */ u8 cellHeight;
 
-    s8 baselinePos; // 0x02
+    /* 0x02 */ s8 baselinePos;
 
-    u8 maxCharWidth; // 0x03
+    /* 0x03 */ u8 maxCharWidth;
 
-    u32 sheetSize; // 0x04
-    u16 sheetNum; // 0x08
-    u16 sheetFormat; // 0x0A
-    u16 sheetRow; // 0x0C
-    u16 sheetLine; // 0x0E
-    u16 sheetWidth; // 0x10
-    u16 sheetHeight; // 0x12
-    u8* sheetImage; // 0x14
+    /* 0x04 */ u32 sheetSize;
+    /* 0x08 */ u16 sheetNum;
+    /* 0x0A */ u16 sheetFormat;
+    /* 0x0C */ u16 sheetRow;
+    /* 0x0E */ u16 sheetLine;
+    /* 0x10 */ u16 sheetWidth;
+    /* 0x12 */ u16 sheetHeight;
+    /* 0x14 */ u8* sheetImage;
 } FontTextureGlyph;
 
 typedef struct FontCodeMap {
-    u16 ccodeBegin; // 0x00
-    u16 ccodeEnd; // 0x02
+    /* 0x00 */ u16 ccodeBegin;
+    /* 0x02 */ u16 ccodeEnd;
 
-    u16 mappingMethod; // 0x04
+    /* 0x04 */ u16 mappingMethod;
 
-    u16 reserved; // 0x06
+    /* 0x06 */ u16 reserved;
 
-    FontCodeMap* pNext; // 0x08
+    /* 0x08 */ FontCodeMap* pNext;
 
-    u16 mapInfo[]; // 0x0C
+    /* 0x0C */ u16 mapInfo[];
 } FontCodeMap;
 
 typedef struct FontInformation {
-    u8 fontType; // 0x00
-    s8 linefeed; // 0x01
+    /* 0x00 */ u8 fontType;
+    /* 0x01 */ s8 linefeed;
 
-    u16 alterCharIndex; // 0x02
+    /* 0x02 */ u16 alterCharIndex;
 
-    CharWidths defaultWidth; // 0x04
-    u8 encoding; // 0x07
+    /* 0x04 */ CharWidths defaultWidth;
+    /* 0x07 */ u8 encoding;
 
-    FontTextureGlyph* pGlyph; // 0x08
-    FontWidth* pWidth; // 0x0C
-    FontCodeMap* pMap; // 0x10
+    /* 0x08 */ FontTextureGlyph* pGlyph;
+    /* 0x0C */ FontWidth* pWidth;
+    /* 0x10 */ FontCodeMap* pMap;
 
-    u8 height; // 0x14
-    u8 width; // 0x15
-    u8 ascent; // 0x16
-    u8 padding_[1]; // 0x17
+    /* 0x14 */ u8 height;
+    /* 0x15 */ u8 width;
+    /* 0x16 */ u8 ascent;
+    /* 0x17 */ u8 padding_[1];
 } FontInformation;
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_FONT_RESOURCES_H
+#endif

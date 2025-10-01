@@ -30,11 +30,11 @@ class WavePlayer {
         virtual ~WavePacket() {}
 
       private:
-        WaveBufferInfo mWaveBuffer; // 0x04
-        bool mAppendFlag; // 0x14
+        /* 0x04 */ WaveBufferInfo mWaveBuffer;
+        /* 0x14 */ bool mAppendFlag;
 
       public:
-        ut::LinkListNode mLinkNode; // 0x18
+        /* 0x18 */ ut::LinkListNode mLinkNode;
 
         friend class WavePlayer;
     };
@@ -48,11 +48,11 @@ class WavePlayer {
     typedef void (*WavePacketCallback)(WavePacketCallbackStatus, WavePlayer*, WavePacket*, void*);
 
     typedef struct SetupParam {
-        int channelCount; // 0x00
-        SampleFormat sampleFormat; // 0x04
-        int sampleRate; // 0x08
-        f32 pitchMax; // 0x0C
-        int voiceCount; // 0x10
+        /* 0x00 */ int channelCount;
+        /* 0x04 */ SampleFormat sampleFormat;
+        /* 0x08 */ int sampleRate;
+        /* 0x0C */ f32 pitchMax;
+        /* 0x10 */ int voiceCount;
     } SetupParam;
 
     WavePlayer();
@@ -86,45 +86,45 @@ class WavePlayer {
 
     static void VoiceCallbackFunc(detail::AxVoice* voice, detail::AxVoice::CallbackStatus status, void* arg);
 
-    WavePacketList mWavePacketList; // 0x04
+    /* 0x04 */ WavePacketList mWavePacketList;
 
-    int mChannelCount; // 0x10
+    /* 0x10 */ int mChannelCount;
 
-    f32 mPitchMax; // 0x14
+    /* 0x14 */ f32 mPitchMax;
 
-    detail::AxVoice* mVoice; // 0x18
+    /* 0x18 */ detail::AxVoice* mVoice;
 
-    bool mStartFlag; // 0x1C
-    bool mVoiceStartFlag; // 0x1D
-    bool mLoopSetFlag; // 0x1E
-    bool mPauseFlag; // 0x1F
+    /* 0x1C */ bool mStartFlag;
+    /* 0x1D */ bool mVoiceStartFlag;
+    /* 0x1E */ bool mLoopSetFlag;
+    /* 0x1F */ bool mPauseFlag;
 
-    SampleFormat mSampleFormat; // 0x20
-    int mSampleRate; // 0x24
+    /* 0x20 */ SampleFormat mSampleFormat;
+    /* 0x24 */ int mSampleRate;
 
-    s64 mPlaySampleCount; // 0x28
-    f32 mVolume; // 0x30
-    f32 mPan; // 0x34
-    f32 mSurroundPan; // 0x38
-    f32 mPitch; // 0x3C
-    f32 mLpfFreq; // 0x40
+    /* 0x28 */ s64 mPlaySampleCount;
+    /* 0x30 */ f32 mVolume;
+    /* 0x34 */ f32 mPan;
+    /* 0x38 */ f32 mSurroundPan;
+    /* 0x3C */ f32 mPitch;
+    /* 0x40 */ f32 mLpfFreq;
 
-    int mOutputLineFlag; // 0x44
+    /* 0x44 */ int mOutputLineFlag;
 
-    f32 mMainOutVolume; // 0x48
-    f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS]; // 0x4C
+    /* 0x48 */ f32 mMainOutVolume;
+    /* 0x4C */ f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS];
 
-    f32 mMainSend; // 0x5C
-    f32 mFxSend[AUX_BUS_NUM]; // 0x60
+    /* 0x5C */ f32 mMainSend;
+    /* 0x60 */ f32 mFxSend[AUX_BUS_NUM];
 
-    f32 mRemoteSend[WPAD_MAX_CONTROLLERS]; // 0x6C
-    f32 mRemoteFxSend[WPAD_MAX_CONTROLLERS]; // 0x7C
+    /* 0x6C */ f32 mRemoteSend[WPAD_MAX_CONTROLLERS];
+    /* 0x7C */ f32 mRemoteFxSend[WPAD_MAX_CONTROLLERS];
 
-    WavePacketCallback mCallback; // 0x8C
-    void* mCallbackArg; // 0x90
+    /* 0x8C */ WavePacketCallback mCallback;
+    /* 0x90 */ void* mCallbackArg;
 
   public:
-    ut::LinkListNode mPlayerLink; // 0x94
+    /* 0x94 */ ut::LinkListNode mPlayerLink;
 };
 
 typedef ut::LinkList<WavePlayer, offsetof(WavePlayer, mPlayerLink)> WavePlayerList;
@@ -132,4 +132,4 @@ typedef ut::LinkList<WavePlayer, offsetof(WavePlayer, mPlayerLink)> WavePlayerLi
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_WAVE_PLAYER_H
+#endif

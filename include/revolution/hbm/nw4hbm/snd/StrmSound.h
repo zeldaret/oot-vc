@@ -27,12 +27,12 @@ class StrmSound : public BasicSound {
 
     explicit StrmSound(SoundInstanceManager<StrmSound>* manager);
 
-    virtual void Shutdown(); // 0x28
+    /* 0x28 */ virtual void Shutdown();
 
-    virtual void SetPlayerPriority(int priority); // 0x4C
+    /* 0x4C */ virtual void SetPlayerPriority(int priority);
 
-    virtual bool IsAttachedTempSpecialHandle(); // 0x5C
-    virtual void DetachTempSpecialHandle(); // 0x60
+    /* 0x5C */ virtual bool IsAttachedTempSpecialHandle();
+    /* 0x60 */ virtual void DetachTempSpecialHandle();
 
     virtual BasicPlayer& GetBasicPlayer() { return mStrmPlayer; } // 0x68
     virtual const BasicPlayer& GetBasicPlayer() const { return mStrmPlayer; } // 0x6C
@@ -45,21 +45,21 @@ class StrmSound : public BasicSound {
     void SetChannelPriority(int priority);
 
   private:
-    StrmPlayer mStrmPlayer; // 0xD8
-    StrmSoundHandle* mTempSpecialHandle; // 0x1F4
-    SoundInstanceManager<StrmSound>* mManager; // 0x1F8
+    /* 0xD8 */ StrmPlayer mStrmPlayer;
+    /* 0x1F4 */ StrmSoundHandle* mTempSpecialHandle;
+    /* 0x1F8 */ SoundInstanceManager<StrmSound>* mManager;
 
-    u8 mNumChannels; // 0x5FC
+    /* 0x5FC */ u8 mNumChannels;
 
-    void* mBuffer[CHANNEL_MAX]; // 0x600
-    u32 mBufSize; // 0x608
+    /* 0x600 */ void* mBuffer[CHANNEL_MAX];
+    /* 0x608 */ u32 mBufSize;
 
-    u8 mNumBufBlocks; // 0x60C
+    /* 0x60C */ u8 mNumBufBlocks;
 
-    int mAllocChannelCount; // 0x610
+    /* 0x610 */ int mAllocChannelCount;
 };
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_STRM_SOUND_H
+#endif

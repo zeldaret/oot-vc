@@ -130,12 +130,12 @@ template <typename T> class SoundInstanceManager {
     typedef ut::LinkList<T, offsetof(T, mPriorityLink)> TPrioList;
 
   private:
-    MemoryPool<T> mPool; // 0x00
-    TPrioList mPriorityList; // 0x04
+    /* 0x00 */ MemoryPool<T> mPool;
+    /* 0x04 */ TPrioList mPriorityList;
 };
 
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_SOUND_INSTANCE_MANAGER_H
+#endif

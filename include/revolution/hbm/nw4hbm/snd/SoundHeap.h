@@ -15,9 +15,9 @@ namespace snd {
 class SoundHeap : public SoundMemoryAllocatable {
   public:
     SoundHeap();
-    virtual ~SoundHeap(); // 0x08
+    /* 0x08 */ virtual ~SoundHeap();
 
-    virtual void* Alloc(u32 size); // 0x0C
+    /* 0x0C */ virtual void* Alloc(u32 size);
     void* Alloc(u32 size, detail::FrameHeap::FreeCallback callback, void* callbackArg);
 
     bool Create(void* base, u32 size);
@@ -46,8 +46,8 @@ class SoundHeap : public SoundMemoryAllocatable {
   private:
     static void DisposeCallbackFunc(void* buffer, u32 size, void* callbackArg);
 
-    mutable OSMutex mMutex; // 0x00
-    detail::FrameHeap mFrameHeap; // 0x1C
+    /* 0x00 */ mutable OSMutex mMutex;
+    /* 0x1C */ detail::FrameHeap mFrameHeap;
 };
 
 } // namespace snd

@@ -10,7 +10,6 @@
 #include "revolution/mtx/vec.h"
 #include "revolution/types.h"
 
-// forward declarations
 namespace nw4hbm {
 namespace lyt {
 class DrawInfo;
@@ -20,63 +19,50 @@ class Layout;
 
 namespace homebutton {
 namespace gui {
-// forward declarations
+
 class Manager;
 class PaneComponent;
 
 class Interface {
-    // methods
-  public:
-    // cdtors
+public:
     Interface() {}
-    /* virtual ~Interface() {} */
 
-    // virtual function ordering
-    // vtable Interface
-    virtual void create() {}
-    virtual void init() {}
-    virtual void calc() {}
-    virtual void draw(Mtx&) {}
-    virtual void draw() {}
-    virtual ~Interface() {}
+    /* 0x08 */ virtual void create() {}
+    /* 0x0C */ virtual void init() {}
+    /* 0x10 */ virtual void calc() {}
+    /* 0x14 */ virtual void draw(Mtx&) {}
+    /* 0x18 */ virtual void draw() {}
+    /* 0x1C */ virtual ~Interface() {}
 
-    // members
-  private:
-    /* vtable */ // size 0x04, offset 0x00
-}; // size 0x04
+private:
+    /* 0x00 (vtable) */
+}; // size = 0x04
 
-class EventHandler // also see HBMBase.cpp
-{
-    // methods
-  public:
-    // cdtors
+class EventHandler {
+public:
     EventHandler() {}
 
-    // virtual function ordering
-    // vtable EventHandler
-    virtual void onEvent(u32, u32, void*) {}
-    virtual void setManager(Manager* pManager) { mpManager = pManager; }
+    /* 0x08 */ virtual void onEvent(u32, u32, void*) {}
+    /* 0x0C */ virtual void setManager(Manager* pManager) { mpManager = pManager; }
 
-    // members
-  protected: // HomeButtonEventHandler::onEvent
-    /* vtable */ // size 0x04, offset 0x00
+protected:
+    /* 0x00 (vtable) */
     /* 0x04 */ Manager* mpManager;
-}; // size 0x08
+}; // size = 0x08
 
 class Component : public Interface {
-    // NOTE the misspelling of triggerTarget as triggerTarger
-
-    // methods
-  public:
-    // cdtors
-    Component(u32 uID) : mDragStartPos(), mbDragging(), muDraggingButton(), muID(uID), mbTriggerTarger(), mpManager() {
+public:
+    Component(u32 uID) :
+        mDragStartPos(),
+        mbDragging(),
+        muDraggingButton(),
+        muID(uID),
+        mbTriggerTarger(),
+        mpManager() {
         init();
     }
-    /* virtual ~Component(); */
 
-    // virtual function ordering
-    // vtable Interface
-    virtual void init() {
+    /* 0x0C */ virtual void init() {
         mbDragging = false;
 
         for (int i = 0; i < (int)ARRAY_COUNT(mabPointed); i++) {
@@ -84,156 +70,137 @@ class Component : public Interface {
         }
     }
 
-    virtual ~Component() {}
+    /* 0x1C */ virtual ~Component() {}
+    /* 0x20 */ virtual u32 getID() { return muID; }
+    /* 0x24 */ virtual int isPointed(int n) { return mabPointed[n]; }
+    /* 0x28 */ virtual void setPointed(int n, bool b) { mabPointed[n] = b; }
+    /* 0x2C */ virtual void onPoint() {}
+    /* 0x30 */ virtual void offPoint() {}
+    /* 0x34 */ virtual void onDrag(f32, f32) {}
+    /* 0x38 */ virtual void onMove(f32, f32) {}
 
-    // vtable Component
-    virtual u32 getID() { return muID; }
-    virtual int isPointed(int n) { return mabPointed[n]; }
-    virtual void setPointed(int n, bool b) { mabPointed[n] = b; }
-    virtual void onPoint() {}
-    virtual void offPoint() {}
-    virtual void onDrag(f32, f32) {}
-    virtual void onMove(f32, f32) {}
-    virtual void onTrig(u32 uFlag, Vec& vec) {
+    /* 0x3C */ virtual void onTrig(u32 uFlag, Vec& vec) {
         if (uFlag & muDraggingButton) {
             mDragStartPos = vec;
             mbDragging = true;
         }
     }
-    virtual void setDraggingButton(u32 uDraggingButton) { muDraggingButton = uDraggingButton; }
-    virtual bool update(int, const KPADStatus*, f32, f32, void*) { return false; }
-    virtual bool update(int i, f32 x, f32 y, u32 uTrigFlag, u32 uHoldFlag, u32 uReleaseFlag, void* pData);
-    virtual bool isTriggerTarger() { return mbTriggerTarger; }
-    virtual void setTriggerTarget(bool bTriggerTarget) { mbTriggerTarger = bTriggerTarget; }
-    virtual void setManager(Manager* pManager) { mpManager = pManager; }
-    virtual bool isVisible() { return true; }
-    virtual bool contain(f32 x_, f32 y_) = 0;
 
-    // members
-  protected: // PaneComponent::contain
-    /* base Interface */ // size 0x04, offset 0x00
+    /* 0x40 */ virtual void setDraggingButton(u32 uDraggingButton) { muDraggingButton = uDraggingButton; }
+    /* 0x44 */ virtual bool update(int, const KPADStatus*, f32, f32, void*) { return false; }
+    /* 0x48 */ virtual bool update(int i, f32 x, f32 y, u32 uTrigFlag, u32 uHoldFlag, u32 uReleaseFlag, void* pData);
+    /* 0x4C */ virtual bool isTriggerTarger() { return mbTriggerTarger; }
+    /* 0x50 */ virtual void setTriggerTarget(bool bTriggerTarget) { mbTriggerTarger = bTriggerTarget; }
+    /* 0x54 */ virtual void setManager(Manager* pManager) { mpManager = pManager; }
+    /* 0x58 */ virtual bool isVisible() { return true; }
+    /* 0x5C */ virtual bool contain(f32 x_, f32 y_) = 0;
+
+protected:
+    /* 0x00 (base) */
     /* 0x04 */ bool mabPointed[8];
     /* 0x0C */ Vec mDragStartPos;
     /* 0x18 */ bool mbDragging;
-    /* 3 bytes padding */
     /* 0x1C */ u32 muDraggingButton;
     /* 0x20 */ u32 muID;
     /* 0x24 */ bool mbTriggerTarger;
-    /* 3 bytes padding */
     /* 0x28 */ Manager* mpManager;
-}; // size 0x2c
+}; // size = 0x2C
 
 class Manager : public Interface {
     // nested types
-  private:
+private:
     struct IDToComponent {
-        // methods
-      public:
-        // cdtors
-        IDToComponent(u32 uID, Component* pComponent) : muID(uID), mpComponent(pComponent) {}
-
-        // members
-      public:
+    public:
         /* 0x00 */ u32 muID;
         /* 0x04 */ Component* mpComponent;
         /* 0x08 */ nw4hbm::ut::Link mLink;
-    }; // size 0x10
 
-    // methods
-  public:
-    // cdtors
-    Manager(EventHandler* pEventHandler, MEMAllocator* pAllocator)
-        : mpEventHandler(pEventHandler), mpAllocator(pAllocator) {
+        IDToComponent(u32 uID, Component* pComponent) :
+            muID(uID),
+            mpComponent(pComponent) {}
+    }; // size = 0x10
+
+public:
+    Manager(EventHandler* pEventHandler, MEMAllocator* pAllocator) :
+        mpEventHandler(pEventHandler),
+        mpAllocator(pAllocator) {
         if (mpEventHandler) {
             mpEventHandler->setManager(this);
         }
 
         nw4hbm::ut::List_Init(&mIDToComponent, 8);
     }
-    /* virtual ~Manager(); */
 
-    // virtual function ordering
-    // vtable Interface
-    virtual void init();
-    virtual void calc();
-    virtual void draw();
-    virtual ~Manager();
+    /* 0x0C */ virtual void init();
+    /* 0x10 */ virtual void calc();
+    /* 0x18 */ virtual void draw();
+    /* 0x1C */ virtual ~Manager();
+    /* 0x20 */ virtual void addComponent(Component* pComponent);
+    /* 0x24 */ virtual Component* getComponent(u32 uID);
+    /* 0x28 */ virtual bool update(int, const KPADStatus*, f32, f32, void*) { return false; }
+    /* 0x2C */ virtual bool update(int i, f32 x, f32 y, u32 uTrigFlag, u32 uHoldFlag, u32 uReleaseFlag, void* pData);
 
-    // vtable Manager
-    virtual void addComponent(Component* pComponent);
-    virtual Component* getComponent(u32 uID);
-    virtual bool update(int, const KPADStatus*, f32, f32, void*) { return false; }
-    virtual bool update(int i, f32 x, f32 y, u32 uTrigFlag, u32 uHoldFlag, u32 uReleaseFlag, void* pData);
-    virtual void onEvent(u32 uID, u32 uEvent, void* pData) {
+    /* 0x30 */ virtual void onEvent(u32 uID, u32 uEvent, void* pData) {
         if (mpEventHandler) {
             mpEventHandler->onEvent(uID, uEvent, pData);
         }
     }
 
-    virtual void setAllComponentTriggerTarget(bool b);
-    virtual void setEventHandler(EventHandler* pEventHandler) {
+    /* 0x34 */ virtual void setAllComponentTriggerTarget(bool b);
+
+    /* 0x38 */ virtual void setEventHandler(EventHandler* pEventHandler) {
         mpEventHandler = pEventHandler;
 
         if (mpEventHandler) {
             mpEventHandler->setManager(this);
         }
     }
-    /* virtual */ void delComponent(Component* pComponent);
 
-    // members
-  protected: // PaneManager::~PaneManager
-    /* base Interface */ // size 0x04, offset 0x00
+    void delComponent(Component* pComponent);
+
+protected:
+    /* 0x00 (base) */
     /* 0x04 */ EventHandler* mpEventHandler;
     /* 0x08 */ nw4hbm::ut::List mIDToComponent;
     /* 0x14 */ MEMAllocator* mpAllocator;
-}; // size 0x18
+}; // size = 0x18
 
 class PaneManager : public Manager {
     // nested types
-  private:
+private:
     struct PaneToComponent {
-        // methods
-      public:
-        // cdtors
-        PaneToComponent(nw4hbm::lyt::Pane* pPane, PaneComponent* pComponent) : mpPane(pPane), mpComponent(pComponent) {}
+    public:
+        PaneToComponent(nw4hbm::lyt::Pane* pPane, PaneComponent* pComponent) :
+            mpPane(pPane),
+            mpComponent(pComponent) {}
 
-        // members
-      public:
+    public:
         /* 0x00 */ nw4hbm::lyt::Pane* mpPane;
         /* 0x04 */ PaneComponent* mpComponent;
         /* 0x08 */ nw4hbm::ut::Link mLink;
-    }; // size 0x10
+    }; // size = 0x10
 
-    // methods
-  public:
-    // cdtors
-    PaneManager(EventHandler* pEventHandler, const nw4hbm::lyt::DrawInfo* pDrawInfo, MEMAllocator* pAllocator)
-        : Manager(pEventHandler, pAllocator), mpDrawInfo(pDrawInfo) {
+public:
+    PaneManager(EventHandler* pEventHandler, const nw4hbm::lyt::DrawInfo* pDrawInfo, MEMAllocator* pAllocator) :
+        Manager(pEventHandler, pAllocator),
+        mpDrawInfo(pDrawInfo) {
         nw4hbm::ut::List_Init(&mPaneToComponent, 8);
     }
-    /* virtual ~PaneManager(); */
 
-    // virtual function ordering
-    // vtable Interface
-    virtual ~PaneManager();
+    /* 0x1C */ virtual ~PaneManager();
+    /* 0x30 */ virtual void createLayoutScene(const nw4hbm::lyt::Layout& rLayout);
+    /* 0x34 */ virtual PaneComponent* getPaneComponentByPane(nw4hbm::lyt::Pane* pPane);
+    /* 0x38 */ virtual const nw4hbm::lyt::DrawInfo* getDrawInfo() { return mpDrawInfo; }
+    /* 0x3C */ virtual void setDrawInfo(const nw4hbm::lyt::DrawInfo* pDrawInfo) { mpDrawInfo = pDrawInfo; }
+    /* 0x40 */ virtual void setAllBoundingBoxComponentTriggerTarget(bool b);
+    /* 0x44 */ virtual void walkInChildren(nw4hbm::lyt::PaneList& rPaneList);
 
-    // vtable Manager
+    void walkInChildrenDel(nw4hbm::lyt::PaneList& rPaneList);
+    void delLayoutScene(const nw4hbm::lyt::Layout& rLayout);
+    void addLayoutScene(const nw4hbm::lyt::Layout& rLayout);
 
-    // vtable PaneManager
-    virtual void createLayoutScene(const nw4hbm::lyt::Layout& rLayout);
-    virtual PaneComponent* getPaneComponentByPane(nw4hbm::lyt::Pane* pPane);
-    virtual const nw4hbm::lyt::DrawInfo* getDrawInfo() { return mpDrawInfo; }
-    virtual void setDrawInfo(const nw4hbm::lyt::DrawInfo* pDrawInfo) { mpDrawInfo = pDrawInfo; }
-    virtual void setAllBoundingBoxComponentTriggerTarget(bool b);
-    virtual void walkInChildren(nw4hbm::lyt::PaneList& rPaneList);
-
-    /* virtual */ void walkInChildrenDel(nw4hbm::lyt::PaneList& rPaneList);
-    /* virtual */ void delLayoutScene(const nw4hbm::lyt::Layout& rLayout);
-    /* virtual */ void addLayoutScene(const nw4hbm::lyt::Layout& rLayout);
-
-    // members
-  private:
-    /* base Manager */ // size 0x18, offset 0x00
+private:
+    /* 0x00 (base) */
     /* 0x18 */ nw4hbm::ut::List mPaneToComponent;
     /* 0x24 */ const nw4hbm::lyt::DrawInfo* mpDrawInfo;
     /* 0x28 */ u16 muNumPoint;
@@ -241,34 +208,26 @@ class PaneManager : public Manager {
 
     // static members
     static u32 suIDCounter;
-}; // size 0x2c
+}; // size = 0x2C
 
 class PaneComponent : public Component {
-    // methods
-  public:
-    // cdtors
-    PaneComponent(u32 uID) : Component(uID), mpPane() {}
-    /* virtual ~PaneComponent() {} */
+public:
+    PaneComponent(u32 uID) :
+        Component(uID),
+        mpPane() {}
 
-    // virtual function ordering
-    // vtable Interface
-    virtual void draw();
-    virtual ~PaneComponent() {}
+    /* 0x18 */ virtual void draw();
+    /* 0x1C */ virtual ~PaneComponent() {}
+    /* 0x20 */ virtual bool isVisible();
+    /* 0x24 */ virtual bool contain(f32 x_, f32 y_);
+    /* 0x28 */ virtual void setPane(nw4hbm::lyt::Pane* pPane) { mpPane = pPane; }
+    /* 0x2C */ virtual nw4hbm::lyt::Pane* getPane() { return mpPane; }
 
-    // vtable Component
-    virtual bool isVisible();
-    virtual bool contain(f32 x_, f32 y_);
-
-    // vtable PaneComponent
-    virtual void setPane(nw4hbm::lyt::Pane* pPane) { mpPane = pPane; }
-    virtual nw4hbm::lyt::Pane* getPane() { return mpPane; }
-
-    // members
-  protected:
-    /* base Component */ // size 0x2c, offset 0x00
+protected:
+    /* 0x00 (base) */
     /* 0x2C */ nw4hbm::lyt::Pane* mpPane;
-}; // size 0x30
+}; // size = 0x30
 } // namespace gui
 } // namespace homebutton
 
-#endif // RVL_SDK_HBM_HOMEBUTTON_GUI_MANAGER_HPP
+#endif

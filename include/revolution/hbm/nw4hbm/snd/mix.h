@@ -44,4 +44,4 @@ void HBMFreeIndexByKey(HBMMIXKey key);
 }
 #endif
 
-#endif // RVL_SDK_HBM_SOUND_MIX_H
+#endif

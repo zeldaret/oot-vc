@@ -17,10 +17,10 @@ class StrmSoundHandle : private ut::NonCopyable {
     bool IsAttachedSound() const { return mSound != NULL; }
 
   private:
-    detail::StrmSound* mSound; // 0x00
+    /* 0x00 */ detail::StrmSound* mSound;
 };
 
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_STRM_SOUND_HANDLE_H
+#endif

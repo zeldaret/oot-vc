@@ -1,14 +1,14 @@
 #ifndef NW4R_SND_SEQ_PLAYER_H
 #define NW4R_SND_SEQ_PLAYER_H
 
-#include "macros.h" // ATTRIBUTE_UNUSED
+#include "macros.h"
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/BasicPlayer.h"
 
 //! TODO: find a way to remove this hack
 #define MAKE_DTOR_ZERO
-#include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h" // DisposeCallback
+#include "revolution/hbm/nw4hbm/snd/DisposeCallbackManager.h"
 #undef MAKE_DTOR_ZERO
 
 #include "revolution/hbm/nw4hbm/snd/SoundThread.h"
@@ -16,7 +16,7 @@
 namespace nw4hbm {
 namespace snd {
 namespace detail {
-// Forward declarations
+
 class Channel;
 struct NoteOnInfo;
 class NoteOnCallback;
@@ -26,11 +26,11 @@ class SeqTrackAllocator;
 class SeqPlayer : public BasicPlayer, public DisposeCallback {
   public:
     typedef struct ParserPlayerParam {
-        u8 volume; // 0x00
-        u8 priority; // 0x01
-        u16 tempo; // 0x02
+        /* 0x00 */ u8 volume;
+        /* 0x01 */ u8 priority;
+        /* 0x02 */ u16 tempo;
 
-        NoteOnCallback* callback; // 0x04
+        /* 0x04 */ NoteOnCallback* callback;
     } ParserPlayerParam;
 
     typedef enum OffsetType {
@@ -51,48 +51,48 @@ class SeqPlayer : public BasicPlayer, public DisposeCallback {
     static const int TRACK_NUM = 16;
 
     SeqPlayer();
-    virtual ~SeqPlayer(); // 0x8
+    /* 0x8 */ virtual ~SeqPlayer();
 
-    virtual bool Start(); // 0x0C
-    virtual void Stop(); // 0x10
-    virtual void Pause(bool flag); // 0x14
+    /* 0x0C */ virtual bool Start();
+    /* 0x10 */ virtual void Stop();
+    /* 0x14 */ virtual void Pause(bool flag);
     virtual bool IsActive() const { return mActiveFlag; } // 0x18
-    virtual bool IsPrepared() const { return mPreparedFlag; }; // 0x1C
-    virtual bool IsStarted() const { return mStartedFlag; }; // 0x20
-    virtual bool IsPause() const { return mPauseFlag; }; // 0x24
-    virtual void SetVolume(f32 volume); // 0x28
-    virtual void SetPitch(f32 pitch); // 0x2C
-    virtual void SetPan(f32 pan); // 0x30
-    virtual void SetSurroundPan(f32 surroundPan); // 0x34
-    virtual void SetPan2(f32 pan2); // 0x38
-    virtual void SetSurroundPan2(f32 surroundPan2); // 0x3C
-    virtual void SetLpfFreq(f32 lpfFreq); // 0x40
-    virtual f32 GetVolume() const { return mExtVolume; }; // 0x44
-    virtual f32 GetPitch() const { return mExtPitch; }; // 0x48
-    virtual f32 GetPan() const { return mExtPan; }; // 0x4C
-    virtual f32 GetSurroundPan() const { return mExtSurroundPan; }; // 0x50
-    virtual f32 GetPan2() const { return mExtPan2; }; // 0x54
-    virtual f32 GetSurroundPan2() const { return mExtSurroundPan2; }; // 0x58
-    virtual f32 GetLpfFreq() const { return mExtLpfFreq; }; // 0x5C
-    virtual void SetOutputLine(int lineFlag); // 0x60
-    virtual void SetMainOutVolume(f32 volume); // 0x64
-    virtual void SetMainSend(f32 send); // 0x68
-    virtual void SetFxSend(AuxBus bus, f32 send); // 0x6C
-    virtual void SetRemoteOutVolume(int remoteIndex, f32 volume); // 0x70
-    virtual void SetRemoteSend(int remoteIndex, f32 send); // 0x74
-    virtual void SetRemoteFxSend(int remoteIndex, f32 send); // 0x78
-    virtual int GetOutputLine() const; // 0x7C
-    virtual f32 GetMainOutVolume() const; // 0x80
-    virtual f32 GetMainSend() const; // 0x84
-    virtual f32 GetFxSend(AuxBus bus) const; // 0x88
-    virtual f32 GetRemoteOutVolume(int remoteIndex) const; // 0x8C
-    virtual f32 GetRemoteSend(int remoteIndex) const; // 0x90
-    virtual f32 GetRemoteFxSend(int remoteIndex) const; // 0x94
+    /* 0x1C */ virtual bool IsPrepared() const { return mPreparedFlag; };
+    /* 0x20 */ virtual bool IsStarted() const { return mStartedFlag; };
+    /* 0x24 */ virtual bool IsPause() const { return mPauseFlag; };
+    /* 0x28 */ virtual void SetVolume(f32 volume);
+    /* 0x2C */ virtual void SetPitch(f32 pitch);
+    /* 0x30 */ virtual void SetPan(f32 pan);
+    /* 0x34 */ virtual void SetSurroundPan(f32 surroundPan);
+    /* 0x38 */ virtual void SetPan2(f32 pan2);
+    /* 0x3C */ virtual void SetSurroundPan2(f32 surroundPan2);
+    /* 0x40 */ virtual void SetLpfFreq(f32 lpfFreq);
+    /* 0x44 */ virtual f32 GetVolume() const { return mExtVolume; };
+    /* 0x48 */ virtual f32 GetPitch() const { return mExtPitch; };
+    /* 0x4C */ virtual f32 GetPan() const { return mExtPan; };
+    /* 0x50 */ virtual f32 GetSurroundPan() const { return mExtSurroundPan; };
+    /* 0x54 */ virtual f32 GetPan2() const { return mExtPan2; };
+    /* 0x58 */ virtual f32 GetSurroundPan2() const { return mExtSurroundPan2; };
+    /* 0x5C */ virtual f32 GetLpfFreq() const { return mExtLpfFreq; };
+    /* 0x60 */ virtual void SetOutputLine(int lineFlag);
+    /* 0x64 */ virtual void SetMainOutVolume(f32 volume);
+    /* 0x68 */ virtual void SetMainSend(f32 send);
+    /* 0x6C */ virtual void SetFxSend(AuxBus bus, f32 send);
+    /* 0x70 */ virtual void SetRemoteOutVolume(int remoteIndex, f32 volume);
+    /* 0x74 */ virtual void SetRemoteSend(int remoteIndex, f32 send);
+    /* 0x78 */ virtual void SetRemoteFxSend(int remoteIndex, f32 send);
+    /* 0x7C */ virtual int GetOutputLine() const;
+    /* 0x80 */ virtual f32 GetMainOutVolume() const;
+    /* 0x84 */ virtual f32 GetMainSend() const;
+    /* 0x88 */ virtual f32 GetFxSend(AuxBus bus) const;
+    /* 0x8C */ virtual f32 GetRemoteOutVolume(int remoteIndex) const;
+    /* 0x90 */ virtual f32 GetRemoteSend(int remoteIndex) const;
+    /* 0x94 */ virtual f32 GetRemoteFxSend(int remoteIndex) const;
 
-    virtual void InvalidateData(const void* start, const void* end); // 0x50
+    /* 0x50 */ virtual void InvalidateData(const void* start, const void* end);
     virtual void InvalidateWaveData(const void* start, const void* end) {} // 0x54
 
-    virtual void ChannelCallback(Channel* channel); // 0x58
+    /* 0x58 */ virtual void ChannelCallback(Channel* channel);
 
     void InitParam(int voices, NoteOnCallback* callback);
 
@@ -159,54 +159,54 @@ class SeqPlayer : public BasicPlayer, public DisposeCallback {
 
     static void InitGlobalVariable();
 
-    bool mHomeButtonMenuFlag; // 0x14
-    u8 mActiveFlag; // 0x15
-    u8 mPreparedFlag; // 0x16
-    u8 mStartedFlag; // 0x17
-    u8 mPauseFlag; // 0x18
-    bool mSkipFlag; // 0x19
+    /* 0x14 */ bool mHomeButtonMenuFlag;
+    /* 0x15 */ u8 mActiveFlag;
+    /* 0x16 */ u8 mPreparedFlag;
+    /* 0x17 */ u8 mStartedFlag;
+    /* 0x18 */ u8 mPauseFlag;
+    /* 0x19 */ bool mSkipFlag;
 
-    f32 mExtVolume; // 0x1C
-    f32 mExtPan; // 0x20
-    f32 mExtSurroundPan; // 0x24
-    f32 mPanRange; // 0x28
-    f32 mExtPan2; // 0x2C
-    f32 mExtSurroundPan2; // 0x30
-    f32 mExtPitch; // 0x34
-    f32 mExtLpfFreq; // 0x38
+    /* 0x1C */ f32 mExtVolume;
+    /* 0x20 */ f32 mExtPan;
+    /* 0x24 */ f32 mExtSurroundPan;
+    /* 0x28 */ f32 mPanRange;
+    /* 0x2C */ f32 mExtPan2;
+    /* 0x30 */ f32 mExtSurroundPan2;
+    /* 0x34 */ f32 mExtPitch;
+    /* 0x38 */ f32 mExtLpfFreq;
 
-    int mOutputLineFlag; // 0x3C
+    /* 0x3C */ int mOutputLineFlag;
 
-    f32 mMainOutVolume; // 0x40
-    f32 mMainSend; // 0x44
+    /* 0x40 */ f32 mMainOutVolume;
+    /* 0x44 */ f32 mMainSend;
 
-    f32 mFxSend[AUX_BUS_NUM]; // 0x48
+    /* 0x48 */ f32 mFxSend[AUX_BUS_NUM];
 
-    f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS]; // 0x54
-    f32 mRemoteSend[WPAD_MAX_CONTROLLERS]; // 0x64
-    f32 mRemoteFxSend[WPAD_MAX_CONTROLLERS]; // 0x74
+    /* 0x54 */ f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS];
+    /* 0x64 */ f32 mRemoteSend[WPAD_MAX_CONTROLLERS];
+    /* 0x74 */ f32 mRemoteFxSend[WPAD_MAX_CONTROLLERS];
 
-    f32 mTempoRatio; // 0x84
-    u16 mTempoCounter; // 0x88
+    /* 0x84 */ f32 mTempoRatio;
+    /* 0x88 */ u16 mTempoCounter;
 
-    s32 mVoiceOutCount; // 0x8C
+    /* 0x8C */ s32 mVoiceOutCount;
 
-    ParserPlayerParam mParserParam; // 0x90
-    SeqTrackAllocator* mSeqTrackAllocator; // 0x98
+    /* 0x90 */ ParserPlayerParam mParserParam;
+    /* 0x98 */ SeqTrackAllocator* mSeqTrackAllocator;
 
-    SeqTrack* mTracks[TRACK_NUM]; // 0x9C
-    vs16 mLocalVariable[TRACK_NUM]; // 0xDC
+    /* 0x9C */ SeqTrack* mTracks[TRACK_NUM];
+    /* 0xDC */ vs16 mLocalVariable[TRACK_NUM];
 
-    u32 mTickCounter; // 0xFC
+    /* 0xFC */ u32 mTickCounter;
 
     static vs16 mGlobalVariable[LOCAL_VARIABLE_NUM];
 
   public:
-    ut::LinkListNode mPlayerLink; // 0x100
+    /* 0x100 */ ut::LinkListNode mPlayerLink;
 };
 typedef ut::LinkList<SeqPlayer, offsetof(SeqPlayer, mPlayerLink)> SeqPlayerList;
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_SEQ_PLAYER_H
+#endif

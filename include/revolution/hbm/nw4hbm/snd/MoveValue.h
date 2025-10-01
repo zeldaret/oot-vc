@@ -41,10 +41,10 @@ template <typename TValue, typename TTime> class MoveValue {
     }
 
   private:
-    TValue mOrigin; // 0x00
-    TValue mTarget; // 0x04
-    TTime mFrame; // 0x08
-    TTime mCounter; // 0x0C
+    /* 0x00 */ TValue mOrigin;
+    /* 0x04 */ TValue mTarget;
+    /* 0x08 */ TTime mFrame;
+    /* 0x0C */ TTime mCounter;
 };
 
 } // namespace detail

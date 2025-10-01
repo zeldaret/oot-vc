@@ -14,6 +14,7 @@
 namespace nw4hbm {
 namespace lyt {
 namespace detail {
+
 typedef math::VEC2 TexCoords[4];
 
 class TexCoordAry {
@@ -36,10 +37,9 @@ class TexCoordAry {
     void GetCoord(u32 idx, math::VEC2* vec) const;
 
   private:
-    u8 mCap; // 0x00
-    u8 mNum; // 0x01
-
-    TexCoords* mpData; // 0x04
+    /* 0x00 */ u8 mCap;
+    /* 0x01 */ u8 mNum;
+    /* 0x04 */ TexCoords* mpData;
 };
 
 bool EqualsPaneName(const char* name1, const char* name2);
@@ -94,8 +94,9 @@ inline void SetHorizontalPosition(u8* pVar, u8 newVal) {
 inline void SetVerticalPosition(u8* pVar, u8 newVal) {
     *pVar = newVal * VERTICALPOSITION_MAX + GetHorizontalPosition(*pVar);
 }
+
 } // namespace detail
 } // namespace lyt
 } // namespace nw4hbm
 
-#endif // NW4HBM_LYT_ARC_RESOURCE_ACCESSOR_H
+#endif

@@ -29,8 +29,8 @@ class LinkListNode : private NonCopyable {
     LinkListNode* GetPrev() const { return mPrev; }
 
   private:
-    LinkListNode* mNext; // 0x00
-    LinkListNode* mPrev; // 0x04
+    /* 0x00 */ LinkListNode* mNext;
+    /* 0x04 */ LinkListNode* mPrev;
 };
 
 namespace detail {
@@ -42,7 +42,6 @@ namespace detail {
  ******************************************************************************/
 class LinkListImpl : private NonCopyable {
   public:
-    // Forward declarations
     class ConstIterator;
 
     /******************************************************************************
@@ -73,7 +72,7 @@ class LinkListImpl : private NonCopyable {
         }
 
       private:
-        LinkListNode* mPointer; // 0x00
+        /* 0x00 */ LinkListNode* mPointer;
     };
 
     /******************************************************************************
@@ -102,7 +101,7 @@ class LinkListImpl : private NonCopyable {
         }
 
       private:
-        LinkListNode* mNode; // 0x00
+        /* 0x00 */ LinkListNode* mNode;
     };
 
   protected:
@@ -139,8 +138,8 @@ class LinkListImpl : private NonCopyable {
     }
 
   private:
-    u32 mSize; // 0x00
-    LinkListNode mNode; // 0x04
+    /* 0x00 */ u32 mSize;
+    /* 0x04 */ LinkListNode mNode;
 };
 
 /******************************************************************************
@@ -175,7 +174,7 @@ template <typename TIter> class ReverseIterator {
     }
 
   private:
-    TIter mCurrent; // 0x00
+    /* 0x00 */ TIter mCurrent;
 };
 
 } // namespace detail
@@ -187,7 +186,6 @@ template <typename TIter> class ReverseIterator {
  ******************************************************************************/
 template <typename T, int Ofs> class LinkList : public detail::LinkListImpl {
   public:
-    // Forward declarations
     class ConstIterator;
 
     /******************************************************************************
@@ -234,7 +232,7 @@ template <typename T, int Ofs> class LinkList : public detail::LinkListImpl {
         friend bool operator!=(Iterator lhs, Iterator rhs) { return !(lhs == rhs); }
 
       private:
-        LinkListImpl::Iterator mIterator; // 0x00
+        /* 0x00 */ LinkListImpl::Iterator mIterator;
     };
 
     /******************************************************************************
@@ -280,7 +278,7 @@ template <typename T, int Ofs> class LinkList : public detail::LinkListImpl {
         friend bool operator!=(ConstIterator lhs, ConstIterator rhs) { return !(lhs == rhs); }
 
       private:
-        LinkListImpl::ConstIterator mIterator; // 0x00
+        /* 0x00 */ LinkListImpl::ConstIterator mIterator;
     };
 
   public:
@@ -352,4 +350,4 @@ template <typename T, int Ofs> class LinkList : public detail::LinkListImpl {
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_LINK_LIST_H
+#endif

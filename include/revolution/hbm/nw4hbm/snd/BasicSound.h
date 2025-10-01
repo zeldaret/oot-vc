@@ -9,13 +9,12 @@
 #include "revolution/hbm/nw4hbm/snd/types.h"
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
-#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h" // ut::Clamp
-#include "revolution/hbm/nw4hbm/ut/inlines.h" // ut::Clamp
+#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
 
-// forward declarations
 namespace nw4hbm {
 namespace snd {
-// Forward declarations
+
 class SoundHandle;
 class SoundPlayer;
 
@@ -41,24 +40,24 @@ class BasicSound {
         } ParamUpdateFlags;
 
         virtual void detail_Update(SoundParam* param, u32 id, BasicSound* sound, const void* arg,
-                                   u32 flags) = 0; // 0x0C
+                                   /* 0x0C */ u32 flags) = 0;
     } AmbientParamUpdateCallback;
 
     typedef struct AmbientArgUpdateCallback {
-        virtual void detail_Update(void* arg, const BasicSound* sound) = 0; // 0x0C
+        /* 0x0C */ virtual void detail_Update(void* arg, const BasicSound* sound) = 0;
     } AmbientArgUpdateCallback;
 
     typedef struct AmbientArgAllocaterCallback {
-        virtual void* detail_AllocAmbientArg(u32 size) = 0; // 0x0C
-        virtual void detail_FreeAmbientArg(void* arg, const BasicSound* sound) = 0; // 0x10
+        /* 0x0C */ virtual void* detail_AllocAmbientArg(u32 size) = 0;
+        /* 0x10 */ virtual void detail_FreeAmbientArg(void* arg, const BasicSound* sound) = 0;
     } AmbientArgAllocaterCallback;
 
     typedef struct AmbientArgInfo {
-        AmbientParamUpdateCallback* paramUpdateCallback; // 0x00
-        AmbientArgUpdateCallback* argUpdateCallback; // 0x04
-        AmbientArgAllocaterCallback* argAllocaterCallback; // 0x08
-        void* arg; // 0x0C
-        u32 argSize; // 0x10
+        /* 0x00 */ AmbientParamUpdateCallback* paramUpdateCallback;
+        /* 0x04 */ AmbientArgUpdateCallback* argUpdateCallback;
+        /* 0x08 */ AmbientArgAllocaterCallback* argAllocaterCallback;
+        /* 0x0C */ void* arg;
+        /* 0x10 */ u32 argSize;
     } AmbientArgInfo;
 
     static const u32 INVALID_ID = 0xFFFFFFFF;
@@ -68,30 +67,30 @@ class BasicSound {
     BasicSound();
     virtual ~BasicSound() {} // 0x08
 
-    virtual void Update(); // 0x0C
-    virtual void StartPrepared(); // 0x10
-    virtual void Stop(int frames = 0); // 0x14
-    virtual void Pause(bool flag, int frames); // 0x18
-    virtual void SetAutoStopCounter(int count); // 0x1C
-    virtual void FadeIn(int frames); // 0x20
-    virtual void Shutdown(); // 0x24
-    virtual bool IsPrepared() const; // 0x28
-    virtual bool IsPause() const; // 0x2C
+    /* 0x0C */ virtual void Update();
+    /* 0x10 */ virtual void StartPrepared();
+    /* 0x14 */ virtual void Stop(int frames = 0);
+    /* 0x18 */ virtual void Pause(bool flag, int frames);
+    /* 0x1C */ virtual void SetAutoStopCounter(int count);
+    /* 0x20 */ virtual void FadeIn(int frames);
+    /* 0x24 */ virtual void Shutdown();
+    /* 0x28 */ virtual bool IsPrepared() const;
+    /* 0x2C */ virtual bool IsPause() const;
 
-    virtual void SetInitialVolume(f32 volume); // 0x30
-    virtual void SetVolume(f32 volume, int frames); // 0x34
-    virtual void SetPitch(f32 pitch); // 0x38
-    virtual void SetPan(f32 pan); // 0x3C
-    virtual void SetSurroundPan(f32 pan); // 0x40
-    virtual void SetLpfFreq(f32 freq); // 0x44
-    virtual void SetPlayerPriority(int priority); // 0x48
+    /* 0x30 */ virtual void SetInitialVolume(f32 volume);
+    /* 0x34 */ virtual void SetVolume(f32 volume, int frames);
+    /* 0x38 */ virtual void SetPitch(f32 pitch);
+    /* 0x3C */ virtual void SetPan(f32 pan);
+    /* 0x40 */ virtual void SetSurroundPan(f32 pan);
+    /* 0x44 */ virtual void SetLpfFreq(f32 freq);
+    /* 0x48 */ virtual void SetPlayerPriority(int priority);
 
-    virtual bool IsAttachedTempSpecialHandle() = 0; // 0x4C
-    virtual void DetachTempSpecialHandle() = 0; // 0x50
+    /* 0x4C */ virtual bool IsAttachedTempSpecialHandle() = 0;
+    /* 0x50 */ virtual void DetachTempSpecialHandle() = 0;
 
-    virtual void InitParam(); // 0x54
-    virtual BasicPlayer& GetBasicPlayer() = 0; // 0x58
-    virtual const BasicPlayer& GetBasicPlayer() const = 0; // 0x5C
+    /* 0x54 */ virtual void InitParam();
+    /* 0x58 */ virtual BasicPlayer& GetBasicPlayer() = 0;
+    /* 0x5C */ virtual const BasicPlayer& GetBasicPlayer() const = 0;
 
     PlayerHeap* GetPlayerHeap() { return mHeap; }
     void SetPlayerHeap(PlayerHeap* heap) { mHeap = heap; }
@@ -151,51 +150,51 @@ class BasicSound {
     }
 
   private:
-    PlayerHeap* mHeap; // 0x04
-    SoundHandle* mGeneralHandle; // 0x08
-    SoundHandle* mTempGeneralHandle; // 0x0C
-    SoundPlayer* mSoundPlayer; // 0x10
-    ExternalSoundPlayer* mExtSoundPlayer; // 0x14
+    /* 0x04 */ PlayerHeap* mHeap;
+    /* 0x08 */ SoundHandle* mGeneralHandle;
+    /* 0x0C */ SoundHandle* mTempGeneralHandle;
+    /* 0x10 */ SoundPlayer* mSoundPlayer;
+    /* 0x14 */ ExternalSoundPlayer* mExtSoundPlayer;
 
-    AmbientParamUpdateCallback* mAmbientParamUpdateCallback; // 0x18
-    AmbientArgUpdateCallback* mAmbientArgUpdateCallback; // 0x1C
-    AmbientArgAllocaterCallback* mAmbientArgAllocaterCallback; // 0x20
-    void* mAmbientArg; // 0x24
-    SoundParam mAmbientParam; // 0x28
+    /* 0x18 */ AmbientParamUpdateCallback* mAmbientParamUpdateCallback;
+    /* 0x1C */ AmbientArgUpdateCallback* mAmbientArgUpdateCallback;
+    /* 0x20 */ AmbientArgAllocaterCallback* mAmbientArgAllocaterCallback;
+    /* 0x24 */ void* mAmbientArg;
+    /* 0x28 */ SoundParam mAmbientParam;
 
-    MoveValue<f32, int> mFadeVolume; // 0x44
-    MoveValue<f32, int> mPauseFadeVolume; // 0x54
+    /* 0x44 */ MoveValue<f32, int> mFadeVolume;
+    /* 0x54 */ MoveValue<f32, int> mPauseFadeVolume;
 
-    bool mStartFlag; // 0x64
-    bool mStartedFlag; // 0x65
-    bool mAutoStopFlag; // 0x66
-    bool mPauseFlag; // 0x67
-    bool mPauseFadeFlag; // 0x68
-    bool mFadeOutFlag; // 0x69
+    /* 0x64 */ bool mStartFlag;
+    /* 0x65 */ bool mStartedFlag;
+    /* 0x66 */ bool mAutoStopFlag;
+    /* 0x67 */ bool mPauseFlag;
+    /* 0x68 */ bool mPauseFadeFlag;
+    /* 0x69 */ bool mFadeOutFlag;
 
-    int mAutoStopCounter; // 0x6C
-    u32 mUpdateCounter; // 0x70
+    /* 0x6C */ int mAutoStopCounter;
+    /* 0x70 */ u32 mUpdateCounter;
 
-    u8 mPriority; // 0x74
-    u32 mId; // 0x78
+    /* 0x74 */ u8 mPriority;
+    /* 0x78 */ u32 mId;
 
-    MoveValue<f32, int> mExtMoveVolume; // 0x7C
-    f32 mInitVolume; // 0x8C
-    f32 mExtPan; // 0x90
-    f32 mExtSurroundPan; // 0x94
-    f32 mExtPitch; // 0x98
+    /* 0x7C */ MoveValue<f32, int> mExtMoveVolume;
+    /* 0x8C */ f32 mInitVolume;
+    /* 0x90 */ f32 mExtPan;
+    /* 0x94 */ f32 mExtSurroundPan;
+    /* 0x98 */ f32 mExtPitch;
 
-    bool mOutputLineFlagEnable; // 0x9C
-    int mOutputLineFlag; // 0xA0
+    /* 0x9C */ bool mOutputLineFlagEnable;
+    /* 0xA0 */ int mOutputLineFlag;
 
-    f32 mMainOutVolume; // 0xA4
-    f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS]; // 0xA8
+    /* 0xA4 */ f32 mMainOutVolume;
+    /* 0xA8 */ f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS];
 
   public:
-    ut::LinkListNode mPriorityLink; // 0xB8
-    ut::LinkListNode mSoundPlayerPlayLink; // 0xC0
-    ut::LinkListNode mSoundPlayerPriorityLink; // 0xC8
-    ut::LinkListNode mExtSoundPlayerPlayLink; // 0xD0
+    /* 0xB8 */ ut::LinkListNode mPriorityLink;
+    /* 0xC0 */ ut::LinkListNode mSoundPlayerPlayLink;
+    /* 0xC8 */ ut::LinkListNode mSoundPlayerPriorityLink;
+    /* 0xD0 */ ut::LinkListNode mExtSoundPlayerPlayLink;
 
     friend class SoundHandle;
 };
@@ -208,4 +207,4 @@ typedef ut::LinkList<BasicSound, offsetof(BasicSound, mExtSoundPlayerPlayLink)> 
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_BASIC_SOUND_H
+#endif

@@ -58,11 +58,11 @@ class CharStrmReader {
         charStrm += step;
     }
 
-    const void* mCharStrm; // 0x00
-    const ReadFunc mReadFunc; // 0x04
+    /* 0x00 */ const void* mCharStrm;
+    /* 0x04 */ const ReadFunc mReadFunc;
 };
 
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_CHAR_STREAM_READER_H
+#endif

@@ -271,7 +271,6 @@ static void Console_PrintString_(ConsoleOutputType type, ConsoleHandle console, 
 }
 
 void Console_VFPrintf(ConsoleOutputType type, ConsoleHandle console, char const* format, std::va_list vlist) {
-#if !defined(NDEBUG)
     static u8 sStrBuf[1024];
 
     NW4HBMAssertPointerNonnull_Line(console, 872);
@@ -283,16 +282,12 @@ void Console_VFPrintf(ConsoleOutputType type, ConsoleHandle console, char const*
 
         UnlockMutex_(&sMutex);
     }
-#endif // !defined(NDEBUG)
 }
 
 void Console_Printf(ConsoleHandle console, char const* format, ...) {
     std::va_list vlist;
-
     va_start(vlist, format);
-#if NW4R_APP_TYPE == NW4R_APP_TYPE_DVD
     Console_VFPrintf(CONSOLE_OUTPUT_ALL, console, format, vlist);
-#endif // NW4R_APP_TYPE == NW4R_APP_TYPE_DVD
     va_end(vlist);
 }
 

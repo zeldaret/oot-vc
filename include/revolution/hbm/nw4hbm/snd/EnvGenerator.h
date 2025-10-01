@@ -43,12 +43,12 @@ class EnvGenerator {
     f32 CalcRelease(int release);
     int CalcDecibelSquare(int scale);
 
-    Status mStatus; // 0x00
-    f32 mValue; // 0x04
-    f32 mDecay; // 0x08
-    f32 mRelease; // 0x0C
-    f32 mAttack; // 0x10
-    u8 mSustain; // 0x14
+    /* 0x00 */ Status mStatus;
+    /* 0x04 */ f32 mValue;
+    /* 0x08 */ f32 mDecay;
+    /* 0x0C */ f32 mRelease;
+    /* 0x10 */ f32 mAttack;
+    /* 0x14 */ u8 mSustain;
     u16 padding;
 
     static const s16 DecibelSquareTable[DECIBEL_SQUARE_TABLE_SIZE];
@@ -57,4 +57,4 @@ class EnvGenerator {
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4HBM_SND_ENV_GENERATOR_H
+#endif

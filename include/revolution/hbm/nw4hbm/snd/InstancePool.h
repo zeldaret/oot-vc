@@ -20,7 +20,7 @@ class PoolImpl {
     void FreeImpl(void* ptr);
 
   private:
-    PoolImpl* mNext; // 0x00
+    /* 0x00 */ PoolImpl* mNext;
 };
 
 template <typename T> class InstancePool : private PoolImpl {

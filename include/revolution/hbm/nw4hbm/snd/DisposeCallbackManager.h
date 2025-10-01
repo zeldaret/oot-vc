@@ -19,10 +19,10 @@ class DisposeCallbackManager {
   private:
     DisposeCallbackManager();
 
-    DisposeCallbackList mCallbackList; // 0x00
+    /* 0x00 */ DisposeCallbackList mCallbackList;
 };
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm
 
-#endif // NW4R_SND_DISPOSE_CALLBACK_MANAGER_H
+#endif

@@ -15,47 +15,47 @@ typedef enum Format {
 } Format;
 
 typedef struct WaveInfo {
-    u8 format; // 0x00
-    u8 loopFlag; // 0x01
-    u8 numChannels; // 0x02
-    u8 sampleRate24; // 0x03
-    u16 sampleRate; // 0x04
-    u16 padding2; // 0x06
-    u32 loopStart; // 0x08
-    u32 loopEnd; // 0x0C
-    u32 channelInfoTableOffset; // 0x10
-    u32 dataOffset; // 0x14
-    u32 reserved; // 0x18
+    /* 0x00 */ u8 format;
+    /* 0x01 */ u8 loopFlag;
+    /* 0x02 */ u8 numChannels;
+    /* 0x03 */ u8 sampleRate24;
+    /* 0x04 */ u16 sampleRate;
+    /* 0x06 */ u16 padding2;
+    /* 0x08 */ u32 loopStart;
+    /* 0x0C */ u32 loopEnd;
+    /* 0x10 */ u32 channelInfoTableOffset;
+    /* 0x14 */ u32 dataOffset;
+    /* 0x18 */ u32 reserved;
 } WaveInfo;
 
 typedef struct WaveChannelInfo {
-    u32 channelDataOffset; // 0x00
-    u32 adpcmOffset; // 0x04
-    u32 volumeFrontLeft; // 0x08
-    u32 volumeFrontRight; // 0x0C
-    u32 volumeRearLeft; // 0x10
-    u32 volumeRearRight; // 0x14
-    u32 reserved; // 0x18
+    /* 0x00 */ u32 channelDataOffset;
+    /* 0x04 */ u32 adpcmOffset;
+    /* 0x08 */ u32 volumeFrontLeft;
+    /* 0x0C */ u32 volumeFrontRight;
+    /* 0x10 */ u32 volumeRearLeft;
+    /* 0x14 */ u32 volumeRearRight;
+    /* 0x18 */ u32 reserved;
 } WaveChannelInfo;
 } // namespace WaveFile
 
 typedef struct ChannelParam {
-    void* dataAddr; // 0x00
-    u32 volumeFrontLeft; // 0x04
-    u32 volumeFrontRight; // 0x08
-    u32 volumeRearLeft; // 0x0C
-    u32 volumeRearRight; // 0x10
-    AdpcmInfo adpcmInfo; // 0x14
+    /* 0x00 */ void* dataAddr;
+    /* 0x04 */ u32 volumeFrontLeft;
+    /* 0x08 */ u32 volumeFrontRight;
+    /* 0x0C */ u32 volumeRearLeft;
+    /* 0x10 */ u32 volumeRearRight;
+    /* 0x14 */ AdpcmInfo adpcmInfo;
 } ChannelParam;
 
 typedef struct WaveData {
-    u8 format; // 0x00
-    u8 loopFlag; // 0x01
-    u8 numChannels; // 0x02
-    int sampleRate; // 0x04
-    u32 loopStart; // 0x08
-    u32 loopEnd; // 0x0C
-    ChannelParam channelParam[CHANNEL_MAX]; // 0x10
+    /* 0x00 */ u8 format;
+    /* 0x01 */ u8 loopFlag;
+    /* 0x02 */ u8 numChannels;
+    /* 0x04 */ int sampleRate;
+    /* 0x08 */ u32 loopStart;
+    /* 0x0C */ u32 loopEnd;
+    /* 0x10 */ ChannelParam channelParam[CHANNEL_MAX];
 } WaveData;
 
 class WaveFileReader {
@@ -66,7 +66,7 @@ class WaveFileReader {
     static AxVoice::Format WaveFormatToAxFormat(u32 format);
 
   private:
-    const WaveFile::WaveInfo* mWaveInfo; // 0x00
+    /* 0x00 */ const WaveFile::WaveInfo* mWaveInfo;
 };
 
 inline AxVoice::Format WaveFormatToAxFormat(u32 format) {

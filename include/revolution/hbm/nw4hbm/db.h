@@ -5,4 +5,4 @@
 #include "revolution/hbm/nw4hbm/db/console.h"
 #include "revolution/hbm/nw4hbm/db/directPrint.h"
 
-#endif // NW4HBM_DB_H
+#endif

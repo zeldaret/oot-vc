@@ -17,19 +17,19 @@ class IOStream {
 
     virtual ~IOStream() {} // 0x0C
 
-    virtual void Close() = 0; // 0x10
+    /* 0x10 */ virtual void Close() = 0;
 
-    virtual s32 Read(void* pDst, u32 size); // 0x14
-    virtual bool ReadAsync(void* pDst, u32 size, IOStreamCallback pCallback, void* pCallbackArg); // 0x18
+    /* 0x14 */ virtual s32 Read(void* pDst, u32 size);
+    /* 0x18 */ virtual bool ReadAsync(void* pDst, u32 size, IOStreamCallback pCallback, void* pCallbackArg);
 
-    virtual void Write(const void* pSrc, u32 size); // 0x1C
-    virtual bool WriteAsync(const void* pSrc, u32 size, IOStreamCallback pCallback, void* pCallbackArg); // 0x20
+    /* 0x1C */ virtual void Write(const void* pSrc, u32 size);
+    /* 0x20 */ virtual bool WriteAsync(const void* pSrc, u32 size, IOStreamCallback pCallback, void* pCallbackArg);
 
-    virtual bool IsBusy() const; // 0x24
+    /* 0x24 */ virtual bool IsBusy() const;
 
-    virtual bool CanAsync() const = 0; // 0x28
-    virtual bool CanRead() const = 0; // 0x2C
-    virtual bool CanWrite() const = 0; // 0x30
+    /* 0x28 */ virtual bool CanAsync() const = 0;
+    /* 0x2C */ virtual bool CanRead() const = 0;
+    /* 0x30 */ virtual bool CanWrite() const = 0;
 
     virtual u32 GetOffsetAlign() const { return 1; } // 0x34
     virtual u32 GetSizeAlign() const { return 1; } // 0x38
@@ -38,14 +38,14 @@ class IOStream {
     bool IsAvailable() const { return mAvailable; }
 
   protected:
-    bool mAvailable; // 0x04
+    /* 0x04 */ bool mAvailable;
 
-    s32 mAsyncResult; // 0x08
+    /* 0x08 */ s32 mAsyncResult;
 
-    IOStreamCallback mCallback; // 0x0C
-    void* mArg; // 0x10
+    /* 0x0C */ IOStreamCallback mCallback;
+    /* 0x10 */ void* mArg;
 };
 }; // namespace ut
 }; // namespace nw4hbm
 
-#endif // NW4HBM_UT_IO_STREAM_H
+#endif

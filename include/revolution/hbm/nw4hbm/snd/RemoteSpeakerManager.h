@@ -2,8 +2,8 @@
 #define NW4R_SND_REMOTE_SPEAKER_MANAGER_H
 
 #include "revolution/hbm/nw4hbm/snd/RemoteSpeaker.h"
-#include "revolution/os.h" // IWYU pragma: export
-#include "revolution/wpad.h" // IWYU pragma: export
+#include "revolution/os.h"
+#include "revolution/wpad.h"
 
 namespace nw4hbm {
 namespace snd {
@@ -28,9 +28,9 @@ class RemoteSpeakerManager {
     static void RemoteSpeakerAlarmProc(OSAlarm* alarm, OSContext* context);
 
   private:
-    bool mInitialized; // 0x00
-    OSAlarm mRemoteSpeakerAlarm; // 0x08
-    RemoteSpeaker mSpeaker[WPAD_MAX_CONTROLLERS]; // 0x38
+    /* 0x00 */ bool mInitialized;
+    /* 0x08 */ OSAlarm mRemoteSpeakerAlarm;
+    /* 0x38 */ RemoteSpeaker mSpeaker[WPAD_MAX_CONTROLLERS];
 };
 
 } // namespace detail

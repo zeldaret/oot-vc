@@ -14,7 +14,7 @@
 #else
 #define NW4HBMAssertMessage_FileLine(file_, line_, expr_, ...) ((void)(0))
 #define NW4HBMCheckMessage_FileLine(file_, line_, expr_, ...) ((void)(0))
-#endif // HBM_ASSERT
+#endif
 
 /*******************************************************************************
  * Derived macros

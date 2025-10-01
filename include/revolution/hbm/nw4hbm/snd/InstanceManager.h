@@ -42,8 +42,8 @@ template <typename T, int Ofs> class InstanceManager {
     Iterator GetEndIter() { return mActiveList.GetEndIter(); }
 
   private:
-    ut::LinkList<T, Ofs> mFreeList; // 0x00
-    ut::LinkList<T, Ofs> mActiveList; // 0x0C
+    /* 0x00 */ ut::LinkList<T, Ofs> mFreeList;
+    /* 0x0C */ ut::LinkList<T, Ofs> mActiveList;
 };
 } // namespace detail
 } // namespace snd

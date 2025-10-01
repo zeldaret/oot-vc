@@ -80,7 +80,7 @@ template <typename T> class TextWriterBase : public CharWriter {
     void CalcStringRect(Rect* pRect, const T* str, int length) const;
     void CalcStringRect(Rect* pRect, const T* str) const;
 
-    f32 PrintMutable(const T* str, int length);
+    // f32 PrintMutable(const T* str, int length);
     f32 Printf(const T* format, ...);
     f32 VPrintf(const T* format, va_list args);
     f32 Print(const T* str, int length);
@@ -113,14 +113,14 @@ template <typename T> class TextWriterBase : public CharWriter {
     bool IsDrawFlagSet(u32 mask, u32 flag) const { return (mDrawFlag & mask) == flag; }
 
   private:
-    f32 mCharSpace; // 0x4C
-    f32 mLineSpace; // 0x50
+    /* 0x4C */ f32 mCharSpace;
+    /* 0x50 */ f32 mLineSpace;
 
-    int mTabWidth; // 0x54
+    /* 0x54 */ int mTabWidth;
 
-    u32 mDrawFlag; // 0x58
+    /* 0x58 */ u32 mDrawFlag;
 
-    TagProcessorBase<T>* mTagProcessor; // 0x5C
+    /* 0x5C */ TagProcessorBase<T>* mTagProcessor;
 
   private:
     static T* mFormatBuffer;
@@ -135,4 +135,4 @@ template <typename T> class TextWriterBase : public CharWriter {
 } // namespace ut
 } // namespace nw4hbm
 
-#endif // NW4HBM_UT_TEXT_WRITER_BASE_H
+#endif

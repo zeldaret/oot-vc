@@ -18,16 +18,16 @@ class NandSoundArchive::NandFileStream : public ut::NandFileStream {
     NandFileStream(const NANDFileInfo* pFileInfo, u32 offset, u32 size);
     NandFileStream(const char* path, u32 offset, u32 size);
 
-    virtual s32 Read(void* buf, u32 size); // 0x14
-    virtual void Seek(s32 offset, u32 origin); // 0x44
+    /* 0x14 */ virtual s32 Read(void* buf, u32 size);
+    /* 0x44 */ virtual void Seek(s32 offset, u32 origin);
 
     virtual u32 Tell() const { return ut::NandFileStream::Tell() - mOffset; } // 0x58
 
     virtual u32 GetSize() const { return mSize; } // 0x40
 
   private:
-    s32 mOffset; // 0x16C
-    s32 mSize; // 0x170
+    /* 0x16C */ s32 mOffset;
+    /* 0x170 */ s32 mSize;
 };
 
 NandSoundArchive::NandSoundArchive() : mOpen(false) {}
