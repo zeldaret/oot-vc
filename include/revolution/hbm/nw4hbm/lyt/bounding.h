@@ -13,7 +13,6 @@ public:
     /* 0x08 */ virtual ~Bounding();
     /* 0x0C */ NW4HBM_UT_RUNTIME_TYPEINFO;
     /* 0x18 */ virtual void DrawSelf(const DrawInfo& drawInfo);
-
 };
 
 } // namespace lyt

@@ -39,7 +39,8 @@ public:
         } Result;
 
         /* 0x08 */ virtual ~SeqLoadCallback() {}
-        /* 0x0C */ virtual Result LoadData(SeqSound::NotifyAsyncEndCallback callback, void* callbackArg, u32 userData) const = 0;
+        /* 0x0C */ virtual Result LoadData(SeqSound::NotifyAsyncEndCallback callback, void* callbackArg,
+                                           u32 userData) const = 0;
         /* 0x10 */ virtual void CancelLoading(u32 userData) const = 0;
     };
 
