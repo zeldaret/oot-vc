@@ -22,10 +22,9 @@ public:
     public:
         /* 0x00 */ ut::LinkListNode mLink;
 
-        virtual ~Callback() {} // 0x08
-
-        virtual void UpdatePlayer() {} // 0x0C
-        virtual void EndSoundFrame() {} // 0x10
+        /* 0x08 */ virtual ~Callback() {}
+        /* 0x0C */ virtual void UpdatePlayer() {}
+        /* 0x10 */ virtual void EndSoundFrame() {}
     };
     typedef ut::LinkList<Callback, offsetof(Callback, mLink)> CallbackList;
 
@@ -59,18 +58,14 @@ private:
     void Unlock() { OSUnlockMutex(&mMutex); }
 
 private:
-    /* 0x00 */ OSThread mThread;
-    /* 0x318 */ u64 mThreadStack[THREAD_STACK_SIZE];
+    /* 0x0000 */ OSThread mThread;
+    /* 0x0318 */ u64 mThreadStack[THREAD_STACK_SIZE];
     /* 0x2318 */ OSThreadQueue mThreadQueue;
-
     /* 0x2320 */ mutable OSMutex mMutex;
-
     /* 0x2338 */ OSMessageQueue mMsgQueue;
     /* 0x2358 */ OSMessage mMsgBuffer[MSG_QUEUE_CAPACITY];
-
     /* 0x2378 */ AxManager::CallbackListNode mAxCallbackNode;
     /* 0x2384 */ CallbackList mCallbackList;
-
     /* 0x2390 */ u32 mProcessTick;
     /* 0x2394 */ bool mCreateFlag;
 };

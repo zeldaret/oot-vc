@@ -52,7 +52,6 @@ public:
     /* 0x50 */ virtual bool IsAttachedTempSpecialHandle();
     /* 0x54 */ virtual void DetachTempSpecialHandle();
     /* 0x58 */ virtual void InitParam();
-
     /* 0x68 */ virtual BasicPlayer& GetBasicPlayer() { return mSeqPlayer; }
     /* 0x6C */ virtual const BasicPlayer& GetBasicPlayer() const { return mSeqPlayer; }
 

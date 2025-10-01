@@ -84,7 +84,6 @@ private:
     /* 0x1F */ u8 mStartedFlag;
     /* 0x20 */ u8 mPauseFlag;
     /* 0x21 */ u8 mSkipFlag;
-
     /* 0x24 */ f32 mExtVolume;
     /* 0x28 */ f32 mExtPan;
     /* 0x2C */ f32 mExtSurroundPan;
@@ -93,27 +92,18 @@ private:
     /* 0x38 */ f32 mExtSurroundPan2;
     /* 0x3C */ f32 mExtPitch;
     /* 0x40 */ f32 mExtLpfFreq;
-
     /* 0x44 */ int mOutputLineFlag;
-
     /* 0x48 */ f32 mMainOutVolume;
-
     /* 0x4C */ f32 mMainSend;
     /* 0x50 */ f32 mFxSend[AUX_BUS_NUM];
-
     /* 0x5C */ f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS];
     /* 0x6C */ f32 mRemoteSend[WPAD_MAX_CONTROLLERS];
     /* 0x7C */ f32 mRemoteFxSend[WPAD_MAX_CONTROLLERS];
-
     /* 0x8C */ int mVoiceOutCount;
-
     /* 0x90 */ u8 mPriority;
-
     /* 0x94 */ const WsdTrack::WsdCallback* mCallback;
     /* 0x98 */ u32 mCallbackData;
-
     /* 0x9C */ WsdTrack mTrack;
-
     /* 0xD0 */ u32 mTickCounter;
 };
 

@@ -42,7 +42,6 @@ private:
 
     /* 0x00 */ OSMutex mMutex;
     /* 0x18 */ MEMHeapHandle mHeapHandle;
-
     /* 0x1C */ Task* mCurrentTask;
     /* 0x20 */ TaskList mTaskList[PRIORITY_MAX];
 };

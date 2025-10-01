@@ -80,7 +80,7 @@ public:
     f32 GetVolume() const { return mVolume; }
 
     detail::BasicSound* detail_GetLowestPrioritySound() {
-        // @bug UB when the list is empty
+        //! @bug UB when the list is empty
         return &mPriorityList.GetFront();
     }
 
@@ -90,10 +90,8 @@ private:
     /* 0x00 */ detail::BasicSoundPlayerPlayList mSoundList;
     /* 0x0C */ detail::BasicSoundPlayerPrioList mPriorityList;
     /* 0x18 */ detail::PlayerHeapList mHeapList;
-
     /* 0x24 */ u16 mPlayableCount;
     /* 0x26 */ u16 mPlayableLimit;
-
     /* 0x28 */ f32 mVolume;
     /* 0x2C */ bool mOutputLineFlagEnable;
     /* 0x2D */ bool mUsePlayerHeap;

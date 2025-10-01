@@ -203,7 +203,7 @@ void Channel::Update(bool periodic) {
         for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
             mVoice->SetRemoteOutVolume(i, remoteOutVolume[i]);
             mVoice->SetRemoteSend(i, remoteSend[i]);
-            // @bug Should use remoteFxSend
+            //! @bug Should use remoteFxSend
             mVoice->SetRemoteFxSend(i, remoteSend[i]);
         }
     }

@@ -51,7 +51,7 @@ bool DvdSoundArchive::Open(const char* path) {
     char extRoot[FILE_PATH_MAX];
     for (int i = std::strlen(path) - 1; i >= 0; i--) {
         if (path[i] == '/' || path[i] == '\\') {
-            // @bug Long path can overflow extRoot buffer
+            //! @bug Long path can overflow extRoot buffer
             std::strncpy(extRoot, path, i);
             extRoot[i] = '\0';
 

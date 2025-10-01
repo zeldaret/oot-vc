@@ -193,7 +193,7 @@ void StrmPlayer::Update() {
             remoteSend[i] += mRemoteSend[i];
 
             remoteFxSend[i] = 0.0f;
-            remoteFxSend[i] += mRemoteSend[i]; // @bug Should be mRemoteFxSend
+            remoteFxSend[i] += mRemoteSend[i]; //! @bug Should be mRemoteFxSend
         }
 
         mVoice->SetVolume(volume);

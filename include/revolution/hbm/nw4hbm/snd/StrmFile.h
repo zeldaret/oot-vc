@@ -64,13 +64,10 @@ typedef struct ChannelTable {
 
 typedef struct Header {
     /* 0x00 */ ut::BinaryFileHeader fileHeader;
-
     /* 0x10 */ u32 headBlockOffset;
     /* 0x14 */ u32 headBlockSize;
-
     /* 0x18 */ u32 adpcBlockOffset;
     /* 0x1C */ u32 adpcBlockSize;
-
     /* 0x20 */ u32 dataBlockOffset;
     /* 0x24 */ u32 dataBlockSize;
 } Header;

@@ -288,7 +288,7 @@ bool SoundArchiveFileReader::ReadSoundArchivePlayerInfo(SoundArchive::SoundArchi
     const SoundArchiveFile::SoundArchivePlayerInfo* pSrc =
         Util::GetDataRefAddress0(mInfo->soundArchivePlayerInfoRef, mInfo);
 
-    // @bug Doesn't check dataref result
+    //! @bug Doesn't check dataref result
     if (info == NULL) {
         return false;
     }
@@ -519,7 +519,7 @@ SoundArchiveFile::SoundInfoOffset SoundArchiveFileReader::impl_GetSoundInfoOffse
 
     SoundArchiveFile::SoundInfoOffset ref;
 
-    // TODO: Why is the offset changed?
+    //! TODO: Why is the offset changed?
     ref.refType = pTable->items[id].refType;
     ref.dataType = pTable->items[id].dataType;
     ref.value = pTable->items[id].value + 0x1C;

@@ -145,7 +145,7 @@ bool StrmFileLoader::ReadAdpcBlockData(u16* yn1, u16* yn2, int block, int channe
     mStream.Seek(offset, ut::FileStream::SEEK_BEG);
 
     u16 buffer[StrmPlayer::StrmHeader::STRM_CHANNEL_MAX * 2] ATTRIBUTE_ALIGN(32);
-    // @bug Read size not validated
+    //! @bug Read size not validated
     mStream.Read(buffer, sizeof(buffer));
 
     for (int i = 0; i < channels; i++) {

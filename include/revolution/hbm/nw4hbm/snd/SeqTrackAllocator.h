@@ -10,8 +10,7 @@ class SeqTrack;
 
 class SeqTrackAllocator {
 public:
-    virtual ~SeqTrackAllocator() {} // 0x08
-
+    /* 0x08 */ virtual ~SeqTrackAllocator() {}
     /* 0x0C */ virtual SeqTrack* AllocTrack(SeqPlayer* player) = 0;
     /* 0x10 */ virtual void FreeTrack(SeqTrack* track) = 0;
 };

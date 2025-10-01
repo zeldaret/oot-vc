@@ -45,21 +45,17 @@ public:
 
         /* 0x00 */ StartOffsetType startOffsetType;
         /* 0x04 */ int startOffset;
-
         /* 0x08 */ u32 playerId;
         /* 0x0C */ int playerPriority;
-
         /* 0x10 */ int voiceOutCount;
     } StartInfo;
 
 public:
-    virtual ~SoundStartable() {} // 0x08
-
-    virtual StartResult detail_SetupSound(SoundHandle* soundHandle, u32 id,
-                                          detail::BasicSound::AmbientArgInfo* ambientArgInfo,
-                                          detail::ExternalSoundPlayer* extPlayer, bool hold,
-                                          /* 0x0C */ const StartInfo* startInfo) = 0;
-
+    /* 0x08 */ virtual ~SoundStartable() {}
+    /* 0x0C */ virtual StartResult detail_SetupSound(SoundHandle* soundHandle, u32 id,
+                                                     detail::BasicSound::AmbientArgInfo* ambientArgInfo,
+                                                     detail::ExternalSoundPlayer* extPlayer, bool hold,
+                                                     const StartInfo* startInfo) = 0;
     /* 0x10 */ virtual u32 detail_ConvertLabelStringToSoundId(const char* label) = 0;
 
     bool StartSound(SoundHandle* soundHandle, u32 id) {

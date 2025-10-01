@@ -6,28 +6,26 @@
 
 namespace nw4hbm {
 namespace snd {
+
 namespace detail {
 class BasicSound;
 }
-} // namespace snd
-} // namespace nw4hbm
-namespace nw4hbm {
-namespace snd {
+
 class SoundPlayer;
-}
+
+} // namespace snd
 } // namespace nw4hbm
 
 namespace nw4hbm {
 namespace snd {
-class SoundPlayer;
 namespace detail {
-class BasicSound;
+
 class PlayerHeap : public SoundHeap {
 public:
     PlayerHeap() :
         mSound(nullptr),
         mPlayer(nullptr) {}
-    virtual ~PlayerHeap() {} // 0x08
+    /* 0x08 */ virtual ~PlayerHeap() {}
 
     void SetSound(BasicSound* sound) { mSound = sound; }
     void SetSoundPlayer(SoundPlayer* player) { mPlayer = player; }

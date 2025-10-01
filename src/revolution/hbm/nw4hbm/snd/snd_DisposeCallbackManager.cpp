@@ -33,7 +33,7 @@ void DisposeCallbackManager::Dispose(void* data, u32 size, void* arg) {
 
     while (it != GetInstance().mCallbackList.GetEndIter()) {
         DisposeCallbackList::Iterator currIt = it++;
-        // @bug Unnecessary iteration
+        //! @bug Unnecessary iteration
         currIt++->InvalidateData(start, end);
     }
 }
@@ -48,7 +48,7 @@ void DisposeCallbackManager::DisposeWave(void* data, u32 size, void* arg) {
 
     while (it != GetInstance().mCallbackList.GetEndIter()) {
         DisposeCallbackList::Iterator currIt = it++;
-        // @bug Unnecessary iteration
+        //! @bug Unnecessary iteration
         currIt++->InvalidateWaveData(start, end);
     }
 }

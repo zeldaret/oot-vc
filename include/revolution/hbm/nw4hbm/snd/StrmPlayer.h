@@ -26,14 +26,14 @@ public:
     } StartOffsetType;
 
     typedef struct StrmHeader {
-        // TODO: Why 8 if the player only supports 2???
+        //! TODO: Why 8 if the player only supports 2???
         static const int STRM_CHANNEL_MAX = 8;
 
         /* 0x00 */ StrmInfo strmInfo;
         /* 0x38 */ AdpcmInfo adpcmInfo[STRM_CHANNEL_MAX];
     } StrmHeader;
 
-    // TODO: How is this calculated?
+    //! TODO: How is this calculated?
     static const int LOAD_BUFFER_SIZE = 0x4000 + 32;
     class LoadCommand {
         friend class StrmPlayer;
@@ -52,7 +52,6 @@ public:
 
         /* 0x04 */ StrmPlayer* mPlayer;
         /* 0x08 */ Status mStatus;
-
         /* 0x0C */ s32 mStreamBlockIndex;
         /* 0x10 */ s32 mBufferBlockIndex;
 
@@ -164,60 +163,45 @@ private:
     static void NotifyStrmHeaderAsyncEndCallback(bool result, const StrmHeader* header, void* userData);
 
 public:
-    /* 0x08 */ ut::LinkListNode mPlayerLink;
+    /* 0x008 */ ut::LinkListNode mPlayerLink;
 
 private:
-    /* 0x10 */ StrmInfo mStrmInfo;
-
-    /* 0x48 */ u8 mActiveFlag;
-    /* 0x49 */ u8 mStartedFlag;
-    /* 0x4A */ u8 mPreparedFlag;
-    /* 0x4B */ u8 mPauseFlag;
-    /* 0x4C */ u8 mDiskErrorFlag;
-    /* 0x4D */ u8 mPauseStatus;
-    /* 0x4E */ u8 mLoadWaitFlag;
-    /* 0x4F */ u8 mNoRealtimeLoadFlag;
-
-    /* 0x50 */ u8 mSkipUpdateAdpcmLoop;
-    /* 0x51 */ u8 mValidAdpcmLoop;
-
-    /* 0x52 */ u8 mPlayFinishFlag;
-    /* 0x53 */ u8 mLoadFinishFlag;
-    /* 0x54 */ s32 mLoopCounter;
-
-    /* 0x58 */ int mPrepareCounter;
-
-    /* 0x5C */ int mChangeNumBlocks;
-    /* 0x60 */ int mDataBlockSize;
-
-    /* 0x64 */ int mBufferBlockCount;
-    /* 0x68 */ int mBufferBlockCountBase;
-
-    /* 0x6C */ int mLoadingBufferBlockCount;
-    /* 0x70 */ int mLoadingBufferBlockIndex;
-    /* 0x74 */ int mLoadingDataBlockIndex;
-
-    /* 0x78 */ int mPlayingBufferBlockCount;
-    /* 0x7C */ int mPlayingBufferBlockIndex;
-    /* 0x80 */ int mPlayingDataBlockIndex;
-
-    /* 0x84 */ int mLoopStartBlockIndex;
-    /* 0x88 */ int mLastBlockIndex;
-
-    /* 0x8C */ StartOffsetType mStartOffsetType;
-    /* 0x90 */ int mStartOffset;
-
-    /* 0x94 */ LoadCommandList mFreeLoadCommandList;
-    /* 0xA0 */ LoadCommandList mFillBufferCommandList;
-    /* 0xAC */ LoadCommand mLoadCoammndArray[32];
-
+    /* 0x010 */ StrmInfo mStrmInfo;
+    /* 0x048 */ u8 mActiveFlag;
+    /* 0x049 */ u8 mStartedFlag;
+    /* 0x04A */ u8 mPreparedFlag;
+    /* 0x04B */ u8 mPauseFlag;
+    /* 0x04C */ u8 mDiskErrorFlag;
+    /* 0x04D */ u8 mPauseStatus;
+    /* 0x04E */ u8 mLoadWaitFlag;
+    /* 0x04F */ u8 mNoRealtimeLoadFlag;
+    /* 0x050 */ u8 mSkipUpdateAdpcmLoop;
+    /* 0x051 */ u8 mValidAdpcmLoop;
+    /* 0x052 */ u8 mPlayFinishFlag;
+    /* 0x053 */ u8 mLoadFinishFlag;
+    /* 0x054 */ s32 mLoopCounter;
+    /* 0x058 */ int mPrepareCounter;
+    /* 0x05C */ int mChangeNumBlocks;
+    /* 0x060 */ int mDataBlockSize;
+    /* 0x064 */ int mBufferBlockCount;
+    /* 0x068 */ int mBufferBlockCountBase;
+    /* 0x06C */ int mLoadingBufferBlockCount;
+    /* 0x070 */ int mLoadingBufferBlockIndex;
+    /* 0x074 */ int mLoadingDataBlockIndex;
+    /* 0x078 */ int mPlayingBufferBlockCount;
+    /* 0x07C */ int mPlayingBufferBlockIndex;
+    /* 0x080 */ int mPlayingDataBlockIndex;
+    /* 0x084 */ int mLoopStartBlockIndex;
+    /* 0x088 */ int mLastBlockIndex;
+    /* 0x08C */ StartOffsetType mStartOffsetType;
+    /* 0x090 */ int mStartOffset;
+    /* 0x094 */ LoadCommandList mFreeLoadCommandList;
+    /* 0x0A0 */ LoadCommandList mFillBufferCommandList;
+    /* 0x0AC */ LoadCommand mLoadCoammndArray[32];
     /* 0x42C */ StrmBufferPool* mBufferPool;
-
     /* 0x430 */ StrmCallback* mCallback;
     /* 0x434 */ u32 mCallbackData;
-
     /* 0x438 */ AxVoice* mVoice;
-
     /* 0x43C */ f32 mExtVolume;
     /* 0x440 */ f32 mExtPan;
     /* 0x444 */ f32 mExtSurroundPan;
@@ -225,21 +209,15 @@ private:
     /* 0x44C */ f32 mExtSurroundPan2;
     /* 0x450 */ f32 mExtPitch;
     /* 0x454 */ f32 mExtLpfFreq;
-
     /* 0x458 */ int mOutputLineFlag;
-
     /* 0x45C */ f32 mMainOutVolume;
     /* 0x460 */ f32 mMainSend;
-
     /* 0x464 */ f32 mFxSend[AUX_BUS_NUM];
-
     /* 0x470 */ f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS];
     /* 0x480 */ f32 mRemoteSend[WPAD_MAX_CONTROLLERS];
     /* 0x490 */ f32 mRemoteFxSend[WPAD_MAX_CONTROLLERS];
-
     /* 0x4A0 */ s32 mChannelCount;
     /* 0x4A4 */ s32 mVoiceOutCount;
-
     /* 0x4A8 */ StrmChannel mChannels[CHANNEL_MAX];
     /* 0x518 */ u16 mAdpcmPredScale[CHANNEL_MAX];
 };

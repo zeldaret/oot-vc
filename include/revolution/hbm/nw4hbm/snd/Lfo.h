@@ -16,8 +16,7 @@ typedef struct LfoParam {
     /* 0x04 */ f32 speed;
     /* 0x08 */ u32 delay;
     /* 0x0C */ u8 range;
-
-    u8 padding[3];
+    /* 0x0D */ u8 padding[3];
 } LfoParam;
 
 class Lfo {

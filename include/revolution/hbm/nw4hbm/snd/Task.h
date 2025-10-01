@@ -18,8 +18,7 @@ public:
     Task(u32 taskId) :
         mTaskId(taskId) {}
 
-    virtual ~Task() {} // 0x08
-
+    /* 0x08 */ virtual ~Task() {}
     /* 0x0C */ virtual void Execute() = 0;
     /* 0x10 */ virtual void Cancel() = 0;
 

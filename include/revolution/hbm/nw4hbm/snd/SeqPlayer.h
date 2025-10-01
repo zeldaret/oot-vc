@@ -51,8 +51,8 @@ public:
     static const int TRACK_NUM = 16;
 
     SeqPlayer();
-    /* 0x8 */ virtual ~SeqPlayer();
 
+    /* 0x08 */ virtual ~SeqPlayer();
     /* 0x0C */ virtual bool Start();
     /* 0x10 */ virtual void Stop();
     /* 0x14 */ virtual void Pause(bool flag);
@@ -88,10 +88,8 @@ public:
     /* 0x8C */ virtual f32 GetRemoteOutVolume(int remoteIndex) const;
     /* 0x90 */ virtual f32 GetRemoteSend(int remoteIndex) const;
     /* 0x94 */ virtual f32 GetRemoteFxSend(int remoteIndex) const;
-
     /* 0x50 */ virtual void InvalidateData(const void* start, const void* end);
-    virtual void InvalidateWaveData(const void* start, const void* end) {} // 0x54
-
+    /* 0x54 */ virtual void InvalidateWaveData(const void* start, const void* end) {}
     /* 0x58 */ virtual void ChannelCallback(Channel* channel);
 
     void InitParam(int voices, NoteOnCallback* callback);
@@ -165,7 +163,6 @@ private:
     /* 0x17 */ u8 mStartedFlag;
     /* 0x18 */ u8 mPauseFlag;
     /* 0x19 */ bool mSkipFlag;
-
     /* 0x1C */ f32 mExtVolume;
     /* 0x20 */ f32 mExtPan;
     /* 0x24 */ f32 mExtSurroundPan;
@@ -174,29 +171,20 @@ private:
     /* 0x30 */ f32 mExtSurroundPan2;
     /* 0x34 */ f32 mExtPitch;
     /* 0x38 */ f32 mExtLpfFreq;
-
     /* 0x3C */ int mOutputLineFlag;
-
     /* 0x40 */ f32 mMainOutVolume;
     /* 0x44 */ f32 mMainSend;
-
     /* 0x48 */ f32 mFxSend[AUX_BUS_NUM];
-
     /* 0x54 */ f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS];
     /* 0x64 */ f32 mRemoteSend[WPAD_MAX_CONTROLLERS];
     /* 0x74 */ f32 mRemoteFxSend[WPAD_MAX_CONTROLLERS];
-
     /* 0x84 */ f32 mTempoRatio;
     /* 0x88 */ u16 mTempoCounter;
-
     /* 0x8C */ s32 mVoiceOutCount;
-
     /* 0x90 */ ParserPlayerParam mParserParam;
     /* 0x98 */ SeqTrackAllocator* mSeqTrackAllocator;
-
     /* 0x9C */ SeqTrack* mTracks[TRACK_NUM];
     /* 0xDC */ vs16 mLocalVariable[TRACK_NUM];
-
     /* 0xFC */ u32 mTickCounter;
 
     static vs16 mGlobalVariable[LOCAL_VARIABLE_NUM];

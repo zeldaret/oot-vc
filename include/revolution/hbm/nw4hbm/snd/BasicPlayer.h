@@ -14,11 +14,12 @@ class BasicPlayer {
 public:
     BasicPlayer() :
         mId(-1) {}
-    virtual ~BasicPlayer()
+
+    /* 0x08 */ virtual ~BasicPlayer()
 #ifdef MAKE_DTOR_ZERO
         = 0
 #endif
-    /* 0x08 */ {};
+    {};
 
     /* 0x0C */ virtual bool Start() = 0;
     /* 0x10 */ virtual void Stop() = 0;
@@ -62,7 +63,9 @@ public:
 private:
     /* 0x04 */ u32 mId;
 };
+
 } // namespace
+
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm

@@ -33,9 +33,7 @@ public:
 private:
     typedef struct Block {
         /* 0x00 */ ut::LinkListNode mLink;
-
         /* 0x08 */ u32 mSize;
-
         /* 0x0C */ FreeCallback mCallback;
         /* 0x10 */ void* mCallbackArg;
 

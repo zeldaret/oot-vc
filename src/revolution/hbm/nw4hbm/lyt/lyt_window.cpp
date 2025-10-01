@@ -39,7 +39,7 @@ NW4HBM_UT_GET_DERIVED_RUNTIME_TYPEINFO(Window, Pane);
 } // namespace lyt
 } // namespace nw4hbm
 
-// TODO clean up
+//! TODO clean up
 
 namespace {
 

@@ -68,15 +68,8 @@ public:
         /* 0x04 */ T items[1];
     };
 
-#ifdef NW4HBM_LITLE_ENDIAN
-    static inline u16 ReadBigEndian(u16 x) { return x >> 8 | x << 8; }
-    static inline u32 ReadBigEndian(u32 x) {
-        return (x >> 24) & 0x000000FF | (x >> 8) & 0x0000FF00 | (x << 8) & 0x00FF0000 | (x << 24) & 0xFF000000;
-    }
-#else
     static inline u16 ReadBigEndian(u16 x) { return x; }
     static inline u32 ReadBigEndian(u32 x) { return x; }
-#endif
 
     static f32 CalcPitchRatio(int pitch);
     static f32 CalcVolumeRatio(f32 db);

@@ -58,16 +58,11 @@ private:
     /* 0x06 */ bool mForceResumeFlag;
     /* 0x07 */ bool mContinueFlag;
     /* 0x08 */ bool mIntervalFlag;
-
     /* 0x09 */ WENCInfo mEncodeInfo;
-
     /* 0x2C */ int mChannelIndex;
-
     /* 0x30 */ WPADCallback mSetupCallback;
-
     /* 0x38 */ OSAlarm mContinueAlarm;
     /* 0x68 */ OSAlarm mInvervalAlarm;
-
     /* 0x98 */ OSTime mContinueBeginTime;
 };
 

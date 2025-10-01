@@ -103,15 +103,12 @@ public:
 public:
     SoundArchive();
     /* 0x08 */ virtual ~SoundArchive();
-
     /* 0x0C */ virtual const void* detail_GetFileAddress(u32 id) const = 0;
     /* 0x10 */ virtual const void* detail_GetWaveDataFileAddress(u32 id) const = 0;
-
     /* 0x14 */ virtual int detail_GetRequiredStreamBufferSize() const = 0;
-
     /* 0x18 */ virtual ut::FileStream* OpenStream(void* buffer, int bufferSize, u32 offset, u32 length) const = 0;
-    virtual ut::FileStream* OpenExtStream(void* buffer, int bufferSize, const char* extPath, u32 offset,
-                                          /* 0x1C */ u32 length) const = 0;
+    /* 0x1C */ virtual ut::FileStream* OpenExtStream(void* buffer, int bufferSize, const char* extPath, u32 offset,
+                                                     u32 length) const = 0;
 
     bool IsAvailable() const;
 

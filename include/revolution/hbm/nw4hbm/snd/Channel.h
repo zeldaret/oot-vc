@@ -134,15 +134,12 @@ private:
     static const int PRIORITY_RELEASE = 1;
 
     /* 0x08 */ EnvGenerator mEnvelope;
-
     /* 0x20 */ Lfo mLfo;
     /* 0x38 */ u8 mLfoTarget;
-
     /* 0x39 */ bool mPauseFlag;
     /* 0x3A */ bool mActiveFlag;
     /* 0x3B */ bool mAllocFlag;
     /* 0x3C */ bool mAutoSweep;
-
     /* 0x40 */ f32 mUserVolume;
     /* 0x44 */ f32 mUserPitchRatio;
     /* 0x48 */ f32 mUserPan;
@@ -150,36 +147,27 @@ private:
     /* 0x50 */ f32 mUserPan2;
     /* 0x54 */ f32 mUserSurroundPan2;
     /* 0x58 */ f32 mUserLpfFreq;
-
     /* 0x5C */ int mOutputLineFlag;
-
     /* 0x60 */ f32 mMainOutVolume;
     /* 0x64 */ f32 mMainSend;
     /* 0x68 */ f32 mFxSend[AUX_BUS_NUM];
-
     /* 0x74 */ f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS];
     /* 0x84 */ f32 mRemoteSend[WPAD_MAX_CONTROLLERS];
     /* 0x94 */ f32 mRemoteFxSend[WPAD_MAX_CONTROLLERS];
-
     /* 0xA4 */ f32 mUserPitch;
-
     /* 0xA8 */ f32 mSweepPitch;
     /* 0xAC */ s32 mSweepCounter;
     /* 0xB0 */ s32 mSweepLength;
-
     /* 0xB4 */ f32 mInitVolume;
     /* 0xB8 */ f32 mInitPan;
     /* 0xBC */ f32 mInitSurroundPan;
-
     /* 0xC0 */ f32 mTune;
     /* 0xC4 */ MoveValue<u8, u16> mSilenceVolume;
     /* 0xCC */ int mKey;
     /* 0xD0 */ int mOriginalKey;
     /* 0xD4 */ s32 mLength;
-
     /* 0xD8 */ ChannelCallback mCallback;
     /* 0xDC */ u32 mCallbackData;
-
     /* 0xE0 */ AxVoice* mVoice;
     /* 0xE4 */ Channel* mNextLink;
 

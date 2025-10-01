@@ -87,39 +87,28 @@ private:
     static void VoiceCallbackFunc(detail::AxVoice* voice, detail::AxVoice::CallbackStatus status, void* arg);
 
     /* 0x04 */ WavePacketList mWavePacketList;
-
     /* 0x10 */ int mChannelCount;
-
     /* 0x14 */ f32 mPitchMax;
-
     /* 0x18 */ detail::AxVoice* mVoice;
-
     /* 0x1C */ bool mStartFlag;
     /* 0x1D */ bool mVoiceStartFlag;
     /* 0x1E */ bool mLoopSetFlag;
     /* 0x1F */ bool mPauseFlag;
-
     /* 0x20 */ SampleFormat mSampleFormat;
     /* 0x24 */ int mSampleRate;
-
     /* 0x28 */ s64 mPlaySampleCount;
     /* 0x30 */ f32 mVolume;
     /* 0x34 */ f32 mPan;
     /* 0x38 */ f32 mSurroundPan;
     /* 0x3C */ f32 mPitch;
     /* 0x40 */ f32 mLpfFreq;
-
     /* 0x44 */ int mOutputLineFlag;
-
     /* 0x48 */ f32 mMainOutVolume;
     /* 0x4C */ f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS];
-
     /* 0x5C */ f32 mMainSend;
     /* 0x60 */ f32 mFxSend[AUX_BUS_NUM];
-
     /* 0x6C */ f32 mRemoteSend[WPAD_MAX_CONTROLLERS];
     /* 0x7C */ f32 mRemoteFxSend[WPAD_MAX_CONTROLLERS];
-
     /* 0x8C */ WavePacketCallback mCallback;
     /* 0x90 */ void* mCallbackArg;
 

@@ -10,7 +10,6 @@ namespace detail {
 typedef struct StrmChannel {
     /* 0x00 */ void* mBuffer;
     /* 0x04 */ u32 mBufferSize;
-
     /* 0x08 */ AdpcmInfo mAdpcmInfo;
 } StrmChannel;
 
@@ -30,10 +29,8 @@ private:
 
     /* 0x00 */ void* mBuffer;
     /* 0x04 */ u32 mBufferSize;
-
     /* 0x08 */ u32 mBlockSize;
     /* 0x0C */ int mBlockCount;
-
     /* 0x10 */ int mAllocCount;
     /* 0x14 */ u8 mAllocFlags[BLOCK_MAX / BITS_PER_BYTE];
 };

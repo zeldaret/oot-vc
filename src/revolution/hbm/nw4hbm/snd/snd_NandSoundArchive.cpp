@@ -71,7 +71,7 @@ bool NandSoundArchive::Open(const char* path) {
         if (path[i] == '/' || path[i] == '\\') {
             NW4HBMAssert_Line(i < FILE_PATH_MAX, 115);
 
-            // @bug Long path can overflow extRoot buffer
+            //! @bug Long path can overflow extRoot buffer
             std::strncat(extRoot, path, i);
             extRoot[nandLen + i] = '\0';
             break;

@@ -12,6 +12,7 @@
 namespace nw4hbm {
 namespace snd {
 namespace detail {
+
 class AxManager {
 public:
     typedef struct CallbackListNode {
@@ -87,43 +88,32 @@ private:
     static void AxCallbackFunc();
     static void AuxCallbackFunc(void* chans, void* context);
 
-    /* 0x00 */ OutputMode mOutputMode;
-
-    /* 0x04 */ void* mZeroBufferAddress;
-
-    /* 0x08 */ CallbackList mCallbackList;
-    /* 0x14 */ AxVoiceList mPrioVoiceList;
-    /* 0x20 */ AxVoiceList mFreeVoiceList;
-
-    /* 0x2C */ AxVoice mVoices[AX_VOICE_MAX];
-
+    /* 0x0000 */ OutputMode mOutputMode;
+    /* 0x0004 */ void* mZeroBufferAddress;
+    /* 0x0008 */ CallbackList mCallbackList;
+    /* 0x0014 */ AxVoiceList mPrioVoiceList;
+    /* 0x0020 */ AxVoiceList mFreeVoiceList;
+    /* 0x002C */ AxVoice mVoices[AX_VOICE_MAX];
     /* 0xA22C */ AXOutCallback mNextAxRegisterCallback;
-
     /* 0xA230 */ bool mInitialized;
-
     /* 0xA231 */ bool mUpdateVoicePrioFlag;
     /* 0xA232 */ bool mHomeButtonMuteFlag;
     /* 0xA233 */ bool mDiskErrorFlag;
-
     /* 0xA234 */ MoveValue<f32, int> mHomeButtonMenuVolume;
     /* 0xA244 */ MoveValue<f32, int> mMasterVolume;
     /* 0xA254 */ MoveValue<f32, int> mVolumeForReset;
-
     /* 0xA264 */ AIDMACallback mOldAidCallback;
-
     /* 0xA268 */ vs32 mResetReadyCounter;
-
     /* 0xA26C */ MoveValue<f32, int> mAuxFadeVolume[AUX_BUS_NUM];
     /* 0xA29C */ MoveValue<f32, int> mAuxUserVolume[AUX_BUS_NUM];
-
     /* 0xA2CC */ FxList mFxList[AUX_BUS_NUM];
-
     /* 0xA2F0 */ AXAuxCallback mAuxCallback[AUX_BUS_NUM];
     /* 0xA2FC */ void* mAuxCallbackContext[AUX_BUS_NUM];
     /* 0xA308 */ u8 mAuxCallbackWaitCounter[AUX_BUS_NUM];
 
     static u8 sZeroBuffer[ZERO_BUFFER_SIZE];
 };
+
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm

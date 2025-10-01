@@ -24,7 +24,6 @@ static const u32 SIGNATURE_WAVE_BLOCK = 'WAVE';
 
 typedef struct InstParam {
     /* 0x00 */ s32 waveIndex;
-
     /* 0x04 */ u8 attack;
     /* 0x05 */ u8 decay;
     /* 0x06 */ u8 sustain;
@@ -36,11 +35,9 @@ typedef struct InstParam {
     /* 0x0E */ u8 pan;
     /* 0x0F */ u8 padding2;
     /* 0x10 */ f32 tune;
-
     /* 0x14 */ Util::DataRef<void> lfoTableRef;
     /* 0x1C */ Util::DataRef<void> graphEnvTablevRef;
     /* 0x24 */ Util::DataRef<void> randomizerTableRef;
-
     /* 0x2C */ u32 reserved;
 } InstParam;
 
@@ -63,7 +60,6 @@ struct IndexTable {
 
 typedef struct Header {
     /* 0x00 */ ut::BinaryFileHeader fileHeader;
-
     /* 0x10 */ u32 dataBlockOffset;
     /* 0x14 */ u32 dataBlockSize;
     /* 0x18 */ u32 waveBlockOffset;

@@ -141,7 +141,7 @@ u32 SoundArchivePlayer::GetRequiredStrmBufferSize(const SoundArchive* arc) {
         strmChannels = info.strmChannelCount;
     }
 
-    // TODO: How is this calculated?
+    //! TODO: How is this calculated?
     return strmChannels * 0xA000;
 }
 

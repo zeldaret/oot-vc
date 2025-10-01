@@ -15,10 +15,11 @@ class WsdTrack {
 public:
     class WsdCallback {
     public:
-        virtual ~WsdCallback() = 0 {} // 0x08
+        /* 0x08 */ virtual ~WsdCallback() = 0 {}
 
-        virtual bool GetWaveSoundData(WaveSoundInfo* info, WaveSoundNoteInfo* noteInfo, WaveData* waveData,
-                                      const void* waveSoundData, int index, int noteIndex, u32 userData) const = 0;
+        /* 0x0C */ virtual bool GetWaveSoundData(WaveSoundInfo* info, WaveSoundNoteInfo* noteInfo, WaveData* waveData,
+                                                 const void* waveSoundData, int index, int noteIndex,
+                                                 u32 userData) const = 0;
     };
 
     typedef enum StartOffsetType {
@@ -50,15 +51,12 @@ public:
 private:
     /* 0x00 */ const void* mWsdData;
     /* 0x04 */ int mIndex;
-
     /* 0x08 */ u32 mCounter;
     /* 0x0C */ LfoParam mLfoParam;
     /* 0x1C */ u8 mBendRange;
     /* 0x1D */ u8 mPriority;
-
     /* 0x20 */ WaveSoundInfo mWaveSoundInfo;
     /* 0x2C */ WsdPlayer* mWsdPlayer;
-
     /* 0x30 */ Channel* mChannelList;
 };
 } // namespace detail

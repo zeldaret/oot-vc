@@ -17,11 +17,6 @@ inline int CalcAxvpbDelta(u16 init, u16 target) { return (target - init) / AX_SA
 
 inline u16 CalcMixVolume(f32 volume) { return ut::Min<u32>(USHRT_MAX, AX_MAX_VOLUME * volume); }
 
-/******************************************************************************
- *
- * AxVoiceParamBlock
- *
- ******************************************************************************/
 class AxVoiceParamBlock {
 public:
     AxVoiceParamBlock();
@@ -110,18 +105,13 @@ private:
     static const u16 DEFAULT_VOLUME = AX_MAX_VOLUME;
 
 private:
-    AXVPB* mVpb; // at 0x0
-    u32 mSync; // at 0x4
-    volatile AXPBVE mPrevVeSetting; // at 0x8
-    bool mFirstVeUpdateFlag; // at 0xC
-    u16 mVolume; // at 0xE
+    /* 0x00 */ AXVPB* mVpb;
+    /* 0x04 */ u32 mSync;
+    /* 0x08 */ volatile AXPBVE mPrevVeSetting;
+    /* 0x0C */ bool mFirstVeUpdateFlag;
+    /* 0x0E */ u16 mVolume;
 };
 
-/******************************************************************************
- *
- * AxVoice
- *
- ******************************************************************************/
 class WaveData;
 class AxVoice : public DisposeCallback {
     friend class AxManager;
@@ -168,9 +158,9 @@ public:
     typedef void (*AxVoiceCallback)(AxVoice* drovoice, CallbackStatus status, void* callbackArg);
 
     AxVoice();
-    /* 0x08 */ virtual ~AxVoice();
 
-    virtual void InvalidateData(const void* start, const void* end) {} // 0x0C
+    /* 0x08 */ virtual ~AxVoice();
+    /* 0x0C */ virtual void InvalidateData(const void* start, const void* end) {}
     /* 0x10 */ virtual void InvalidateWaveData(const void* start, const void* end);
 
     void Setup(const WaveData& waveParam);
@@ -268,20 +258,16 @@ protected:
     void CalcAXPBMIX(int channelIndex, int voiceIndex, AXPBMIX* mix);
     void CalcAXPBRMTMIX(int channelIndex, int voiceIndex, AXPBRMTMIX* mix);
 
-    /* 0x0C */ AXVPB* mVpb[CHANNEL_MAX][VOICES_MAX];
-
-    /* 0x2C */ VoiceChannelParam mVoiceChannelParam[CHANNEL_MAX];
-    /* 0x94 */ SoundParam mVoiceOutParam[VOICES_MAX];
+    /* 0x000 (base) */
+    /* 0x00C */ AXVPB* mVpb[CHANNEL_MAX][VOICES_MAX];
+    /* 0x02C */ VoiceChannelParam mVoiceChannelParam[CHANNEL_MAX];
+    /* 0x094 */ SoundParam mVoiceOutParam[VOICES_MAX];
     /* 0x104 */ s32 mChannelCount;
     /* 0x108 */ s32 mVoiceOutCount;
-
     /* 0x10C */ AxVoiceCallback mCallback;
     /* 0x110 */ void* mCallbackData;
-
     /* 0x114 */ int mSampleRate;
-
     /* 0x118 */ Format mFormat;
-
     /* 0x11C */ bool mActiveFlag;
     /* 0x11D */ bool mStartFlag;
     /* 0x11E */ bool mStartedFlag;
@@ -290,35 +276,24 @@ protected:
     /* 0x121 */ bool mFirstVeUpdateFlag;
     /* 0x122 */ bool mHomeButtonMuteFlag;
     /* 0x123 */ u8 mSyncFlag;
-
     /* 0x124 */ int mPriority;
-
     /* 0x128 */ f32 mPan;
     /* 0x12C */ f32 mSurroundPan;
     /* 0x130 */ f32 mPan2;
     /* 0x134 */ f32 mSurroundPan2;
-
     /* 0x138 */ f32 mLpfFreq;
-
     /* 0x13C */ int mOutputLineFlag;
-
     /* 0x140 */ f32 mMainOutVolume;
     /* 0x144 */ f32 mMainSend;
-
     /* 0x148 */ f32 mFxSend[AUX_BUS_NUM];
-
     /* 0x154 */ f32 mRemoteOutVolume[VOICES_MAX];
     /* 0x164 */ f32 mRemoteSend[VOICES_MAX];
     /* 0x174 */ f32 mRemoteFxSend[VOICES_MAX];
-
     /* 0x184 */ f32 mPitch;
-
     /* 0x188 */ f32 mVolume;
     /* 0x18C */ f32 mVolumePrev[VOICES_MAX];
-
     /* 0x19C */ f32 mVeInitVolume;
     /* 0x1A0 */ f32 mVeTargetVolume;
-
     /* 0x1A4 */ u16 mGainPrev;
 
 public:

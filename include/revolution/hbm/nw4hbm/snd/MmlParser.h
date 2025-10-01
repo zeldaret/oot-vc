@@ -24,10 +24,9 @@ public:
     static const int CALL_STACK_MAX_DEPTH = 3;
 
 public:
-    virtual void CommandProc(MmlSeqTrack* track, u32 command, s32 commandArg1,
-                             /* 0x8 */ s32 commandArg2) const;
-    virtual Channel* NoteOnCommandProc(MmlSeqTrack* track, int key, int velocity, s32 length,
-                                       /* 0xC */ bool tieFlag) const;
+    /* 0x08 */ virtual void CommandProc(MmlSeqTrack* track, u32 command, s32 commandArg1, s32 commandArg2) const;
+    /* 0x0C */ virtual Channel* NoteOnCommandProc(MmlSeqTrack* track, int key, int velocity, s32 length,
+                                                  bool tieFlag) const;
 
     ParseResult Parse(MmlSeqTrack* track, bool doNoteOn) const;
 

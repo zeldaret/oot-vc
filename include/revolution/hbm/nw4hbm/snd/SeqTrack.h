@@ -30,49 +30,36 @@ public:
     static const int VARIABLE_NUM = 16;
     static const int PRGNO_MAX = 0xFFFF;
 
-    typedef struct ParserTrackParam { // 50
+    typedef struct ParserTrackParam {
         /* 0x00 */ const u8* baseAddr;
         /* 0x04 */ const u8* currentAddr;
-
         /* 0x08 */ s32 wait;
         /* 0x0C */ u8 muteFlag;
         /* 0x0D */ u8 silenceFlag;
         /* 0x0E */ u8 noteFinishWait;
         /* 0x0F */ u8 portaFlag;
-
         /* 0x10 */ int bankNo;
         /* 0x14 */ int prgNo;
-
         /* 0x18 */ LfoParam lfoParam;
         /* 0x28 */ u8 lfoTarget;
-
         /* 0x2C */ f32 sweepPitch;
-
         /* 0x30 */ u8 volume;
         /* 0x31 */ u8 volume2;
-
         /* 0x32 */ s8 pitchBend;
         /* 0x33 */ u8 bendRange;
-
         /* 0x34 */ s8 pan;
         /* 0x35 */ s8 initPan;
         /* 0x36 */ s8 surroundPan;
-
         /* 0x37 */ s8 transpose;
-
         /* 0x38 */ u8 priority;
-
         /* 0x39 */ u8 portaKey;
         /* 0x3A */ u8 portaTime;
-
         /* 0x3B */ u8 attack;
         /* 0x3C */ u8 decay;
         /* 0x3D */ u8 sustain;
         /* 0x3E */ u8 release;
         /* 0x3F */ u8 mainSend;
-
         /* 0x40 */ u8 fxSend[AUX_BUS_NUM];
-
         /* 0x43 */ u8 lpfFreq;
     } ParserTrackParam;
 
@@ -81,8 +68,8 @@ public:
         mSeqPlayer(nullptr) {
         InitParam();
     }
-    virtual ~SeqTrack() {} // 0x08
 
+    /* 0x08 */ virtual ~SeqTrack() {}
     /* 0x0C */ virtual ParseResult Parse(bool doNoteOn) = 0;
 
     void SetPlayerTrackNo(int playerTrackNo);
@@ -145,7 +132,6 @@ private:
 
 private:
     /* 0x04 */ u8 mPlayerTrackNo;
-
     /* 0x08 */ f32 mExtVolume;
     /* 0x0C */ f32 mExtPitch;
     /* 0x10 */ f32 mExtPan;
@@ -156,7 +142,6 @@ private:
     /* 0x24 */ f32 mExtFxSend[AUX_BUS_NUM];
     /* 0x30 */ f32 mExtRemoteSend[WPAD_MAX_CONTROLLERS];
     /* 0x40 */ f32 mExtRemoteFxSend[WPAD_MAX_CONTROLLERS];
-
     /* 0x50 */ ParserTrackParam mParserTrackParam;
     /* 0x94 */ vs16 mTrackVariable[VARIABLE_NUM];
     /* 0xB4 */ SeqPlayer* mSeqPlayer;

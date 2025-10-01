@@ -183,7 +183,7 @@ void SoundArchive::SetExternalFileRoot(const char* pExtFileRoot) {
     NW4HBMAssert_Line(nullPos < FILE_PATH_MAX, 363);
     mExtFileRoot[nullPos] = '\0';
 
-    // @bug Long path can overflow mExtFileRoot buffer
+    //! @bug Long path can overflow mExtFileRoot buffer
     std::strncpy(mExtFileRoot, pExtFileRoot, len);
 }
 

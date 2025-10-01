@@ -37,8 +37,8 @@ public:
             /* 8 */ PARAM_UPDATE_PRIORITY = (1 << 3),
         } ParamUpdateFlags;
 
-        virtual void detail_Update(SoundParam* param, u32 id, BasicSound* sound, const void* arg,
-                                   /* 0x0C */ u32 flags) = 0;
+        /* 0x0C */ virtual void detail_Update(SoundParam* param, u32 id, BasicSound* sound, const void* arg,
+                                              u32 flags) = 0;
     } AmbientParamUpdateCallback;
 
     typedef struct AmbientArgUpdateCallback {
@@ -151,38 +151,30 @@ private:
     /* 0x0C */ SoundHandle* mTempGeneralHandle;
     /* 0x10 */ SoundPlayer* mSoundPlayer;
     /* 0x14 */ ExternalSoundPlayer* mExtSoundPlayer;
-
     /* 0x18 */ AmbientParamUpdateCallback* mAmbientParamUpdateCallback;
     /* 0x1C */ AmbientArgUpdateCallback* mAmbientArgUpdateCallback;
     /* 0x20 */ AmbientArgAllocaterCallback* mAmbientArgAllocaterCallback;
     /* 0x24 */ void* mAmbientArg;
     /* 0x28 */ SoundParam mAmbientParam;
-
     /* 0x44 */ MoveValue<f32, int> mFadeVolume;
     /* 0x54 */ MoveValue<f32, int> mPauseFadeVolume;
-
     /* 0x64 */ bool mStartFlag;
     /* 0x65 */ bool mStartedFlag;
     /* 0x66 */ bool mAutoStopFlag;
     /* 0x67 */ bool mPauseFlag;
     /* 0x68 */ bool mPauseFadeFlag;
     /* 0x69 */ bool mFadeOutFlag;
-
     /* 0x6C */ int mAutoStopCounter;
     /* 0x70 */ u32 mUpdateCounter;
-
     /* 0x74 */ u8 mPriority;
     /* 0x78 */ u32 mId;
-
     /* 0x7C */ MoveValue<f32, int> mExtMoveVolume;
     /* 0x8C */ f32 mInitVolume;
     /* 0x90 */ f32 mExtPan;
     /* 0x94 */ f32 mExtSurroundPan;
     /* 0x98 */ f32 mExtPitch;
-
     /* 0x9C */ bool mOutputLineFlagEnable;
     /* 0xA0 */ int mOutputLineFlag;
-
     /* 0xA4 */ f32 mMainOutVolume;
     /* 0xA8 */ f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS];
 
@@ -199,6 +191,7 @@ typedef ut::LinkList<BasicSound, offsetof(BasicSound, mPriorityLink)> BasicSound
 typedef ut::LinkList<BasicSound, offsetof(BasicSound, mSoundPlayerPlayLink)> BasicSoundPlayerPlayList;
 typedef ut::LinkList<BasicSound, offsetof(BasicSound, mSoundPlayerPriorityLink)> BasicSoundPlayerPrioList;
 typedef ut::LinkList<BasicSound, offsetof(BasicSound, mExtSoundPlayerPlayLink)> BasicSoundExtPlayList;
+
 } // namespace detail
 } // namespace snd
 } // namespace nw4hbm

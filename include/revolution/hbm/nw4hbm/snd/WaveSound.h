@@ -19,16 +19,13 @@ class WaveSound : public BasicSound {
     friend class WaveSoundHandle;
 
 public:
-    NW4HBM_UT_RUNTIME_TYPEINFO;
-
     explicit WaveSound(SoundInstanceManager<WaveSound>* manager);
 
+    /* 0x08 */ NW4HBM_UT_RUNTIME_TYPEINFO;
     /* 0x28 */ virtual void Shutdown();
-
     /* 0x4C */ virtual void SetPlayerPriority(int priority);
     /* 0x5C */ virtual bool IsAttachedTempSpecialHandle();
     /* 0x60 */ virtual void DetachTempSpecialHandle();
-
     /* 0x68 */ virtual BasicPlayer& GetBasicPlayer() { return mWsdPlayer; }
     /* 0x6C */ virtual const BasicPlayer& GetBasicPlayer() const { return mWsdPlayer; }
 
@@ -39,7 +36,7 @@ public:
     void SetReleasePriorityFix(bool flag);
 
 private:
-    /* 0xD8 */ WsdPlayer mWsdPlayer;
+    /* 0x0D8 */ WsdPlayer mWsdPlayer;
     /* 0x1B0 */ WaveSoundHandle* mTempSpecialHandle;
     /* 0x1B4 */ SoundInstanceManager<WaveSound>* mManager;
 };

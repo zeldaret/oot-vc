@@ -49,7 +49,7 @@ private:
     /* 0x0C */ f32 mRelease;
     /* 0x10 */ f32 mAttack;
     /* 0x14 */ u8 mSustain;
-    u16 padding;
+    /* 0x16 */ u16 padding;
 
     static const s16 DecibelSquareTable[DECIBEL_SQUARE_TABLE_SIZE];
 };

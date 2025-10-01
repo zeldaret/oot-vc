@@ -14,7 +14,6 @@ public:
         /* 0x01 */ bool noteWaitFlag;
         /* 0x02 */ bool tieFlag;
         /* 0x03 */ u8 loopCount[MmlParser::CALL_STACK_MAX_DEPTH];
-
         /* 0x06 */ u8 callStackDepth;
         /* 0x08 */ const u8* callStack[MmlParser::CALL_STACK_MAX_DEPTH];
     } MmlParserParam;

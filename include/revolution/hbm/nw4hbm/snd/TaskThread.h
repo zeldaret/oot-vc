@@ -33,13 +33,11 @@ public:
 private:
     static const int MSG_QUEUE_CAPACITY = 8;
 
-    /* 0x00 */ OSThread mThread;
-    /* 0x318 */ u64 mThreadStack[THREAD_STACK_SIZE];
+    /* 0x0000 */ OSThread mThread;
+    /* 0x0318 */ u64 mThreadStack[THREAD_STACK_SIZE];
     /* 0x2318 */ OSThreadQueue mThreadQueue;
-
     /* 0x2320 */ OSMessageQueue mMsgQueue;
     /* 0x2340 */ OSMessage mMsgBuffer[MSG_QUEUE_CAPACITY];
-
     /* 0x2360 */ bool mCreateFlag;
     /* 0x2361 */ u8 mPadding[3];
 };

@@ -17,17 +17,14 @@ private:
 
 public:
     NandSoundArchive();
-    /* 0x08 */ virtual ~NandSoundArchive();
 
+    /* 0x08 */ virtual ~NandSoundArchive();
     /* 0x0C */ virtual const void* detail_GetFileAddress(u32 id) const { return NULL; }
     /* 0x10 */ virtual const void* detail_GetWaveDataFileAddress(u32 id) const { return NULL; }
-
     /* 0x14 */ virtual int detail_GetRequiredStreamBufferSize() const;
-
     /* 0x18 */ virtual ut::FileStream* OpenStream(void* buffer, int size, u32 offset, u32 length) const;
-
-    virtual ut::FileStream* OpenExtStream(void* buffer, int size, const char* extPath, u32 offset,
-                                          /* 0x1C */ u32 length) const;
+    /* 0x1C */ virtual ut::FileStream* OpenExtStream(void* buffer, int size, const char* extPath, u32 offset,
+                                                     u32 length) const;
 
     bool Open(const char* path);
     void Close();

@@ -45,9 +45,9 @@ public:
     void Cancel();
 
 private:
-    /* 0x00 */ mutable OSMutex mMutex;
-    /* 0x18 */ const SoundArchive& mArc;
-    /* 0x1C */ u8 mStreamArea[STREAM_BUFFER_SIZE];
+    /* 0x000 */ mutable OSMutex mMutex;
+    /* 0x018 */ const SoundArchive& mArc;
+    /* 0x01C */ u8 mStreamArea[STREAM_BUFFER_SIZE];
     /* 0x21C */ ut::FileStream* mStream;
 };
 
