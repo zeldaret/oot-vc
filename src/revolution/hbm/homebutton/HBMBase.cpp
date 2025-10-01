@@ -53,9 +53,7 @@ HBMSelectBtnNum HBMCalc(const HBMControllerData* pController) {
 
 void HBMDraw() { gpHomeButton->draw_impl(); }
 
-HBMSelectBtnNum HBMGetSelectBtnNum() {
-    return gpHomeButton->getSelectBtnNum();
-}
+HBMSelectBtnNum HBMGetSelectBtnNum() { return gpHomeButton->getSelectBtnNum(); }
 
 void HBMSetAdjustFlag(bool flag) { gpHomeButton->setAdjustFlag(flag); }
 
