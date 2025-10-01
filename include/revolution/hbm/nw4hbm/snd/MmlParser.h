@@ -12,7 +12,7 @@ class MmlSeqTrack;
 class SeqPlayer;
 
 class MmlParser {
-  public:
+public:
     typedef enum SeqArgType {
         SEQ_ARG_U8 = 0,
         SEQ_ARG_S16,
@@ -23,7 +23,7 @@ class MmlParser {
 
     static const int CALL_STACK_MAX_DEPTH = 3;
 
-  public:
+public:
     virtual void CommandProc(MmlSeqTrack* track, u32 command, s32 commandArg1,
                              /* 0x8 */ s32 commandArg2) const;
     virtual Channel* NoteOnCommandProc(MmlSeqTrack* track, int key, int velocity, s32 length,
@@ -35,7 +35,7 @@ class MmlParser {
 
     static void EnablePrintVar(bool enable) { mPrintVarEnabledFlag = enable; }
 
-  private:
+private:
     typedef enum MmlSeqData {
         MML_CMD_MIN = 0x80, // <80 -> MML note, not a command
 
@@ -133,7 +133,7 @@ class MmlParser {
         MML_EX_CMD_MAX = 0xFFFF, // >FFFF -> Invalid command
     } MmlSeqData;
 
-  private:
+private:
     u8 ReadByte(const u8** data) const { return *(*data)++; }
 
     u16 Read16(const u8** data) const;
@@ -141,7 +141,7 @@ class MmlParser {
     s32 ReadVar(const u8** data) const;
     s32 ReadArg(const u8** data, SeqPlayer* player, SeqTrack* track, SeqArgType type) const;
 
-  private:
+private:
     static bool mPrintVarEnabledFlag;
 };
 

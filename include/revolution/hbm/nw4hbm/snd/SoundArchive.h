@@ -20,7 +20,7 @@ typedef enum SoundType {
 } SoundType;
 
 class SoundArchive {
-  public:
+public:
     typedef struct SoundInfo {
         /* 0x00 */ u32 fileId;
         /* 0x04 */ u32 playerId;
@@ -100,7 +100,7 @@ class SoundArchive {
 
     static const u32 INVALID_ID = 0xFFFFFFFF;
 
-  public:
+public:
     SoundArchive();
     /* 0x08 */ virtual ~SoundArchive();
 
@@ -150,13 +150,13 @@ class SoundArchive {
 
     void SetExternalFileRoot(const char* extFileRoot);
 
-  protected:
+protected:
     static const int FILE_PATH_MAX = 256;
 
-  private:
+private:
     ut::FileStream* OpenExtStreamImpl(void* buffer, int bufferSize, const char* extPath, u32 offset, u32 size) const;
 
-  private:
+private:
     /* 0x04 */ detail::SoundArchiveFileReader* mFileReader;
     /* 0x08 */ char mExtFileRoot[FILE_PATH_MAX];
 };

@@ -5,7 +5,8 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-WaveFileReader::WaveFileReader(WaveFile::WaveInfo const* waveInfo) : mWaveInfo(waveInfo) {}
+WaveFileReader::WaveFileReader(WaveFile::WaveInfo const* waveInfo) :
+    mWaveInfo(waveInfo) {}
 
 bool WaveFileReader::ReadWaveParam(WaveData* waveData, const void* waveAddr) const {
     waveData->format = mWaveInfo->format;

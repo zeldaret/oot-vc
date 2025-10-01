@@ -35,7 +35,10 @@ bool BankFileReader::IsValidFileHeader(const void* bankData) {
     return true;
 }
 
-BankFileReader::BankFileReader(const void* bankData) : mHeader(nullptr), mDataBlock(nullptr), mWaveBlock(nullptr) {
+BankFileReader::BankFileReader(const void* bankData) :
+    mHeader(nullptr),
+    mDataBlock(nullptr),
+    mWaveBlock(nullptr) {
     NW4HBMAssertPointerNonnull_Line(bankData, 88);
 
     if (!IsValidFileHeader(bankData)) {

@@ -37,13 +37,13 @@ class SoundArchiveLoader;
 } // namespace detail
 
 class SoundArchivePlayer_FileManager {
-  public:
+public:
     /* 0x8 */ virtual const void* GetFileAddress(u32 id) = 0;
     /* 0x8 */ virtual const void* GetFileWaveDataAddress(u32 id) = 0;
 };
 
 class SoundArchivePlayer : public detail::DisposeCallback, public SoundStartable {
-  public:
+public:
     SoundArchivePlayer();
     /* 0x08 */ virtual ~SoundArchivePlayer();
 
@@ -101,33 +101,34 @@ class SoundArchivePlayer : public detail::DisposeCallback, public SoundStartable
     u32 GetFreeStrmSoundCount() const { return mStrmSoundInstanceManager.GetFreeCount(); }
     u32 GetFreeWaveSoundCount() const { return mWaveSoundInstanceManager.GetFreeCount(); }
 
-  private:
+private:
     class SeqLoadCallback : public detail::SeqSound::SeqLoadCallback {
-      public:
+    public:
         SeqLoadCallback(const SoundArchivePlayer& player);
 
         virtual Result LoadData(detail::SeqSound::NotifyAsyncEndCallback callback, void* callbackArg,
                                 u32 userData) const;
         virtual void CancelLoading(u32 userData) const;
 
-      private:
+    private:
         /* 0x04 */ const SoundArchivePlayer& mSoundArchivePlayer;
         /* 0x08 */ mutable OSMutex mMutex;
     };
 
     class SeqNoteOnCallback : public detail::NoteOnCallback {
-      public:
-        SeqNoteOnCallback(const SoundArchivePlayer& player) : mSoundArchivePlayer(player) {}
+    public:
+        SeqNoteOnCallback(const SoundArchivePlayer& player) :
+            mSoundArchivePlayer(player) {}
 
         virtual detail::Channel* NoteOn(detail::SeqPlayer* seqPlayer, int bankNo, const detail::NoteOnInfo& noteOnInfo);
 
-      private:
+    private:
         /* 0x04 */ const SoundArchivePlayer& mSoundArchivePlayer;
     };
     friend class SoundArchivePlayer::SeqNoteOnCallback;
 
     class StrmCallback : public detail::StrmPlayer::StrmCallback {
-      public:
+    public:
         StrmCallback(const SoundArchivePlayer& player);
 
         virtual Result LoadHeader(detail::StrmPlayer::NotifyLoadHeaderAsyncEndCallback callback, void* callbackData,
@@ -137,32 +138,33 @@ class SoundArchivePlayer : public detail::DisposeCallback, public SoundStartable
                                   detail::StrmPlayer::LoadCommand& callback, u32 userId, u32 userData) const;
         virtual void CancelLoading(u32 userId, u32 userData) const;
 
-      private:
+    private:
         /* 0x04 */ const SoundArchivePlayer& mSoundArchivePlayer;
         /* 0x08 */ mutable OSMutex mMutex;
     };
 
     class WsdCallback : public detail::WsdTrack::WsdCallback {
-      public:
-        WsdCallback(const SoundArchivePlayer& player) : mSoundArchivePlayer(player) {}
+    public:
+        WsdCallback(const SoundArchivePlayer& player) :
+            mSoundArchivePlayer(player) {}
 
         virtual bool GetWaveSoundData(detail::WaveSoundInfo* soundInfo, detail::WaveSoundNoteInfo* noteInfo,
                                       detail::WaveData* waveData, const void* waveSoundData, int index, int noteIndex,
                                       u32 userData) const;
 
-      private:
+    private:
         /* 0x04 */ const SoundArchivePlayer& mSoundArchivePlayer;
     };
 
     class SeqLoadTask : public detail::Task {
-      public:
+    public:
         SeqLoadTask(detail::SeqSound::NotifyAsyncEndCallback callback, void* callbackArg, const SoundArchive& arc,
                     u32 fileId, u32 dataOffset, SoundHeap& heap, u32 taskId, OSMutex& mutex);
 
         virtual void Execute();
         virtual void Cancel();
 
-      private:
+    private:
         /* 0x10 */ detail::SoundArchiveLoader* mLoader;
         /* 0x14 */ const SoundArchive& mSoundArchive;
         /* 0x18 */ u32 mFileId;
@@ -176,14 +178,14 @@ class SoundArchivePlayer : public detail::DisposeCallback, public SoundStartable
     };
 
     class StrmHeaderLoadTask : public detail::Task {
-      public:
+    public:
         StrmHeaderLoadTask(detail::StrmPlayer::NotifyLoadHeaderAsyncEndCallback callback, void* callbackData,
                            const SoundArchive& arc, u32 fileId, u32 taskId, OSMutex& mutex);
 
         virtual void Execute();
         virtual void Cancel();
 
-      private:
+    private:
         /* 0x10 */ ut::FileStream* mStream;
         /* 0x14 */ const SoundArchive& mSoundArchive;
         /* 0x18 */ u32 mFileId;
@@ -195,14 +197,14 @@ class SoundArchivePlayer : public detail::DisposeCallback, public SoundStartable
     };
 
     class StrmDataLoadTask : public detail::Task {
-      public:
+    public:
         StrmDataLoadTask(void* addr, u32 size, s32 offset, int numChannels, u32 blockSize, s32 blockHeaderOffset,
                          bool needUpdateAdpcmLoop, detail::StrmPlayer::LoadCommand& callback, const SoundArchive& arc,
                          u32 fileId, u32 taskId, OSMutex& mutex) NO_INLINE;
         virtual void Execute();
         virtual void Cancel();
 
-      private:
+    private:
         /* 0x10 */ detail::StrmPlayer::LoadCommand* mCallback;
 
         /* 0x14 */ ut::FileStream* mStream;

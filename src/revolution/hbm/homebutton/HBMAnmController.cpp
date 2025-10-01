@@ -5,7 +5,9 @@
 
 namespace homebutton {
 
-GroupAnmController::GroupAnmController() : mpGroup(), mpAnimGroup() {}
+GroupAnmController::GroupAnmController() :
+    mpGroup(),
+    mpAnimGroup() {}
 
 GroupAnmController::~GroupAnmController() {}
 

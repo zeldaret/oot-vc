@@ -12,7 +12,7 @@ namespace snd {
 
 class FxBase;
 class SoundSystem {
-  public:
+public:
     static const int DEFAULT_DVD_THREAD_PRIORITY = 3;
     static const int DEFAULT_SOUND_THREAD_PRIORITY = 4;
 

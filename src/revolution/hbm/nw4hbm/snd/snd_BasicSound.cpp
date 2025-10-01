@@ -11,10 +11,17 @@ namespace snd {
 namespace detail {
 NW4HBM_UT_GET_RUNTIME_TYPEINFO(BasicSound);
 
-BasicSound::BasicSound()
-    : mHeap(nullptr), mGeneralHandle(nullptr), mTempGeneralHandle(nullptr), mSoundPlayer(nullptr),
-      mExtSoundPlayer(nullptr), mAmbientParamUpdateCallback(nullptr), mAmbientArgUpdateCallback(nullptr),
-      mAmbientArgAllocaterCallback(nullptr), mAmbientArg(nullptr), mId(INVALID_ID) {}
+BasicSound::BasicSound() :
+    mHeap(nullptr),
+    mGeneralHandle(nullptr),
+    mTempGeneralHandle(nullptr),
+    mSoundPlayer(nullptr),
+    mExtSoundPlayer(nullptr),
+    mAmbientParamUpdateCallback(nullptr),
+    mAmbientArgUpdateCallback(nullptr),
+    mAmbientArgAllocaterCallback(nullptr),
+    mAmbientArg(nullptr),
+    mId(INVALID_ID) {}
 
 void BasicSound::InitParam() {
     mPauseFlag = false;

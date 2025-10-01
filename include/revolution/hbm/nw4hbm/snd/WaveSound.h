@@ -18,7 +18,7 @@ template <typename T> class SoundInstanceManager;
 class WaveSound : public BasicSound {
     friend class WaveSoundHandle;
 
-  public:
+public:
     NW4HBM_UT_RUNTIME_TYPEINFO;
 
     explicit WaveSound(SoundInstanceManager<WaveSound>* manager);
@@ -38,7 +38,7 @@ class WaveSound : public BasicSound {
     void SetChannelPriority(int priority);
     void SetReleasePriorityFix(bool flag);
 
-  private:
+private:
     /* 0xD8 */ WsdPlayer mWsdPlayer;
     /* 0x1B0 */ WaveSoundHandle* mTempSpecialHandle;
     /* 0x1B4 */ SoundInstanceManager<WaveSound>* mManager;

@@ -73,7 +73,11 @@ void SetTagProcessorImpl(Pane* pPane, ut::TagProcessorBase<wchar_t>* pTagProcess
 namespace nw4hbm {
 namespace lyt {
 
-Layout::Layout() : mpRootPane(nullptr), mpGroupContainer(nullptr), mLayoutSize(0.0f, 0.0f), mOriginType(0) {}
+Layout::Layout() :
+    mpRootPane(nullptr),
+    mpGroupContainer(nullptr),
+    mLayoutSize(0.0f, 0.0f),
+    mOriginType(0) {}
 
 Layout::~Layout() {
     if (mpGroupContainer) {

@@ -26,7 +26,7 @@ typedef enum ParseResult {
 namespace detail {
 class SeqPlayer;
 class SeqTrack {
-  public:
+public:
     static const int VARIABLE_NUM = 16;
     static const int PRGNO_MAX = 0xFFFF;
 
@@ -76,8 +76,11 @@ class SeqTrack {
         /* 0x43 */ u8 lpfFreq;
     } ParserTrackParam;
 
-  public:
-    SeqTrack() : mSeqPlayer(nullptr) { InitParam(); }
+public:
+    SeqTrack() :
+        mSeqPlayer(nullptr) {
+        InitParam();
+    }
     virtual ~SeqTrack() {} // 0x08
 
     /* 0x0C */ virtual ParseResult Parse(bool doNoteOn) = 0;
@@ -131,16 +134,16 @@ class SeqTrack {
 
     Channel* NoteOn(int key, int velocity, s32 portatime, bool tie);
 
-  private:
+private:
     static const int DEFAULT_PRIORITY = 64;
     static const int DEFAULT_BENDRANGE = 2;
     static const int DEFAULT_PORTA_KEY = 60;
     static const int DEFAULT_VARIABLE_VALUE = -1;
 
-  private:
+private:
     static void ChannelCallbackFunc(Channel* dropChannel, Channel::ChannelCallbackStatus status, u32 userData);
 
-  private:
+private:
     /* 0x04 */ u8 mPlayerTrackNo;
 
     /* 0x08 */ f32 mExtVolume;

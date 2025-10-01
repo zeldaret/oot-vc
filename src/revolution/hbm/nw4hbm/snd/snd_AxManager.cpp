@@ -15,11 +15,24 @@ namespace detail {
 
 u8 AxManager::sZeroBuffer[AxManager::ZERO_BUFFER_SIZE];
 
-AxManager::AxManager()
-    : mOutputMode(OUTPUT_MODE_STEREO), mZeroBufferAddress(nullptr), mCallbackList(), mPrioVoiceList(), mFreeVoiceList(),
-      mVoices(), mInitialized(false), mUpdateVoicePrioFlag(true), mHomeButtonMuteFlag(false), mDiskErrorFlag(false),
-      mHomeButtonMenuVolume(), mMasterVolume(), mVolumeForReset(), mOldAidCallback(nullptr), mResetReadyCounter(-1),
-      mAuxUserVolume(), mFxList() {
+AxManager::AxManager() :
+    mOutputMode(OUTPUT_MODE_STEREO),
+    mZeroBufferAddress(nullptr),
+    mCallbackList(),
+    mPrioVoiceList(),
+    mFreeVoiceList(),
+    mVoices(),
+    mInitialized(false),
+    mUpdateVoicePrioFlag(true),
+    mHomeButtonMuteFlag(false),
+    mDiskErrorFlag(false),
+    mHomeButtonMenuVolume(),
+    mMasterVolume(),
+    mVolumeForReset(),
+    mOldAidCallback(nullptr),
+    mResetReadyCounter(-1),
+    mAuxUserVolume(),
+    mFxList() {
     mHomeButtonMenuVolume.InitValue(1.0f);
     mMasterVolume.InitValue(1.0f);
     mVolumeForReset.InitValue(1.0f);

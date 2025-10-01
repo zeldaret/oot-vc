@@ -24,7 +24,7 @@ class SeqTrack;
 class SeqTrackAllocator;
 
 class SeqPlayer : public BasicPlayer, public DisposeCallback {
-  public:
+public:
     typedef struct ParserPlayerParam {
         /* 0x00 */ u8 volume;
         /* 0x01 */ u8 priority;
@@ -139,7 +139,7 @@ class SeqPlayer : public BasicPlayer, public DisposeCallback {
     int GetVoiceOutCount() const { return mVoiceOutCount; }
     ParserPlayerParam& GetParserPlayerParam() { return mParserParam; }
 
-  private:
+private:
     static const int DEFAULT_TEMPO = 120;
     static const int DEFAULT_PRIORITY = 64;
     static const int DEFAULT_VARIABLE_VALUE = -1;
@@ -201,7 +201,7 @@ class SeqPlayer : public BasicPlayer, public DisposeCallback {
 
     static vs16 mGlobalVariable[LOCAL_VARIABLE_NUM];
 
-  public:
+public:
     /* 0x100 */ ut::LinkListNode mPlayerLink;
 };
 typedef ut::LinkList<SeqPlayer, offsetof(SeqPlayer, mPlayerLink)> SeqPlayerList;

@@ -8,7 +8,7 @@
 namespace nw4hbm {
 namespace ut {
 class NandFileStream : public FileStream {
-  public:
+public:
     NW4HBM_UT_RUNTIME_TYPEINFO;
 
     NandFileStream(const char* path, u32 mode);
@@ -43,7 +43,7 @@ class NandFileStream : public FileStream {
     virtual u32 GetSizeAlign() const { return DEFAULT_ALIGN; } // 0x38
     virtual u32 GetBufferAlign() const { return DEFAULT_ALIGN; } // 0x3C
 
-  private:
+private:
     typedef struct NandFileStreamInfo {
         /* 0x00 */ NANDCommandBlock nandBlock;
         /* 0xB8 */ NANDFileInfo nandInfo;

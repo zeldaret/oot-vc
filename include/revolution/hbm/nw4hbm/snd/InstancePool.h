@@ -8,10 +8,11 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 class PoolImpl {
-  public:
-    PoolImpl() : mNext(nullptr) {}
+public:
+    PoolImpl() :
+        mNext(nullptr) {}
 
-  protected:
+protected:
     u32 CreateImpl(void* buffer, u32 size, u32 objSize);
     void DestroyImpl(void* buffer, u32 size);
     int CountImpl() const;
@@ -19,12 +20,12 @@ class PoolImpl {
     void* AllocImpl();
     void FreeImpl(void* ptr);
 
-  private:
+private:
     /* 0x00 */ PoolImpl* mNext;
 };
 
 template <typename T> class InstancePool : private PoolImpl {
-  public:
+public:
     u32 Create(void* buffer, u32 size) { return CreateImpl(buffer, size, sizeof(T)); }
 
     void Destroy(void* buffer, u32 size) { DestroyImpl(buffer, size); }
@@ -49,7 +50,7 @@ template <typename T> class InstancePool : private PoolImpl {
 };
 
 template <typename T> class MemoryPool : private PoolImpl {
-  public:
+public:
     u32 Create(void* buffer, u32 size) { return CreateImpl(buffer, size, sizeof(T)); }
 
     void Destroy(void* buffer, u32 size) { DestroyImpl(buffer, size); }

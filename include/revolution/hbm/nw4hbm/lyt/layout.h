@@ -20,7 +20,7 @@ namespace nw4hbm {
 namespace lyt {
 
 class Layout {
-  public:
+public:
     Layout();
 
     /* 0x08 */ virtual ~Layout();
@@ -47,7 +47,7 @@ class Layout {
 
     static Pane* BuildPaneObj(s32 kind, const void* dataPtr, const ResBlockSet& resBlockSet) NO_INLINE;
 
-  private:
+private:
     /* 0x00 (vtable) */
     /* 0x04 */ AnimTransformList mAnimTransList;
     /* 0x10 */ Pane* mpRootPane;

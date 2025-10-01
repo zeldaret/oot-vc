@@ -13,7 +13,7 @@ class Group;
 namespace homebutton {
 
 class GroupAnmController : public FrameController {
-  public:
+public:
     /* 0x00 (base) */
     /* 0x20 */ nw4hbm::lyt::Group* mpGroup;
     /* 0x24 */ nw4hbm::lyt::AnimTransform* mpAnimGroup;

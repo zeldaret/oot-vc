@@ -25,7 +25,7 @@ struct HBController {
 namespace homebutton {
 
 class Controller {
-  public:
+public:
     Controller(int chan, RemoteSpk* spk);
     ~Controller();
 
@@ -69,13 +69,13 @@ class Controller {
     static RemoteSpk* GetInstance() { return sPInstance; }
     static void SetInstance(RemoteSpk* p) { sPInstance = p; }
 
-  private:
+private:
     static void wpadConnectCallback(WPADChannel chan, WPADResult result);
     static void wpadExtensionCallback(WPADChannel chan, s32 result);
     static void soundOnCallback(OSAlarm* alm, OSContext* context);
     static void ControllerCallback(WPADChannel chan, WPADResult result);
 
-  private:
+private:
     /* 0x00 */ HBController mHBController;
     /* 0x20 */ nw4hbm::snd::SoundHandle mSoundHandle;
     /* 0x24 */ RemoteSpk* remotespk;
@@ -88,7 +88,7 @@ class Controller {
     /* 0x42 */ bool mCheckSoundTimeFlag;
     /* 0x43 */ bool mCheckSoundIntervalFlag;
 
-  private:
+private:
     static bool sBatteryFlag[WPAD_MAX_CONTROLLERS];
     static OSAlarm sAlarm[WPAD_MAX_CONTROLLERS];
     static OSAlarm sAlarmSoundOff[WPAD_MAX_CONTROLLERS];

@@ -22,13 +22,15 @@ class LinkListImpl;
 class LinkListNode : private NonCopyable {
     friend class detail::LinkListImpl;
 
-  public:
-    LinkListNode() : mNext(nullptr), mPrev(nullptr) {}
+public:
+    LinkListNode() :
+        mNext(nullptr),
+        mPrev(nullptr) {}
 
     LinkListNode* GetNext() const { return mNext; }
     LinkListNode* GetPrev() const { return mPrev; }
 
-  private:
+private:
     /* 0x00 */ LinkListNode* mNext;
     /* 0x04 */ LinkListNode* mPrev;
 };
@@ -41,7 +43,7 @@ namespace detail {
  *
  ******************************************************************************/
 class LinkListImpl : private NonCopyable {
-  public:
+public:
     class ConstIterator;
 
     /******************************************************************************
@@ -51,9 +53,11 @@ class LinkListImpl : private NonCopyable {
         friend class LinkListImpl;
         friend class ConstIterator;
 
-      public:
-        Iterator() : mPointer(nullptr) {}
-        explicit Iterator(LinkListNode* pNode) : mPointer(pNode) {}
+    public:
+        Iterator() :
+            mPointer(nullptr) {}
+        explicit Iterator(LinkListNode* pNode) :
+            mPointer(pNode) {}
 
         Iterator& operator++() {
             mPointer = mPointer->GetNext();
@@ -71,7 +75,7 @@ class LinkListImpl : private NonCopyable {
             return lhs.mPointer == rhs.mPointer;
         }
 
-      private:
+    private:
         /* 0x00 */ LinkListNode* mPointer;
     };
 
@@ -81,8 +85,9 @@ class LinkListImpl : private NonCopyable {
     class ConstIterator {
         friend class LinkListImpl;
 
-      public:
-        explicit ConstIterator(Iterator it) : mNode(it.mPointer) {}
+    public:
+        explicit ConstIterator(Iterator it) :
+            mNode(it.mPointer) {}
 
         ConstIterator& operator++() {
             mNode = mNode->GetNext();
@@ -100,11 +105,11 @@ class LinkListImpl : private NonCopyable {
             return lhs.mNode == rhs.mNode;
         }
 
-      private:
+    private:
         /* 0x00 */ LinkListNode* mNode;
     };
 
-  protected:
+protected:
     static Iterator GetIteratorFromPointer(LinkListNode* pNode) { return Iterator(pNode); }
 
     LinkListImpl() { Initialize_(); }
@@ -119,7 +124,7 @@ class LinkListImpl : private NonCopyable {
     Iterator Erase(LinkListNode* pNode);
     Iterator Erase(Iterator begin, Iterator end);
 
-  public:
+public:
     u32 GetSize() const { return mSize; }
     bool IsEmpty() const { return mSize == 0; }
 
@@ -130,14 +135,14 @@ class LinkListImpl : private NonCopyable {
     void SetPrev(LinkListNode* p, LinkListNode* pPrev);
     void SetNext(LinkListNode* p, LinkListNode* pNext);
 
-  private:
+private:
     void Initialize_() {
         mSize = 0;
         mNode.mNext = &mNode;
         mNode.mPrev = &mNode;
     }
 
-  private:
+private:
     /* 0x00 */ u32 mSize;
     /* 0x04 */ LinkListNode mNode;
 };
@@ -148,8 +153,9 @@ class LinkListImpl : private NonCopyable {
  *
  ******************************************************************************/
 template <typename TIter> class ReverseIterator {
-  public:
-    explicit ReverseIterator(TIter it) : mCurrent(it) {}
+public:
+    explicit ReverseIterator(TIter it) :
+        mCurrent(it) {}
 
     TIter GetBase() const { return mCurrent; }
 
@@ -173,7 +179,7 @@ template <typename TIter> class ReverseIterator {
         return !(rLhs.mCurrent == rRhs.mCurrent);
     }
 
-  private:
+private:
     /* 0x00 */ TIter mCurrent;
 };
 
@@ -185,7 +191,7 @@ template <typename TIter> class ReverseIterator {
  *
  ******************************************************************************/
 template <typename T, int Ofs> class LinkList : public detail::LinkListImpl {
-  public:
+public:
     class ConstIterator;
 
     /******************************************************************************
@@ -195,13 +201,15 @@ template <typename T, int Ofs> class LinkList : public detail::LinkListImpl {
         friend class LinkList;
         friend class ConstIterator;
 
-      public:
+    public:
         // Element type must be visible to ReverseIterator
         typedef T TElem;
 
-      public:
-        Iterator() : mIterator(nullptr) {}
-        explicit Iterator(LinkListImpl::Iterator it) : mIterator(it) {}
+    public:
+        Iterator() :
+            mIterator(nullptr) {}
+        explicit Iterator(LinkListImpl::Iterator it) :
+            mIterator(it) {}
 
         Iterator& operator++() {
             ++mIterator;
@@ -231,7 +239,7 @@ template <typename T, int Ofs> class LinkList : public detail::LinkListImpl {
 
         friend bool operator!=(Iterator lhs, Iterator rhs) { return !(lhs == rhs); }
 
-      private:
+    private:
         /* 0x00 */ LinkListImpl::Iterator mIterator;
     };
 
@@ -241,13 +249,15 @@ template <typename T, int Ofs> class LinkList : public detail::LinkListImpl {
     class ConstIterator {
         friend class LinkList;
 
-      public:
+    public:
         // Element type must be visible to ReverseIterator
         typedef T TElem;
 
-      public:
-        explicit ConstIterator(LinkListImpl::Iterator it) : mIterator(it) {}
-        explicit ConstIterator(Iterator it) : mIterator(it.mIterator) {}
+    public:
+        explicit ConstIterator(LinkListImpl::Iterator it) :
+            mIterator(it) {}
+        explicit ConstIterator(Iterator it) :
+            mIterator(it.mIterator) {}
 
         ConstIterator& operator++() {
             ++mIterator;
@@ -277,16 +287,16 @@ template <typename T, int Ofs> class LinkList : public detail::LinkListImpl {
 
         friend bool operator!=(ConstIterator lhs, ConstIterator rhs) { return !(lhs == rhs); }
 
-      private:
+    private:
         /* 0x00 */ LinkListImpl::ConstIterator mIterator;
     };
 
-  public:
+public:
     // Shorthand names for reverse iterator types
     typedef detail::ReverseIterator<Iterator> RevIterator;
     typedef detail::ReverseIterator<ConstIterator> ConstRevIterator;
 
-  public:
+public:
     LinkList() {}
 
     Iterator GetBeginIter() { return Iterator(LinkListImpl::GetBeginIter()); }

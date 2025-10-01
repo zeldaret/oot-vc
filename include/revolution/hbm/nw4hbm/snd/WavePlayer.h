@@ -17,7 +17,7 @@ class SoundThread;
 }
 
 class WavePlayer {
-  public:
+public:
     friend class detail::SoundThread;
     typedef struct WaveBufferInfo {
         int channelCount;
@@ -29,11 +29,11 @@ class WavePlayer {
         WavePacket();
         virtual ~WavePacket() {}
 
-      private:
+    private:
         /* 0x04 */ WaveBufferInfo mWaveBuffer;
         /* 0x14 */ bool mAppendFlag;
 
-      public:
+    public:
         /* 0x18 */ ut::LinkListNode mLinkNode;
 
         friend class WavePlayer;
@@ -76,7 +76,7 @@ class WavePlayer {
     void SetNextWavePacket();
     void UpdateWavePacket();
 
-  private:
+private:
     void detail_Update();
     void detail_UpdateBuffer();
 
@@ -123,7 +123,7 @@ class WavePlayer {
     /* 0x8C */ WavePacketCallback mCallback;
     /* 0x90 */ void* mCallbackArg;
 
-  public:
+public:
     /* 0x94 */ ut::LinkListNode mPlayerLink;
 };
 

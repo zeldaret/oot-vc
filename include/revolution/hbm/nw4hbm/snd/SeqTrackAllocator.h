@@ -9,7 +9,7 @@ class SeqPlayer;
 class SeqTrack;
 
 class SeqTrackAllocator {
-  public:
+public:
     virtual ~SeqTrackAllocator() {} // 0x08
 
     /* 0x0C */ virtual SeqTrack* AllocTrack(SeqPlayer* player) = 0;

@@ -9,7 +9,7 @@ namespace nw4hbm {
 namespace lyt {
 
 class Picture : public Pane {
-  public:
+public:
     Picture(u8 num);
     Picture(const res::Picture* pResPic, const ResBlockSet& resBlockSet);
 
@@ -33,7 +33,7 @@ class Picture : public Pane {
     void Init(u8 texNum);
     void ReserveTexCoord(u8 num);
 
-  private:
+private:
     /* 0x00 (base) */
     /* 0xD4 */ ut::Color mVtxColors[VERTEXCOLOR_MAX] ATTRIBUTE_ALIGN(4);
     /* 0xE4 */ detail::TexCoordAry mTexCoordAry;

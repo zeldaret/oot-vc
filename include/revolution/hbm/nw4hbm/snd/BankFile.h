@@ -94,10 +94,10 @@ typedef struct InstInfo {
 } InstInfo;
 
 class BankFileReader {
-  public:
+public:
     static const int FILE_VERSION = NW4HBM_VERSION(1, 1);
 
-  public:
+public:
     explicit BankFileReader(const void* bankData);
 
     bool IsValidFileHeader(const void* bankData);
@@ -105,10 +105,10 @@ class BankFileReader {
     bool ReadInstInfo(InstInfo* instInfo, int prgNo, int key, int velocity) const;
     bool ReadWaveParam(WaveData* waveParam, int waveIndex, const void* waveDataAddress) const;
 
-  private:
+private:
     const BankFile::DataRegion* GetReferenceToSubRegion(const BankFile::DataRegion* ref, int splitKey) const;
 
-  private:
+private:
     /* 0x00 */ const BankFile::Header* mHeader;
     /* 0x04 */ const BankFile::DataBlock* mDataBlock;
     /* 0x08 */ const BankFile::WaveBlock* mWaveBlock;

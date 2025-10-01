@@ -8,7 +8,8 @@ namespace detail {
  * Sorry, nothing.
  * This file is needed for those left over weak functions.
  */
-MidiSeqPlayer::MidiSeqPlayer() : SeqPlayer() {}
+MidiSeqPlayer::MidiSeqPlayer() :
+    SeqPlayer() {}
 
 } // namespace detail
 } // namespace snd

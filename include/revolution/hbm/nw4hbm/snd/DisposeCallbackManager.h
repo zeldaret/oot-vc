@@ -7,7 +7,7 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 class DisposeCallbackManager {
-  public:
+public:
     static DisposeCallbackManager& GetInstance();
 
     void RegisterDisposeCallback(DisposeCallbackBase* callback);
@@ -16,7 +16,7 @@ class DisposeCallbackManager {
     static void Dispose(void* mem, u32 size, void* arg);
     static void DisposeWave(void* mem, u32 size, void* arg);
 
-  private:
+private:
     DisposeCallbackManager();
 
     /* 0x00 */ DisposeCallbackList mCallbackList;

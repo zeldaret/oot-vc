@@ -22,7 +22,7 @@ namespace detail {
 class StrmSound : public BasicSound {
     friend class StrmSoundHandle;
 
-  public:
+public:
     NW4HBM_UT_RUNTIME_TYPEINFO;
 
     explicit StrmSound(SoundInstanceManager<StrmSound>* manager);
@@ -44,7 +44,7 @@ class StrmSound : public BasicSound {
 
     void SetChannelPriority(int priority);
 
-  private:
+private:
     /* 0xD8 */ StrmPlayer mStrmPlayer;
     /* 0x1F4 */ StrmSoundHandle* mTempSpecialHandle;
     /* 0x1F8 */ SoundInstanceManager<StrmSound>* mManager;

@@ -11,14 +11,14 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 class Util {
-  public:
+public:
     static const int SEMITONE_MAX = 12;
     static const int MICROTONE_MAX = 256;
 
     static const int VOLUME_MIN = static_cast<int>(10 * VOLUME_MIN_DB); // -90.4db
     static const int VOLUME_MAX = static_cast<int>(10 * VOLUME_MAX_DB); // +6.0db
 
-  public:
+public:
     typedef enum RefType {
         REFTYPE_ADDRESS,
         REFTYPE_OFFSET,
@@ -86,10 +86,10 @@ class Util {
 
     static u16 CalcRandom();
 
-  private:
+private:
     static const void* GetDataRefAddressImpl(RefType type, u32 value, const void* base);
 
-  private:
+private:
     // Chromatic scale (tbl[idx] / tbl[idx-1] == ~1.06)
     static const f32 NoteTable[SEMITONE_MAX];
     // Each note contains 256 microtones

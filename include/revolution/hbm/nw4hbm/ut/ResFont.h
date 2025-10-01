@@ -10,7 +10,7 @@ namespace nw4hbm {
 namespace ut {
 namespace detail {
 class ResFontBase : public Font {
-  public:
+public:
     ResFontBase();
     virtual ~ResFontBase();
 
@@ -58,21 +58,21 @@ class ResFontBase : public Font {
 
     bool IsManaging(const void* ptr) const { return mResource == ptr; }
 
-  private:
+private:
     /* 0x10 */ void* mResource;
     /* 0x14 */ FontInformation* mFontInfo;
 };
 } // namespace detail
 
 class ResFont : public detail::ResFontBase {
-  public:
+public:
     ResFont();
     virtual ~ResFont();
 
     bool SetResource(void* brfnt);
     static FontInformation* Rebuild(BinaryFileHeader* fileHeader);
 
-  private:
+private:
     static const u32 SIGNATURE_FONT = 'RFNT'; /* Revolution FoNT */
     static const u32 SIGNATURE_FONT_UNPACKED = 'RFNU'; /* Revolution FoNt Unpacked */
 

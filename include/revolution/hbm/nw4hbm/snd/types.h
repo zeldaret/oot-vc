@@ -8,11 +8,11 @@
 namespace nw4hbm {
 namespace snd {
 class LinkedInstance {
-  public:
+public:
     /* 0x00 */ ut::LinkListNode mInstanceLink;
 };
 template <typename T, int Ofs> class InstanceManager {
-  public:
+public:
     typedef typename ut::LinkList<T, Ofs>::Iterator Iterator;
     void Append(T* obj) { mFreeList.PushBack(obj); }
     void Remove(T* obj) { mFreeList.Erase(obj); }
@@ -36,7 +36,7 @@ template <typename T, int Ofs> class InstanceManager {
     Iterator GetBeginIter() { return mActiveList.GetBeginIter(); }
     Iterator GetEndIter() { return mActiveList.GetEndIter(); }
 
-  private:
+private:
     /* 0x00 */ ut::LinkList<T, Ofs> mFreeList;
     /* 0x0C */ ut::LinkList<T, Ofs> mActiveList;
 };

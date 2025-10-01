@@ -28,7 +28,7 @@ class PlayerHeap;
 
 namespace detail {
 class BasicSound {
-  public:
+public:
     NW4HBM_UT_RUNTIME_TYPEINFO;
 
     typedef struct AmbientParamUpdateCallback {
@@ -63,7 +63,7 @@ class BasicSound {
     static const u32 INVALID_ID = 0xFFFFFFFF;
     static const int PRIORITY_MAX = 127;
 
-  public:
+public:
     BasicSound();
     virtual ~BasicSound() {} // 0x08
 
@@ -149,7 +149,7 @@ class BasicSound {
         return ut::Clamp(mPriority + mAmbientParam.priority, (s32)0, (s32)PRIORITY_MAX);
     }
 
-  private:
+private:
     /* 0x04 */ PlayerHeap* mHeap;
     /* 0x08 */ SoundHandle* mGeneralHandle;
     /* 0x0C */ SoundHandle* mTempGeneralHandle;
@@ -190,7 +190,7 @@ class BasicSound {
     /* 0xA4 */ f32 mMainOutVolume;
     /* 0xA8 */ f32 mRemoteOutVolume[WPAD_MAX_CONTROLLERS];
 
-  public:
+public:
     /* 0xB8 */ ut::LinkListNode mPriorityLink;
     /* 0xC0 */ ut::LinkListNode mSoundPlayerPlayLink;
     /* 0xC8 */ ut::LinkListNode mSoundPlayerPriorityLink;

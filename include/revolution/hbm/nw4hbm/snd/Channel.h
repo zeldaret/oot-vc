@@ -21,7 +21,7 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 class Channel : public LinkedInstance {
-  public:
+public:
     typedef enum ChannelCallbackStatus {
         CALLBACK_STATUS_STOPPED = 0,
         CALLBACK_STATUS_DROP,
@@ -37,7 +37,7 @@ class Channel : public LinkedInstance {
         LFO_TARGET_PAN
     } LfoTarget;
 
-  public:
+public:
     Channel();
     ~Channel();
 
@@ -125,7 +125,7 @@ class Channel : public LinkedInstance {
 
     static void VoiceCallback(AxVoice* voice, AxVoice::CallbackStatus status, void* arg);
 
-  private:
+private:
     static const u8 SILENCE_VOLUME_MAX = 255;
 
     static const int KEY_INIT = 60;

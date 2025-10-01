@@ -6,11 +6,11 @@
 namespace nw4hbm {
 namespace ut {
 class NonCopyable {
-  protected:
+protected:
     NonCopyable() {}
     ~NonCopyable() {}
 
-  private:
+private:
     NonCopyable(const NonCopyable&);
     const NonCopyable& operator=(const NonCopyable&);
 };

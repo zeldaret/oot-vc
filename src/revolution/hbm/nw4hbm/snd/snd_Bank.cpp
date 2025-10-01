@@ -6,7 +6,9 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-Bank::Bank(const void* bankData) : mBankReader(bankData), mWaveDataAddress(nullptr) {}
+Bank::Bank(const void* bankData) :
+    mBankReader(bankData),
+    mWaveDataAddress(nullptr) {}
 
 Bank::~Bank() {}
 

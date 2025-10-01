@@ -173,7 +173,8 @@ void GetRBTexCoord(math::VEC2* texCds, const Size& polSize, const Size& texSize,
 namespace nw4hbm {
 namespace lyt {
 
-Window::Window(const res::Window* pBlock, const ResBlockSet& resBlockSet) : Pane(pBlock) {
+Window::Window(const res::Window* pBlock, const ResBlockSet& resBlockSet) :
+    Pane(pBlock) {
     mContentInflation = pBlock->inflation;
 
     NW4HBMAssertPointerNonnull_Line(resBlockSet.pMaterialList, 193);

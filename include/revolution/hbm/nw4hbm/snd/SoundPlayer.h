@@ -18,7 +18,7 @@ class WaveSound;
 } // namespace detail
 
 class SoundPlayer {
-  public:
+public:
     SoundPlayer();
     ~SoundPlayer();
 
@@ -86,7 +86,7 @@ class SoundPlayer {
 
     f32 detail_GetMainOutVolume() const { return mMainOutVolume; }
 
-  private:
+private:
     /* 0x00 */ detail::BasicSoundPlayerPlayList mSoundList;
     /* 0x0C */ detail::BasicSoundPlayerPrioList mPriorityList;
     /* 0x18 */ detail::PlayerHeapList mHeapList;

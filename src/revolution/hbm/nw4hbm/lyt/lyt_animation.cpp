@@ -256,13 +256,19 @@ void AnimateIndTexSRT(Material* pMaterial, const res::AnimationInfo* pAnimInfo, 
 namespace nw4hbm {
 namespace lyt {
 
-AnimTransform::AnimTransform() : mLink(), mpRes(nullptr), mFrame(0.0f) {}
+AnimTransform::AnimTransform() :
+    mLink(),
+    mpRes(nullptr),
+    mFrame(0.0f) {}
 
 AnimTransform::~AnimTransform() {}
 
 u16 AnimTransform::GetFrameSize() const { return mpRes->frameSize; }
 
-AnimTransformBasic::AnimTransformBasic() : mpFileResAry(nullptr), mAnimLinkAry(nullptr), mAnimLinkNum(0) {}
+AnimTransformBasic::AnimTransformBasic() :
+    mpFileResAry(nullptr),
+    mAnimLinkAry(nullptr),
+    mAnimLinkNum(0) {}
 
 AnimTransformBasic::~AnimTransformBasic() {
     if (mAnimLinkAry) {

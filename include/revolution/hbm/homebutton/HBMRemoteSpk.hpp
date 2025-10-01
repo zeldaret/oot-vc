@@ -10,7 +10,7 @@
 namespace homebutton {
 
 class RemoteSpk {
-  private:
+private:
     struct ChanInfo {
         /* 0x00 */ OSAlarm alarm;
         /* 0x30 */ WENCInfo wencinfo;
@@ -24,7 +24,7 @@ class RemoteSpk {
         /* 0x62 */ bool playReady;
     }; // size = 0x68
 
-  public:
+public:
     RemoteSpk(void* spkSeBuf);
 
     bool isPlayReady(WPADChannel chan) const;
@@ -41,7 +41,7 @@ class RemoteSpk {
     static void SetInstance(RemoteSpk* pThis);
     static RemoteSpk* GetInstance();
 
-  private:
+private:
     static void UpdateSpeaker(OSAlarm* alarm, OSContext* context);
 
     static void SpeakerOnCallback(WPADChannel chan, WPADResult result);
@@ -50,14 +50,14 @@ class RemoteSpk {
     static void SpeakerPlayCallback(WPADChannel chan, WPADResult result);
     static void DelaySpeakerPlayCallback(OSAlarm* alarm, OSContext* context);
 
-  private:
+private:
     /* 0x000 */ ChanInfo info[WPAD_MAX_CONTROLLERS];
     /* 0x1A0 */ OSAlarm speakerAlarm;
     /* 0x1D0 */ ARCHandle handle;
     /* 0x1EC */ bool available;
     /* 0x1F0 (vtable) */
 
-  public:
+public:
     /* 0x08 */ virtual ~RemoteSpk();
 }; // size = 0x1F8
 

@@ -11,7 +11,7 @@
 namespace nw4hbm {
 namespace snd {
 class FxBase : ut::NonCopyable {
-  public:
+public:
     virtual ~FxBase() {} // 0x08
 
     virtual bool StartUp() { return true; } // 0x0C
@@ -20,7 +20,7 @@ class FxBase : ut::NonCopyable {
     virtual void UpdateBuffer(int channels, void** buffer, u32 size, SampleFormat format, f32 sampleRate,
                               OutputMode mode) {} // 0x14
 
-  public:
+public:
     /* 0x04 */ ut::LinkListNode mFxLink;
 };
 

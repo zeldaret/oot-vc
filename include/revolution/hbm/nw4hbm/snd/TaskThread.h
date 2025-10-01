@@ -9,8 +9,9 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 class TaskThread {
-  public:
-    TaskThread() : mCreateFlag(false) {}
+public:
+    TaskThread() :
+        mCreateFlag(false) {}
 
     bool Create(s32 priority);
     BOOL Destroy();
@@ -29,7 +30,7 @@ class TaskThread {
         MSG_DONE,
     };
 
-  private:
+private:
     static const int MSG_QUEUE_CAPACITY = 8;
 
     /* 0x00 */ OSThread mThread;

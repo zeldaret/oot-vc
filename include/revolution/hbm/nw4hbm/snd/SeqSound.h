@@ -25,12 +25,12 @@ namespace detail {
 class SeqSound : public BasicSound {
     friend class SeqSoundHandle;
 
-  public:
+public:
     NW4HBM_UT_RUNTIME_TYPEINFO;
     typedef void (*NotifyAsyncEndCallback)(bool result, const void* seqBase, s32 seqOffset, void* userData);
 
     class SeqLoadCallback {
-      public:
+    public:
         typedef enum Result {
             RESULT_SUCCESS = 0,
             RESULT_FAILED,
@@ -66,7 +66,7 @@ class SeqSound : public BasicSound {
 
     void SetChannelPriority(int priority);
 
-  private:
+private:
     static void NotifyLoadAsyncEndSeqData(bool result, const void* seqBase, s32 seqOffset, void* userData);
 
     /* 0xD8 */ SeqPlayer mSeqPlayer;

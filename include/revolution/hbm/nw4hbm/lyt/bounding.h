@@ -7,7 +7,7 @@ namespace nw4hbm {
 namespace lyt {
 
 class Bounding : public Pane {
-  public:
+public:
     Bounding(const res::Bounding* pBlock, const ResBlockSet& resBlockSet);
 
     /* 0x08 */ virtual ~Bounding();

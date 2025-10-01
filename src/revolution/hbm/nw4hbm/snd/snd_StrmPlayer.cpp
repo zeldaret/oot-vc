@@ -20,7 +20,9 @@ StrmPlayerList sPlayerList;
 
 u8 StrmPlayer::LoadCommand::mMramBuf[LOAD_BUFFER_SIZE] ATTRIBUTE_ALIGN(32);
 
-StrmPlayer::StrmPlayer() : mActiveFlag(false), mVoice(nullptr) {
+StrmPlayer::StrmPlayer() :
+    mActiveFlag(false),
+    mVoice(nullptr) {
     for (u32 i = 0; i < 32; i++) {
         LoadCommand& loadCommand = mLoadCoammndArray[i];
         loadCommand.mPlayer = this;

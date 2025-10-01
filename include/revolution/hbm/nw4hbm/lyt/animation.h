@@ -124,7 +124,7 @@ enum {
 };
 
 class AnimTransform {
-  public:
+public:
     AnimTransform();
 
     /* 0x08 */ virtual ~AnimTransform();
@@ -144,15 +144,19 @@ class AnimTransform {
     /* 0x00 (vtable) */
     /* 0x04 */ ut::LinkListNode mLink;
 
-  protected:
+protected:
     /* 0x0C */ const res::AnimationBlock* mpRes;
     /* 0x10 */ f32 mFrame;
 }; // size = 0x14
 typedef ut::LinkList<AnimTransform, offsetof(AnimTransform, mLink)> AnimTransformList;
 
 class AnimationLink {
-  public:
-    AnimationLink() : mLink(), mbDisable(false) { Reset(); }
+public:
+    AnimationLink() :
+        mLink(),
+        mbDisable(false) {
+        Reset();
+    }
     ~AnimationLink() {}
 
     AnimTransform* GetAnimTransform() const { return mAnimTrans; }
@@ -171,7 +175,7 @@ class AnimationLink {
 
     /* 0x00 */ ut::LinkListNode mLink;
 
-  private:
+private:
     /* 0x08 */ AnimTransform* mAnimTrans;
     /* 0x0C */ u16 mIdx;
     /* 0x0E */ bool mbDisable;
@@ -179,7 +183,7 @@ class AnimationLink {
 typedef ut::LinkList<AnimationLink, offsetof(AnimationLink, mLink)> AnimationLinkList;
 
 class AnimTransformBasic : public AnimTransform {
-  public:
+public:
     AnimTransformBasic();
 
     /* 0x08 */ virtual ~AnimTransformBasic();
@@ -189,7 +193,7 @@ class AnimTransformBasic : public AnimTransform {
     /* 0x18 */ virtual void Animate(u32 idx, Pane* pane);
     /* 0x1C */ virtual void Animate(u32 idx, Material* pMaterial);
 
-  private:
+private:
     /* 0x00 (base) */
     /* 0x14 */ void** mpFileResAry;
     /* 0x18 */ AnimationLink* mAnimLinkAry;

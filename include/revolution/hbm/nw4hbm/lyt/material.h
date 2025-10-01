@@ -35,7 +35,7 @@ Size GetTextureSize(Material* pMaterial, u8 texMapIdx);
 } // namespace detail
 
 class Material {
-  public:
+public:
     Material();
     Material(const res::Material* pRes, const ResBlockSet& resBlockSet);
 
@@ -134,7 +134,7 @@ class Material {
 
     void AddAnimationLink(AnimationLink* animationLink);
 
-  private:
+private:
     static const int MAX_TEX_SRT = (GX_TEXMTX9 - GX_TEXMTX0) / 3 + 1;
     static const int MAX_IND_SRT = (GX_ITM_2 - GX_ITM_0) + 1;
 

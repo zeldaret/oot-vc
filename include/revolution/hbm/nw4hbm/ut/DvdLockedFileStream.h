@@ -6,7 +6,7 @@
 namespace nw4hbm {
 namespace ut {
 class DvdLockedFileStream : public DvdFileStream {
-  public:
+public:
     NW4HBM_UT_RUNTIME_TYPEINFO;
 
     explicit DvdLockedFileStream(s32 entrynum);
@@ -25,10 +25,10 @@ class DvdLockedFileStream : public DvdFileStream {
 
     virtual bool CanAsync() const { return false; } // 0x28
 
-  private:
+private:
     static void InitMutex_();
 
-  private:
+private:
     /* 0x6F */ bool mCancelFlag;
 
     static bool sInitialized;

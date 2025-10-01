@@ -232,7 +232,8 @@ Material::Material() {
     memset(mName, 0, sizeof(mName));
 }
 
-Material::Material(const res::Material* pRes, const ResBlockSet& resBlockSet) : mAnimList() {
+Material::Material(const res::Material* pRes, const ResBlockSet& resBlockSet) :
+    mAnimList() {
     Init();
     SetName(pRes->name);
 

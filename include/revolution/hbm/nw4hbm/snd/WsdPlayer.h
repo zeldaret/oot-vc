@@ -11,7 +11,7 @@ namespace snd {
 namespace detail {
 
 class WsdPlayer : public BasicPlayer, public DisposeCallback {
-  public:
+public:
     WsdPlayer();
 
     void InitParam(int voices, const WsdTrack::WsdCallback* callback, u32 callbackData);
@@ -77,7 +77,7 @@ class WsdPlayer : public BasicPlayer, public DisposeCallback {
 
     /* 0x14 */ ut::LinkListNode mPlayerLink;
 
-  private:
+private:
     /* 0x1C */ bool mHomeButtonMenuFlag;
     /* 0x1D */ u8 mActiveFlag;
     /* 0x1E */ u8 mPreparedFlag;

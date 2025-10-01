@@ -8,9 +8,14 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-SoundArchiveFileReader::SoundArchiveFileReader()
-    : mInfo(nullptr), mStringBase(nullptr), mStringTable(nullptr), mStringTreeSound(nullptr),
-      mStringTreePlayer(nullptr), mStringTreeGroup(nullptr), mStringTreeBank(nullptr) {}
+SoundArchiveFileReader::SoundArchiveFileReader() :
+    mInfo(nullptr),
+    mStringBase(nullptr),
+    mStringTable(nullptr),
+    mStringTreeSound(nullptr),
+    mStringTreePlayer(nullptr),
+    mStringTreeGroup(nullptr),
+    mStringTreeBank(nullptr) {}
 
 void SoundArchiveFileReader::Init(const void* soundArchiveData) {
     NW4HBMAssertPointerNonnull_Line(soundArchiveData, 50);

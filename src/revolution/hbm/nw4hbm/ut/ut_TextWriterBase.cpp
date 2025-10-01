@@ -18,8 +18,12 @@ template <typename charT> charT* TextWriterBase<charT>::mFormatBuffer;
 template <typename charT> TagProcessorBase<charT> TextWriterBase<charT>::mDefaultTagProcessor;
 
 template <typename charT>
-TextWriterBase<charT>::TextWriterBase()
-    : mCharSpace(0.0f), mLineSpace(0.0f), mTabWidth(4), mDrawFlag(0), mTagProcessor(&mDefaultTagProcessor) {}
+TextWriterBase<charT>::TextWriterBase() :
+    mCharSpace(0.0f),
+    mLineSpace(0.0f),
+    mTabWidth(4),
+    mDrawFlag(0),
+    mTagProcessor(&mDefaultTagProcessor) {}
 
 template <typename charT> TextWriterBase<charT>::~TextWriterBase() {}
 

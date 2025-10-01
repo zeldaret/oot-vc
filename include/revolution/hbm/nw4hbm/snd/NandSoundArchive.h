@@ -12,10 +12,10 @@ namespace nw4hbm {
 namespace snd {
 
 class NandSoundArchive : public SoundArchive {
-  private:
+private:
     class NandFileStream;
 
-  public:
+public:
     NandSoundArchive();
     /* 0x08 */ virtual ~NandSoundArchive();
 
@@ -38,10 +38,10 @@ class NandSoundArchive : public SoundArchive {
     u32 GetHeaderSize() const { return mFileReader.GetInfoChunkSize(); }
     u32 GetLabelStringDataSize() const { return mFileReader.GetLabelStringChunkSize(); }
 
-  private:
+private:
     bool LoadFileHeader() NO_INLINE;
 
-  private:
+private:
     /* 0x108 */ detail::SoundArchiveFileReader mFileReader;
     /* 0x14C */ NANDFileInfo mFileInfo;
     /* 0x1D8 */ bool mOpen;

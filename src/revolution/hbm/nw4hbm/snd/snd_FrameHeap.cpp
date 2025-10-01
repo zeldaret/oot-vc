@@ -6,7 +6,8 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-FrameHeap::FrameHeap() : mHandle(nullptr) {}
+FrameHeap::FrameHeap() :
+    mHandle(nullptr) {}
 
 FrameHeap::~FrameHeap() {
     if (IsValid()) {

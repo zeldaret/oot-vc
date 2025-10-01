@@ -21,7 +21,10 @@ bool TestFileHeader(const res::BinaryFileHeader& fileHeader, byte4_t testSig) {
     return static_cast<byte4_t>(GetSignatureInt(fileHeader.signature)) == testSig && TestFileHeader(fileHeader);
 }
 
-TexCoordAry::TexCoordAry() : mCap(0), mNum(0), mpData(nullptr) {}
+TexCoordAry::TexCoordAry() :
+    mCap(0),
+    mNum(0),
+    mpData(nullptr) {}
 
 void TexCoordAry::Free() {
     if (mpData) {

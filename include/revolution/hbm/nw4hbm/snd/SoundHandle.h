@@ -10,8 +10,9 @@
 namespace nw4hbm {
 namespace snd {
 class SoundHandle : private ut::NonCopyable {
-  public:
-    SoundHandle() : mSound(nullptr) {}
+public:
+    SoundHandle() :
+        mSound(nullptr) {}
     ~SoundHandle() { DetachSound(); }
 
     void detail_AttachSound(detail::BasicSound* sound);
@@ -96,7 +97,7 @@ class SoundHandle : private ut::NonCopyable {
         }
     }
 
-  private:
+private:
     /* 0x00 */ detail::BasicSound* mSound;
 };
 } // namespace snd

@@ -12,9 +12,9 @@ namespace snd {
 namespace detail {
 class WsdPlayer;
 class WsdTrack {
-  public:
+public:
     class WsdCallback {
-      public:
+    public:
         virtual ~WsdCallback() = 0 {} // 0x08
 
         virtual bool GetWaveSoundData(WaveSoundInfo* info, WaveSoundNoteInfo* noteInfo, WaveData* waveData,
@@ -26,7 +26,8 @@ class WsdTrack {
         START_OFFSET_TYPE_MILLISEC
     } StartOffsetType;
 
-    WsdTrack() : mWsdPlayer(nullptr) {}
+    WsdTrack() :
+        mWsdPlayer(nullptr) {}
 
     void Init(WsdPlayer* player);
 
@@ -46,7 +47,7 @@ class WsdTrack {
 
     const void* GetWsdDataAddress() const { return mWsdData; }
 
-  private:
+private:
     /* 0x00 */ const void* mWsdData;
     /* 0x04 */ int mIndex;
 

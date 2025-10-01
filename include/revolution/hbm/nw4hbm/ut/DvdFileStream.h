@@ -8,7 +8,7 @@
 namespace nw4hbm {
 namespace ut {
 class DvdFileStream : public FileStream {
-  public:
+public:
     NW4HBM_UT_RUNTIME_TYPEINFO;
 
     explicit DvdFileStream(s32 entrynum);
@@ -48,20 +48,20 @@ class DvdFileStream : public FileStream {
     virtual u32 GetSizeAlign() const { return DEFAULT_ALIGN; } // 0x38
     virtual u32 GetBufferAlign() const { return DEFAULT_ALIGN; } // 0x3C
 
-  private:
+private:
     typedef struct DvdFileStreamInfo {
         /* 0x00 */ DVDFileInfo dvdInfo;
         /* 0x3C */ DvdFileStream* stream;
     } DvdFileStreamInfo;
 
-  private:
+private:
     static void DvdAsyncCallback_(s32 result, DVDFileInfo* info);
     static void DvdCBAsyncCallback_(s32 result, DVDCommandBlock* pBlock);
 
     void Initialize_();
     u32 AdjustReadLength_(u32 len);
 
-  private:
+private:
     /* 0x14 */ FilePosition mFilePosition;
 
     /* 0x1C */ IOStreamCallback mCancelCallback;

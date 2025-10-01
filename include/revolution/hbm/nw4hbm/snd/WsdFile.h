@@ -122,7 +122,7 @@ typedef struct WaveSoundNoteInfo {
 } WaveSoundNoteInfo;
 
 class WsdFileReader {
-  public:
+public:
     explicit WsdFileReader(const void* waveData);
 
     bool IsValidFileHeader(const void* waveData);
@@ -131,7 +131,7 @@ class WsdFileReader {
     bool ReadWaveSoundNoteInfo(WaveSoundNoteInfo* soundNoteInfo, int id, int note) const;
     bool ReadWaveParam(int id, WaveData* waveData, const void* waveAddr) const;
 
-  private:
+private:
     /* 0x00 */ const WsdFile::Header* mHeader;
     /* 0x04 */ const WsdFile::DataBlock* mDataBlock;
     /* 0x08 */ const WsdFile::WaveBlock* mWaveBlock;

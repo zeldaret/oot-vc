@@ -10,7 +10,7 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 class FrameHeap {
-  public:
+public:
     typedef void (*FreeCallback)(void* buffer, u32 size, void* callbackArg);
 
     FrameHeap();
@@ -29,7 +29,7 @@ class FrameHeap {
 
     bool IsValid() const { return mHandle != NULL; }
 
-  private:
+private:
     typedef struct Block {
         /* 0x00 */ ut::LinkListNode mLink;
 
@@ -38,8 +38,10 @@ class FrameHeap {
         /* 0x0C */ FreeCallback mCallback;
         /* 0x10 */ void* mCallbackArg;
 
-        Block(u32 size, FreeCallback callback, void* callbackArg)
-            : mSize(size), mCallback(callback), mCallbackArg(callbackArg) {}
+        Block(u32 size, FreeCallback callback, void* callbackArg) :
+            mSize(size),
+            mCallback(callback),
+            mCallbackArg(callbackArg) {}
 
         ~Block() {
             if (mCallback != NULL) {

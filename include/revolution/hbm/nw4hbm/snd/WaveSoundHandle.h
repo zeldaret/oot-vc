@@ -9,14 +9,14 @@ namespace nw4hbm {
 namespace snd {
 
 class WaveSoundHandle : private ut::NonCopyable {
-  public:
+public:
     ~WaveSoundHandle() { DetachSound(); }
 
     void DetachSound();
 
     bool IsAttachedSound() const { return mSound != NULL; }
 
-  private:
+private:
     /* 0x00 */ detail::WaveSound* mSound;
 };
 

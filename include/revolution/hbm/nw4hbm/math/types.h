@@ -42,7 +42,7 @@ struct _MTX34 {
 }; // size = 0x30
 
 struct VEC2 : public _VEC2 {
-  public:
+public:
     VEC2() {}
     VEC2(f32 fx, f32 fy) {
         x = fx;
@@ -53,12 +53,12 @@ struct VEC2 : public _VEC2 {
     operator f32*() { return reinterpret_cast<f32*>(this); }
     operator const f32*() const { return reinterpret_cast<const f32*>(this); }
 
-  public:
+public:
     /* 0x00 (base) */
 }; // size = 0x08
 
 struct VEC3 : public _VEC3 {
-  public:
+public:
     VEC3() {}
     VEC3(f32 fx, f32 fy, f32 fz) {
         x = fx;
@@ -69,19 +69,19 @@ struct VEC3 : public _VEC3 {
     // operators
     operator VecPtr() { return reinterpret_cast<VecPtr>(this); }
 
-  public:
+public:
     /* 0x00 (base) */
 }; // size = 0x0C
 
 struct MTX34 : public _MTX34 {
-  public:
+public:
     MTX34() {} // NOTE: must be non-defaulted
 
     // operators
     operator MtxPtr() { return mtx; }
     operator CMtxPtr() const { return mtx; }
 
-  public:
+public:
     /* 0x00 (base) */
 }; // size = 0x30
 

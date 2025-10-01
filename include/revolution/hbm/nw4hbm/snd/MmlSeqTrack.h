@@ -8,7 +8,7 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 class MmlSeqTrack : public SeqTrack {
-  public:
+public:
     typedef struct MmlParserParam {
         /* 0x00 */ bool cmpFlag;
         /* 0x01 */ bool noteWaitFlag;
@@ -19,7 +19,7 @@ class MmlSeqTrack : public SeqTrack {
         /* 0x08 */ const u8* callStack[MmlParser::CALL_STACK_MAX_DEPTH];
     } MmlParserParam;
 
-  public:
+public:
     MmlSeqTrack();
 
     /* 0x0C */ virtual ParseResult Parse(bool doNoteOn);
@@ -27,7 +27,7 @@ class MmlSeqTrack : public SeqTrack {
     void SetMmlParser(const MmlParser* pParser) { mParser = pParser; }
     MmlParserParam& GetMmlParserParam() { return mMmlParserParam; }
 
-  private:
+private:
     /* 0xC0 */ const MmlParser* mParser;
     /* 0xC4 */ MmlParserParam mMmlParserParam;
 };

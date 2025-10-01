@@ -24,7 +24,7 @@ typedef struct NoteOnInfo {
 
 class SeqPlayer;
 class NoteOnCallback {
-  public:
+public:
     virtual ~NoteOnCallback() {} // 0x08
 
     /* 0x0C */ virtual Channel* NoteOn(SeqPlayer* player, int bankNo, const NoteOnInfo& noteOnInfo) = 0;

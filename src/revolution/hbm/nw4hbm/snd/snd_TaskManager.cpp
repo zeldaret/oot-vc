@@ -11,7 +11,10 @@ TaskManager& TaskManager::GetInstance() {
     return instance;
 }
 
-TaskManager::TaskManager() : mMutex(), mCurrentTask(nullptr), mTaskList() {
+TaskManager::TaskManager() :
+    mMutex(),
+    mCurrentTask(nullptr),
+    mTaskList() {
     OSInitMutex(&mMutex);
     mHeapHandle = MEMCreateUnitHeap(mTaskArea, sizeof(mTaskArea), 64);
 

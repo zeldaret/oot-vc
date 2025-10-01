@@ -13,7 +13,7 @@ namespace lyt {
 class DrawInfo {
 public:
     DrawInfo();
-  
+
     /* 0x08 */ virtual ~DrawInfo();
 
     void SetViewRect(const ut::Rect& rect) { mViewRect = rect; }

@@ -10,7 +10,7 @@ namespace snd {
 namespace detail {
 
 class RemoteSpeakerManager {
-  public:
+public:
     static RemoteSpeakerManager& GetInstance();
 
     RemoteSpeaker& GetRemoteSpeaker(int idx);
@@ -18,16 +18,16 @@ class RemoteSpeakerManager {
     void Setup();
     void Shutdown();
 
-  private:
+private:
     static const int SPEAKER_ALARM_HZ = 150;
     static const int SPEAKER_ALARM_PERIOD_NSEC = static_cast<int>(1.0f / SPEAKER_ALARM_HZ * 1000 * 1000 * 1000);
 
-  private:
+private:
     RemoteSpeakerManager();
 
     static void RemoteSpeakerAlarmProc(OSAlarm* alarm, OSContext* context);
 
-  private:
+private:
     /* 0x00 */ bool mInitialized;
     /* 0x08 */ OSAlarm mRemoteSpeakerAlarm;
     /* 0x38 */ RemoteSpeaker mSpeaker[WPAD_MAX_CONTROLLERS];

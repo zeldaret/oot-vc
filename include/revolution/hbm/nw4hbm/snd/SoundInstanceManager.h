@@ -20,7 +20,7 @@ namespace snd {
 namespace detail {
 
 template <typename T> class SoundInstanceManager {
-  public:
+public:
     u32 Create(void* buffer, u32 size) {
         NW4HBMAssertPointerNonnull_Line(buffer, 59);
         return mPool.Create(buffer, size);
@@ -126,10 +126,10 @@ template <typename T> class SoundInstanceManager {
         InsertPriorityList(sound, priority);
     }
 
-  private:
+private:
     typedef ut::LinkList<T, offsetof(T, mPriorityLink)> TPrioList;
 
-  private:
+private:
     /* 0x00 */ MemoryPool<T> mPool;
     /* 0x04 */ TPrioList mPriorityList;
 };

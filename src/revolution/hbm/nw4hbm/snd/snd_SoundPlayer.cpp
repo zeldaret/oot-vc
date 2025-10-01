@@ -12,7 +12,12 @@
 namespace nw4hbm {
 namespace snd {
 
-SoundPlayer::SoundPlayer() : mPlayableCount(1), mPlayableLimit(1), mUsePlayerHeap(false) { InitParam(); }
+SoundPlayer::SoundPlayer() :
+    mPlayableCount(1),
+    mPlayableLimit(1),
+    mUsePlayerHeap(false) {
+    InitParam();
+}
 
 SoundPlayer::~SoundPlayer() { StopAllSound(0); }
 

@@ -52,20 +52,21 @@ class GroupAnmController;
 class RemoteSpk;
 
 class HomeButtonEventHandler : public gui::EventHandler {
-  public:
-    HomeButtonEventHandler(homebutton::HomeButton* pHomeButton) : mpHomeButton(pHomeButton) {}
+public:
+    HomeButtonEventHandler(homebutton::HomeButton* pHomeButton) :
+        mpHomeButton(pHomeButton) {}
 
     /* 0x08 */ virtual void onEvent(u32 uID, u32 uEvent, void* pData);
 
     homebutton::HomeButton* getHomeButton() { return mpHomeButton; }
 
-  private:
+private:
     /* 0x00 (base) */
     /* 0x08 */ HomeButton* mpHomeButton;
 }; // size = 0x0C
 
 class HomeButton {
-  private:
+private:
     typedef enum {
         /* 0 */ eSeq_Normal,
         /* 1 */ eSeq_Control,
@@ -73,7 +74,7 @@ class HomeButton {
     } eSeq;
 
     class BlackFader {
-      public:
+    public:
         BlackFader(int maxFrame) {
             init(maxFrame);
             setColor(0, 0, 0);
@@ -95,7 +96,7 @@ class HomeButton {
         void calc();
         void draw();
 
-      private:
+    private:
         /* 0x00 */ int frame_;
         /* 0x04 */ int maxFrame_;
         /* 0x08 */ int state_;
@@ -104,7 +105,7 @@ class HomeButton {
         /* 0x0F */ u8 blue_;
     }; // size = 0x10
 
-  public:
+public:
     HomeButton(const HBMDataInfo* dataInfo);
     ~HomeButton();
 
@@ -150,7 +151,7 @@ class HomeButton {
     static HomeButton* getInstance() { return spHomeButtonObj; }
     static void deleteInstance();
 
-  private:
+private:
     void init_battery(const HBMControllerData* pController);
     void calc_battery(int chan);
     void reset_battery();
@@ -176,7 +177,7 @@ class HomeButton {
     void reset_guiManager(int num);
     void reset_window();
 
-  public:
+public:
     int GetState() { return mState; }
     HBMSelectBtnNum GetSelectBtnNum() { return mSelectBtnNum; }
     BlackFader* GetFader() { return &mFader; }
@@ -243,7 +244,7 @@ class HomeButton {
     void fn_80100CD8_impl(const char* path);
     void fn_80100E40_impl();
 
-  private:
+private:
     /* 0x000 */ eSeq mSequence;
     /* 0x004 */ const HBMDataInfo* mpHBInfo;
     /* 0x008 */ int mButtonNum;
@@ -315,7 +316,7 @@ class HomeButton {
     /* 0x750 */ f32 mFadeOutSeTime;
 
     // static members
-  private:
+private:
     static HomeButton* spHomeButtonObj;
 
     static const char* scCursorLytName[WPAD_MAX_CONTROLLERS];

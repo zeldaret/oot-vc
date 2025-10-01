@@ -9,7 +9,7 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 class ChannelManager : public InstanceManager<Channel, 0> {
-  public:
+public:
     static ChannelManager& GetInstance() {
         static ChannelManager instance;
         return instance;

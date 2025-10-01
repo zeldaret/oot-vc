@@ -17,9 +17,9 @@ namespace snd {
 namespace detail {
 
 class SoundThread {
-  public:
+public:
     class Callback {
-      public:
+    public:
         /* 0x00 */ ut::LinkListNode mLink;
 
         virtual ~Callback() {} // 0x08
@@ -36,7 +36,7 @@ class SoundThread {
 
     OSMutex& GetSoundMutex() { return mMutex; }
 
-  private:
+private:
     typedef enum ThreadMessage {
         MSG_NONE = 0,
         MSG_AX_CALLBACK,
@@ -45,7 +45,8 @@ class SoundThread {
 
     static const int MSG_QUEUE_CAPACITY = 8;
 
-    SoundThread() : mCreateFlag(false) {}
+    SoundThread() :
+        mCreateFlag(false) {}
 
     ~SoundThread() {}
 
@@ -57,7 +58,7 @@ class SoundThread {
     void Lock() { OSLockMutex(&mMutex); }
     void Unlock() { OSUnlockMutex(&mMutex); }
 
-  private:
+private:
     /* 0x00 */ OSThread mThread;
     /* 0x318 */ u64 mThreadStack[THREAD_STACK_SIZE];
     /* 0x2318 */ OSThreadQueue mThreadQueue;

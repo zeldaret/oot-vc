@@ -30,7 +30,7 @@ typedef enum FontEncoding {
 } FontEncoding;
 
 class Font {
-  public:
+public:
     typedef enum Type {
         INVALID_CHARACTER_CODE = 0xFFFF,
         TYPE_NULL = 0,
@@ -38,8 +38,9 @@ class Font {
         TYPE_RESOURCE,
     } Type;
 
-  public:
-    Font() : mReaderFunc(&CharStrmReader::ReadNextCharCP1252) {}
+public:
+    Font() :
+        mReaderFunc(&CharStrmReader::ReadNextCharCP1252) {}
     virtual ~Font() {}
 
     virtual int GetWidth() const = 0;
@@ -83,7 +84,7 @@ class Font {
         return reader;
     }
 
-  private:
+private:
     /* 0x04 */ CharStrmReader::ReadFunc mReaderFunc;
 };
 } // namespace ut

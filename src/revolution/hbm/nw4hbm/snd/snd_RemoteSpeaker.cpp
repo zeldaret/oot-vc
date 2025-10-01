@@ -10,9 +10,15 @@
 namespace nw4hbm {
 namespace snd {
 
-RemoteSpeaker::RemoteSpeaker()
-    : mInitFlag(false), mRemoteInitFlag(false), mPlayFlag(false), mEnableFlag(false), mSetupBusyFlag(false),
-      mSetupCallback(nullptr), mFirstEncodeFlag(false), mForceResumeFlag(false) {
+RemoteSpeaker::RemoteSpeaker() :
+    mInitFlag(false),
+    mRemoteInitFlag(false),
+    mPlayFlag(false),
+    mEnableFlag(false),
+    mSetupBusyFlag(false),
+    mSetupCallback(nullptr),
+    mFirstEncodeFlag(false),
+    mForceResumeFlag(false) {
     OSCreateAlarm(&mContinueAlarm);
     OSSetAlarmUserData(&mContinueAlarm, this);
 

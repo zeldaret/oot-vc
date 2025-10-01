@@ -9,7 +9,7 @@ namespace nw4hbm {
 namespace lyt {
 
 class Window : public Pane {
-  private:
+private:
     typedef struct Content {
         /* 0x00 */ ut::Color vtxColors[4];
         /* 0x10 */ detail::TexCoordAry texCoordAry;
@@ -20,7 +20,7 @@ class Window : public Pane {
         /* 0x04 */ Material* pMaterial;
     } Frame;
 
-  public:
+public:
     NW4HBM_UT_RUNTIME_TYPEINFO;
 
     Window(const res::Window* pBlock, const ResBlockSet& resBlockSet);
@@ -39,13 +39,16 @@ class Window : public Pane {
     /* 0x64 */ virtual Material* GetContentMaterial() const;
     /* 0x68 */ virtual Material* GetFrameMaterial(u32 frameIdx) const;
     /* 0x6C */ virtual void DrawContent(const math::VEC2& basePt, const WindowFrameSize& frameSize, u8 alpha);
-    /* 0x70 */ virtual void DrawFrame(const math::VEC2& basePt, const Frame& frame, const WindowFrameSize& frameSize, u8 alpha);
-    /* 0x74 */ virtual void DrawFrame4(const math::VEC2& basePt, const Frame* frames, const WindowFrameSize& frameSize, u8 alpha);
-    /* 0x78 */ virtual void DrawFrame8(const math::VEC2& basePt, const Frame* frames, const WindowFrameSize& frameSize, u8 alpha);
+    /* 0x70 */ virtual void DrawFrame(const math::VEC2& basePt, const Frame& frame, const WindowFrameSize& frameSize,
+                                      u8 alpha);
+    /* 0x74 */ virtual void DrawFrame4(const math::VEC2& basePt, const Frame* frames, const WindowFrameSize& frameSize,
+                                       u8 alpha);
+    /* 0x78 */ virtual void DrawFrame8(const math::VEC2& basePt, const Frame* frames, const WindowFrameSize& frameSize,
+                                       u8 alpha);
 
     WindowFrameSize GetFrameSize(u8 frameNum, const Frame* frames);
 
-  private:
+private:
     /* 0x00 (base) */
     /* 0x0D4 */ InflationLRTB mContentInflation;
     /* 0x0E4 */ Content mContent;

@@ -12,11 +12,14 @@ inline void Lock(OSMutex& rMutex) { OSLockMutex(&rMutex); }
 inline void Unlock(OSMutex& rMutex) { OSUnlockMutex(&rMutex); }
 
 template <typename T> class AutoLock : private NonCopyable {
-  public:
-    explicit AutoLock(T& rLockObj) : mLockObj(rLockObj) { Lock(rLockObj); }
+public:
+    explicit AutoLock(T& rLockObj) :
+        mLockObj(rLockObj) {
+        Lock(rLockObj);
+    }
     ~AutoLock() { Unlock(mLockObj); }
 
-  private:
+private:
     /* 0x00 */ T& mLockObj;
 };
 } // namespace detail
@@ -24,11 +27,12 @@ template <typename T> class AutoLock : private NonCopyable {
 typedef detail::AutoLock<OSMutex> AutoMutexLock;
 
 class AutoInterruptLock : private NonCopyable {
-  public:
-    AutoInterruptLock() : mOldState(OSDisableInterrupts()) {}
+public:
+    AutoInterruptLock() :
+        mOldState(OSDisableInterrupts()) {}
     ~AutoInterruptLock() { OSRestoreInterrupts(mOldState); }
 
-  private:
+private:
     /* 0x00 */ BOOL mOldState;
 };
 } // namespace ut

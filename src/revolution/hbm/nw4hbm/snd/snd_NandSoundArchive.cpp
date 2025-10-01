@@ -14,7 +14,7 @@ namespace nw4hbm {
 namespace snd {
 
 class NandSoundArchive::NandFileStream : public ut::NandFileStream {
-  public:
+public:
     NandFileStream(const NANDFileInfo* pFileInfo, u32 offset, u32 size);
     NandFileStream(const char* path, u32 offset, u32 size);
 
@@ -25,12 +25,13 @@ class NandSoundArchive::NandFileStream : public ut::NandFileStream {
 
     virtual u32 GetSize() const { return mSize; } // 0x40
 
-  private:
+private:
     /* 0x16C */ s32 mOffset;
     /* 0x170 */ s32 mSize;
 };
 
-NandSoundArchive::NandSoundArchive() : mOpen(false) {}
+NandSoundArchive::NandSoundArchive() :
+    mOpen(false) {}
 
 NandSoundArchive::~NandSoundArchive() { Close(); }
 
@@ -206,8 +207,10 @@ bool NandSoundArchive::LoadLabelStringData(void* buffer, u32 size) {
     return true;
 }
 
-NandSoundArchive::NandFileStream::NandFileStream(const NANDFileInfo* pFileInfo, u32 offset, u32 size)
-    : ut::NandFileStream(pFileInfo, NAND_ACCESS_READ, false), mOffset(offset), mSize(size) {
+NandSoundArchive::NandFileStream::NandFileStream(const NANDFileInfo* pFileInfo, u32 offset, u32 size) :
+    ut::NandFileStream(pFileInfo, NAND_ACCESS_READ, false),
+    mOffset(offset),
+    mSize(size) {
 
     if (IsAvailable()) {
         if (mSize == 0) {
@@ -218,8 +221,10 @@ NandSoundArchive::NandFileStream::NandFileStream(const NANDFileInfo* pFileInfo, 
     }
 }
 
-NandSoundArchive::NandFileStream::NandFileStream(const char* path, u32 offset, u32 size)
-    : ut::NandFileStream(path, NAND_ACCESS_READ), mOffset(offset), mSize(size) {
+NandSoundArchive::NandFileStream::NandFileStream(const char* path, u32 offset, u32 size) :
+    ut::NandFileStream(path, NAND_ACCESS_READ),
+    mOffset(offset),
+    mSize(size) {
 
     if (IsAvailable()) {
         if (mSize == 0) {

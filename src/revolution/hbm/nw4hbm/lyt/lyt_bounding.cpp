@@ -11,7 +11,8 @@ namespace lyt {
 
 NW4HBM_UT_GET_DERIVED_RUNTIME_TYPEINFO(Bounding, Pane);
 
-Bounding::Bounding(const res::Bounding* pBlock, const ResBlockSet&) : Pane(pBlock) {}
+Bounding::Bounding(const res::Bounding* pBlock, const ResBlockSet&) :
+    Pane(pBlock) {}
 
 Bounding::~Bounding() {}
 

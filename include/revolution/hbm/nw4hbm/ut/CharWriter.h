@@ -16,7 +16,7 @@ namespace ut {
 class Font;
 
 class CharWriter {
-  public:
+public:
     typedef enum GradationMode {
         GRADMODE_NONE = 0,
         GRADMODE_H,
@@ -25,7 +25,7 @@ class CharWriter {
         NUM_OF_GRADMODE
     } GradationMode;
 
-  private:
+private:
     typedef struct ColorMapping {
         /* 0x00 */ Color min;
         /* 0x04 */ Color max;
@@ -37,7 +37,7 @@ class CharWriter {
     } VertexColor;
 
     typedef struct TextureFilter {
-      public:
+    public:
         bool operator!=(const TextureFilter& rhs) const { return atSmall != rhs.atSmall || atLarge != rhs.atLarge; }
 
         /* 0x00 */ GXTexFilter atSmall;
@@ -51,7 +51,7 @@ class CharWriter {
     } TextColor;
 
     typedef struct LoadingTexture {
-      public:
+    public:
         bool operator!=(const LoadingTexture& rhs) const {
             return slot != rhs.slot || texture != rhs.texture || filter != rhs.filter;
         }
@@ -66,7 +66,7 @@ class CharWriter {
         /* 0x08 */ TextureFilter filter;
     } LoadingTexture;
 
-  public:
+public:
     CharWriter();
     ~CharWriter();
 
@@ -126,7 +126,7 @@ class CharWriter {
 
     void UpdateVertexColor();
 
-  private:
+private:
     static void SetupVertexFormat();
 
     static void SetupGXDefault();
@@ -153,7 +153,7 @@ class CharWriter {
     static const u32 DEFAULT_COLOR_MAPPING_MIN = 0x00000000;
     static const u32 DEFAULT_COLOR_MAPPING_MAX = 0xFFFFFFFF;
 
-  private:
+private:
     static LoadingTexture mLoadingTexture;
 };
 } // namespace ut

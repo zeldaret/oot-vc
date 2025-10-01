@@ -15,7 +15,7 @@ typedef struct StrmChannel {
 } StrmChannel;
 
 class StrmBufferPool {
-  public:
+public:
     void Setup(void* base, u32 size, int count);
     void Shutdown();
 
@@ -24,7 +24,7 @@ class StrmBufferPool {
 
     u32 GetBlockSize() const { return mBlockSize; }
 
-  private:
+private:
     static const int BLOCK_MAX = 32;
     static const int BITS_PER_BYTE = 8;
 

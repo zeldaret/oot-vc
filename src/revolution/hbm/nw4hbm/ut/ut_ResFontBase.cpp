@@ -16,7 +16,9 @@ namespace nw4hbm {
 namespace ut {
 namespace detail {
 
-ResFontBase::ResFontBase() : mResource(nullptr), mFontInfo(nullptr) {}
+ResFontBase::ResFontBase() :
+    mResource(nullptr),
+    mFontInfo(nullptr) {}
 
 ResFontBase::~ResFontBase() {}
 

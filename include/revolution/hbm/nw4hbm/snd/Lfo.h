@@ -21,8 +21,10 @@ typedef struct LfoParam {
 } LfoParam;
 
 class Lfo {
-  public:
-    Lfo() : mDelayCounter(0), mCounter(0.0f) {}
+public:
+    Lfo() :
+        mDelayCounter(0),
+        mCounter(0.0f) {}
 
     LfoParam& GetParam() { return mParam; }
     void SetParam(const LfoParam& rParam) { mParam = rParam; }
@@ -32,7 +34,7 @@ class Lfo {
 
     f32 GetValue() const;
 
-  private:
+private:
     static const int TABLE_SIZE = 32;
 
     static s8 GetSinIdx(int idx);

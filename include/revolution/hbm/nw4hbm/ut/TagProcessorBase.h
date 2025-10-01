@@ -30,7 +30,7 @@ template <typename T> struct PrintContext {
 };
 
 template <typename T> class TagProcessorBase {
-  public:
+public:
     TagProcessorBase();
     virtual ~TagProcessorBase();
 

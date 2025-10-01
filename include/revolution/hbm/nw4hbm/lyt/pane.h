@@ -23,8 +23,9 @@ class Pane;
 
 namespace detail {
 class PaneBase {
-  public:
-    inline PaneBase() : mLink() {}
+public:
+    inline PaneBase() :
+        mLink() {}
 
     /* 0x08 */ virtual ~PaneBase() {}
 
@@ -39,16 +40,16 @@ enum {
 };
 
 class Pane : detail::PaneBase {
-  private:
+private:
     enum {
         /* 0 */ BIT_VISIBLE = 0,
         /* 1 */ BIT_INFLUENCED_ALPHA,
         /*  */ BIT_LOCATION_ADJUST
     };
 
-  public:
+public:
     NW4HBM_UT_RUNTIME_TYPEINFO;
-  
+
     Pane();
     Pane(const res::Pane* pBlock);
 
@@ -139,7 +140,7 @@ class Pane : detail::PaneBase {
 
     void AddAnimationLink(AnimationLink* animationLink);
 
-  protected:
+protected:
     /* 0x00 (base) */
     /* 0x0C */ Pane* mpParent;
     /* 0x10 */ PaneList mChildList;

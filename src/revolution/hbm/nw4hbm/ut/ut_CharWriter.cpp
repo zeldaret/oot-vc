@@ -30,7 +30,11 @@ namespace ut {
 
 CharWriter::LoadingTexture CharWriter::mLoadingTexture;
 
-CharWriter::CharWriter() : mAlpha(0xff), mIsWidthFixed(false), mFixedWidth(0.0f), mFont(nullptr) {
+CharWriter::CharWriter() :
+    mAlpha(0xff),
+    mIsWidthFixed(false),
+    mFixedWidth(0.0f),
+    mFont(nullptr) {
     mLoadingTexture.Reset();
     ResetColorMapping();
     SetGradationMode(GRADMODE_NONE);

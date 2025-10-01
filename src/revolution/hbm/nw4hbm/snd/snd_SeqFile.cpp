@@ -44,7 +44,9 @@ bool SeqFileReader::IsValidFileHeader(const void* seqData) {
     return true;
 }
 
-SeqFileReader::SeqFileReader(const void* seqData) : mHeader(nullptr), mDataBlock(nullptr) {
+SeqFileReader::SeqFileReader(const void* seqData) :
+    mHeader(nullptr),
+    mDataBlock(nullptr) {
     NW4HBMAssertPointerNonnull_Line(seqData, 71);
 
     if (!IsValidFileHeader(seqData)) {

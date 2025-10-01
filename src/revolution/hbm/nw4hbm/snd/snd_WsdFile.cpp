@@ -28,7 +28,10 @@ bool WsdFileReader::IsValidFileHeader(const void* wsdData) {
     return true;
 }
 
-WsdFileReader::WsdFileReader(const void* wsdData) : mHeader(nullptr), mDataBlock(nullptr), mWaveBlock(nullptr) {
+WsdFileReader::WsdFileReader(const void* wsdData) :
+    mHeader(nullptr),
+    mDataBlock(nullptr),
+    mWaveBlock(nullptr) {
     NW4HBMAssertPointerNonnull_Line(wsdData, 89);
 
     if (!IsValidFileHeader(wsdData)) {

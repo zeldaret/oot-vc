@@ -96,14 +96,16 @@ ut::Font* detail::FindFont(FontRefLinkList* pFontRefList, const char* name) {
     return nullptr;
 }
 
-FontRefLink::FontRefLink() : mpFont(nullptr) {}
+FontRefLink::FontRefLink() :
+    mpFont(nullptr) {}
 
 void FontRefLink::Set(const char* name, ut::Font* pFont) {
     strcpy(mFontName, name);
     mpFont = pFont;
 }
 
-ArcResourceAccessor::ArcResourceAccessor() : mArcBuf(NULL) {}
+ArcResourceAccessor::ArcResourceAccessor() :
+    mArcBuf(NULL) {}
 
 DECOMP_FORCE(NW4HBMAssert_String(std::strlen(name) < FONTNAMEBUF_MAX));
 

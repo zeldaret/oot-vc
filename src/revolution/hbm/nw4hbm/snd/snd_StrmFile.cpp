@@ -32,7 +32,9 @@ bool StrmFileReader::IsValidFileHeader(const void* strmData) {
     return true;
 }
 
-StrmFileReader::StrmFileReader() : mHeader(nullptr), mHeadBlock(nullptr) {}
+StrmFileReader::StrmFileReader() :
+    mHeader(nullptr),
+    mHeadBlock(nullptr) {}
 
 void StrmFileReader::Setup(const void* strmData) {
     NW4HBMAssertPointerNonnull_Line(strmData, 95);

@@ -23,17 +23,19 @@ class SoundPlayer;
 namespace detail {
 class BasicSound;
 class PlayerHeap : public SoundHeap {
-  public:
-    PlayerHeap() : mSound(nullptr), mPlayer(nullptr) {}
+public:
+    PlayerHeap() :
+        mSound(nullptr),
+        mPlayer(nullptr) {}
     virtual ~PlayerHeap() {} // 0x08
 
     void SetSound(BasicSound* sound) { mSound = sound; }
     void SetSoundPlayer(SoundPlayer* player) { mPlayer = player; }
 
-  public:
+public:
     /* 0x2C */ ut::LinkListNode mLink;
 
-  private:
+private:
     /* 0x34 */ BasicSound* mSound;
     /* 0x38 */ SoundPlayer* mPlayer;
 };

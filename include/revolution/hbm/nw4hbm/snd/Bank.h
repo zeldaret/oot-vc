@@ -12,7 +12,7 @@ namespace detail {
 class Channel;
 
 class Bank {
-  public:
+public:
     explicit Bank(const void* bankData);
     ~Bank();
 
@@ -23,7 +23,7 @@ class Bank {
         mWaveDataAddress = waveData;
     }
 
-  private:
+private:
     /* 0x00 */ BankFileReader mBankReader;
     /* 0x0C */ const void* mWaveDataAddress;
 };

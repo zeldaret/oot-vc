@@ -7,7 +7,8 @@
 
 namespace nw4hbm {
 namespace snd {
-SoundArchive::SoundArchive() : mFileReader(nullptr) {
+SoundArchive::SoundArchive() :
+    mFileReader(nullptr) {
     mExtFileRoot[0] = '/';
     mExtFileRoot[1] = '\0';
 }

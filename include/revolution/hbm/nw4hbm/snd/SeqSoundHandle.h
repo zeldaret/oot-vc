@@ -12,14 +12,14 @@
 namespace nw4hbm {
 namespace snd {
 class SeqSoundHandle : private ut::NonCopyable {
-  public:
+public:
     ~SeqSoundHandle() { DetachSound(); }
 
     void DetachSound();
 
     bool IsAttachedSound() const { return mSound != NULL; }
 
-  private:
+private:
     /* 0x00 */ detail::SeqSound* mSound;
 };
 

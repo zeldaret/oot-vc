@@ -20,7 +20,7 @@ typedef struct PaneLink {
 typedef ut::LinkList<detail::PaneLink, offsetof(detail::PaneLink, mLink)> PaneLinkList;
 
 class Group {
-  public:
+public:
     Group();
     Group(const res::Group* pResGroup, Pane* pRootPane);
 
@@ -37,7 +37,7 @@ class Group {
     /* 0x00 (vtable) */
     /* 0x04 */ ut::LinkListNode mLink;
 
-  protected:
+protected:
     /* 0x0C */ PaneLinkList mPaneLinkList;
     /* 0x18 */ char mName[16];
     /* 0x29 */ bool mbUserAllocated;
@@ -46,7 +46,7 @@ class Group {
 typedef ut::LinkList<Group, offsetof(Group, mLink)> GroupList;
 
 class GroupContainer {
-  public:
+public:
     GroupContainer() {}
     ~GroupContainer();
 
@@ -55,7 +55,7 @@ class GroupContainer {
     void AppendGroup(Group* pGroup);
     Group* FindGroupByName(const char* findName);
 
-  protected:
+protected:
     /* 0x00 */ GroupList mGroupList;
 };
 

@@ -34,14 +34,14 @@ static const int SUPPORTED_FILE_VERSION = NW4HBM_VERSION(1, 1);
 } // namespace SeqFile
 
 class SeqFileReader {
-  public:
+public:
     explicit SeqFileReader(const void* seqData);
 
     bool IsValidFileHeader(const void* seqData);
 
     const void* GetBaseAddress() const;
 
-  private:
+private:
     /* 0x00 */ const SeqFile::Header* mHeader;
     /* 0x04 */ const SeqFile::DataBlock* mDataBlock;
 };

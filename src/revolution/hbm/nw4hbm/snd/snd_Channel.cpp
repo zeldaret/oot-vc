@@ -10,7 +10,11 @@ namespace snd {
 namespace detail {
 Channel Channel::mChannel[AX_VOICE_MAX + 1];
 
-Channel::Channel() : mPauseFlag(0), mActiveFlag(false), mAllocFlag(false), mVoice(nullptr) {
+Channel::Channel() :
+    mPauseFlag(0),
+    mActiveFlag(false),
+    mAllocFlag(false),
+    mVoice(nullptr) {
     ChannelManager::GetInstance().Append(this);
 }
 

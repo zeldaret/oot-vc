@@ -12,7 +12,7 @@ namespace snd {
 namespace detail {
 
 class TaskManager {
-  public:
+public:
     typedef enum TaskPriority {
         PRIORITY_LOW = 0,
         PRIORITY_MIDDLE,
@@ -20,7 +20,7 @@ class TaskManager {
         PRIORITY_MAX
     } TaskPriority;
 
-  public:
+public:
     static TaskManager& GetInstance();
 
     void AppendTask(Task* task, TaskPriority priority);
@@ -37,7 +37,7 @@ class TaskManager {
 
     static u8 mTaskArea[0x2000 + 0x44];
 
-  private:
+private:
     TaskManager();
 
     /* 0x00 */ OSMutex mMutex;

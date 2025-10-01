@@ -198,13 +198,15 @@ void CalcStringRect(ut::Rect* pRect, ut::TextWriterBase<T>* pTextWriter, const T
 namespace nw4hbm {
 namespace lyt {
 
-TextBox::TextBox(u16 allocStrLen, const wchar_t* str, const ut::Font* pFont) : Pane() {
+TextBox::TextBox(u16 allocStrLen, const wchar_t* str, const ut::Font* pFont) :
+    Pane() {
     Init(allocStrLen);
     SetString(str);
     SetFont(pFont);
 }
 
-TextBox::TextBox(const res::TextBox* pBlock, const ResBlockSet& resBlockSet) : Pane(pBlock) {
+TextBox::TextBox(const res::TextBox* pBlock, const ResBlockSet& resBlockSet) :
+    Pane(pBlock) {
     u16 allocStrBufLen = pBlock->textBufBytes / sizeof(wchar_t);
     if (allocStrBufLen) {
         allocStrBufLen = allocStrBufLen - 1;

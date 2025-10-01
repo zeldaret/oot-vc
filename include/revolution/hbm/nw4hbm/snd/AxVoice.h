@@ -23,7 +23,7 @@ inline u16 CalcMixVolume(f32 volume) { return ut::Min<u32>(USHRT_MAX, AX_MAX_VOL
  *
  ******************************************************************************/
 class AxVoiceParamBlock {
-  public:
+public:
     AxVoiceParamBlock();
 
     operator AXVPB*() { return mVpb; }
@@ -106,10 +106,10 @@ class AxVoiceParamBlock {
     void SetVoiceRmtIIRCoefs(u16 type, ...);
     void UpdateDelta();
 
-  private:
+private:
     static const u16 DEFAULT_VOLUME = AX_MAX_VOLUME;
 
-  private:
+private:
     AXVPB* mVpb; // at 0x0
     u32 mSync; // at 0x4
     volatile AXPBVE mPrevVeSetting; // at 0x8
@@ -126,7 +126,7 @@ class WaveData;
 class AxVoice : public DisposeCallback {
     friend class AxManager;
 
-  public:
+public:
     typedef enum CallbackStatus {
         CALLBACK_STATUS_FINISH_WAVE = 0,
         CALLBACK_STATUS_INVALIDATE_WAVE,
@@ -260,7 +260,7 @@ class AxVoice : public DisposeCallback {
     static const int VOICES_MAX = 4;
     static const int PRIORITY_MAX = 255;
 
-  protected:
+protected:
     static void VoiceCallback(void* callbackData);
 
     void TransformDpl2Pan(f32* outPan, f32* outSurroundPan, f32 inPan, f32 inSurroundPan);
@@ -321,7 +321,7 @@ class AxVoice : public DisposeCallback {
 
     /* 0x1A4 */ u16 mGainPrev;
 
-  public:
+public:
     /* 0x1A8 */ ut::LinkListNode mLinkNode;
 };
 

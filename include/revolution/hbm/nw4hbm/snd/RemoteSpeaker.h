@@ -9,7 +9,7 @@ namespace nw4hbm {
 namespace snd {
 
 class RemoteSpeaker {
-  public:
+public:
     static const int SAMPLES_PER_AUDIO_PACKET = 40;
 
     RemoteSpeaker();
@@ -23,7 +23,7 @@ class RemoteSpeaker {
     bool IsAvailable() const { return mRemoteInitFlag; }
     void SetChannelIndex(int index) { mChannelIndex = index; }
 
-  private:
+private:
     typedef enum SpeakerState {
         STATE_INVALID,
         STATE_EXEC_SPEAKER_ON,

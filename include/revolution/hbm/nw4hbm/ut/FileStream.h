@@ -6,14 +6,14 @@
 namespace nw4hbm {
 namespace ut {
 class FileStream : public IOStream {
-  public:
+public:
     enum SeekOrigin {
         SEEK_BEG,
         SEEK_CUR,
         SEEK_END
     };
 
-  public:
+public:
     NW4HBM_UT_RUNTIME_TYPEINFO;
 
     FileStream() {}
@@ -31,10 +31,12 @@ class FileStream : public IOStream {
 
     /* 0x58 */ virtual u32 Tell() const = 0;
 
-  protected:
+protected:
     class FilePosition {
-      public:
-        FilePosition() : mFileSize(0), mPosition(0) {}
+    public:
+        FilePosition() :
+            mFileSize(0),
+            mPosition(0) {}
 
         u32 GetFileSize() const { return mFileSize; }
         void SetFileSize(u32 size) { mFileSize = size; }
@@ -45,7 +47,7 @@ class FileStream : public IOStream {
         u32 Append(s32 offset);
         void Seek(s32 offset, u32 origin);
 
-      private:
+    private:
         /* 0x0 */ u32 mFileSize;
         /* 0x4 */ u32 mPosition;
     };

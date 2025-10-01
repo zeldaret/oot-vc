@@ -9,7 +9,9 @@ namespace detail {
 
 NW4HBM_UT_GET_DERIVED_RUNTIME_TYPEINFO(WaveSound, BasicSound);
 
-WaveSound::WaveSound(SoundInstanceManager<WaveSound>* manager) : mManager(manager), mTempSpecialHandle(nullptr) {}
+WaveSound::WaveSound(SoundInstanceManager<WaveSound>* manager) :
+    mManager(manager),
+    mTempSpecialHandle(nullptr) {}
 
 bool WaveSound::Prepare(const void* waveSoundBase, s32 waveSoundOffset, int voices,
                         const WsdTrack::WsdCallback* callback, u32 callbackData) {

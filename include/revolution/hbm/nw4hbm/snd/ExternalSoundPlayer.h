@@ -8,7 +8,7 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 class ExternalSoundPlayer {
-  public:
+public:
     ExternalSoundPlayer();
     ~ExternalSoundPlayer();
 
@@ -50,7 +50,7 @@ class ExternalSoundPlayer {
         return func;
     }
 
-  private:
+private:
     /* 0x00 */ BasicSoundExtPlayList mSoundList;
     /* 0x0C */ u16 mPlayableCount;
     /* 0x10 */ f32 mVolume;

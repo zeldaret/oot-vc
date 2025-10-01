@@ -9,10 +9,10 @@
 namespace nw4hbm {
 namespace snd {
 class MemorySoundArchive : public SoundArchive {
-  private:
+private:
     class MemoryFileStream;
 
-  public:
+public:
     MemorySoundArchive();
     /* 0x08 */ virtual ~MemorySoundArchive();
 
@@ -29,7 +29,7 @@ class MemorySoundArchive : public SoundArchive {
     bool Setup(const void* buffer);
     void Shutdown();
 
-  private:
+private:
     /* 0x108 */ const void* mData;
     /* 0x10C */ detail::SoundArchiveFileReader mFileReader;
 };

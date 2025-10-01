@@ -25,11 +25,20 @@
 namespace nw4hbm {
 namespace snd {
 
-SoundArchivePlayer::SoundArchivePlayer()
-    : mSoundArchive(nullptr), mSeqLoadCallback(*this), mSeqCallback(*this), mStrmCallback(*this), mWsdCallback(*this),
-      mGroupTable(nullptr), mFileManager(nullptr), mSoundPlayerCount(0), mSoundPlayers(nullptr),
-      mSetupBufferAddress(nullptr), mSetupBufferSize(0), mMmlSeqTrackAllocator(&mMmlParser),
-      mSeqTrackAllocator(&mMmlSeqTrackAllocator) {
+SoundArchivePlayer::SoundArchivePlayer() :
+    mSoundArchive(nullptr),
+    mSeqLoadCallback(*this),
+    mSeqCallback(*this),
+    mStrmCallback(*this),
+    mWsdCallback(*this),
+    mGroupTable(nullptr),
+    mFileManager(nullptr),
+    mSoundPlayerCount(0),
+    mSoundPlayers(nullptr),
+    mSetupBufferAddress(nullptr),
+    mSetupBufferSize(0),
+    mMmlSeqTrackAllocator(&mMmlParser),
+    mSeqTrackAllocator(&mMmlSeqTrackAllocator) {
     detail::DisposeCallbackManager::GetInstance().RegisterDisposeCallback(this);
 }
 
@@ -805,7 +814,8 @@ void SoundArchivePlayer::InvalidateWaveData(const void* start, const void* end) 
     }
 }
 
-SoundArchivePlayer::SeqLoadCallback::SeqLoadCallback(const SoundArchivePlayer& player) : mSoundArchivePlayer(player) {
+SoundArchivePlayer::SeqLoadCallback::SeqLoadCallback(const SoundArchivePlayer& player) :
+    mSoundArchivePlayer(player) {
     OSInitMutex(&mMutex);
 }
 
@@ -921,7 +931,8 @@ bool SoundArchivePlayer::WsdCallback::GetWaveSoundData(detail::WaveSoundInfo* wa
     return true;
 }
 
-SoundArchivePlayer::StrmCallback::StrmCallback(const SoundArchivePlayer& player) : mSoundArchivePlayer(player) {
+SoundArchivePlayer::StrmCallback::StrmCallback(const SoundArchivePlayer& player) :
+    mSoundArchivePlayer(player) {
     OSInitMutex(&mMutex);
 }
 
@@ -975,9 +986,15 @@ void SoundArchivePlayer::StrmCallback::CancelLoading(u32 userId, u32 userData) c
 
 SoundArchivePlayer::SeqLoadTask::SeqLoadTask(detail::SeqSound::NotifyAsyncEndCallback callback, void* callbackArg,
                                              const SoundArchive& arc, u32 fileId, u32 dataOffset, SoundHeap& heap,
-                                             u32 taskId, OSMutex& mutex)
-    : mCallback(callback), mCallbackData(callbackArg), mSoundArchive(arc), mFileId(fileId), mDataOffset(dataOffset),
-      mHeap(heap), Task(taskId), mMutex(mutex) {}
+                                             u32 taskId, OSMutex& mutex) :
+    mCallback(callback),
+    mCallbackData(callbackArg),
+    mSoundArchive(arc),
+    mFileId(fileId),
+    mDataOffset(dataOffset),
+    mHeap(heap),
+    Task(taskId),
+    mMutex(mutex) {}
 
 void SoundArchivePlayer::SeqLoadTask::Execute() {
     detail::SoundArchiveLoader loader(mSoundArchive);
@@ -1018,9 +1035,14 @@ void SoundArchivePlayer::SeqLoadTask::Cancel() {
 
 SoundArchivePlayer::StrmHeaderLoadTask::StrmHeaderLoadTask(
     detail::StrmPlayer::NotifyLoadHeaderAsyncEndCallback callback, void* callbackData, const SoundArchive& arc,
-    u32 fileId, u32 taskId, OSMutex& mutex)
-    : Task(taskId), mSoundArchive(arc), mFileId(fileId), mCallback(callback), mCallbackData(callbackData),
-      mStream(nullptr), mMutex(mutex) {}
+    u32 fileId, u32 taskId, OSMutex& mutex) :
+    Task(taskId),
+    mSoundArchive(arc),
+    mFileId(fileId),
+    mCallback(callback),
+    mCallbackData(callbackData),
+    mStream(nullptr),
+    mMutex(mutex) {}
 
 void SoundArchivePlayer::StrmHeaderLoadTask::Execute() {
     static u8 buffer[STREAM_BUFFER_SIZE] ATTRIBUTE_ALIGN(32);
@@ -1110,10 +1132,21 @@ void SoundArchivePlayer::StrmHeaderLoadTask::Cancel() {
 SoundArchivePlayer::StrmDataLoadTask::StrmDataLoadTask(void* addr, u32 size, s32 offset, int numChannels, u32 blockSize,
                                                        s32 blockHeaderOffset, bool needUpdateAdpcmLoop,
                                                        detail::StrmPlayer::LoadCommand& callback,
-                                                       const SoundArchive& arc, u32 fileId, u32 taskId, OSMutex& mutex)
-    : Task(taskId), mAddr(addr), mSize(size), mOffset(offset), mSoundArchive(arc), mFileId(fileId), mStream(nullptr),
-      mNumChannels(numChannels), mCallback(&callback), mBlockSize(blockSize), mBlockHeaderOffset(blockHeaderOffset),
-      mNeedUpdateAdpcmLoop(needUpdateAdpcmLoop), mMutex(mutex) {
+                                                       const SoundArchive& arc, u32 fileId, u32 taskId,
+                                                       OSMutex& mutex) :
+    Task(taskId),
+    mAddr(addr),
+    mSize(size),
+    mOffset(offset),
+    mSoundArchive(arc),
+    mFileId(fileId),
+    mStream(nullptr),
+    mNumChannels(numChannels),
+    mCallback(&callback),
+    mBlockSize(blockSize),
+    mBlockHeaderOffset(blockHeaderOffset),
+    mNeedUpdateAdpcmLoop(needUpdateAdpcmLoop),
+    mMutex(mutex) {
     NW4HBMAssertAligned_Line(1890, addr, 32);
     NW4HBMAssertAligned_Line(1891, size, 32);
     NW4HBMAssertAligned_Line(1892, offset, 4);

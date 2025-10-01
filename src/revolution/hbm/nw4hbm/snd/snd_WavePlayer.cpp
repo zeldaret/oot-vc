@@ -17,9 +17,16 @@ WavePlayerList sPlayerList;
 // DECOMP_FORCE(__FILE__);
 // DECOMP_FORCE(NW4HBMAssertHeaderClampedLRValue_String(setupParam.channelCount));
 
-WavePlayer::WavePlayer()
-    : mStartFlag(false), mVoiceStartFlag(false), mChannelCount(0), mVoice(nullptr), mLoopSetFlag(false),
-      mCallback(nullptr), mCallbackArg(nullptr), mPauseFlag(false), mPlaySampleCount(0) {
+WavePlayer::WavePlayer() :
+    mStartFlag(false),
+    mVoiceStartFlag(false),
+    mChannelCount(0),
+    mVoice(nullptr),
+    mLoopSetFlag(false),
+    mCallback(nullptr),
+    mCallbackArg(nullptr),
+    mPauseFlag(false),
+    mPlaySampleCount(0) {
     InitParam();
 }
 
@@ -420,7 +427,9 @@ void WavePlayer::detail_StopAllPlayers() {
     NW4HBMAssert_Line(sPlayerList.IsEmpty(), 793);
 }
 
-WavePlayer::WavePacket::WavePacket() : mWaveBuffer(), mAppendFlag(false) {
+WavePlayer::WavePacket::WavePacket() :
+    mWaveBuffer(),
+    mAppendFlag(false) {
     for (int i = 0; i < CHANNEL_MAX; i++) {
         mWaveBuffer.bufferAddress[i] = nullptr;
     }

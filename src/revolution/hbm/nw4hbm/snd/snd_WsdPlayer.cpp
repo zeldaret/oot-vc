@@ -18,7 +18,12 @@ namespace {
 WsdPlayerList sPlayerList;
 }
 
-WsdPlayer::WsdPlayer() : BasicPlayer(), DisposeCallback(), mPlayerLink(), mActiveFlag(false), mTrack() {}
+WsdPlayer::WsdPlayer() :
+    BasicPlayer(),
+    DisposeCallback(),
+    mPlayerLink(),
+    mActiveFlag(false),
+    mTrack() {}
 
 void WsdPlayer::InitParam(int voices, const WsdTrack::WsdCallback* callback, u32 callbackData) {
     mPreparedFlag = false;

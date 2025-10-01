@@ -9,7 +9,9 @@ namespace detail {
 
 NW4HBM_UT_GET_DERIVED_RUNTIME_TYPEINFO(StrmSound, BasicSound);
 
-StrmSound::StrmSound(SoundInstanceManager<StrmSound>* manager) : mTempSpecialHandle(nullptr), mManager(manager) {}
+StrmSound::StrmSound(SoundInstanceManager<StrmSound>* manager) :
+    mTempSpecialHandle(nullptr),
+    mManager(manager) {}
 
 bool StrmSound::Prepare(StrmBufferPool* bufferPool, StrmPlayer::StartOffsetType startOffsetType, s32 offset, int voices,
                         StrmPlayer::StrmCallback* callback, u32 callbackData) {

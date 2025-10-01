@@ -8,7 +8,8 @@ namespace detail {
  * Sorry, nothing.
  * This file is needed for those left over weak functions.
  */
-MidiSeqTrack::MidiSeqTrack() : SeqTrack() {}
+MidiSeqTrack::MidiSeqTrack() :
+    SeqTrack() {}
 
 } // namespace detail
 } // namespace snd

@@ -16,7 +16,8 @@ namespace ut {
 
 namespace detail {
 struct RuntimeTypeInfo {
-    explicit RuntimeTypeInfo(const RuntimeTypeInfo* base) : mParentTypeInfo(base) {}
+    explicit RuntimeTypeInfo(const RuntimeTypeInfo* base) :
+        mParentTypeInfo(base) {}
 
     bool IsDerivedFrom(const RuntimeTypeInfo* base) const {
         for (const RuntimeTypeInfo* it = this; it != NULL; it = it->mParentTypeInfo) {

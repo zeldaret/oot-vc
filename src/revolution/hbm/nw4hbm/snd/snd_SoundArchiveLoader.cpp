@@ -8,7 +8,9 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 
-SoundArchiveLoader::SoundArchiveLoader(const SoundArchive& rArchive) : mArc(rArchive), mStream(nullptr) {
+SoundArchiveLoader::SoundArchiveLoader(const SoundArchive& rArchive) :
+    mArc(rArchive),
+    mStream(nullptr) {
     OSInitMutex(&mMutex);
 }
 

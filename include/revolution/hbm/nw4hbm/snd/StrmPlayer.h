@@ -19,7 +19,7 @@ namespace snd {
 namespace detail {
 
 class StrmPlayer : public BasicPlayer {
-  public:
+public:
     typedef enum StartOffsetType {
         START_OFFSET_TYPE_SAMPLE = 0,
         START_OFFSET_TYPE_MILLISEC
@@ -38,13 +38,13 @@ class StrmPlayer : public BasicPlayer {
     class LoadCommand {
         friend class StrmPlayer;
 
-      public:
+    public:
         virtual void NotifyAsyncEnd(bool result);
 
         void SetAdpcmLoopContext(int channelNum, u16* predScale);
         void* GetBuffer(int channelNum);
 
-      private:
+    private:
         typedef enum Status {
             STATE_SETUP = 0,
             STATE_INTERVAL,
@@ -56,7 +56,7 @@ class StrmPlayer : public BasicPlayer {
         /* 0x0C */ s32 mStreamBlockIndex;
         /* 0x10 */ s32 mBufferBlockIndex;
 
-      public:
+    public:
         /* 0x14 */ ut::LinkListNode mLinkNode;
 
         static u8 mMramBuf[LOAD_BUFFER_SIZE] ATTRIBUTE_ALIGN(32);
@@ -65,7 +65,7 @@ class StrmPlayer : public BasicPlayer {
 
     typedef void (*NotifyLoadHeaderAsyncEndCallback)(bool, const StrmHeader*, void*);
     class StrmCallback {
-      public:
+    public:
         typedef enum Result {
             RESULT_SUCCESS = 0,
             RESULT_FAILED,
@@ -85,7 +85,7 @@ class StrmPlayer : public BasicPlayer {
         virtual void CancelLoading(u32 userId, u32 userData) const = 0;
     };
 
-  public:
+public:
     StrmPlayer();
 
     /* 0x0C */ virtual bool Start();
@@ -140,7 +140,7 @@ class StrmPlayer : public BasicPlayer {
     static void StopAllPlayers();
     static void UpdateBufferAllPlayers();
 
-  private:
+private:
     static const int DATA_BLOCK_COUNT_MIN = 4;
     static const int DATA_BLOCK_COUNT_MAX = 32;
     static const int DATA_BLOCK_SIZE_MAX = 0x2000;
@@ -163,10 +163,10 @@ class StrmPlayer : public BasicPlayer {
 
     static void NotifyStrmHeaderAsyncEndCallback(bool result, const StrmHeader* header, void* userData);
 
-  public:
+public:
     /* 0x08 */ ut::LinkListNode mPlayerLink;
 
-  private:
+private:
     /* 0x10 */ StrmInfo mStrmInfo;
 
     /* 0x48 */ u8 mActiveFlag;

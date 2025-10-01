@@ -7,10 +7,12 @@
 namespace nw4hbm {
 namespace ut {
 class CharStrmReader {
-  public:
+public:
     typedef u16 (CharStrmReader::*ReadFunc)();
 
-    CharStrmReader(ReadFunc func) : mCharStrm(nullptr), mReadFunc(func) {}
+    CharStrmReader(ReadFunc func) :
+        mCharStrm(nullptr),
+        mReadFunc(func) {}
 
     void Set(const char* stream) {
         NW4HBMAssertPointerValid_Line(this, 49);

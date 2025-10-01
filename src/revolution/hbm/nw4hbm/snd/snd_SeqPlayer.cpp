@@ -15,7 +15,8 @@ SeqPlayerList sPlayerList;
 }
 vs16 SeqPlayer::mGlobalVariable[GLOBAL_VARIABLE_NUM];
 
-SeqPlayer::SeqPlayer() : mActiveFlag(false) {}
+SeqPlayer::SeqPlayer() :
+    mActiveFlag(false) {}
 
 SeqPlayer::~SeqPlayer() {
     if (mActiveFlag) {

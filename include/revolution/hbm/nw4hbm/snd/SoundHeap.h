@@ -13,7 +13,7 @@ namespace nw4hbm {
 namespace snd {
 
 class SoundHeap : public SoundMemoryAllocatable {
-  public:
+public:
     SoundHeap();
     /* 0x08 */ virtual ~SoundHeap();
 
@@ -43,7 +43,7 @@ class SoundHeap : public SoundMemoryAllocatable {
         return mFrameHeap.GetFreeSize();
     }
 
-  private:
+private:
     static void DisposeCallbackFunc(void* buffer, u32 size, void* callbackArg);
 
     /* 0x00 */ mutable OSMutex mMutex;

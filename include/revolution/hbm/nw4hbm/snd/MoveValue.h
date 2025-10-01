@@ -8,8 +8,12 @@ namespace snd {
 namespace detail {
 
 template <typename TValue, typename TTime> class MoveValue {
-  public:
-    MoveValue() : mOrigin(TValue()), mTarget(TValue()), mFrame(TTime()), mCounter(TTime()) {}
+public:
+    MoveValue() :
+        mOrigin(TValue()),
+        mTarget(TValue()),
+        mFrame(TTime()),
+        mCounter(TTime()) {}
 
     void InitValue(TValue t1) {
         mOrigin = t1;
@@ -40,7 +44,7 @@ template <typename TValue, typename TTime> class MoveValue {
         mCounter = 0;
     }
 
-  private:
+private:
     /* 0x00 */ TValue mOrigin;
     /* 0x04 */ TValue mTarget;
     /* 0x08 */ TTime mFrame;

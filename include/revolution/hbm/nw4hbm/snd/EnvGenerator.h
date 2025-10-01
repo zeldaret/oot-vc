@@ -7,7 +7,7 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 class EnvGenerator {
-  public:
+public:
     typedef enum Status {
         STATUS_ATTACK = 0,
         STATUS_DECAY,
@@ -30,7 +30,7 @@ class EnvGenerator {
     void SetSustain(int sustain);
     void SetRelease(int release);
 
-  private:
+private:
     static const int DECIBEL_SQUARE_TABLE_SIZE = 128;
 
     static const vf32 VOLUME_INIT;
@@ -39,7 +39,7 @@ class EnvGenerator {
     static const int SUSTAIN_INIT = 127;
     static const int RELEASE_INIT = 127;
 
-  private:
+private:
     f32 CalcRelease(int release);
     int CalcDecibelSquare(int scale);
 

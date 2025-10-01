@@ -14,7 +14,7 @@ class DisposeCallbackBase {};
 namespace {
 
 class DisposeCallback : public DisposeCallbackBase {
-  public:
+public:
     /* 0x00 */ ut::LinkListNode mDisposeLink;
 
     virtual ~DisposeCallback()

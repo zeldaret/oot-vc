@@ -18,7 +18,7 @@ namespace nw4hbm {
 namespace snd {
 
 class MemorySoundArchive::MemoryFileStream : public ut::FileStream {
-  public:
+public:
     MemoryFileStream(const void* buffer, u32 size);
 
     /* 0x10 */ virtual void Close();
@@ -35,13 +35,14 @@ class MemorySoundArchive::MemoryFileStream : public ut::FileStream {
 
     virtual u32 GetSize() const { return mSize; } // 0x40
 
-  private:
+private:
     /* 0x14 */ const void* mData;
     /* 0x18 */ s32 mSize;
     /* 0x1C */ s32 mOffset;
 };
 
-MemorySoundArchive::MemorySoundArchive() : mData(NULL) {}
+MemorySoundArchive::MemorySoundArchive() :
+    mData(NULL) {}
 
 MemorySoundArchive::~MemorySoundArchive() {}
 
@@ -112,8 +113,10 @@ const void* MemorySoundArchive::detail_GetWaveDataFileAddress(u32 id) const {
     return ut::AddOffsetToPtr(mData, groupInfo.waveDataOffset + itemInfo.waveDataOffset);
 }
 
-MemorySoundArchive::MemoryFileStream::MemoryFileStream(const void* buffer, u32 size)
-    : mData(buffer), mSize(size), mOffset(0) {}
+MemorySoundArchive::MemoryFileStream::MemoryFileStream(const void* buffer, u32 size) :
+    mData(buffer),
+    mSize(size),
+    mOffset(0) {}
 
 ut::FileStream* MemorySoundArchive::OpenStream(void* buffer, int size, u32 offset, u32 length) const {
     if (mData == NULL) {

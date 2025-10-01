@@ -18,7 +18,7 @@ namespace detail {
 typedef math::VEC2 TexCoords[4];
 
 class TexCoordAry {
-  public:
+public:
     TexCoordAry();
 
     u8 GetSize() const { return mNum; }
@@ -36,7 +36,7 @@ class TexCoordAry {
     void SetCoord(u32 idx, const math::VEC2* vec);
     void GetCoord(u32 idx, math::VEC2* vec) const;
 
-  private:
+private:
     /* 0x00 */ u8 mCap;
     /* 0x01 */ u8 mNum;
     /* 0x04 */ TexCoords* mpData;

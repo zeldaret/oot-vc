@@ -18,7 +18,7 @@ namespace ut {
 struct Rect;
 template <typename> class TagProcessorBase;
 template <typename T> class TextWriterBase : public CharWriter {
-  public:
+public:
     enum DrawFlag {
         // Align text lines
         DRAWFLAG_ALIGN_TEXT_BASELINE = 0,
@@ -112,7 +112,7 @@ template <typename T> class TextWriterBase : public CharWriter {
 
     bool IsDrawFlagSet(u32 mask, u32 flag) const { return (mDrawFlag & mask) == flag; }
 
-  private:
+private:
     /* 0x4C */ f32 mCharSpace;
     /* 0x50 */ f32 mLineSpace;
 
@@ -122,7 +122,7 @@ template <typename T> class TextWriterBase : public CharWriter {
 
     /* 0x5C */ TagProcessorBase<T>* mTagProcessor;
 
-  private:
+private:
     static T* mFormatBuffer;
     static u32 mFormatBufferSize;
 

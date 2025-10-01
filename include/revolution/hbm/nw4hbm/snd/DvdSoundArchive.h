@@ -13,10 +13,10 @@
 namespace nw4hbm {
 namespace snd {
 class DvdSoundArchive : public SoundArchive {
-  private:
+private:
     class DvdFileStream;
 
-  public:
+public:
     DvdSoundArchive();
     /* 0x08 */ virtual ~DvdSoundArchive();
 
@@ -40,10 +40,10 @@ class DvdSoundArchive : public SoundArchive {
     u32 GetHeaderSize() const { return mFileReader.GetInfoChunkSize(); }
     u32 GetLabelStringDataSize() const { return mFileReader.GetLabelStringChunkSize(); }
 
-  private:
+private:
     bool LoadFileHeader();
 
-  private:
+private:
     /* 0x108 */ detail::SoundArchiveFileReader mFileReader;
     /* 0x14C */ DVDFileInfo mFileInfo;
     /* 0x188 */ bool mOpen;

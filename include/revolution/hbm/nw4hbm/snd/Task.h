@@ -11,10 +11,12 @@ namespace detail {
 class Task : private ut::NonCopyable {
     friend class TaskManager;
 
-  public:
-    Task() : mTaskId(0) {}
+public:
+    Task() :
+        mTaskId(0) {}
 
-    Task(u32 taskId) : mTaskId(taskId) {}
+    Task(u32 taskId) :
+        mTaskId(taskId) {}
 
     virtual ~Task() {} // 0x08
 
@@ -23,10 +25,10 @@ class Task : private ut::NonCopyable {
 
     u32 GetTaskId() const { return mTaskId; }
 
-  public:
+public:
     /* 0x04 */ ut::LinkListNode mTaskLink;
 
-  private:
+private:
     /* 0x0C */ u32 mTaskId;
 };
 

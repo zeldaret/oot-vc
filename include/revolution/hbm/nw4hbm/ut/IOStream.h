@@ -8,12 +8,15 @@
 namespace nw4hbm {
 namespace ut {
 class IOStream {
-  public:
+public:
     typedef void (*IOStreamCallback)(s32 result, IOStream* pStream, void* pCallbackArg);
 
     NW4HBM_UT_RUNTIME_TYPEINFO;
 
-    IOStream() : mAvailable(false), mCallback(nullptr), mArg(nullptr) {}
+    IOStream() :
+        mAvailable(false),
+        mCallback(nullptr),
+        mArg(nullptr) {}
 
     virtual ~IOStream() {} // 0x0C
 
@@ -37,7 +40,7 @@ class IOStream {
 
     bool IsAvailable() const { return mAvailable; }
 
-  protected:
+protected:
     /* 0x04 */ bool mAvailable;
 
     /* 0x08 */ s32 mAsyncResult;

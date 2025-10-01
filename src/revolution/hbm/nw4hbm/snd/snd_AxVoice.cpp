@@ -17,9 +17,15 @@ void SetVoiceLoopAddr(AXVPB* vpb, u32 loopAddr);
 void SetVoiceEndAddr(AXVPB* vpb, u32 endAddr);
 } // namespace
 
-AxVoice::AxVoice()
-    : mCallback(nullptr), mActiveFlag(false), mStartFlag(false), mStartedFlag(false), mPauseFlag(false),
-      mFirstVeUpdateFlag(0), mHomeButtonMuteFlag(0), mSyncFlag(0) {
+AxVoice::AxVoice() :
+    mCallback(nullptr),
+    mActiveFlag(false),
+    mStartFlag(false),
+    mStartedFlag(false),
+    mPauseFlag(false),
+    mFirstVeUpdateFlag(0),
+    mHomeButtonMuteFlag(0),
+    mSyncFlag(0) {
     for (int i = 0; i < CHANNEL_MAX; i++) {
         for (int j = 0; j < VOICES_MAX; j++) {
             mVpb[i][j] = nullptr;

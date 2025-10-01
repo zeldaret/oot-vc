@@ -354,8 +354,11 @@ void HomeButton::play_sound(int id) {
     }
 }
 
-HomeButton::HomeButton(const HBMDataInfo* pHBInfo)
-    : mpHBInfo(pHBInfo), mpLayout(nullptr), mpPaneManager(nullptr), mFader(30) {
+HomeButton::HomeButton(const HBMDataInfo* pHBInfo) :
+    mpHBInfo(pHBInfo),
+    mpLayout(nullptr),
+    mpPaneManager(nullptr),
+    mFader(30) {
     mState = 2;
     mSelectBtnNum = HBM_SELECT_NULL;
     mSelectAnmNum = -1;

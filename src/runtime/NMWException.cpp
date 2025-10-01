@@ -116,13 +116,13 @@ extern char __throw_catch_compare(const char* throwtype, const char* catchtype, 
 }
 
 class __partial_array_destructor {
-  private:
+private:
     void* p;
     size_t size;
     size_t n;
     ConstructorDestructor dtor;
 
-  public:
+public:
     size_t i;
 
     __partial_array_destructor(void* array, size_t elementsize, size_t nelements, ConstructorDestructor destructor) {

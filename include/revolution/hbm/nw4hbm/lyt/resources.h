@@ -27,7 +27,7 @@ typedef struct WindowFrameSize {
 } WindowFrameSize;
 
 class MaterialResourceNum {
-  public:
+public:
     u8 GetTexMapNum() const { return detail::GetBits<>(bits, 0, 4); }
     u8 GetTexSRTNum() const { return detail::GetBits<>(bits, 4, 4); }
     u8 GetTexCoordGenNum() const { return detail::GetBits<>(bits, 8, 4); }
@@ -40,7 +40,7 @@ class MaterialResourceNum {
     u8 GetChanCtrlNum() const { return detail::GetBits<>(bits, 25, 1); }
     u8 GetMatColNum() const { return detail::GetBits<>(bits, 27, 1); }
 
-  private:
+private:
     /* 0x00 */ u32 bits;
 }; // size = 0x04
 
@@ -77,12 +77,12 @@ typedef struct HermiteKey {
 } HermiteKey; // size = 0x0C
 
 typedef struct AnimationInfo {
-  public:
+public:
     /* 0x00 */ u32 kind;
     /* 0x04 */ u8 num;
     /* 0x05 */ u8 padding[3];
 
-  public:
+public:
     static const u32 ANIM_INFO_PANE_PAIN_SRT = 'RLPA';
     static const u32 ANIM_INFO_PANE_VERTEX_COLOR = 'RLVC';
     static const u32 ANIM_INFO_PANE_VISIBILITY = 'RLVI';
@@ -114,14 +114,14 @@ typedef struct AnimationBlock {
 } AnimationBlock; // size = 0x14
 
 typedef struct AnimationContent {
-  public:
+public:
     enum {
         /* 0 */ ACType_Pane = 0,
         /* 1 */ ACType_Material,
         /* 2 */ ACType_Max
     };
 
-  public:
+public:
     /* 0x00 */ char name[20];
     /* 0x14 */ u8 num;
     /* 0x15 */ u8 type;

@@ -16,8 +16,9 @@ class SeqPlayer;
 class SeqTrack;
 
 class MmlSeqTrackAllocator : public SeqTrackAllocator {
-  public:
-    explicit MmlSeqTrackAllocator(MmlParser* parser) : mParser(parser) {}
+public:
+    explicit MmlSeqTrackAllocator(MmlParser* parser) :
+        mParser(parser) {}
 
     /* 0x0C */ virtual SeqTrack* AllocTrack(SeqPlayer* player);
     /* 0x10 */ virtual void FreeTrack(SeqTrack* track);
@@ -25,7 +26,7 @@ class MmlSeqTrackAllocator : public SeqTrackAllocator {
     u32 Create(void* buffer, u32 size);
     void Destroy(void* buffer, u32 size);
 
-  private:
+private:
     /* 0x04 */ MmlParser* mParser;
     /* 0x08 */ InstancePool<MmlSeqTrack> mTrackPool;
 };

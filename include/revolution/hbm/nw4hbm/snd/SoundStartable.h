@@ -12,7 +12,7 @@ class ExternalSoundPlayer;
 }
 
 class SoundStartable {
-  public:
+public:
     typedef enum StartResult {
         START_SUCCESS = 0,
         START_ERR_LOW_PRIORITY,
@@ -52,7 +52,7 @@ class SoundStartable {
         /* 0x10 */ int voiceOutCount;
     } StartInfo;
 
-  public:
+public:
     virtual ~SoundStartable() {} // 0x08
 
     virtual StartResult detail_SetupSound(SoundHandle* soundHandle, u32 id,
@@ -92,7 +92,7 @@ class SoundStartable {
         return detail_PrepareSound(soundHandle, id, nullptr, nullptr, nullptr) == START_SUCCESS;
     }
 
-  private:
+private:
     StartResult detail_StartSound(SoundHandle* soundHandle, u32 id, detail::BasicSound::AmbientArgInfo* ambientArgInfo,
                                   detail::ExternalSoundPlayer* extPlayer, const StartInfo* startInfo);
 

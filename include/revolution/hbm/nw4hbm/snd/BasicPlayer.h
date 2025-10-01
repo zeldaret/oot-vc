@@ -11,8 +11,9 @@ namespace detail {
 namespace {
 
 class BasicPlayer {
-  public:
-    BasicPlayer() : mId(-1) {}
+public:
+    BasicPlayer() :
+        mId(-1) {}
     virtual ~BasicPlayer()
 #ifdef MAKE_DTOR_ZERO
         = 0
@@ -58,7 +59,7 @@ class BasicPlayer {
     u32 GetId() const { return mId; }
     void SetId(u32 id) { mId = id; }
 
-  private:
+private:
     /* 0x04 */ u32 mId;
 };
 } // namespace

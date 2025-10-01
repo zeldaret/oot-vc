@@ -6,7 +6,7 @@
 namespace nw4hbm {
 namespace snd {
 class SoundMemoryAllocatable {
-  public:
+public:
     virtual ~SoundMemoryAllocatable() {} // 0x08
     /* 0x0C */ virtual void* Alloc(u32 size) = 0;
 };

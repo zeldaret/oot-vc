@@ -13,7 +13,7 @@ namespace nw4hbm {
 namespace snd {
 namespace detail {
 class AxManager {
-  public:
+public:
     typedef struct CallbackListNode {
         /* 0x00 */ ut::LinkListNode link;
         /* 0x08 */ AXOutCallback callback;
@@ -73,7 +73,7 @@ class AxManager {
 
     AxVoiceList& GetVoiceList() { return mPrioVoiceList; }
 
-  private:
+private:
     static const u8 AUX_CALLBACK_WAIT_FRAME = 6;
 
     static const int FX_SAMPLE_RATE = AX_SAMPLE_RATE;

@@ -19,7 +19,7 @@ enum {
 };
 
 class FrameController {
-  public:
+public:
     FrameController() {}
 
     /* 0x08 */ virtual ~FrameController() {}
@@ -58,7 +58,7 @@ class FrameController {
     void restart() { mState = ANIM_STATE_PLAY; }
     void stop() { mState = ANIM_STATE_STOP; }
 
-  protected:
+protected:
     /* 0x00 (vtable) */
     /* 0x04 */ f32 mMaxFrame;
     /* 0x08 */ f32 mMinFrame;
@@ -67,7 +67,7 @@ class FrameController {
     /* 0x14 */ int mState;
     /* 0x18 */ int mAnmType;
 
-  private:
+private:
     /* 0x1C */ bool mbAlternateBack;
 };
 

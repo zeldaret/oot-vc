@@ -26,10 +26,16 @@ enum PanCurve {
 };
 
 struct VoiceOutParam {
-  public:
-    VoiceOutParam() : volume(1.0f), pitch(1.0f), pan(0.0f), surroundPan(0.0f), fxSend(0.0f), lpf(0.0f) {}
+public:
+    VoiceOutParam() :
+        volume(1.0f),
+        pitch(1.0f),
+        pan(0.0f),
+        surroundPan(0.0f),
+        fxSend(0.0f),
+        lpf(0.0f) {}
 
-  public:
+public:
     /* 0x00 */ f32 volume;
     /* 0x04 */ f32 pitch;
     /* 0x08 */ f32 pan;

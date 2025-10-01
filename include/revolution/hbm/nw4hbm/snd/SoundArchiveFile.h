@@ -197,7 +197,7 @@ static const int HEADER_AREA_SIZE = OSRoundUp32B(sizeof(Header)) + 40;
 } // namespace SoundArchiveFile
 
 class SoundArchiveFileReader {
-  public:
+public:
     SoundArchiveFileReader();
 
     void Init(const void* soundArchiveData);
@@ -245,7 +245,7 @@ class SoundArchiveFileReader {
 
     u32 GetInfoChunkSize() const { return mHeader.infoSize; }
 
-  private:
+private:
     u32 ConvertLabelStringToId(const SoundArchiveFile::StringTree* tree, const char* label) const;
 
     const SoundArchiveFile::SoundCommonInfo* impl_GetSoundInfo(u32 id) const;
@@ -266,7 +266,7 @@ class SoundArchiveFileReader {
         return ut::AddOffsetToPtr(base, offset);
     }
 
-  private:
+private:
     /* 0x00 */ SoundArchiveFile::Header mHeader;
     /* 0x28 */ const SoundArchiveFile::Info* mInfo;
     /* 0x2C */ const void* mStringBase;

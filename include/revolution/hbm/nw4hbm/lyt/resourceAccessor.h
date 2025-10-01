@@ -11,7 +11,7 @@ class Font;
 
 namespace lyt {
 class ResourceAccessor {
-  public:
+public:
     ResourceAccessor();
 
     /* 0x08 */ virtual ~ResourceAccessor();

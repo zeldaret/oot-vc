@@ -59,13 +59,13 @@ typedef struct WaveData {
 } WaveData;
 
 class WaveFileReader {
-  public:
+public:
     explicit WaveFileReader(const WaveFile::WaveInfo* waveInfo);
 
     bool ReadWaveParam(WaveData* waveData, const void* waveAddr) const;
     static AxVoice::Format WaveFormatToAxFormat(u32 format);
 
-  private:
+private:
     /* 0x00 */ const WaveFile::WaveInfo* mWaveInfo;
 };
 
