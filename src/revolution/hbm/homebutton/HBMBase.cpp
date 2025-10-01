@@ -3,7 +3,6 @@
 #include "revolution/hbm/homebutton/HBMAnmController.hpp"
 #include "revolution/hbm/homebutton/HBMController.hpp"
 #include "revolution/hbm/nw4hbm/lyt.h"
-#include "revolution/hbm/nw4hbm/snd/mix.h"
 #include "revolution/mem.h"
 #include "revolution/vi.h"
 
@@ -88,7 +87,7 @@ void fn_80100C38(void) { gpHomeButton->fn_80100C38_impl(false); }
 enum HBMAllocatorType {
     HBM_ALLOCATOR_APPLI, /* application */
     HBM_ALLOCATOR_LOCAL,
-    HBM_ALLOCATOR_NW4R,
+    HBM_ALLOCATOR_NW4HBM,
 };
 
 static HBMAllocatorType getAllocatorType(const HBMDataInfo* pHBInfo) {
@@ -97,7 +96,7 @@ static HBMAllocatorType getAllocatorType(const HBMDataInfo* pHBInfo) {
     } else if (pHBInfo->mem) {
         return HBM_ALLOCATOR_LOCAL;
     } else {
-        return HBM_ALLOCATOR_NW4R;
+        return HBM_ALLOCATOR_NW4HBM;
     }
 }
 

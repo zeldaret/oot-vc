@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_STRM_CHANNEL_H
-#define NW4R_SND_STRM_CHANNEL_H
+#ifndef NW4HBM_SND_STRM_CHANNEL_H
+#define NW4HBM_SND_STRM_CHANNEL_H
 
 #include "revolution/hbm/nw4hbm/snd/types.h"
 

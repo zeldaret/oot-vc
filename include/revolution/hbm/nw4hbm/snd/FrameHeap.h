@@ -1,5 +1,6 @@
-#ifndef NW4R_SND_FRAME_HEAP_H
-#define NW4R_SND_FRAME_HEAP_H
+#ifndef NW4HBM_SND_FRAME_HEAP_H
+#define NW4HBM_SND_FRAME_HEAP_H
+
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/ut.h"

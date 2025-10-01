@@ -1,5 +1,5 @@
-#ifndef RVL_SDK_HBM_HOMEBUTTON_BASE_HPP
-#define RVL_SDK_HBM_HOMEBUTTON_BASE_HPP
+#ifndef HOMEBUTTON_BASE_H
+#define HOMEBUTTON_BASE_H
 
 #include "revolution/ax.h"
 #include "revolution/axfx.h"

@@ -184,7 +184,7 @@ bool SoundArchiveFileReader::ReadStrmSoundInfo(u32 id, SoundArchive::StrmSoundIn
         return false;
     }
 
-    // StrmSoundInfo is empty in this version of NW4R
+    // StrmSoundInfo is empty in this version of NW4HBM
     return true;
 }
 

@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_SEQ_TRACK_ALLOCATOR_H
-#define NW4R_SND_SEQ_TRACK_ALLOCATOR_H
+#ifndef NW4HBM_SND_SEQ_TRACK_ALLOCATOR_H
+#define NW4HBM_SND_SEQ_TRACK_ALLOCATOR_H
 
 namespace nw4hbm {
 namespace snd {

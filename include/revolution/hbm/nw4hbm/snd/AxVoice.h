@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_AX_VOICE_H
-#define NW4R_SND_AX_VOICE_H
+#ifndef NW4HBM_SND_AX_VOICE_H
+#define NW4HBM_SND_AX_VOICE_H
 
 #include "limits.h"
 #include "revolution/ax.h"

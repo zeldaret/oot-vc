@@ -1,5 +1,5 @@
-#ifndef RVL_SDK_HBM_NW4HBM_MATH_TYPES_HPP
-#define RVL_SDK_HBM_NW4HBM_MATH_TYPES_HPP
+#ifndef NW4HBM_MATH_TYPES_H
+#define NW4HBM_MATH_TYPES_H
 
 #include "revolution/mtx/mtx.h"
 #include "revolution/types.h"

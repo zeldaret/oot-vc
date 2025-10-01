@@ -1,5 +1,5 @@
-#ifndef NW4R_DB_MAP_FILE_H
-#define NW4R_DB_MAP_FILE_H
+#ifndef NW4HBM_DB_MAP_FILE_H
+#define NW4HBM_DB_MAP_FILE_H
 
 #include "revolution/types.h"
 

@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_MEMORY_SOUND_ARCHIVE_H
-#define NW4R_SND_MEMORY_SOUND_ARCHIVE_H
+#ifndef NW4HBM_SND_MEMORY_SOUND_ARCHIVE_H
+#define NW4HBM_SND_MEMORY_SOUND_ARCHIVE_H
 
 #include "revolution/hbm/nw4hbm/snd/SoundArchive.h"
 #include "revolution/hbm/nw4hbm/snd/SoundArchiveFile.h"

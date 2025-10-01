@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_MML_PARSER_H
-#define NW4R_SND_MML_PARSER_H
+#ifndef NW4HBM_SND_MML_PARSER_H
+#define NW4HBM_SND_MML_PARSER_H
 
 #include "revolution/hbm/nw4hbm/snd/SeqTrack.h"
 #include "revolution/types.h"

@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_CHANNEL_H
-#define NW4R_SND_CHANNEL_H
+#ifndef NW4HBM_SND_CHANNEL_H
+#define NW4HBM_SND_CHANNEL_H
 
 #include <limits.h> // USHRT_MAX
 

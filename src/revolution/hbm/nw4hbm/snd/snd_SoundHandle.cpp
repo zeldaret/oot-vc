@@ -1,10 +1,5 @@
 #include "revolution/hbm/nw4hbm/snd/SoundHandle.h"
 
-/* Original source:
- * kiwi515/ogws
- * src/nw4r/snd/snd_SoundHandle.cpp
- */
-
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/BasicSound.h"

@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_SEQ_PLAYER_H
-#define NW4R_SND_SEQ_PLAYER_H
+#ifndef NW4HBM_SND_SEQ_PLAYER_H
+#define NW4HBM_SND_SEQ_PLAYER_H
 
 #include "macros.h"
 #include "revolution/types.h"

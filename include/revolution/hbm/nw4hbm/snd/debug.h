@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_DEBUG_H
-#define NW4R_SND_DEBUG_H
+#ifndef NW4HBM_SND_DEBUG_H
+#define NW4HBM_SND_DEBUG_H
 
 namespace nw4hbm {
 namespace snd {

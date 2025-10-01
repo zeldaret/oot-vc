@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_WAVE_FILE_H
-#define NW4R_SND_WAVE_FILE_H
+#ifndef NW4HBM_SND_WAVE_FILE_H
+#define NW4HBM_SND_WAVE_FILE_H
 
 #include "revolution/hbm/nw4hbm/snd/AxVoice.h"
 #include "revolution/hbm/nw4hbm/snd/types.h"

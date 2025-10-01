@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_UTIL_H
-#define NW4R_SND_UTIL_H
+#ifndef NW4HBM_SND_UTIL_H
+#define NW4HBM_SND_UTIL_H
 
 #include "macros.h"
 #include "revolution/types.h"
@@ -68,7 +68,7 @@ public:
         /* 0x04 */ T items[1];
     };
 
-#ifdef NW4R_LITLE_ENDIAN
+#ifdef NW4HBM_LITLE_ENDIAN
     static inline u16 ReadBigEndian(u16 x) { return x >> 8 | x << 8; }
     static inline u32 ReadBigEndian(u32 x) {
         return (x >> 24) & 0x000000FF | (x >> 8) & 0x0000FF00 | (x << 8) & 0x00FF0000 | (x << 24) & 0xFF000000;

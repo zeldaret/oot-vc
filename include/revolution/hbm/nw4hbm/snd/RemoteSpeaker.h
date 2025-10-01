@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_REMOTE_SPEAKER_H
-#define NW4R_SND_REMOTE_SPEAKER_H
+#ifndef NW4HBM_SND_REMOTE_SPEAKER_H
+#define NW4HBM_SND_REMOTE_SPEAKER_H
 
 #include "revolution/os.h"
 #include "revolution/wenc.h"

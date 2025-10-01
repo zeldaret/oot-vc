@@ -1,5 +1,5 @@
-#ifndef RVL_SDK_HBM_HOMEBUTTON_REMOTE_SPK_HPP
-#define RVL_SDK_HBM_HOMEBUTTON_REMOTE_SPK_HPP
+#ifndef HOMEBUTTON_REMOTE_SPK_H
+#define HOMEBUTTON_REMOTE_SPK_H
 
 #include "revolution/arc/arc.h"
 #include "revolution/os/OSAlarm.h"

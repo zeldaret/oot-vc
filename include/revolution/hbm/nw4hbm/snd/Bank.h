@@ -1,5 +1,6 @@
-#ifndef NW4R_SND_BANK_H
-#define NW4R_SND_BANK_H
+#ifndef NW4HBM_SND_BANK_H
+#define NW4HBM_SND_BANK_H
+
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/BankFile.h"

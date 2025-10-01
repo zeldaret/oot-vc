@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_SOUND_SYSTEM_H
-#define NW4R_SND_SOUND_SYSTEM_H
+#ifndef NW4HBM_SND_SOUND_SYSTEM_H
+#define NW4HBM_SND_SOUND_SYSTEM_H
 
 #include "revolution/types.h"
 

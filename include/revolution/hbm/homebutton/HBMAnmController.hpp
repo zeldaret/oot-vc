@@ -1,5 +1,5 @@
-#ifndef RVL_SDK_HBM_HOMEBUTTON_ANM_CONTROLLER_HPP
-#define RVL_SDK_HBM_HOMEBUTTON_ANM_CONTROLLER_HPP
+#ifndef HOMEBUTTON_ANM_CONTROLLER_H
+#define HOMEBUTTON_ANM_CONTROLLER_H
 
 #include "revolution/hbm/homebutton/HBMFrameController.hpp"
 

@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_FX_BASE_H
-#define NW4R_SND_FX_BASE_H
+#ifndef NW4HBM_SND_FX_BASE_H
+#define NW4HBM_SND_FX_BASE_H
 
 #include "revolution/types.h"
 

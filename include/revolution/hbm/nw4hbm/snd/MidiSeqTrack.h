@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_MIDI_SEQ_TRACK_H
-#define NW4R_SND_MIDI_SEQ_TRACK_H
+#ifndef NW4HBM_SND_MIDI_SEQ_TRACK_H
+#define NW4HBM_SND_MIDI_SEQ_TRACK_H
 
 #include "revolution/hbm/nw4hbm/snd/SeqTrack.h"
 

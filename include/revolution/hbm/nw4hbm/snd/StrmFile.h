@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_STRM_FILE_H
-#define NW4R_SND_STRM_FILE_H
+#ifndef NW4HBM_SND_STRM_FILE_H
+#define NW4HBM_SND_STRM_FILE_H
 
 #include "macros.h"
 #include "revolution/os.h"

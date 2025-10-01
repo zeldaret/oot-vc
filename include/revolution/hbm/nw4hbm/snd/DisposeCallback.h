@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_DISPOSE_CALLBACK_H
-#define NW4R_SND_DISPOSE_CALLBACK_H
+#ifndef NW4HBM_SND_DISPOSE_CALLBACK_H
+#define NW4HBM_SND_DISPOSE_CALLBACK_H
 
 #include "revolution/hbm/nw4hbm/ut/LinkList.h"
 

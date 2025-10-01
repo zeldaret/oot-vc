@@ -1,5 +1,5 @@
-#ifndef RVL_SDK_HBM_HOMEBUTTON_COMMON_H
-#define RVL_SDK_HBM_HOMEBUTTON_COMMON_H
+#ifndef HOMEBUTTON_COMMON_H
+#define HOMEBUTTON_COMMON_H
 
 #include "revolution/kpad/KPAD.h"
 #include "revolution/mem/mem_allocator.h"

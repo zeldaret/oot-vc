@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_SOUND_ARCHIVE_PLAYER_H
-#define NW4R_SND_SOUND_ARCHIVE_PLAYER_H
+#ifndef NW4HBM_SND_SOUND_ARCHIVE_PLAYER_H
+#define NW4HBM_SND_SOUND_ARCHIVE_PLAYER_H
 
 // the order is important to get vtables in the right order in `snd_SoundArchivePlayer.cpp`
 // clang-format off

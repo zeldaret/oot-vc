@@ -1,5 +1,5 @@
-#ifndef RVL_SDK_HBM_HOMEBUTTON_COMMON_HPP
-#define RVL_SDK_HBM_HOMEBUTTON_COMMON_HPP
+#ifndef HOMEBUTTON_COMMON_HPP
+#define HOMEBUTTON_COMMON_HPP
 
 #include "revolution/hbm/HBMCommon.h"
 

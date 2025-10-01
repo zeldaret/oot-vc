@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_INSTANCE_POOL_H
-#define NW4R_SND_INSTANCE_POOL_H
+#ifndef NW4HBM_SND_INSTANCE_POOL_H
+#define NW4HBM_SND_INSTANCE_POOL_H
 
 #include "new.hpp"
 #include "revolution/types.h"

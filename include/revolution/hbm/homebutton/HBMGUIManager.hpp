@@ -1,5 +1,5 @@
-#ifndef RVL_SDK_HBM_HOMEBUTTON_GUI_MANAGER_HPP
-#define RVL_SDK_HBM_HOMEBUTTON_GUI_MANAGER_HPP
+#ifndef HOMEBUTTON_GUI_MANAGER_H
+#define HOMEBUTTON_GUI_MANAGER_H
 
 #include "macros.h"
 #include "revolution/hbm/nw4hbm/lyt/pane.h"

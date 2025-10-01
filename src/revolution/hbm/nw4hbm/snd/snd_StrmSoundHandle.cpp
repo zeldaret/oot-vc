@@ -1,10 +1,5 @@
 #include "revolution/hbm/nw4hbm/snd/StrmSoundHandle.h"
 
-/* Original source:
- * kiwi515/ogws
- * src/nw4r/snd/snd_StrmSoundHandle.cpp
- */
-
 #include "revolution/types.h"
 
 #include "revolution/hbm/nw4hbm/snd/StrmSound.h"

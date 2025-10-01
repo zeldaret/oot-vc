@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_TASK_MANAGER_H
-#define NW4R_SND_TASK_MANAGER_H
+#ifndef NW4HBM_SND_TASK_MANAGER_H
+#define NW4HBM_SND_TASK_MANAGER_H
 
 #include "revolution/hbm/nw4hbm/snd/Task.h"
 

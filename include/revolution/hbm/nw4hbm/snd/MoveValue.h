@@ -1,5 +1,5 @@
-#ifndef NW4R_SND_MOVE_VALUE_H
-#define NW4R_SND_MOVE_VALUE_H
+#ifndef NW4HBM_SND_MOVE_VALUE_H
+#define NW4HBM_SND_MOVE_VALUE_H
 
 #include "revolution/types.h"
 

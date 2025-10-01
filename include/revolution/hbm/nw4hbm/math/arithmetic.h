@@ -1,5 +1,5 @@
-#ifndef RVL_SDK_HBM_NW4HBM_MATH_ARITHMETIC_HPP
-#define RVL_SDK_HBM_NW4HBM_MATH_ARITHMETIC_HPP
+#ifndef NW4HBM_MATH_ARITHMETIC_H
+#define NW4HBM_MATH_ARITHMETIC_H
 
 #include "revolution/os/OSFastCast.h"
 #include "revolution/types.h"
