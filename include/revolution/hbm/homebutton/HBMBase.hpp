@@ -157,7 +157,6 @@ private:
     void reset_battery();
 
     void init_sound();
-    void play_sound(int id);
     void fadeout_sound(f32 gain);
 
     void init_msg();
@@ -178,44 +177,15 @@ private:
     void reset_window();
 
 public:
-    void fn_8010984C(nw4hbm::snd::NandSoundArchive* pNandSoundArchive, bool bCreateSoundHeap);
-    void fn_80109A74();
+    void play_sound(int id);
+    void createSound(nw4hbm::snd::NandSoundArchive* pNandSoundArchive, bool bCreateSoundHeap);
+    void deleteSound();
     void draw_impl();
-
-    void fn_80100B88_impl() {
-        if (mpSoundArchivePlayer != NULL) {
-            mpSoundArchivePlayer->Update();
-        }
-    }
-
-    void fn_80100BA0_impl(f32 volume) {
-        AXSetMasterVolume(volume * 32768.0f);
-
-        if (mpSoundArchivePlayer != NULL) {
-            for (int i = 0; i < mpSoundArchivePlayer->GetSoundPlayerCount(); i++) {
-                mpSoundArchivePlayer->GetSoundPlayer(i).SetVolume(volume);
-            }
-        }
-    }
-
-    void fn_80100C38_impl(bool checkFlag) {
-        if (mpSoundArchivePlayer != NULL) {
-            for (int i = 0; i < mpSoundArchivePlayer->GetSoundPlayerCount(); i++) {
-                mpSoundArchivePlayer->GetSoundPlayer(i).StopAllSound(0);
-            }
-        }
-
-        if (checkFlag && !mEndInitSoundFlag) {
-            return;
-        }
-
-        AXFXReverbHiShutdown(&mAxFxReverb);
-        AXRegisterAuxACallback(mAuxCallback, mpAuxContext);
-        AXFXSetHooks(mAxFxAlloc, mAxFxFree);
-        AXSetMasterVolume(mAppVolume[0]);
-        AXSetAuxAReturnVolume(mAppVolume[1]);
-        AXSetAuxBReturnVolume(mAppVolume[2]);
-    }
+    void updateSoundArchivePlayer();
+    void setSoundVolume(f32 volume);
+    inline void stopSound(bool checkFlag);
+    void initSound(const char* path);
+    void updateSound();
 
     void PlaySeq(int num) {
         if (mpSoundArchivePlayer != NULL && mpSoundHandle != NULL) {
@@ -223,9 +193,6 @@ public:
             mpSoundArchivePlayer->StartSound(mpSoundHandle, num);
         }
     }
-
-    void fn_80100CD8_impl(const char* path);
-    void fn_80100E40_impl();
 
 private:
     /* 0x000 */ eSeq mSequence;

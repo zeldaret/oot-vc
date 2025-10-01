@@ -61,15 +61,14 @@ void HBMSetAdjustFlag(bool flag);
 void HBMStartBlackOut(void);
 bool HBMIsReassignedControllers(void);
 
-void HBMCreateSound(void* soundData, void* memBuf, u32 memSize);
+void HBMCreateSound(const char* soundData, void* memBuf, u32 memSize);
 void HBMDeleteSound(void);
 void HBMUpdateSound(void);
 
-//! TODO: figure out names
-void fn_80100AEC(int num);
-void fn_80100B88(void);
-void fn_80100BA0(f32 volume);
-void fn_80100C38(void);
+void HBMUpdateSoundArchivePlayer(void);
+void HBMSetSoundVolume(f32 volume);
+void HBMPlaySound(int num);
+void HBMStopSound(void);
 
 #ifdef __cplusplus
 }

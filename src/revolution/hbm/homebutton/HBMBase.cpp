@@ -17,10 +17,16 @@ struct AnmControllerTable {
 }; // size = 0x08
 
 static MEMAllocator sAllocator;
-static MEMAllocator lbl_80243EE8;
+static MEMAllocator sSoundAllocator;
 MEMAllocator* spAllocator = &sAllocator;
 homebutton::HomeButton* homebutton::HomeButton::spHomeButtonObj;
 #define gpHomeButton (homebutton::HomeButton::getInstance())
+
+DECOMP_FORCE(__FILE__);
+DECOMP_FORCE(NW4HBMAssert_String(mpDvdSoundArchive));
+DECOMP_FORCE("Cannot open \"%s\"");
+DECOMP_FORCE(NW4HBMAssert_String(mpMemorySoundArchive));
+DECOMP_FORCE("Cannot setup MemorySoundArchive");
 
 void* HBMAllocMem(u32 size) {
     void* addr = MEMAllocFromAllocator(spAllocator, size);
@@ -59,24 +65,25 @@ void HBMSetAdjustFlag(bool flag) { gpHomeButton->setAdjustFlag(flag); }
 
 void HBMStartBlackOut() { gpHomeButton->startBlackOut(); }
 
-void fn_80100AEC(int num) {
-    homebutton::HomeButton* pHBM = gpHomeButton;
-    int iVar2 = 0;
+void HBMPlaySound(int num) { gpHomeButton->play_sound(num); }
 
-    if (pHBM->getHBMDataInfo()->sound_callback != NULL) {
-        iVar2 = pHBM->getHBMDataInfo()->sound_callback(5, num);
-    }
+void HBMUpdateSoundArchivePlayer(void) { gpHomeButton->updateSoundArchivePlayer(); }
 
-    if (iVar2 == 0) {
-        pHBM->PlaySeq(num);
-    }
+void HBMSetSoundVolume(f32 volume) { gpHomeButton->setSoundVolume(volume); }
+
+void HBMStopSound(void) { gpHomeButton->stopSound(false); }
+
+void HBMCreateSound(const char* path, void* memBuf, u32 memSize) {
+    MEMInitAllocatorForFrmHeap(&sSoundAllocator, MEMCreateFrmHeapEx(memBuf, memSize, 0), DEFAULT_ALIGN);
+    gpHomeButton->initSound(path);
 }
 
-void fn_80100B88(void) { gpHomeButton->fn_80100B88_impl(); }
+void HBMDeleteSound(void) {
+    gpHomeButton->deleteSound();
+    MEMDestroyFrmHeap(sSoundAllocator.heap);
+}
 
-void fn_80100BA0(f32 volume) { gpHomeButton->fn_80100BA0_impl(volume); }
-
-void fn_80100C38(void) { gpHomeButton->fn_80100C38_impl(false); }
+void HBMUpdateSound(void) { gpHomeButton->updateSound(); }
 
 enum HBMAllocatorType {
     HBM_ALLOCATOR_APPLI, /* application */
@@ -96,13 +103,7 @@ static HBMAllocatorType getAllocatorType(const HBMDataInfo* pHBInfo) {
 
 namespace homebutton {
 
-DECOMP_FORCE(__FILE__);
-DECOMP_FORCE(NW4HBMAssert_String(mpDvdSoundArchive));
-DECOMP_FORCE("Cannot open \"%s\"");
-DECOMP_FORCE(NW4HBMAssert_String(mpMemorySoundArchive));
-DECOMP_FORCE("Cannot setup MemorySoundArchive");
-
-void HomeButton::fn_80100CD8_impl(const char* path) {
+void HomeButton::initSound(const char* path) {
     if (!AICheckInit()) {
         AIInit(NULL);
         AXInit();
@@ -110,7 +111,7 @@ void HomeButton::fn_80100CD8_impl(const char* path) {
 
     nw4hbm::snd::SoundSystem::InitSoundSystem();
 
-    void* pvVar4 = MEMAllocFromAllocator(&lbl_80243EE8, sizeof(nw4hbm::snd::NandSoundArchive));
+    void* pvVar4 = MEMAllocFromAllocator(&sSoundAllocator, sizeof(nw4hbm::snd::NandSoundArchive));
     if (pvVar4 != NULL) {
         mpNandSoundArchive = new (pvVar4) nw4hbm::snd::NandSoundArchive();
     }
@@ -119,12 +120,12 @@ void HomeButton::fn_80100CD8_impl(const char* path) {
     NW4HBMAssertMessage_Line(mpNandSoundArchive->Open(path), 3889, "Cannot open \"%s\"", path);
 
     u32 size = mpNandSoundArchive->GetHeaderSize();
-    mpNandSoundArchive->LoadHeader(MEMAllocFromAllocator(&lbl_80243EE8, size), size);
-    fn_8010984C(mpNandSoundArchive, 1);
+    mpNandSoundArchive->LoadHeader(MEMAllocFromAllocator(&sSoundAllocator, size), size);
+    createSound(mpNandSoundArchive, 1);
 }
 
-void HomeButton::fn_80100E40_impl() {
-    fn_80100B88_impl();
+void HomeButton::updateSound() {
+    updateSoundArchivePlayer();
 
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
         if (i < ARRAY_COUNT(mpController)) {
@@ -132,18 +133,6 @@ void HomeButton::fn_80100E40_impl() {
         }
     }
 }
-
-void fn_80100CD8(const char* path, void* param1, int param2) {
-    MEMInitAllocatorForFrmHeap(&lbl_80243EE8, MEMCreateFrmHeapEx(param1, param2, 0), DEFAULT_ALIGN);
-    gpHomeButton->fn_80100CD8_impl(path);
-}
-
-void fn_80100E0C(void) {
-    gpHomeButton->fn_80109A74();
-    MEMDestroyFrmHeap(lbl_80243EE8.heap);
-}
-
-void fn_80100E40(void) { gpHomeButton->fn_80100E40_impl(); }
 
 static const AnmControllerTable scAnmTable[12] = {
     {0, 0}, {0, 2}, {4, 1}, {1, 0}, {1, 2}, {5, 1}, {2, 0}, {2, 2}, {6, 1}, {3, 0}, {3, 2}, {7, 1},
@@ -319,6 +308,12 @@ HBMSelectBtnNum HomeButton::getSelectBtnNum() {
     return mSelectBtnNum;
 }
 
+void HomeButton::updateSoundArchivePlayer() {
+    if (mpSoundArchivePlayer != NULL) {
+        mpSoundArchivePlayer->Update();
+    }
+}
+
 void HomeButton::fadeout_sound(f32 gain) {
     if (mSelectBtnNum == HBM_SELECT_BTN3) {
         return;
@@ -335,6 +330,16 @@ void HomeButton::fadeout_sound(f32 gain) {
     }
 }
 
+void HomeButton::setSoundVolume(f32 volume) {
+    AXSetMasterVolume(volume * 32768.0f);
+
+    if (mpSoundArchivePlayer != NULL) {
+        for (int i = 0; i < mpSoundArchivePlayer->GetSoundPlayerCount(); i++) {
+            mpSoundArchivePlayer->GetSoundPlayer(i).SetVolume(volume);
+        }
+    }
+}
+
 void HomeButton::play_sound(int id) {
     int ret = 0;
 
@@ -345,6 +350,25 @@ void HomeButton::play_sound(int id) {
     if (ret == 0) {
         PlaySeq(id);
     }
+}
+
+void HomeButton::stopSound(bool checkFlag) {
+    if (mpSoundArchivePlayer != NULL) {
+        for (int i = 0; i < mpSoundArchivePlayer->GetSoundPlayerCount(); i++) {
+            mpSoundArchivePlayer->GetSoundPlayer(i).StopAllSound(0);
+        }
+    }
+
+    if (checkFlag && !mEndInitSoundFlag) {
+        return;
+    }
+
+    AXFXReverbHiShutdown(&mAxFxReverb);
+    AXRegisterAuxACallback(mAuxCallback, mpAuxContext);
+    AXFXSetHooks(mAxFxAlloc, mAxFxFree);
+    AXSetMasterVolume(mAppVolume[0]);
+    AXSetAuxAReturnVolume(mAppVolume[1]);
+    AXSetAuxBReturnVolume(mAppVolume[2]);
 }
 
 HomeButton::HomeButton(const HBMDataInfo* pHBInfo) :
@@ -1243,7 +1267,7 @@ void HomeButton::calc(const HBMControllerData* pController) {
             mState = 18;
 
             if (mSelectBtnNum != HBM_SELECT_BTN3) {
-                fn_80100C38_impl(true);
+                stopSound(true);
             }
 
             setVolume(mVolumeNum);
@@ -2651,8 +2675,8 @@ static void initgx() {
     GXSetTevSwapMode(GX_TEVSTAGE0, GX_TEV_SWAP0, GX_TEV_SWAP0);
 }
 
-void HomeButton::fn_8010984C(nw4hbm::snd::NandSoundArchive* pNandSoundArchive, bool bCreateSoundHeap) {
-    void* buffer = MEMAllocFromAllocator(&lbl_80243EE8, sizeof(nw4hbm::snd::SoundArchivePlayer));
+void HomeButton::createSound(nw4hbm::snd::NandSoundArchive* pNandSoundArchive, bool bCreateSoundHeap) {
+    void* buffer = MEMAllocFromAllocator(&sSoundAllocator, sizeof(nw4hbm::snd::SoundArchivePlayer));
     if (buffer != NULL) {
         mpSoundArchivePlayer = new (buffer) nw4hbm::snd::SoundArchivePlayer();
     }
@@ -2662,26 +2686,26 @@ void HomeButton::fn_8010984C(nw4hbm::snd::NandSoundArchive* pNandSoundArchive, b
     void* strmBuffer;
     u32 memSize = mpSoundArchivePlayer->GetRequiredMemSize(pNandSoundArchive);
     u32 strmSize = mpSoundArchivePlayer->GetRequiredStrmBufferSize(pNandSoundArchive);
-    strmBuffer = MEMAllocFromAllocator(&lbl_80243EE8, strmSize);
-    memBuffer = MEMAllocFromAllocator(&lbl_80243EE8, memSize);
+    strmBuffer = MEMAllocFromAllocator(&sSoundAllocator, strmSize);
+    memBuffer = MEMAllocFromAllocator(&sSoundAllocator, memSize);
     bool result = mpSoundArchivePlayer->Setup(pNandSoundArchive, memBuffer, memSize, strmBuffer, strmSize);
     NW4HBMAssert_Line(result, 3713);
 
-    buffer = MEMAllocFromAllocator(&lbl_80243EE8, sizeof(nw4hbm::snd::SoundHandle));
+    buffer = MEMAllocFromAllocator(&sSoundAllocator, sizeof(nw4hbm::snd::SoundHandle));
     if (buffer != NULL) {
         mpSoundHandle = new (buffer) nw4hbm::snd::SoundHandle();
     }
     NW4HBMAssert_Line(mpSoundHandle, 3720);
 
     if (bCreateSoundHeap) {
-        buffer = MEMAllocFromAllocator(&lbl_80243EE8, sizeof(nw4hbm::snd::SoundHeap));
+        buffer = MEMAllocFromAllocator(&sSoundAllocator, sizeof(nw4hbm::snd::SoundHeap));
         if (buffer != NULL) {
             mpSoundHeap = new (buffer) nw4hbm::snd::SoundHeap();
         }
         NW4HBMAssert_Line(mpSoundHeap, 3729);
 
         u32 size = mButtonNum == 2 ? 0x60000 : 0x6F800;
-        mpSoundHeap->Create(MEMAllocFromAllocator(&lbl_80243EE8, size), size);
+        mpSoundHeap->Create(MEMAllocFromAllocator(&sSoundAllocator, size), size);
         NW4HBMAssert_Line(mpSoundHeap->IsValid(), 3737);
 
         bool result = mpSoundArchivePlayer->LoadGroup(0, mpSoundHeap, 0);
@@ -2691,7 +2715,7 @@ void HomeButton::fn_8010984C(nw4hbm::snd::NandSoundArchive* pNandSoundArchive, b
     }
 }
 
-void HomeButton::fn_80109A74() {
+void HomeButton::deleteSound() {
     if (mpDvdSoundArchive != NULL) {
         mpDvdSoundArchive->Close();
         mpDvdSoundArchive->~DvdSoundArchive();

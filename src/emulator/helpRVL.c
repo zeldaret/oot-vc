@@ -24,12 +24,6 @@
 #include "revolution/vi.h"
 #include "string.h"
 
-//! TODO: cleanup
-extern void fn_80100E40__10homebuttonFv();
-extern void draw__Q310homebutton10HomeButton10BlackFaderFv();
-extern void fn_80100CD8__10homebuttonFPCcPvi(const char*, void*, int);
-extern void fn_80100E0C__10homebuttonFv();
-
 //! TODO: move to the proper headers when documented properly
 extern char* fn_800887C8(void*, char*, u8);
 extern s32 fn_8008882C(void**, u32, MEMAllocator*, MEMAllocator*);
@@ -593,7 +587,7 @@ static void fn_8005F1F4(HelpMenu* pHelpMenu) {
     fn_80088994(&sHBMDataInfo);
     HBMCreate(&sHBMDataInfo);
     fn_8008882C(&lbl_8025D0C4, 0xA0000, &sMemAllocator2, &sMemAllocator1);
-    fn_80100CD8__10homebuttonFPCcPvi("/tmp/HBMSE.brsar", lbl_8025D0C4, 0xA0000);
+    HBMCreateSound("/tmp/HBMSE.brsar", lbl_8025D0C4, 0xA0000);
     HBMInit();
 }
 
@@ -873,7 +867,7 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
                 case_4:
                 case 4:
                     helpMenuUnknownControllerInline();
-                    fn_80100E40__10homebuttonFv();
+                    HBMUpdateSound();
                     if (HBMCalc(&lbl_801CA670) == HBM_SELECT_NULL) {
                         break;
                     }
@@ -980,7 +974,7 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
 
         lbl_8025D0C8 = NULL;
 
-        fn_80100E0C__10homebuttonFv();
+        HBMDeleteSound();
         HBMDelete();
         fn_80083154();
         AXQuit();
