@@ -12,12 +12,12 @@ Group::Group() {}
 
 Group::Group(const res::Group* pResGroup, Pane* pRootPane) {
     Init();
-    std::memcpy(mName, pResGroup->name, sizeof mName);
+    std::memcpy(mName, pResGroup->name, sizeof(mName));
 
-    const char* paneName = detail::ConvertOffsToPtr<char>(pResGroup, sizeof *pResGroup);
+    const char* paneName = detail::ConvertOffsToPtr<char>(pResGroup, sizeof(*pResGroup));
 
     for (int i = 0; i < pResGroup->paneNum; i++) {
-        Pane* pFindPane = pRootPane->FindPaneByName(paneName + (int)sizeof pResGroup->name * i, true);
+        Pane* pFindPane = pRootPane->FindPaneByName(paneName + (int)sizeof(pResGroup)->name * i, true);
 
         if (pFindPane) {
             AppendPane(pFindPane);

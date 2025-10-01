@@ -36,7 +36,7 @@ bool IsValidBinaryFile(const BinaryFileHeader* header, byte4_t signature, u16 ve
         return false;
     }
 
-    if (header->fileSize < sizeof *header + sizeof(BinaryBlockHeader) * minBlocks) {
+    if (header->fileSize < sizeof(*header) + sizeof(BinaryBlockHeader) * minBlocks) {
         NW4HBMWarningMessage_Line(80, "Too small file size(=%d).", header->fileSize);
         return false;
     }

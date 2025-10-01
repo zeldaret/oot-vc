@@ -276,7 +276,7 @@ void Console_VFPrintf(ConsoleOutputType type, ConsoleHandle console, char const*
     NW4HBMAssertPointerNonnull_Line(console, 872);
 
     if (TryLockMutex_(&sMutex)) {
-        std::vsnprintf(reinterpret_cast<char*>(sStrBuf), sizeof sStrBuf, format, vlist);
+        std::vsnprintf(reinterpret_cast<char*>(sStrBuf), sizeof(sStrBuf), format, vlist);
 
         Console_PrintString_(type, console, sStrBuf);
 

@@ -235,8 +235,8 @@ void PaneManager::walkInChildren(nw4hbm::lyt::PaneList& rPaneList) {
         PaneToComponent* pPaneToComponent = nullptr;
 
         if (mpAllocator) {
-            void* p1 = MEMAllocFromAllocator(mpAllocator, sizeof *pPaneComponent);
-            void* p2 = MEMAllocFromAllocator(mpAllocator, sizeof *pPaneToComponent);
+            void* p1 = MEMAllocFromAllocator(mpAllocator, sizeof(*pPaneComponent));
+            void* p2 = MEMAllocFromAllocator(mpAllocator, sizeof(*pPaneToComponent));
 
             pPaneComponent = new (p1) PaneComponent(suIDCounter);
             pPaneToComponent = new (p2) PaneToComponent(&(*it), pPaneComponent);

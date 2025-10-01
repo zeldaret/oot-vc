@@ -40,7 +40,7 @@ void TexCoordAry::Reserve(u8 num) {
     NW4HBMAssert_Line(num <= GX_MAX_TEXMAP, 93);
     if (mCap < num) {
         Free();
-        mpData = static_cast<TexCoords*>(Layout::AllocMemory(sizeof *mpData * num));
+        mpData = static_cast<TexCoords*>(Layout::AllocMemory(sizeof(*mpData) * num));
 
         if (mpData) {
             mCap = num;

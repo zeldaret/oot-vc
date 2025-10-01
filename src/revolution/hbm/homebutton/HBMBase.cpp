@@ -449,7 +449,7 @@ void HomeButton::create() {
     set_config();
     set_text();
 
-    if (void* pMem = HBMAllocMem(sizeof *mpResAccessor)) {
+    if (void* pMem = HBMAllocMem(sizeof(*mpResAccessor))) {
         mpResAccessor = new (pMem) nw4hbm::lyt::ArcResourceAccessor();
     }
 
@@ -458,7 +458,7 @@ void HomeButton::create() {
 
     if (!mpHBInfo->cursor) {
         for (i = 0; i < (int)ARRAY_COUNT(mpCursorLayout); i++) {
-            if (void* pMem = HBMAllocMem(sizeof *mpCursorLayout[i])) {
+            if (void* pMem = HBMAllocMem(sizeof(*mpCursorLayout)[i])) {
                 mpCursorLayout[i] = new (pMem) nw4hbm::lyt::Layout();
             }
 
@@ -470,7 +470,7 @@ void HomeButton::create() {
         }
     }
 
-    if (void* pMem = HBMAllocMem(sizeof *mpLayout)) {
+    if (void* pMem = HBMAllocMem(sizeof(*mpLayout))) {
         mpLayout = new (pMem) nw4hbm::lyt::Layout();
     }
 
@@ -486,7 +486,7 @@ void HomeButton::create() {
         void* lpaRes = mpResAccessor->GetResource(0, anmNameBuf, nullptr);
         NW4HBMAssertPointerNonnull_Line(lpaRes, 665);
 
-        if (void* pMem = HBMAllocMem(sizeof *mpAnmController[i])) {
+        if (void* pMem = HBMAllocMem(sizeof(*mpAnmController)[i])) {
             mpAnmController[i] = new (pMem) GroupAnmController();
         }
 
@@ -514,7 +514,7 @@ void HomeButton::create() {
 
         NW4HBMAssertPointerNonnull_Line(lpaRes, 697);
 
-        if (void* pMem = HBMAllocMem(sizeof *mpGroupAnmController[i])) {
+        if (void* pMem = HBMAllocMem(sizeof(*mpGroupAnmController)[i])) {
             mpGroupAnmController[i] = new (pMem) GroupAnmController();
         }
 
@@ -543,7 +543,7 @@ void HomeButton::create() {
 
         NW4HBMAssertPointerNonnull_Line(lpaRes, 729);
 
-        if (void* pMem = HBMAllocMem(sizeof *mpPairGroupAnmController[i])) {
+        if (void* pMem = HBMAllocMem(sizeof(*mpPairGroupAnmController)[i])) {
             mpPairGroupAnmController[i] = new (pMem) GroupAnmController();
         }
 
@@ -563,13 +563,13 @@ void HomeButton::create() {
                                           mpHBInfo->frameDelta);
     }
 
-    if (void* pMem = HBMAllocMem(sizeof *mpHomeButtonEventHandler)) {
+    if (void* pMem = HBMAllocMem(sizeof(*mpHomeButtonEventHandler))) {
         mpHomeButtonEventHandler = new (pMem) HomeButtonEventHandler(this);
     }
 
     NW4HBMAssert_Line(mpHomeButtonEventHandler, 758);
 
-    if (void* pMem = HBMAllocMem(sizeof *mpPaneManager)) {
+    if (void* pMem = HBMAllocMem(sizeof(*mpPaneManager))) {
         mpPaneManager = new (pMem) gui::PaneManager(mpHomeButtonEventHandler, nullptr, spAllocator);
     }
 
@@ -583,12 +583,12 @@ void HomeButton::create() {
         mpPaneManager->getPaneComponentByPane(pTouchPane)->setTriggerTarget(true);
     }
 
-    if (void* pMem = HBMAllocMem(sizeof *mpRemoteSpk)) {
+    if (void* pMem = HBMAllocMem(sizeof(*mpRemoteSpk))) {
         mpRemoteSpk = new (pMem) RemoteSpk(mpHBInfo->spkSeBuf);
     }
 
     for (i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
-        if (void* pMem = HBMAllocMem(sizeof *mpController[i])) {
+        if (void* pMem = HBMAllocMem(sizeof(*mpController)[i])) {
             mpController[i] = new (pMem) Controller(i, mpRemoteSpk);
         }
     }

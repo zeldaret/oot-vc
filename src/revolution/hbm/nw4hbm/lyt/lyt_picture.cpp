@@ -23,7 +23,7 @@ Picture::Picture(const res::Picture* pResPic, const ResBlockSet& resBlockSet) :
         mTexCoordAry.Copy(&pResPic[1], texCoordNum);
     }
 
-    if (Material* pMemMaterial = static_cast<Material*>(Layout::AllocMemory(sizeof *pMemMaterial))) {
+    if (Material* pMemMaterial = static_cast<Material*>(Layout::AllocMemory(sizeof(*pMemMaterial)))) {
         NW4HBMAssertPointerNonnull_Line(resBlockSet.pMaterialList, 149);
         const u32* matOffsTbl = detail::ConvertOffsToPtr<u32>(resBlockSet.pMaterialList, 0xc);
         const res::Material* pResMaterial =

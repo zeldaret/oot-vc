@@ -288,10 +288,10 @@ void AnimTransformBasic::SetResource(const res::AnimationBlock* pRes, ResourceAc
     mpFileResAry = nullptr;
 
     if (pRes->fileNum) {
-        mpFileResAry = static_cast<void**>(Layout::AllocMemory(sizeof *mpFileResAry * pRes->fileNum));
+        mpFileResAry = static_cast<void**>(Layout::AllocMemory(sizeof(*mpFileResAry) * pRes->fileNum));
 
         if (mpFileResAry) {
-            const u32* fileNameOffsets = detail::ConvertOffsToPtr<u32>(mpRes, sizeof *mpRes);
+            const u32* fileNameOffsets = detail::ConvertOffsToPtr<u32>(mpRes, sizeof(*mpRes));
 
             for (int i = 0; i < mpRes->fileNum; i++) {
                 mpFileResAry[i] = pResAccessor->GetResource('timg', detail::GetStrTableStr(fileNameOffsets, i), 0);
@@ -299,11 +299,11 @@ void AnimTransformBasic::SetResource(const res::AnimationBlock* pRes, ResourceAc
         }
     }
 
-    mAnimLinkAry = static_cast<AnimationLink*>(Layout::AllocMemory(sizeof *mAnimLinkAry * pRes->animContNum));
+    mAnimLinkAry = static_cast<AnimationLink*>(Layout::AllocMemory(sizeof(*mAnimLinkAry) * pRes->animContNum));
 
     if (mAnimLinkAry) {
         mAnimLinkNum = pRes->animContNum;
-        std::memset(mAnimLinkAry, 0, sizeof *mAnimLinkAry * pRes->animContNum);
+        std::memset(mAnimLinkAry, 0, sizeof(*mAnimLinkAry) * pRes->animContNum);
 
         for (u16 i = 0; i < pRes->animContNum; i++) {
             new (&mAnimLinkAry[i]) AnimationLink();
@@ -359,13 +359,13 @@ void AnimTransformBasic::Animate(u32 idx, Pane* pPane) {
 
     const res::AnimationContent* pAnimCont = detail::ConvertOffsToPtr<res::AnimationContent>(mpRes, animContOffsets);
 
-    const u32* animInfoOffsets = detail::ConvertOffsToPtr<u32>(pAnimCont, sizeof *pAnimCont);
+    const u32* animInfoOffsets = detail::ConvertOffsToPtr<u32>(pAnimCont, sizeof(*pAnimCont));
 
     for (int i = 0; i < pAnimCont->num; i++) {
         const res::AnimationInfo* pAnimInfo =
             detail::ConvertOffsToPtr<res::AnimationInfo>(pAnimCont, animInfoOffsets[i]);
 
-        const u32* animTargetOffsets = detail::ConvertOffsToPtr<u32>(pAnimInfo, sizeof *pAnimInfo);
+        const u32* animTargetOffsets = detail::ConvertOffsToPtr<u32>(pAnimInfo, sizeof(*pAnimInfo));
 
         switch (pAnimInfo->kind) {
             case res::AnimationInfo::ANIM_INFO_PANE_PAIN_SRT:
@@ -388,13 +388,13 @@ void AnimTransformBasic::Animate(u32 idx, Material* pMaterial) {
 
     const res::AnimationContent* pAnimCont = detail::ConvertOffsToPtr<res::AnimationContent>(mpRes, animContOffsets);
 
-    const u32* animInfoOffsets = detail::ConvertOffsToPtr<u32>(pAnimCont, sizeof *pAnimCont);
+    const u32* animInfoOffsets = detail::ConvertOffsToPtr<u32>(pAnimCont, sizeof(*pAnimCont));
 
     for (int i = 0; i < pAnimCont->num; i++) {
         const res::AnimationInfo* pAnimInfo =
             detail::ConvertOffsToPtr<res::AnimationInfo>(pAnimCont, animInfoOffsets[i]);
 
-        const u32* animTargetOffsets = detail::ConvertOffsToPtr<u32>(pAnimInfo, sizeof *pAnimInfo);
+        const u32* animTargetOffsets = detail::ConvertOffsToPtr<u32>(pAnimInfo, sizeof(*pAnimInfo));
 
         switch (pAnimInfo->kind) {
             case res::AnimationInfo::ANIM_INFO_MATERIAL_COLOR:

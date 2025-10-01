@@ -207,7 +207,7 @@ void detail::DirectPrint_DrawStringToXfb(int posh, int posv, char const* format,
 
     NW4HBMAssert_Line(sFrameBufferInfo.frameMemory != NULL, 647);
 
-    int length = std::vsnprintf(string, sizeof string, format, vargs);
+    int length = std::vsnprintf(string, sizeof(string), format, vargs);
     int posLeftStart = posh;
 
     if (length > 0) {
@@ -274,7 +274,7 @@ static char const* DrawStringLineToXfb_(int posh, int posv, char const* str, int
             return str;
         }
 
-        code = sAsciiTable[c % sizeof sAsciiTable];
+        code = sAsciiTable[c % sizeof(sAsciiTable)];
 
         if (code == 0xfd) {
             int tab_size = 4 - (cnt & 3);

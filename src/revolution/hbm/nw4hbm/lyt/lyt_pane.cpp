@@ -91,9 +91,9 @@ Pane::~Pane() {
     }
 }
 
-void Pane::SetName(const char* name) { std::strncpy(mName, name, sizeof mName); }
+void Pane::SetName(const char* name) { std::strncpy(mName, name, sizeof(mName)); }
 
-void Pane::SetUserData(const char* userData) { std::strncpy(mUserData, userData, sizeof mUserData); }
+void Pane::SetUserData(const char* userData) { std::strncpy(mUserData, userData, sizeof(mUserData)); }
 
 void Pane::AppendChild(Pane* pChild) { InsertChild(mChildList.GetEndIter(), pChild); }
 

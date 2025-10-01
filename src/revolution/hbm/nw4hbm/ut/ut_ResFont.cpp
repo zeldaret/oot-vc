@@ -51,7 +51,7 @@ bool ResFont::SetResource(void* brfnt) {
         while (nBlocks < fileHeader->dataBlocks) {
             NW4HBMAssertPointerValid_Line(blockHeader, 124);
             if (blockHeader->kind == MAGIC_FONT_INFO) {
-                pFontInfo = CONVERT_OFFSET_TO_PTR(FontInformation, blockHeader, sizeof *blockHeader);
+                pFontInfo = CONVERT_OFFSET_TO_PTR(FontInformation, blockHeader, sizeof(*blockHeader));
                 break;
             }
 
@@ -104,7 +104,7 @@ FontInformation* ResFont::Rebuild(BinaryFileHeader* fileHeader) {
         switch (blockHeader->kind) {
             case MAGIC_FONT_INFO: {
                 NW4HBMAssert_Line(info == NULL, 237);
-                info = CONVERT_OFFSET_TO_PTR(FontInformation, blockHeader, sizeof *blockHeader);
+                info = CONVERT_OFFSET_TO_PTR(FontInformation, blockHeader, sizeof(*blockHeader));
 
                 NW4HBMAssert_Line(info->fontType == FONT_TYPE_NNGCTEXTURE, 243);
                 NW4HBMAssert_Line(info->alterCharIndex != GLYPH_INDEX_NOT_FOUND, 244);
@@ -126,7 +126,7 @@ FontInformation* ResFont::Rebuild(BinaryFileHeader* fileHeader) {
             } break;
 
             case MAGIC_FONT_TEX_GLYPH: {
-                FontTextureGlyph* glyph = CONVERT_OFFSET_TO_PTR(FontTextureGlyph, blockHeader, sizeof *blockHeader);
+                FontTextureGlyph* glyph = CONVERT_OFFSET_TO_PTR(FontTextureGlyph, blockHeader, sizeof(*blockHeader));
 
                 NW4HBMAssertPointerNonnull_Line(glyph->sheetImage, 274);
                 // no check
@@ -143,7 +143,7 @@ FontInformation* ResFont::Rebuild(BinaryFileHeader* fileHeader) {
             } break;
 
             case MAGIC_FONT_CHAR_WIDTH: {
-                FontWidth* width = CONVERT_OFFSET_TO_PTR(FontWidth, blockHeader, sizeof *blockHeader);
+                FontWidth* width = CONVERT_OFFSET_TO_PTR(FontWidth, blockHeader, sizeof(*blockHeader));
 
                 NW4HBMAssert_Line(width->indexBegin <= width->indexEnd, 298);
 
@@ -154,7 +154,7 @@ FontInformation* ResFont::Rebuild(BinaryFileHeader* fileHeader) {
             } break;
 
             case MAGIC_FONT_CODE_MAP: {
-                FontCodeMap* map = CONVERT_OFFSET_TO_PTR(FontCodeMap, blockHeader, sizeof *blockHeader);
+                FontCodeMap* map = CONVERT_OFFSET_TO_PTR(FontCodeMap, blockHeader, sizeof(*blockHeader));
 
                 NW4HBMAssert_Line(map->ccodeBegin <= map->ccodeEnd, 316);
                 NW4HBMAssert_Line((map->mappingMethod == FONT_MAPMETHOD_DIRECT) ||

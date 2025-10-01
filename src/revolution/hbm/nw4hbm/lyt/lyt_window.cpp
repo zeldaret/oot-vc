@@ -207,7 +207,7 @@ Window::Window(const res::Window* pBlock, const ResBlockSet& resBlockSet) :
     mFrames = nullptr;
 
     if (pBlock->frameNum) {
-        if ((mFrames = static_cast<Frame*>(Layout::AllocMemory(sizeof *mFrames * pBlock->frameNum)))) {
+        if ((mFrames = static_cast<Frame*>(Layout::AllocMemory(sizeof(*mFrames) * pBlock->frameNum)))) {
             mFrameNum = pBlock->frameNum;
             const u32* frameOffsetTable = detail::ConvertOffsToPtr<u32>(pBlock, pBlock->frameOffsetTableOffset);
 
