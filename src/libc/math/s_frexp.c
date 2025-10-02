@@ -13,10 +13,10 @@
 
 /*
  * for non-zero x
- *    x = frexp(arg,&exp);
+ *	x = frexp(arg,&exp);
  * return a double fp quantity x such that 0.5 <= |x| <1.0
  * and the corresponding binary exponent "exp". That is
- *    arg = x*2^exp.
+ *	arg = x*2^exp.
  * If arg is inf, 0.0, or NaN, then frexp(arg,&exp) returns arg
  * with *exp=0.
  */

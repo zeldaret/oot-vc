@@ -14,53 +14,53 @@
  * Method
  *   1. Argument reduction:
  *      Reduce x to an r so that |r| <= 0.5*ln2 ~ 0.34658.
- *    Given x, find r and integer k such that
+ *	Given x, find r and integer k such that
  *
  *               x = k*ln2 + r,  |r| <= 0.5*ln2.
  *
  *      Here r will be represented as r = hi-lo for better
- *    accuracy.
+ *	accuracy.
  *
  *   2. Approximation of ieee_exp(r) by a special rational function on
- *    the interval [0,0.34658]:
- *    Write
+ *	the interval [0,0.34658]:
+ *	Write
  *	    R(r**2) = r*(ieee_exp(r)+1)/(ieee_exp(r)-1) = 2 + r*r/6 - r**4/360 + ...
  *      We use a special Remes algorithm on [0,0.34658] to generate
- *     a polynomial of degree 5 to approximate R. The maximum error
- *    of this polynomial approximation is bounded by 2**-59. In
- *    other words,
+ * 	a polynomial of degree 5 to approximate R. The maximum error
+ *	of this polynomial approximation is bounded by 2**-59. In
+ *	other words,
  *	    R(z) ~ 2.0 + P1*z + P2*z**2 + P3*z**3 + P4*z**4 + P5*z**5
  *  	(where z=r*r, and the values of P1 to P5 are listed below)
- *    and
+ *	and
  *	    |                  5          |     -59
  *	    | 2.0+P1*z+...+P5*z   -  R(z) | <= 2
  *	    |                             |
- *    The computation of ieee_exp(r) thus becomes
+ *	The computation of ieee_exp(r) thus becomes
  *                             2*r
- *	    exp(r) = 1 + -------
+ *		exp(r) = 1 + -------
  *		              R - r
  *                                 r*R1(r)
  *		       = 1 + r + ----------- (for better accuracy)
  *		                  2 - R1(r)
- *    where
+ *	where
  *			         2       4             10
- *	    R1(r) = r - (P1*r  + P2*r  + ... + P5*r   ).
+ *		R1(r) = r - (P1*r  + P2*r  + ... + P5*r   ).
  *
  *   3. Scale back to obtain ieee_exp(x):
- *    From step 1, we have
+ *	From step 1, we have
  *	   ieee_exp(x) = 2^k * ieee_exp(r)
  *
  * Special cases:
- *    exp(INF) is INF, ieee_exp(NaN) is NaN;
- *    exp(-INF) is 0, and
- *    for finite argument, only ieee_exp(0)=1 is exact.
+ *	exp(INF) is INF, ieee_exp(NaN) is NaN;
+ *	exp(-INF) is 0, and
+ *	for finite argument, only ieee_exp(0)=1 is exact.
  *
  * Accuracy:
- *    according to an error analysis, the error is always less than
- *    1 ulp (unit in the last place).
+ *	according to an error analysis, the error is always less than
+ *	1 ulp (unit in the last place).
  *
  * Misc. info.
- *    For IEEE double
+ *	For IEEE double
  *	    if x >  7.09782712893383973096e+02 then ieee_exp(x) overflow
  *	    if x < -7.45133219101941108420e+02 then ieee_exp(x) underflow
  *

@@ -125,9 +125,8 @@ void __timesdec(decimal* result, const decimal* x, const decimal* y) {
         l = k + 1;
         t = x->sig.length - j;
 
-        if (l > t) {
+        if (l > t)
             l = t;
-        }
 
         for (; l > 0; l--, jp++, kp--) {
             accumulator += *jp * *kp;
@@ -153,13 +152,11 @@ void __timesdec(decimal* result, const decimal* x, const decimal* y) {
         if (*ip == 5) {
             u8* jp = ip + 1;
             for (; jp < ep; jp++) {
-                if (*jp != 0) {
+                if (*jp != 0)
                     goto round;
-                }
             }
-            if ((ip[-1] & 1) == 0) {
+            if ((ip[-1] & 1) == 0)
                 return;
-            }
         }
     round:
         __dorounddecup(result, result->sig.length);
@@ -178,25 +175,21 @@ void __str2dec(decimal* d, const char* s, short exp) {
     d->sig.length = i;
 
     if (*s != 0) {
-        if (*s < 5) {
+        if (*s < 5)
             return;
-        }
-        if (*s > 5) {
+        if (*s > 5)
             goto round;
-        }
 
         {
             const char* p = s + 1;
 
             for (; *p != 0; p++) {
-                if (*p != '0') {
+                if (*p != '0')
                     goto round;
-                }
             }
 
-            if ((d->sig.text[i - 1] & 1) == 0) {
+            if ((d->sig.text[i - 1] & 1) == 0)
                 return;
-            }
         }
     round:
         __dorounddecup(d, d->sig.length);
@@ -372,21 +365,18 @@ void __minus_dec(decimal* z, const decimal* x, const decimal* y) {
 
     *z = *x;
 
-    if (y->sig.text[0] == 0) {
+    if (y->sig.text[0] == 0)
         return;
-    }
 
     zlen = z->sig.length;
-    if (zlen < y->sig.length) {
+    if (zlen < y->sig.length)
         zlen = y->sig.length;
-    }
 
     dexp = z->exp - y->exp;
     zlen += dexp;
 
-    if (zlen > SIGDIGLEN) {
+    if (zlen > SIGDIGLEN)
         zlen = SIGDIGLEN;
-    }
 
     while (z->sig.length < zlen) {
         z->sig.text[z->sig.length++] = 0;
@@ -408,9 +398,8 @@ void __minus_dec(decimal* z, const decimal* x, const decimal* y) {
         j--;
         if (*i < *j) {
             u8* k = i - 1;
-            while (*k == 0) {
+            while (*k == 0)
                 k--;
-            }
             while (k != i) {
                 --*k;
                 *++k += 10;
@@ -421,27 +410,24 @@ void __minus_dec(decimal* z, const decimal* x, const decimal* y) {
 
     if (jn - jb < y->sig.length) {
         bool round_down = false;
-        if (*jn < 5) {
+        if (*jn < 5)
             round_down = true;
-        } else if (*jn == 5) {
+        else if (*jn == 5) {
             u8 const* ibPtr = y->sig.text + y->sig.length;
 
             for (j = jn + 1; j < ibPtr; j++) {
-                if (*j != 0) {
+                if (*j != 0)
                     goto done;
-                }
             }
             i = ib + (jn - jb) + dexp - 1;
-            if (*i & 1) {
+            if (*i & 1)
                 round_down = 1;
-            }
         }
         if (round_down) {
             if (*i < 1) {
                 u8* k = i - 1;
-                while (*k == 0) {
+                while (*k == 0)
                     k--;
-                }
                 while (k != i) {
                     --*k;
                     *++k += 10;
@@ -457,18 +443,16 @@ done:
         u8 dl = (u8)(i - ib);
         z->exp -= dl;
         ie = ib + z->sig.length;
-        for (; i < ie; ++i, ++ib) {
+        for (; i < ie; ++i, ++ib)
             *ib = *i;
-        }
         z->sig.length -= dl;
     }
 
     ib = z->sig.text;
     for (i = ib + z->sig.length; i > ib;) {
         i--;
-        if (*i != 0) {
+        if (*i != 0)
             break;
-        }
     }
     z->sig.length = (u8)(i - ib + 1);
 }
@@ -550,9 +534,8 @@ double __dec2num(const decimal* d) {
             d_int* ll = (d_int*)&result;
 
             *ll = 0x7FF0000000000000;
-            if (d->sign) {
+            if (d->sign)
                 *ll |= 0x8000000000000000;
-            }
             *ll |= 0x8000000000000;
 
             return result;
@@ -568,9 +551,8 @@ double __dec2num(const decimal* d) {
         double first_guess;
         int exponent;
 
-        for (; i < e; ++i) {
+        for (; i < e; ++i)
             *i -= '0';
-        }
         dec.exp += dec.sig.length - 1;
         exponent = dec.exp;
 
@@ -592,9 +574,8 @@ double __dec2num(const decimal* d) {
             double temp1, temp2;
             int ndig = (int)(e - i) % 8;
 
-            if (ndig == 0) {
+            if (ndig == 0)
                 ndig = 8;
-            }
 
             for (j = 0; j < ndig; ++j, ++i) {
                 ival = ival * 10 + *i;
@@ -603,9 +584,8 @@ double __dec2num(const decimal* d) {
             temp1 = first_guess * pow_10[ndig - 1];
             temp2 = temp1 + ival;
 
-            if (ival != 0 && temp1 == temp2) {
+            if (ival != 0 && temp1 == temp2)
                 break;
-            }
 
             first_guess = temp2;
             exponent -= ndig;

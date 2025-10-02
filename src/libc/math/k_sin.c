@@ -18,25 +18,25 @@
  * Input iy indicates whether y is 0. (if iy=0, y assume to be 0).
  *
  * Algorithm
- *    1. Since sin(-x) = -sin(x), we need only to consider positive x.
- *    2. if x < 2^-27 (hx<0x3e400000 0), return x with inexact if x!=0.
- *    3. sin(x) is approximated by a polynomial of degree 13 on
+ *	1. Since sin(-x) = -sin(x), we need only to consider positive x.
+ *	2. if x < 2^-27 (hx<0x3e400000 0), return x with inexact if x!=0.
+ *	3. sin(x) is approximated by a polynomial of degree 13 on
  *	   [0,pi/4]
  *		  	         3            13
- *	       sin(x) ~ x + S1*x + ... + S6*x
+ *	   	sin(x) ~ x + S1*x + ... + S6*x
  *	   where
  *
  * 	|sin(x)         2     4     6     8     10     12  |     -58
  * 	|----- - (1+S1*x +S2*x +S3*x +S4*x +S5*x  +S6*x   )| <= 2
  * 	|  x 					           |
  *
- *    4. sin(x+y) = sin(x) + sin'(x')*y
+ *	4. sin(x+y) = sin(x) + sin'(x')*y
  *		    ~ sin(x) + (1-x*x/2)*y
  *	   For better accuracy, let
  *		     3      2      2      2      2
- *	    r = x *(S2+x *(S3+x *(S4+x *(S5+x *S6))))
+ *		r = x *(S2+x *(S3+x *(S4+x *(S5+x *S6))))
  *	   then                   3    2
- *	    sin(x) = x + (S1*x + (x *(r-y/2)+y))
+ *		sin(x) = x + (S1*x + (x *(r-y/2)+y))
  */
 
 #include "math.h"

@@ -15,9 +15,9 @@
  * floor(x)
  * Return x rounded toward -inf to integral value
  * Method:
- *    Bit twiddling.
+ *	Bit twiddling.
  * Exception:
- *    Inexact flag raised if x not equal to floor(x).
+ *	Inexact flag raised if x not equal to floor(x).
  */
 
 #include "math.h"
