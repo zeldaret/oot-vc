@@ -20,7 +20,7 @@ typedef struct struct_801C7D38 {
     /* 0x10 */ void* unk20;
     /* 0x14 */ void* unk24;
     /* 0x18 */ s32 unk28;
-    /* 0x1C */ TPLPalette* pTPLPalette;
+    /* 0x1C */ int region;
     /* 0x20 */ s32 unk30;
     /* 0x24 */ s32 unk34;
     /* 0x28 */ s32 unk38;
