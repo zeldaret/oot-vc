@@ -197,12 +197,10 @@ cflags_base = [
     "-nodefaults",
     "-msgstyle gcc",
     "-sym on",
-    "-DREVOLUTION",  # BTE changes
     "-i include",
     "-i libc",
     "-i libcpp",
     "-i src",
-    "-ir include/revolution/bte",  # thanks broadcom...
 ]
 
 if config.non_matching:

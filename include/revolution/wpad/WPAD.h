@@ -297,7 +297,7 @@ void WPADRegisterAllocator(WPADAllocFunc pAllocFunc, WPADFreeFunc pFreeFunc);
 u32 WPADGetWorkMemorySize(void);
 
 WPADLibStatus WPADGetStatus(void);
-void WPADGetAddress(s32 chan, BD_ADDR_PTR pAddr);
+void WPADGetAddress(s32 chan, u8* pAddr);
 u8 WPADGetSensorBarPosition(void);
 
 void WPADGetAccGravityUnit(s32 chan, u32 type, WPADAccGravityUnit* pAcc);
