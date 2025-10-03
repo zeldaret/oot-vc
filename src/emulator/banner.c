@@ -14,16 +14,19 @@
 #include "mem_funcs.h"
 #include "revolution/tpl.h"
 
-static bool bannerWrite(void) NO_INLINE;
-static s32 bannerDelete(void) NO_INLINE;
-static s32 bannerGetBufferSize(void) NO_INLINE;
-static s32 fn_8006496C(void) NO_INLINE;
-
 static u8 lbl_8025C888[] = {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
 static u8 lbl_8025C890[] = {0x01, 0x01, 0x01, 0x02, 0x03, 0x04, 0x04, 0x04};
 
 static u8 sBannerBuffer[BANNER_SIZE];
 static NANDBanner* sBanner;
+
+static s32 fn_80063F30(const char* szFileName, u32 nLength);
+static s32 fn_800640BC(const char* szFileName, u32 arg1, u8 arg2);
+static NANDResult bannerNANDOpen(const char* szFileName, NANDFileInfo* info, u8 access, void* buffer, s32 len);
+static bool bannerWrite(void) NO_INLINE;
+static s32 bannerDelete(void) NO_INLINE;
+static s32 bannerGetBufferSize(void) NO_INLINE;
+static s32 fn_8006496C(void) NO_INLINE;
 
 #pragma ppc_iro_level 0
 
@@ -47,13 +50,13 @@ static inline bool fn_80063F30_Inline(NANDResult result) {
     return true;
 }
 
-s32 fn_80063F30(const char* arg0, u32 arg1) {
+static s32 fn_80063F30(const char* szFileName, u32 nLength) {
     NANDFileInfo nandFileInfo;
     u32 length;
     s32 openResult;
 
     length = 0;
-    openResult = NANDSafeOpen(arg0, &nandFileInfo, 1, sBannerBuffer, ARRAY_COUNT(sBannerBuffer));
+    openResult = NANDSafeOpen(szFileName, &nandFileInfo, 1, sBannerBuffer, ARRAY_COUNT(sBannerBuffer));
 
     switch (openResult) {
         case NAND_RESULT_OK:
@@ -71,7 +74,7 @@ s32 fn_80063F30(const char* arg0, u32 arg1) {
     fn_80063F30_Inline(NANDGetLength(&nandFileInfo, &length));
     fn_80063F30_Inline(NANDSafeClose(&nandFileInfo));
 
-    if (length != arg1) {
+    if (length != nLength) {
         return 1;
     }
 
@@ -80,9 +83,9 @@ s32 fn_80063F30(const char* arg0, u32 arg1) {
 
 #pragma ppc_iro_level reset
 
-s32 fn_800640BC(char* szFileName, u32 arg1, s32 arg2) {
-    NANDFileInfo arg10;
-    u8 arg8[32] ATTRIBUTE_ALIGN(32);
+static s32 fn_800640BC(const char* szFileName, u32 arg1, u8 arg2) {
+    NANDFileInfo nandFileInfo;
+    u8 buffer[32] ATTRIBUTE_ALIGN(32);
     s32 var_r31;
     s32 var_r30;
     NANDResult result;
@@ -92,23 +95,23 @@ s32 fn_800640BC(char* szFileName, u32 arg1, s32 arg2) {
         return 0;
     }
 
-    result = NANDSafeOpen(szFileName, &arg10, 3, sBannerBuffer, sizeof(sBannerBuffer));
+    result = NANDSafeOpen(szFileName, &nandFileInfo, 3, sBannerBuffer, sizeof(sBannerBuffer));
     if (result != NAND_RESULT_OK) {
         return 0;
     }
 
     var_r30 = arg1 >> 5;
-    memset(arg8, arg2, sizeof(arg8));
-    DCFlushRange(arg8, sizeof(arg8));
+    memset(buffer, arg2, sizeof(buffer));
+    DCFlushRange(buffer, sizeof(buffer));
 
     for (var_r31 = 0; var_r31 < var_r30; var_r31++) {
-        result = NANDWrite(&arg10, &arg8, sizeof(arg8));
+        result = NANDWrite(&nandFileInfo, &buffer, sizeof(buffer));
         if (result < NAND_RESULT_OK) {
             break;
         }
     }
 
-    NANDSafeClose(&arg10);
+    NANDSafeClose(&nandFileInfo);
     if (result < NAND_RESULT_OK) {
         return 0;
     }
@@ -116,44 +119,30 @@ s32 fn_800640BC(char* szFileName, u32 arg1, s32 arg2) {
     return 1;
 }
 
-static inline s32 bannerNANDOpen(char* szFileName, NANDFileInfo* info, u8 access, void* buffer, s32 len) {
-    if (access & 2) {
-        return NANDOpen(szFileName, info, access);
-    } else {
-        return NANDSafeOpen(szFileName, info, access, buffer, len);
-    }
-
-    return NAND_RESULT_OK;
-}
-
 #pragma ppc_iro_level 0
 
-s32 fn_800641CC(NANDFileInfo* pNandFileInfo, const char* szFileName, s32 arg2, s32 arg3, s32 access) {
-    NANDFileInfo nandFileInfo;
+bool fn_800641CC(NANDFileInfo* pNandFileInfo, const char* szFileName, s32 arg2, s32 arg3, s32 access) {
     u32 spC;
     u32 sp8;
-    s32 temp_r3;
-    s32 temp_r3_2;
-    s32 temp_r3_3;
-    s32 temp_r3_4;
-    s32 temp_r3_5;
-    s32 temp_r4;
     s32 var_r3;
-    s32 var_r3_2;
-    s32 var_r3_3;
-    s32 var_r4_4;
+    s32 var_r4;
 
     if (lbl_8025D130 == 0) {
         char buffer[64] = {0};
+
         if (NANDGetHomeDir(buffer) != 0) {
-            errorDisplayShow(6);
+            errorDisplayShow(ERROR_MAX_FILES);
         }
+
         if (fn_800B48C4(buffer) != 0) {
-            errorDisplayShow(6);
+            errorDisplayShow(ERROR_MAX_FILES);
         }
+
         lbl_8025D130 = 1;
     }
-    arg2 = ((arg2 + 0x3FFF) / 16384) << 0xE;
+
+    arg2 = ((arg2 + 0x3FFF) / 0x4000) << 0xE;
+
     while (true) {
         lbl_8025D12C = 0;
         sp8 = 0;
@@ -162,12 +151,14 @@ s32 fn_800641CC(NANDFileInfo* pNandFileInfo, const char* szFileName, s32 arg2, s
         lbl_8025D12C |= fn_80063F30(szFileName, arg2);
 
         if (lbl_8025D12C & 0x11) {
-            if (!errorDisplayShow(3)) {
-                return 0;
+            if (!errorDisplayShow(ERROR_SYS_CORRUPT)) {
+                return false;
             }
+
             if (lbl_8025D12C & 0x10) {
                 bannerDelete();
             }
+
             if (lbl_8025D12C & 1) {
                 if (NANDDelete(szFileName)) {
                     (void)0;
@@ -176,45 +167,62 @@ s32 fn_800641CC(NANDFileInfo* pNandFileInfo, const char* szFileName, s32 arg2, s
                 }
             }
         } else if (lbl_8025D12C & 0x22) {
-            var_r3_2 = 0;
-            var_r4_4 = 0;
+            var_r3 = 0;
+            var_r4 = 0;
+
             if (lbl_8025D12C & 0x20) {
-                var_r3_2 = (((bannerGetBufferSize() + 0x3FFF) / 16384) << 0xE) / 16384;
-                var_r4_4 = 1;
+                var_r3 = (((bannerGetBufferSize() + 0x3FFF) / 0x4000) << 0xE) / 0x4000;
+                var_r4 = 1;
             }
+
             if (lbl_8025D12C & 2) {
-                var_r3_2 += arg2 / 16384;
-                var_r4_4 += 1;
+                var_r3 += arg2 / 0x4000;
+                var_r4++;
             }
-            sStringDraw[1].unk38 = var_r4_4;
-            sStringDraw[0].unk38 = ((var_r3_2 << 0xE) + 0x1FFFF) / 131072;
-            temp_r3_5 = NANDCheck(var_r3_2, var_r4_4, &spC);
-            fn_80063F30_Inline(temp_r3_5);
+
+            sStringDraw[1].unk38 = var_r4;
+            sStringDraw[0].unk38 = ((var_r3 << 0xE) + 0x1FFFF) / 0x20000;
+            fn_80063F30_Inline(NANDCheck(var_r3, var_r4, &spC));
+
             if (spC & 5) {
-                if (!errorDisplayShow(0)) {
-                    return 0;
+                if (!errorDisplayShow(ERROR_INS_SPACE)) {
+                    return false;
                 }
             } else if (spC & 0xA) {
-                if (!errorDisplayShow(1)) {
-                    return 0;
+                if (!errorDisplayShow(ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU)) {
+                    return false;
                 }
             } else if ((!(lbl_8025D12C & 0x20) || (bannerWrite() != 0)) && (lbl_8025D12C & 2)) {
-                fn_800640BC((char*)szFileName, arg2, (u8)arg3);
+                fn_800640BC(szFileName, arg2, arg3);
             }
         } else {
-            if (access & 2) {
-                var_r3_3 = NANDOpen(szFileName, pNandFileInfo, access);
-            } else {
-                var_r3_3 = NANDSafeOpen(szFileName, pNandFileInfo, access, &sBannerBuffer, 0x1000);
-            }
-            if (var_r3_3 == 0) {
-                return 1;
+            if (bannerNANDOpen(szFileName, pNandFileInfo, access, &sBannerBuffer, 0x1000) == NAND_RESULT_OK) {
+                return true;
             }
         }
     }
 }
 
 #pragma ppc_iro_level reset
+
+/**
+ * @brief Open the NAND access.
+ * @param szFileName Name of the file to open.
+ * @param info Pointer to `NANDFileInfo`.
+ * @param access Access type, either safe or unsafe.
+ * @param buffer Memory buffer to store the opened file.
+ * @param len File size.
+ * @return `NANDResult` – Default value is `NAND_RESULT_OK`.
+ */
+static NANDResult bannerNANDOpen(const char* szFileName, NANDFileInfo* info, u8 access, void* buffer, s32 len) {
+    if (access & 2) {
+        return NANDOpen(szFileName, info, access);
+    } else {
+        return NANDSafeOpen(szFileName, info, access, buffer, len);
+    }
+
+    return NAND_RESULT_OK;
+}
 
 /**
  * @brief Close the NAND access.
@@ -285,11 +293,11 @@ bool bannerCreate(char* szGameName, char* szEmpty) {
     memset(&title, 0, 0x80);
 
     if (szGameName != NULL) {
-        bannerSetString(szGameName, title, 31);
+        bannerSetString(szGameName, title, BANNER_TITLE_MAX - 1);
     }
 
     if (szEmpty != NULL) {
-        bannerSetString(szEmpty, subtitle, 31);
+        bannerSetString(szEmpty, subtitle, BANNER_TITLE_MAX - 1);
     }
 
     NANDInitBanner(temp_r26, 0x10, &title[0], &subtitle[0]);
