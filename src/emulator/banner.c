@@ -56,7 +56,7 @@ static s32 fn_80063F30(const char* szFileName, u32 nLength) {
     s32 openResult;
 
     length = 0;
-    openResult = NANDSafeOpen(szFileName, &nandFileInfo, 1, sBannerBuffer, ARRAY_COUNT(sBannerBuffer));
+    openResult = NANDSafeOpen(szFileName, &nandFileInfo, 1, sBannerBuffer, sizeof(sBannerBuffer));
 
     switch (openResult) {
         case NAND_RESULT_OK:
@@ -272,10 +272,8 @@ static inline void bannerSetString(char* src, wchar_t* dest, s32 max) {
  * @return `bool` – `true` on success, `false` on failure.
  */
 bool bannerCreate(char* szGameName, char* szEmpty) {
-    wchar_t subtitle[BANNER_TITLE_MAX];
-    wchar_t title[BANNER_TITLE_MAX];
+    wchar_t comment[2][NAND_BANNER_TITLE_MAX];
     TPLPalette* tplPal;
-
     u32 i;
     NANDBanner* temp_r26;
 
@@ -289,23 +287,23 @@ bool bannerCreate(char* szGameName, char* szEmpty) {
 
     TPLBind(tplPal);
 
-    memset(temp_r26, 0, BANNER_BUFFER_SIZE);
-    memset(&title, 0, 0x80);
+    memset(temp_r26, 0, sizeof(NANDBanner));
+    memset(comment, 0, sizeof(comment));
 
     if (szGameName != NULL) {
-        bannerSetString(szGameName, title, BANNER_TITLE_MAX - 1);
+        bannerSetString(szGameName, comment[0], NAND_BANNER_TITLE_MAX - 1);
     }
 
     if (szEmpty != NULL) {
-        bannerSetString(szEmpty, subtitle, BANNER_TITLE_MAX - 1);
+        bannerSetString(szEmpty, comment[1], NAND_BANNER_TITLE_MAX - 1);
     }
 
-    NANDInitBanner(temp_r26, 0x10, &title[0], &subtitle[0]);
-    memcpy(temp_r26->bannerTexture, tplPal->descriptors[0].texHeader->data, ARRAY_COUNT(temp_r26->bannerTexture));
+    NANDInitBanner(temp_r26, 0x10, comment[0], comment[1]);
+    memcpy(temp_r26->bannerTexture, tplPal->descriptors[0].texHeader->data, sizeof(temp_r26->bannerTexture));
 
     for (i = 0; i < 8; i++) {
-        memcpy(temp_r26->iconTexture[i * 0x240], tplPal->descriptors[lbl_8025C890[i]].texHeader->data,
-               ARRAY_COUNT(temp_r26->iconTexture));
+        memcpy(temp_r26->iconTexture[i], tplPal->descriptors[lbl_8025C890[i]].texHeader->data,
+               sizeof(temp_r26->iconTexture[0]));
         temp_r26->iconSpeed = (temp_r26->iconSpeed & ~(3 << (i * 2))) | (lbl_8025C888[i] << (i * 2));
     }
 
@@ -337,8 +335,8 @@ static bool bannerWrite(void) {
         return false;
     }
 
-    DCFlushRange(pBuffer, BANNER_BUFFER_SIZE);
-    nResult = NANDWrite(&info, pBuffer, BANNER_BUFFER_SIZE);
+    DCFlushRange(pBuffer, sizeof(NANDBanner));
+    nResult = NANDWrite(&info, pBuffer, sizeof(NANDBanner));
     NANDSafeClose(&info);
 
     return nResult >= NAND_RESULT_OK;
@@ -354,10 +352,10 @@ static s32 bannerDelete(void) { return NANDDelete("banner.bin") == NAND_RESULT_O
  * @brief Returns the buffer size.
  * @return `s32` – The size of the buffer.
  */
-static s32 bannerGetBufferSize(void) { return BANNER_BUFFER_SIZE; }
+static s32 bannerGetBufferSize(void) { return sizeof(NANDBanner); }
 
 #pragma dont_inline on
 
-static s32 fn_8006496C(void) { return fn_80063F30("banner.bin", BANNER_BUFFER_SIZE); }
+static s32 fn_8006496C(void) { return fn_80063F30("banner.bin", sizeof(NANDBanner)); }
 
 #pragma dont_inline off

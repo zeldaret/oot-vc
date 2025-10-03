@@ -9,8 +9,6 @@
 extern "C" {
 #endif
 
-#define BANNER_TITLE_MAX 32
-#define BANNER_BUFFER_SIZE 0xF0A0
 #define BANNER_SIZE (64 * 64)
 
 bool fn_800641CC(NANDFileInfo* pNandFileInfo, const char* szFileName, s32 arg2, s32 arg3, s32 access);

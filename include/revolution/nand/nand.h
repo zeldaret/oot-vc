@@ -128,15 +128,14 @@ typedef struct NANDCommandBlock {
 } NANDCommandBlock; // size = 0xB8
 
 typedef struct NANDBanner {
-    /* 0x0 */ u32 magic;
-    /* 0x4 */ u32 flags;
-    /* 0x8 */ u16 iconSpeed;
-    u8 reserved[0x20 - /* 0xA */ 0xA];
-    /* 0x20 */ wchar_t title[NAND_BANNER_TITLE_MAX];
-    /* 0x60 */ wchar_t subtitle[NAND_BANNER_TITLE_MAX];
-    /* 0xA0 */ u8 bannerTexture[0x6000];
-    /* 0x60A0 */ u8 iconTexture[0x1200][NAND_BANNER_ICON_MAX_FRAME];
-} NANDBanner;
+    /* 0x0000 */ u32 signature;
+    /* 0x0004 */ u32 flags;
+    /* 0x0008 */ u16 iconSpeed;
+    /* 0x000A */ u8 reserved[22];
+    /* 0x0020 */ wchar_t comment[2][NAND_BANNER_TITLE_MAX];
+    /* 0x00A0 */ u8 bannerTexture[0x6000];
+    /* 0x60A0 */ u8 iconTexture[NAND_BANNER_ICON_MAX_FRAME][0x1200];
+} NANDBanner; // size = 0xF0A0
 
 s32 NANDCreate(const char* path, u8 perm, u8 attr);
 s32 NANDPrivateCreate(const char* path, u8 perm, u8 attr);
