@@ -15,7 +15,6 @@
 #include "revolution/demo.h"
 #include "revolution/gx.h"
 #include "revolution/hbm.h"
-#include "revolution/hbm/HBMCommon.h"
 #include "revolution/mem.h"
 #include "revolution/mtx.h"
 #include "revolution/nand.h"
@@ -560,7 +559,7 @@ static void fn_8005F1F4(HelpMenu* pHelpMenu) {
 
     strcpy(sWebsitePath, "arc:/html/");
     lbl_8025D0F4 = sWebsitePath + strlen(sWebsitePath);
-    sHBMDataInfo.region = 0;
+    sHBMDataInfo.region = SC_LANG_JP;
     strcpy(temp_r16, "LZ77_homeBtn.arc");
     strcpy(lbl_8025D0F4, "index/index_Frameset.html");
     fn_8005E2D0(&sHandleNAND, sp10, &sHBMDataInfo.layoutBuf, &sMemAllocator2, &sMemAllocator1);
