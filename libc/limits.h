@@ -33,6 +33,8 @@ extern "C" {
 #define LLONG_MAX 0x7FFFFFFFFFFFFFFFLL
 #define ULLONG_MAX 0xFFFFFFFFFFFFFFFFULL
 
+#define CHAR_BIT 8
+
 #ifdef __cplusplus
 }
 #endif

@@ -6,6 +6,12 @@
 #include "revolution/types.h"
 
 #ifdef __cplusplus
+#include "cstdarg.hpp"
+#else
+#include "stdarg.h"
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -43,6 +49,7 @@ extern OSErrorHandler __OSErrorTable[OS_ERR_MAX];
 extern u32 __OSFpscrEnableBits;
 
 WEAK void OSReport(const char* msg, ...);
+void OSVReport(const char* msg, va_list list);
 WEAK void OSPanic(const char* file, int line, const char* msg, ...);
 
 OSErrorHandler OSSetErrorHandler(u16 error, OSErrorHandler handler);

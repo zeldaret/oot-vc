@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#define GX_IDENTITY 60
+
 #define PHY_ADDR_MASK ~((~0x3FFF) << 16)
 #define GX_PHY_ADDR(a) ((u32)a & PHY_ADDR_MASK)
 

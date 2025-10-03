@@ -88,8 +88,6 @@ typedef struct NANDFileInfo {
     /* 0x08 */ char openPath[FS_MAX_PATH];
     /* 0x48 */ char tempPath[FS_MAX_PATH];
     /* 0x88 */ u8 access;
-    /* 0x89 */ u8 stage;
-    /* 0x8A */ u8 mark;
 } NANDFileInfo; // size = 0x8C
 
 typedef struct NANDCommandBlock {

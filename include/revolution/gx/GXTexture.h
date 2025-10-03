@@ -72,6 +72,17 @@ void GXInitTlutObj(GXTlutObj*, void*, GXTlutFmt, u16);
 
 void GXInvalidateTexAll(void);
 
+void GXInitTexObjUserData(GXTexObj* obj, void* user_data);
+void GXInitTexObjWrapMode(GXTexObj* obj, GXTexWrapMode sm, GXTexWrapMode tm);
+GXTexWrapMode GXGetTexObjWrapS(const GXTexObj* to);
+GXTexWrapMode GXGetTexObjWrapT(const GXTexObj* to);
+void* GXGetTexObjUserData(const GXTexObj* obj);
+void GXLoadTlut(GXTlutObj* obj, u32 tlutName);
+void GXInitTexObjTlut(GXTexObj* obj, u32 tlut_name);
+void GXSetTevColorS10(GXTevRegID id, GXColorS10 color);
+u16 GXGetTexObjWidth(const GXTexObj* to);
+u16 GXGetTexObjHeight(const GXTexObj* to);
+
 // TODO
 UNKTYPE GXSetTexCoordScaleManually(UNKWORD, UNKWORD, UNKWORD, UNKWORD);
 UNKTYPE GXSetTexCoordCylWrap(UNKWORD, UNKWORD, UNKWORD);

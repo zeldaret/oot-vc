@@ -190,7 +190,7 @@ typedef struct _AXPBADPCMLOOP {
     /* 0x0 */ u16 loop_pred_scale;
     /* 0x2 */ u16 loop_yn1;
     /* 0x4 */ u16 loop_yn2;
-} AXPBADPCMLOOP;
+} AXPBADPCMLOOP; // size = 0x6
 
 typedef struct _AXPBLPF {
     /* 0x0 */ u16 on;

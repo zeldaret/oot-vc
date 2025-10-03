@@ -9,6 +9,10 @@ extern "C" {
 #define NULL (void*)0
 #endif
 
+#ifndef nullptr
+#define nullptr 0
+#endif
+
 #define offsetof(ST, M) ((size_t) & (((ST*)0)->M))
 
 typedef signed long intptr_t;

@@ -34,18 +34,34 @@ typedef double f64;
 typedef volatile f32 vf32;
 typedef volatile f64 vf64;
 
+typedef int BOOL;
+#define FALSE 0
+#define TRUE 1
+
 #ifndef __cplusplus
 typedef int bool;
-#endif
-
 #define false 0
 #define true 1
+#endif
 
+#define DEFAULT_ALIGN 32
+#ifndef ATTRIBUTE_ALIGN
 #define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
+#endif
 
 typedef int UNKWORD;
 typedef void UNKTYPE;
 typedef void (*funcptr_t)(void);
+
+typedef unsigned long int byte4_t;
+typedef unsigned short int byte2_t;
+typedef unsigned char byte1_t;
+typedef byte1_t byte_t;
+typedef unsigned long int register_t;
+typedef unsigned char char_t;
+typedef unsigned char char8_t;
+typedef unsigned short char16_t;
+typedef unsigned long char32_t;
 
 #ifdef __cplusplus
 }
