@@ -35,14 +35,13 @@ typedef volatile f32 vf32;
 typedef volatile f64 vf64;
 
 typedef int BOOL;
+#define FALSE 0
+#define TRUE 1
 
 #ifndef __cplusplus
 typedef int bool;
 #define false 0
 #define true 1
-#else
-#define FALSE 0
-#define TRUE 1
 #endif
 
 #define DEFAULT_ALIGN 32

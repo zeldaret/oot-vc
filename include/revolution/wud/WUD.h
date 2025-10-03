@@ -75,13 +75,8 @@ u8 WUDGetBufferStatus(void);
 
 void WUDSetSniffMode(u8 addr[6], s32 interval);
 
-// clang-format off
-WUDSyncDeviceCallback
-WUDSetSyncSimpleCallback(WUDSyncDeviceCallback pCallback);
-
-WUDClearDeviceCallback
-WUDSetClearDeviceCallback(WUDClearDeviceCallback pCallback);
-// clang-format on
+WUDSyncDeviceCallback WUDSetSyncSimpleCallback(WUDSyncDeviceCallback pCallback);
+WUDClearDeviceCallback WUDSetClearDeviceCallback(WUDClearDeviceCallback pCallback);
 
 bool WUDStartSyncDevice(void);
 bool WUDStartFastSyncSimple(void);

@@ -884,7 +884,7 @@ config.libs = [
 config.progress_categories = [
     ProgressCategory("emulator", "Emulator"),
     ProgressCategory("revolution", "Revolution SDK"),
-    ProgressCategory("hbm", "Home Menu Lib"),
+    ProgressCategory("hbm", "Home Button Menu"),
     ProgressCategory("libc", "Libc"),
     ProgressCategory("runtime", "Runtime"),
     ProgressCategory("metrotrk", "MetroTRK"),

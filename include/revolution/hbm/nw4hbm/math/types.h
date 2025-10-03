@@ -73,6 +73,8 @@ public:
     /* 0x00 (base) */
 }; // size = 0x0C
 
+typedef const f32 (*CMtxPtr)[4];
+
 struct MTX34 : public _MTX34 {
 public:
     MTX34() {} // NOTE: must be non-defaulted

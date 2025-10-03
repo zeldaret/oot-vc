@@ -8,15 +8,15 @@
 extern "C" {
 #endif
 
-typedef struct MEMiUntHeapMBlockHead MEMiUntHeapMBlockHead;
-struct MEMiUntHeapMBlockHead {
-    /* 0x00 */ MEMiUntHeapMBlockHead* next;
+typedef struct MEMUnitHeapMBlockHead MEMUnitHeapMBlockHead;
+struct MEMUnitHeapMBlockHead {
+    /* 0x00 */ MEMUnitHeapMBlockHead* next;
 }; // size = 0x04
 
-typedef struct MEMiUntHeapHead {
-    /* 0x00 */ MEMiUntHeapMBlockHead* freeList;
+typedef struct MEMUnitHeapHead {
+    /* 0x00 */ MEMUnitHeapMBlockHead* freeList;
     /* 0x04 */ u32 blockSize;
-} MEMiUntHeapHead; // size = 0x08
+} MEMUnitHeapHead; // size = 0x08
 
 MEMHeapHandle MEMCreateUnitHeapEx(void* start, u32 heapSize, u32 memBlockSize, int align, u16 flags);
 void* MEMDestroyUnitHeap(MEMHeapHandle heap);
@@ -27,7 +27,7 @@ void MEMFreeToUnitHeap(MEMHeapHandle heap, void* addr);
 u32 MEMCalcHeapSizeForUnitHeap(u32 unit_size, u32 unit_count, int align);
 
 static u32 MEMGetMemBlockSizeForUnitHeap(MEMHeapHandle heap) {
-    return ((MEMiUntHeapHead*)((u8*)heap + sizeof(MEMHeapHandle)))->blockSize;
+    return ((MEMUnitHeapHead*)((u8*)heap + sizeof(MEMHeapHandle)))->blockSize;
 }
 
 static inline MEMHeapHandle MEMCreateUnitHeap(void* start, u32 heapSize, u32 memBlockSize) {

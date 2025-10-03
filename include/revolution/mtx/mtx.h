@@ -31,12 +31,6 @@ typedef f32 (*MtxPtr)[4];
 typedef f32 (*Mtx43Ptr)[3];
 typedef f32 (*Mtx44Ptr)[4];
 
-// not official names, just what i thought would make sense
-typedef const f32 (*CMtx23Ptr)[3];
-typedef const f32 (*CMtxPtr)[4];
-typedef const f32 (*CMtx43Ptr)[3];
-typedef const f32 (*CMtx44Ptr)[4];
-
 void PSMTXIdentity(Mtx);
 void PSMTXCopy(const Mtx, Mtx);
 void PSMTXConcat(const Mtx, const Mtx, Mtx);
