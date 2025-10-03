@@ -10,6 +10,7 @@ extern "C" {
 #include "revolution/mem/mem_frameHeap.h"
 #include "revolution/mem/mem_heapCommon.h"
 #include "revolution/mem/mem_list.h"
+#include "revolution/mem/mem_unitHeap.h"
 
 #ifdef __cplusplus
 }

@@ -6797,8 +6797,9 @@ static bool cpuGetPPC(Cpu* pCPU, s32* pnAddress, CpuFunction* pFunction, s32* an
                         EMIT_PPC(iCode, 0x91010008);
                         if ((iRegisterA = ganMapGPR[MIPS_RT(nOpcode)]) & 0x100) {
                             EMIT_PPC(iCode, 0x81030004 + OFFSETOF(pCPU, aGPR[MIPS_RT(nOpcode)]));
-                        } else
+                        } else {
                             EMIT_PPC(iCode, 0x7C080378 | (iRegisterA << 21) | (iRegisterA << 11));
+                        }
                         EMIT_PPC(iCode, 0x48000000 | ((cpuCompile_SW_function - (u32)&anCode[iCode]) & 0x03FFFFFC) | 1);
                         EMIT_PPC(iCode, 0x81010008);
                         EMIT_PPC(iCode, 0x38210010);
@@ -6928,8 +6929,9 @@ static bool cpuGetPPC(Cpu* pCPU, s32* pnAddress, CpuFunction* pFunction, s32* an
                             EMIT_PPC(iCode, 0x41810024);
                             EMIT_PPC(iCode, 0x38C00000);
                             EMIT_PPC(iCode, 0x90C30000 + OFFSETOF(pCPU, nWaitPC));
-                        } else
+                        } else {
                             EMIT_PPC(iCode, 0x41810014);
+                        }
                         EMIT_PPC(iCode, 0x3CA00000 | ((u32)nAddress >> 16));
                         EMIT_PPC(iCode, 0x60A50000 | ((u32)nAddress & 0xFFFF));
                         EMIT_PPC(iCode, 0x48000000 | (((u32)pCPU->pfStep - (u32)&anCode[iCode]) & 0x03FFFFFC) | 1);
@@ -7026,8 +7028,9 @@ static bool cpuGetPPC(Cpu* pCPU, s32* pnAddress, CpuFunction* pFunction, s32* an
                             EMIT_PPC(iCode, 0x41810024);
                             EMIT_PPC(iCode, 0x38C00000);
                             EMIT_PPC(iCode, 0x90C30000 + OFFSETOF(pCPU, nWaitPC));
-                        } else
+                        } else {
                             EMIT_PPC(iCode, 0x41810014);
+                        }
                         EMIT_PPC(iCode, 0x3CA00000 | ((u32)nAddress >> 16));
                         EMIT_PPC(iCode, 0x60A50000 | ((u32)nAddress & 0xFFFF));
                         EMIT_PPC(iCode, 0x48000000 | (((u32)pCPU->pfStep - (u32)&anCode[iCode]) & 0x03FFFFFC) | 1);
@@ -7169,8 +7172,9 @@ static bool cpuGetPPC(Cpu* pCPU, s32* pnAddress, CpuFunction* pFunction, s32* an
                             EMIT_PPC(iCode, 0x41810024);
                             EMIT_PPC(iCode, 0x38C00000);
                             EMIT_PPC(iCode, 0x90C30000 + OFFSETOF(pCPU, nWaitPC));
-                        } else
+                        } else {
                             EMIT_PPC(iCode, 0x41810014);
+                        }
                         EMIT_PPC(iCode, 0x3CA00000 | ((u32)nAddress >> 16));
                         EMIT_PPC(iCode, 0x60A50000 | ((u32)nAddress & 0xFFFF));
                         EMIT_PPC(iCode, 0x48000000 | (((u32)pCPU->pfStep - (u32)&anCode[iCode]) & 0x03FFFFFC) | 1);
@@ -7272,8 +7276,9 @@ static bool cpuGetPPC(Cpu* pCPU, s32* pnAddress, CpuFunction* pFunction, s32* an
                             EMIT_PPC(iCode, 0x41810024);
                             EMIT_PPC(iCode, 0x38C00000);
                             EMIT_PPC(iCode, 0x90C30000 + OFFSETOF(pCPU, nWaitPC));
-                        } else
+                        } else {
                             EMIT_PPC(iCode, 0x41810014);
+                        }
                         EMIT_PPC(iCode, 0x3CA00000 | ((u32)nAddress >> 16));
                         EMIT_PPC(iCode, 0x60A50000 | ((u32)nAddress & 0xFFFF));
                         EMIT_PPC(iCode, 0x48000000 | (((u32)pCPU->pfStep - (u32)&anCode[iCode]) & 0x03FFFFFC) | 1);

@@ -1,9 +1,14 @@
 #ifndef _RVL_SDK_PUBLIC_AXFX_H
 #define _RVL_SDK_PUBLIC_AXFX_H
 
+#include "stddef.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef void* AXFXAllocFunc(size_t);
+typedef void AXFXFreeFunc(void*);
 
 #include "revolution/axfx/AXFXChorus.h"
 #include "revolution/axfx/AXFXChorusExp.h"

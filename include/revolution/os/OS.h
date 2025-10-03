@@ -65,6 +65,7 @@ typedef struct OSIOSRev {
 
 typedef void (*OSExceptionHandler)(u8 type, OSContext* ctx);
 typedef s64 OSTime;
+typedef u32 OSTick;
 
 extern bool __OSInIPL;
 extern bool __OSInNandBoot;

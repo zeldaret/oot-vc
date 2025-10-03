@@ -1,6 +1,7 @@
 #ifndef _RVL_SDK_GX_FRAMEBUF_H
 #define _RVL_SDK_GX_FRAMEBUF_H
 
+#include "revolution/gx/GXTypes.h"
 #include "revolution/types.h"
 #include "revolution/vi/vitypes.h"
 
@@ -48,6 +49,8 @@ void GXCopyTex(void*, GXBool);
 
 u16 GXGetNumXfbLines(const u16 efbHeight, f32 yScale);
 u32 GXSetDispCopyYScale(f32 vertScale);
+
+void GXSetDispCopyGamma(GXGamma gamma);
 
 #ifdef __cplusplus
 }

@@ -696,10 +696,10 @@ void AXGetLpfCoefs(u16 freq, u16* a, u16* b) {
     *a = 32767 - *b;
 }
 
-void AXSetVoiceRmtOn(AXVPB* vpb, bool remote) {
+void AXSetVoiceRmtOn(AXVPB* vpb, u16 on) {
     bool enabled = OSDisableInterrupts();
 
-    vpb->pb.remote = remote;
+    vpb->pb.remote = on;
     vpb->sync |= AX_PBSYNC_REMOTE;
 
     OSRestoreInterrupts(enabled);

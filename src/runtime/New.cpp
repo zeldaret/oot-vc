@@ -7,7 +7,7 @@
 namespace std {
 
 class bad_alloc : public exception {
-  public:
+public:
     virtual ~bad_alloc() {}
     virtual const char* what() const { return "bad_alloc"; }
 };
