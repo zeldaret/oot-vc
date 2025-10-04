@@ -26,9 +26,9 @@ extern "C" {
 #define SQ(x) ((x) * (x))
 #define CLAMP(x, l, h) (((x) > (h)) ? (h) : (((x) < (l)) ? (l) : (x)))
 
-#define ROUND_UP(x, align) (((x) + (align) - 1) & (-(align)))
-#define ROUND_UP_PTR(x, align) ((void*)((((u32)(x)) + (align) - 1) & (~((align) - 1))))
-#define ROUND_DOWN(x, align) ((x) & (-(align)))
+#define ROUND_UP(x, align) (((x) + ((align) - 1)) & (~((align) - 1)))
+#define ROUND_UP_PTR(x, align) ((void*)((((u32)(x)) + ((align) - 1)) & (~((align) - 1))))
+#define ROUND_DOWN(x, align) ((x) & (~((align) - 1)))
 #define ROUND_DOWN_PTR(x, align) ((void*)(((u32)(x)) & (~((align) - 1))))
 #define MEMCLR(x) __memclr((x), sizeof(*(x)))
 
