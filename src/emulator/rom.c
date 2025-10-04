@@ -848,7 +848,7 @@ bool romSetImage(Rom* pROM, char* szNameFile) {
         pROM->nSizeCacheRAM = nHeapSize;
 
         if (!xlHeapTake(&pROM->pBuffer, nHeapSize | 0x70000000) &&
-            !fn_8005F5F4(SYSTEM_HELP(gpSystem), pROM, nHeapSize | 0x70000000, (void*)fn_80042064)) {
+            !helpMenuSetupSize(SYSTEM_HELP(gpSystem), pROM, nHeapSize | 0x70000000, (void*)fn_80042064)) {
             fret = 0;
         } else {
             fret = 1;

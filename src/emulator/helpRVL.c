@@ -30,8 +30,8 @@ extern void* fn_80083140(void);
 extern void fn_800888DC(void**);
 extern HBMControllerData lbl_801CA670;
 
-static void fn_8005F1A0(void);
-static void fn_8005F154(void);
+static void helpMenuResetCallback(void);
+static void helpMenuPowerCallback(void);
 
 typedef struct Rect {
     /* 0x0 */ f32 x0;
@@ -77,7 +77,7 @@ u8 lbl_8025D0B8;
 
 GXColor lbl_8025C850[] = {255, 255, 255, 255};
 
-static s32 fn_8005E2D0(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, MEMAllocator* arg3, void* arg4) {
+static s32 helpMenuReadNAND(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, MEMAllocator* arg3, void* arg4) {
     CNTFileInfoNAND fileInfo;
     void* pNANDBuffer;
     s32 var_r31;
@@ -136,7 +136,7 @@ static s32 fn_8005E2D0(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, ME
     return var_r31;
 }
 
-static void fn_8005E45C(GXTexObj* pTexObj, GXColor color) {
+static void helpMenuSetupTexturedQuad(GXTexObj* pTexObj, GXColor color) {
     GXInvalidateVtxCache();
     GXInvalidateTexAll();
     GXClearVtxDesc();
@@ -166,7 +166,7 @@ static void fn_8005E45C(GXTexObj* pTexObj, GXColor color) {
     GXSetTevColor(GX_TEVREG0, color);
 }
 
-static void fn_8005E638(GXColor color) {
+static void helpMenuSetupColoredQuad(GXColor color) {
     GXInvalidateVtxCache();
     GXInvalidateTexAll();
     GXClearVtxDesc();
@@ -231,7 +231,7 @@ void helpMenuSetupRender(GXTexObj* pTexObj) {
     GXFlush();
 
     color.a = color.r = color.g = color.b = 0xFF;
-    fn_8005E45C(pTexObj, color);
+    helpMenuSetupTexturedQuad(pTexObj, color);
 
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
     x0 = rect.x0;
@@ -251,7 +251,7 @@ void helpMenuSetupRender(GXTexObj* pTexObj) {
 
 #pragma inline_max_auto_size(10)
 
-static void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5, u32 param_6) {
+static void helpMenu_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5, u32 param_6) {
     f32 view[6];
     void* pBuffer;
     Rect rect;
@@ -265,7 +265,7 @@ static void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 
         rectPAL = lbl_8016A7D0;
 
         GXGetViewportv(view);
-        fn_8005E638(local_54);
+        helpMenuSetupColoredQuad(local_54);
 
         if (fn_8007FC84()) {
             f32 x1;
@@ -340,11 +340,11 @@ static void fn_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 
     }
 }
 
-bool fn_8005F7E4_UnknownInline(void) {
-    return fn_8005F6F4(SYSTEM_HELP(gpSystem), "html.arc", &lbl_8025D0F8, &sMemAllocator2);
+bool helpMenuUpdate_UnknownInline(void) {
+    return helpMenuAllocateFile(SYSTEM_HELP(gpSystem), "html.arc", &lbl_8025D0F8, &sMemAllocator2);
 }
 
-static void fn_8005EAFC(void) {
+static void helpMenu_8005EAFC(void) {
     GXRenderModeObj sp8;
     s32 var_r31;
 
@@ -418,7 +418,7 @@ static void fn_8005EAFC(void) {
     }
 
     fn_800887CC(sWebsitePath);
-    lbl_8025D0BC = fn_800887C8(fn_8005E800, lbl_8025D0BC, lbl_8025D0B8);
+    lbl_8025D0BC = fn_800887C8(helpMenu_8005E800, lbl_8025D0BC, lbl_8025D0B8);
 
     VIConfigure(sRenderMode);
     VIFlush();
@@ -427,7 +427,7 @@ static void fn_8005EAFC(void) {
     VIWaitForRetrace();
 }
 
-static inline void fn_8005EDFC_UnknownInline(GXColor color) {
+static inline void helpMenu_8005EDFC_UnknownInline(GXColor color) {
     GXTexObj texObj;
     GXColor color2;
 
@@ -469,7 +469,7 @@ static inline void fn_8005EDFC_UnknownInline(GXColor color) {
 
 const GXColor lbl_8025DEEC = {255, 255, 255, 0};
 
-static void fn_8005EDFC(void) {
+static void helpMenu_8005EDFC(void) {
     f32 fTime = OSTicksToMilliseconds(OSGetTick() - lbl_801C7D28.unk08);
 
     switch (lbl_801C7D28.unk0C) {
@@ -491,36 +491,38 @@ static void fn_8005EDFC(void) {
             lbl_801C7D28.unk0D = 255.9f * ((250.0f - fTime) / 250.0f);
             if (fTime >= 250.0f) {
                 lbl_801C7D28.unk0D = 0;
-                lbl_801C7D28.unk04 = 0;
+                lbl_801C7D28.unk04 = false;
             }
             break;
     }
 
-    fn_8005EDFC_UnknownInline(lbl_8025DEEC);
+    helpMenu_8005EDFC_UnknownInline(lbl_8025DEEC);
 }
 
-static void fn_8005F154(void) {
+static void helpMenuPowerCallback(void) {
     lbl_8025D0F0 = false;
     lbl_8025D0E8 = true;
+
     if (lbl_8025D118 == 7) {
         fn_800887D4(0x1E);
         lbl_8025D110 = 0;
     }
 }
 
-static void fn_8005F1A0(void) {
+static void helpMenuResetCallback(void) {
     lbl_8025D0F0 = false;
     lbl_8025D0EC = true;
+
     if (lbl_8025D118 == 7) {
         fn_800887D4(0x1E);
         lbl_8025D110 = 0;
     }
 }
 
-static bool fn_8005F1EC(s32 event, s32 num) { return false; }
+static bool helpMenuSoundCallback(s32 event, s32 num) { return false; }
 
-void fn_8005F1F4_UnknownInline1(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
-    s32 nLength = fn_8005E2D0(&sHandleNAND, szPath, ppBuffer, &sMemAllocator2, &sMemAllocator1);
+void helpMenuInit_UnknownInline1(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
+    s32 nLength = helpMenuReadNAND(&sHandleNAND, szPath, ppBuffer, &sMemAllocator2, &sMemAllocator1);
     NANDCreate("/tmp/HBMSE.brsar", 0x30, 0);
     NANDOpen("/tmp/HBMSE.brsar", pFileInfo, 2);
     NANDWrite(pFileInfo, *ppBuffer, nLength);
@@ -528,8 +530,8 @@ void fn_8005F1F4_UnknownInline1(NANDFileInfo* pFileInfo, void** ppBuffer, char* 
     fn_800888DC(ppBuffer);
 }
 
-void fn_8005F1F4_UnknownInline2(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
-    s32 nLength = fn_8005F6F4(SYSTEM_HELP(gpSystem), szPath, (s32**)ppBuffer, &sMemAllocator2);
+void helpMenuInit_UnknownInline2(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
+    s32 nLength = helpMenuAllocateFile(SYSTEM_HELP(gpSystem), szPath, (s32**)ppBuffer, &sMemAllocator2);
     NANDCreate("/tmp/opera.arc", 0x30, 0);
     NANDOpen("/tmp/opera.arc", pFileInfo, 2);
     NANDWrite(pFileInfo, *ppBuffer, nLength);
@@ -537,7 +539,7 @@ void fn_8005F1F4_UnknownInline2(NANDFileInfo* pFileInfo, void** ppBuffer, char* 
     fn_800888DC(ppBuffer);
 }
 
-static void fn_8005F1F4(HelpMenu* pHelpMenu) {
+static void helpMenuInit(HelpMenu* pHelpMenu) {
     NANDFileInfo sp30;
     void* sp8;
     char* temp_r16;
@@ -553,24 +555,28 @@ static void fn_8005F1F4(HelpMenu* pHelpMenu) {
         sp8 = NULL;
         lbl_8025D0C0 = 1;
         strcpy(temp_r16, "Huf8_HomeButtonSe.brsar");
-        fn_8005F1F4_UnknownInline1(&sp30, &sp8, sp10);
-        fn_8005F1F4_UnknownInline2(&sp30, &sp8, "Opera.arc");
+        helpMenuInit_UnknownInline1(&sp30, &sp8, sp10);
+        helpMenuInit_UnknownInline2(&sp30, &sp8, "Opera.arc");
     }
 
     strcpy(sWebsitePath, "arc:/html/");
     lbl_8025D0F4 = sWebsitePath + strlen(sWebsitePath);
     sHBMDataInfo.region = SC_LANG_JP;
     strcpy(temp_r16, "LZ77_homeBtn.arc");
-    strcpy(lbl_8025D0F4, "index/index_Frameset.html");
-    fn_8005E2D0(&sHandleNAND, sp10, &sHBMDataInfo.layoutBuf, &sMemAllocator2, &sMemAllocator1);
-    strcpy(temp_r16, "Huf8_SpeakerSe.arc");
-    fn_8005E2D0(&sHandleNAND, sp10, &sHBMDataInfo.spkSeBuf, &sMemAllocator2, &sMemAllocator1);
-    strcpy(temp_r16, "home.csv");
-    fn_8005E2D0(&sHandleNAND, sp10, &sHBMDataInfo.msgBuf, &sMemAllocator2, &sMemAllocator1);
-    strcpy(temp_r16, "config.txt");
-    fn_8005E2D0(&sHandleNAND, sp10, &sHBMDataInfo.configBuf, &sMemAllocator2, &sMemAllocator1);
 
-    sHBMDataInfo.sound_callback = fn_8005F1EC;
+    strcpy(lbl_8025D0F4, "index/index_Frameset.html");
+    helpMenuReadNAND(&sHandleNAND, sp10, &sHBMDataInfo.layoutBuf, &sMemAllocator2, &sMemAllocator1);
+
+    strcpy(temp_r16, "Huf8_SpeakerSe.arc");
+    helpMenuReadNAND(&sHandleNAND, sp10, &sHBMDataInfo.spkSeBuf, &sMemAllocator2, &sMemAllocator1);
+
+    strcpy(temp_r16, "home.csv");
+    helpMenuReadNAND(&sHandleNAND, sp10, &sHBMDataInfo.msgBuf, &sMemAllocator2, &sMemAllocator1);
+
+    strcpy(temp_r16, "config.txt");
+    helpMenuReadNAND(&sHandleNAND, sp10, &sHBMDataInfo.configBuf, &sMemAllocator2, &sMemAllocator1);
+
+    sHBMDataInfo.sound_callback = helpMenuSoundCallback;
     sHBMDataInfo.backFlag = 0;
     sHBMDataInfo.cursor = 0;
     sHBMDataInfo.adjust.x = 1.3684211f;
@@ -578,19 +584,23 @@ static void fn_8005F1F4(HelpMenu* pHelpMenu) {
     sHBMDataInfo.frameDelta = 1.0f;
 
     strcpy(temp_r16, "homeBtnIcon.tpl");
-    fn_8005E2D0(&sHandleNAND, sp10, (void**)&lbl_801C7D28, &sMemAllocator2, &sMemAllocator1);
+    helpMenuReadNAND(&sHandleNAND, sp10, (void**)&lbl_801C7D28, &sMemAllocator2, &sMemAllocator1);
     TPLBind(lbl_801C7D28.pTPLPalette);
+
     sHBMDataInfo.memSize = 0x80000;
     fn_8008882C(&sHBMDataInfo.mem, 0x80000, &sMemAllocator2, &sMemAllocator1);
+
     sHBMDataInfo.pAllocator = NULL;
     fn_80088994(&sHBMDataInfo);
     HBMCreate(&sHBMDataInfo);
+
     fn_8008882C(&lbl_8025D0C4, 0xA0000, &sMemAllocator2, &sMemAllocator1);
     HBMCreateSound("/tmp/HBMSE.brsar", lbl_8025D0C4, 0xA0000);
+
     HBMInit();
 }
 
-bool fn_8005F5F4(HelpMenu* pHelpMenu, void* pObject, s32 nByteCount, HelpMenuCallback callback) {
+bool helpMenuSetupSize(HelpMenu* pHelpMenu, void* pObject, s32 nByteCount, HelpMenuCallback callback) {
     u32 nSize;
     s32 var_r7;
     s32 nSizeExtra;
@@ -648,7 +658,7 @@ bool fn_8005F5F4(HelpMenu* pHelpMenu, void* pObject, s32 nByteCount, HelpMenuCal
     return true;
 }
 
-static bool fn_8005F6F4(HelpMenu* pHelpMenu, char* szFileName, s32** arg2, MEMAllocator* arg3) {
+static bool helpMenuAllocateFile(HelpMenu* pHelpMenu, char* szFileName, s32** arg2, MEMAllocator* arg3) {
     s32 nSize;
     tXL_FILE* pFile;
 
@@ -729,7 +739,7 @@ static inline void helpMenuUnknownControllerInline() {
     }
 }
 
-s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
+s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
     Mtx44 matrix44_4;
     Mtx matrix;
     Mtx44 matrix44;
@@ -738,7 +748,7 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
     s32 i;
     bool bVar8 = false;
 
-    if (lbl_801C7D28.unk04 != 0 && lbl_801C7D28.pTPLPalette != NULL) {
+    if (lbl_801C7D28.unk04 && lbl_801C7D28.pTPLPalette != NULL) {
         GXSetViewport(0.0f, 0.0f, GC_FRAME_WIDTH, GC_FRAME_HEIGHT, 0.0f, 1.0f);
         GXSetScissor(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
         GXSetCullMode(GX_CULL_NONE);
@@ -747,11 +757,11 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
         GXSetProjection(matrix44, GX_ORTHOGRAPHIC);
         PSMTXIdentity(matrix);
         GXLoadPosMtxImm(matrix, 3);
-        fn_8005EDFC();
+        helpMenu_8005EDFC();
     }
 
-    if (pHelpMenu->unk08 != 0) {
-        pHelpMenu->unk08 = 0;
+    if (pHelpMenu->unk08) {
+        pHelpMenu->unk08 = false;
 
         if (!fn_800631B8(SYSTEM_CONTROLLER(gpSystem), 0)) {
             return false;
@@ -807,14 +817,14 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
         fn_800B1AB8();
         AXSetMode(0);
         fn_800B1B84(1);
-        fn_8005F1F4(fn_80083140());
+        helpMenuInit(fn_80083140());
         HBMSetAdjustFlag(false);
 
         for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
             fn_800CB958(i);
         }
 
-        lbl_801C7D28.unk04 = 0;
+        lbl_801C7D28.unk04 = false;
         lbl_8025D118 = 2;
 
         while (!bVar8) {
@@ -884,13 +894,13 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
                         case HBM_SELECT_BTN3:
                             lbl_8025D118 = 6;
                             fn_80088660();
-                            fn_8005F7E4_UnknownInline();
+                            helpMenuUpdate_UnknownInline();
                             fn_800887C4(lbl_8025D0F8);
 
                             OSDisableInterrupts();
                             if (!lbl_8025D0EC && !lbl_8025D0E8) {
                                 lbl_8025D118 = 7;
-                                fn_8005EAFC();
+                                helpMenu_8005EAFC();
                             }
                             fn_80088674();
                             fn_8008876C();
@@ -1021,24 +1031,24 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
     return true;
 }
 
-bool fn_800607B0(HelpMenu* pHelpMenu, s32 arg1) {
+bool helpMenu_800607B0(HelpMenu* pHelpMenu, bool arg1) {
     pHelpMenu->unk0C = arg1;
-    pHelpMenu->unk08 = 0;
+    pHelpMenu->unk08 = false;
     return true;
 }
 
-bool fn_800607C4(HelpMenu* pHelpMenu, s32 arg1) {
-    if (pHelpMenu->unk0C == 0) {
+bool helpMenu_800607C4(HelpMenu* pHelpMenu, bool arg1) {
+    if (!pHelpMenu->unk0C) {
         lbl_801C7D28.unk0C = 0;
-        lbl_801C7D28.unk04 = 1;
+        lbl_801C7D28.unk04 = true;
         lbl_801C7D28.unk08 = OSGetTick();
         lbl_801C7D28.unk0D = 0;
     } else {
         if (OSGetTime() - lbl_8025D0D0 < OSMillisecondsToTicks(250)) {
-            arg1 = 0;
+            arg1 = false;
         }
 
-        pHelpMenu->unk08 = arg1 != 0 && lbl_801C7D28.unk04 == 0;
+        pHelpMenu->unk08 = arg1 && !lbl_801C7D28.unk04;
     }
 
     return true;
@@ -1076,15 +1086,15 @@ static inline bool helpMenuFree(HelpMenu* pHelpMenu) {
 bool helpMenuEvent(HelpMenu* pHelpMenu, s32 nEvent, void* pArgument) {
     switch (nEvent) {
         case 0:
-            pHelpMenu->unk0C = 1;
+            pHelpMenu->unk0C = true;
             lbl_8025D0EC = false;
             lbl_8025D0E8 = false;
 
-            OSSetResetCallback(fn_8005F1A0);
-            OSSetPowerCallback(fn_8005F154);
+            OSSetResetCallback(helpMenuResetCallback);
+            OSSetPowerCallback(helpMenuPowerCallback);
 
             lbl_801C7D28.pTPLPalette = NULL;
-            lbl_801C7D28.unk04 = 0;
+            lbl_801C7D28.unk04 = false;
 
             if (xlFileLoad("homeBtnIcon.tpl", (void**)&lbl_801C7D28.pTPLPalette)) {
                 TPLBind(lbl_801C7D28.pTPLPalette);
@@ -1103,7 +1113,7 @@ bool helpMenuEvent(HelpMenu* pHelpMenu, s32 nEvent, void* pArgument) {
             break;
         case 2:
             lbl_8025D0D0 = OSGetTime();
-            pHelpMenu->unk08 = 0;
+            pHelpMenu->unk08 = false;
             break;
         case 3:
         case 5:

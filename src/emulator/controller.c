@@ -103,7 +103,7 @@ static bool fn_80080C04(Controller* pController, ErrorIndex iString) {
     errorDisplayShow(iString);
     pController->iString = ERROR_NONE;
 
-    if (!fn_800607C4(SYSTEM_HELP(gpSystem), 0)) {
+    if (!helpMenu_800607C4(SYSTEM_HELP(gpSystem), false)) {
         return false;
     }
 
@@ -473,7 +473,7 @@ static bool fn_800623F4(Controller* pController) {
         pController->stickRight[i][AXIS_Y] = var_r17;
 
         if ((pController->unk_BC[i] & 0x10) && !(pController->unk_CC[i] & 0x10) &&
-            !fn_800607C4(SYSTEM_HELP(gpSystem), 1)) {
+            !helpMenu_800607C4(SYSTEM_HELP(gpSystem), true)) {
             return 0;
         }
     }
