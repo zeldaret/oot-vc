@@ -1709,6 +1709,9 @@ metrotrk/mpc_7xx_603e.c:
 metrotrk/mslsupp.c:
 	.text       start:0x80169750 end:0x801698C8
 
+metrotrk/__exception.s:
+	.init       start:0x800044C0 end:0x800063F4
+
 metrotrk/dolphin_trk.c:
 	.init       start:0x800063F4 end:0x80006420
 	.text       start:0x801698C8 end:0x80169BE4
