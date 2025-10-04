@@ -17,8 +17,6 @@ new_handler nhandler;
 
 } // namespace std
 
-// TODO: malloc/free calls below should not generate __unexpected() calls (wrong compiler?)
-
 void* operator new(size_t size) throw(std::bad_alloc) {
     void* ptr;
 
