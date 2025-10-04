@@ -7,7 +7,7 @@
 namespace std {
 
 class bad_alloc : public exception {
-  public:
+public:
     virtual ~bad_alloc() {}
     virtual const char* what() const { return "bad_alloc"; }
 };
@@ -16,8 +16,6 @@ typedef void (*new_handler)();
 new_handler nhandler;
 
 } // namespace std
-
-// TODO: malloc/free calls below should not generate __unexpected() calls (wrong compiler?)
 
 void* operator new(size_t size) throw(std::bad_alloc) {
     void* ptr;

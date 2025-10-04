@@ -86,9 +86,22 @@ void __AXSyncPBs(u32 baseCycles);
 AXPB* __AXGetPBs(void);
 void __AXSetPBDefault(AXVPB* vpb);
 void __AXVPBInit(void);
+
+void AXSetVoiceSrcType(AXVPB* vpb, u32 type);
 void AXSetVoiceState(AXVPB* vpb, u16 state);
+void AXSetVoiceType(AXVPB* vpb, u16 type);
+void AXSetVoiceMix(AXVPB* vpb, AXPBMIX* mix);
+void AXSetVoiceVe(AXVPB* vpb, AXPBVE* ve);
 void AXSetVoiceAddr(AXVPB* vpb, AXPBADDR* addr);
+void AXSetVoiceAdpcm(AXVPB* vpb, AXPBADPCM* adpcm);
+void AXSetVoiceSrc(AXVPB* vpb, AXPBSRC* src_);
+void AXSetVoiceSrcRatio(AXVPB* vpb, float ratio);
+void AXSetVoiceAdpcmLoop(AXVPB* vpb, AXPBADPCMLOOP* adpcmloop);
+void AXSetVoiceLpf(AXVPB* vpb, AXPBLPF* lpf);
+void AXSetVoiceLpfCoefs(AXVPB* vpb, u16 a0, u16 b0);
 void AXGetLpfCoefs(u16 freq, u16* a, u16* b);
+void AXSetVoiceRmtOn(AXVPB* vpb, u16 on);
+void AXSetVoiceRmtMix(AXVPB* vpb, AXPBRMTMIX* mix);
 void AXSetMaxDspCycles(u32 num);
 
 #ifdef __cplusplus

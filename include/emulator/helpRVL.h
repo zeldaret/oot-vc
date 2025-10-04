@@ -12,24 +12,6 @@ extern "C" {
 
 typedef bool (*HelpMenuCallback)(void);
 
-typedef struct struct_801C7D38 {
-    /* 0x00 */ void* pBuffer1;
-    /* 0x04 */ void* pBuffer2;
-    /* 0x08 */ void* pBuffer3;
-    /* 0x0C */ void* pBuffer4;
-    /* 0x10 */ void* unk20;
-    /* 0x14 */ void* unk24;
-    /* 0x18 */ s32 unk28;
-    /* 0x1C */ int region;
-    /* 0x20 */ s32 unk30;
-    /* 0x24 */ s32 unk34;
-    /* 0x28 */ s32 unk38;
-    /* 0x2C */ f32 unk3C;
-    /* 0x30 */ f32 unk40;
-    /* 0x34 */ f32 unk44;
-    /* 0x38 */ s32 unk48;
-} struct_801C7D38; // size = 0x3C
-
 typedef struct struct_801C7D28 {
     /* 0x00 */ TPLPalette* pTPLPalette;
     /* 0x04 */ s32 unk04;

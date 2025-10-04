@@ -7,6 +7,10 @@
 extern "C" {
 #endif
 
+#define SC_MAX_DEV_ENTRY_FOR_STD 10
+#define SC_MAX_DEV_ENTRY_FOR_SMP 6
+#define SC_MAX_DEV_ENTRY (SC_MAX_DEV_ENTRY_FOR_STD + SC_MAX_DEV_ENTRY_FOR_SMP)
+
 typedef enum {
     SC_ASPECT_STD,
     SC_ASPECT_WIDE
@@ -32,6 +36,11 @@ typedef enum {
 } SCLanguage;
 
 typedef enum {
+    SC_MOTOR_OFF = 0,
+    SC_MOTOR_ON = 1
+} SCMotorMode;
+
+typedef enum {
     SC_SND_MONO,
     SC_SND_STEREO,
     SC_SND_SURROUND
@@ -43,19 +52,33 @@ typedef enum {
 } SCSensorBarPos;
 
 typedef struct SCIdleModeInfo {
-    /* 0x0 */ u8 wc24;
-    /* 0x1 */ u8 slotLight;
+    u8 wc24; // at 0x0
+    u8 slotLight; // at 0x1
 } SCIdleModeInfo;
 
+typedef struct SCDevInfo {
+    char devName[20]; // at 0x0
+    char at_0x14[1];
+    char UNK_0x15[0xB];
+    u8 linkKey[16]; // at 0x20
+    char UNK_0x30[0x10];
+} SCDevInfo;
+
 typedef struct SCBtDeviceInfo {
-    /* 0x0 */ u8 mac[6];
-    /* 0x6 */ char name[64];
+    u8 addr[6]; // at 0x0
+    SCDevInfo info; // at 0x6
 } SCBtDeviceInfo;
 
 typedef struct SCBtDeviceInfoArray {
-    /* 0x0 */ u8 numRegist;
-    /* 0x1 */ SCBtDeviceInfo regist[10];
-    /* 0x2BD */ SCBtDeviceInfo active[6];
+    u8 numRegist; // at 0x0
+    union {
+        struct {
+            SCBtDeviceInfo regist[SC_MAX_DEV_ENTRY_FOR_STD]; // at 0x1
+            SCBtDeviceInfo active[SC_MAX_DEV_ENTRY_FOR_SMP]; // at 0x2BD
+        };
+
+        SCBtDeviceInfo devices[SC_MAX_DEV_ENTRY];
+    };
 } SCBtDeviceInfoArray;
 
 u8 SCGetAspectRatio(void);

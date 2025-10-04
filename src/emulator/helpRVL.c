@@ -44,7 +44,7 @@ static MEMAllocator sMemAllocator1 = {0};
 static MEMAllocator sMemAllocator2 = {0};
 static char sWebsitePath[40] = {0};
 static struct_801C7D28 lbl_801C7D28 = {0};
-static struct_801C7D38 lbl_801C7D38 = {0};
+static HBMDataInfo sHBMDataInfo = {0};
 static CNTHandleNAND sHandleNAND;
 static GXTexObj sTexObj;
 
@@ -517,7 +517,7 @@ static void fn_8005F1A0(void) {
     }
 }
 
-static bool fn_8005F1EC(void) { return false; }
+static bool fn_8005F1EC(s32 event, s32 num) { return false; }
 
 void fn_8005F1F4_UnknownInline1(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
     s32 nLength = fn_8005E2D0(&sHandleNAND, szPath, ppBuffer, &sMemAllocator2, &sMemAllocator1);
@@ -546,7 +546,7 @@ static void fn_8005F1F4(HelpMenu* pHelpMenu) {
 
     temp_r16 = &sp10[strlen(sp10)];
 
-    xlHeapFill8(&lbl_801C7D38, sizeof(struct_801C7D38), 0);
+    xlHeapFill8(&sHBMDataInfo, sizeof(HBMDataInfo), 0);
     lbl_8025D0C4 = NULL;
     contentInitHandleNAND(4, &sHandleNAND, &sMemAllocator2);
 
@@ -562,12 +562,12 @@ static void fn_8005F1F4(HelpMenu* pHelpMenu) {
     lbl_8025D0F4 = sWebsitePath + strlen(sWebsitePath);
 
 #if VERSION == OOT_J
-    lbl_801C7D38.region = SC_LANG_JP;
+    sHBMDataInfo.region = SC_LANG_JP;
     strcpy(temp_r16, "LZ77_homeBtn.arc");
     strcpy(lbl_8025D0F4, "index/index_Frameset.html");
 #else
     language = SCGetLanguage();
-    lbl_801C7D38.region = language;
+    sHBMDataInfo.region = language;
 
     switch (language) {
 #if VERSION == OOT_E
@@ -603,32 +603,32 @@ static void fn_8005F1F4(HelpMenu* pHelpMenu) {
     }
 #endif
 
-    fn_8005E2D0(&sHandleNAND, sp10, &lbl_801C7D38.pBuffer1, &sMemAllocator2, &sMemAllocator1);
+    fn_8005E2D0(&sHandleNAND, sp10, &sHBMDataInfo.layoutBuf, &sMemAllocator2, &sMemAllocator1);
     strcpy(temp_r16, "Huf8_SpeakerSe.arc");
-    fn_8005E2D0(&sHandleNAND, sp10, &lbl_801C7D38.pBuffer2, &sMemAllocator2, &sMemAllocator1);
+    fn_8005E2D0(&sHandleNAND, sp10, &sHBMDataInfo.spkSeBuf, &sMemAllocator2, &sMemAllocator1);
     strcpy(temp_r16, "home.csv");
-    fn_8005E2D0(&sHandleNAND, sp10, &lbl_801C7D38.pBuffer3, &sMemAllocator2, &sMemAllocator1);
+    fn_8005E2D0(&sHandleNAND, sp10, &sHBMDataInfo.msgBuf, &sMemAllocator2, &sMemAllocator1);
     strcpy(temp_r16, "config.txt");
-    fn_8005E2D0(&sHandleNAND, sp10, &lbl_801C7D38.pBuffer4, &sMemAllocator2, &sMemAllocator1);
+    fn_8005E2D0(&sHandleNAND, sp10, &sHBMDataInfo.configBuf, &sMemAllocator2, &sMemAllocator1);
 
-    lbl_801C7D38.unk24 = fn_8005F1EC;
-    lbl_801C7D38.unk28 = 0;
-    lbl_801C7D38.unk30 = 0;
-    lbl_801C7D38.unk40 = 1.3684211f;
-    lbl_801C7D38.unk44 = 1.0f;
-    lbl_801C7D38.unk3C = 1.0f;
+    sHBMDataInfo.sound_callback = fn_8005F1EC;
+    sHBMDataInfo.backFlag = 0;
+    sHBMDataInfo.cursor = 0;
+    sHBMDataInfo.adjust.x = 1.3684211f;
+    sHBMDataInfo.adjust.y = 1.0f;
+    sHBMDataInfo.frameDelta = 1.0f;
 
     strcpy(temp_r16, "homeBtnIcon.tpl");
     fn_8005E2D0(&sHandleNAND, sp10, (void**)&lbl_801C7D28, &sMemAllocator2, &sMemAllocator1);
     TPLBind(lbl_801C7D28.pTPLPalette);
-    lbl_801C7D38.unk38 = 0x80000;
-    fn_8008882C(&lbl_801C7D38.unk20, 0x80000, &sMemAllocator2, &sMemAllocator1);
-    lbl_801C7D38.unk48 = 0;
-    fn_80088994(&lbl_801C7D38);
-    fn_80100870(&lbl_801C7D38);
-    fn_8008882C(&lbl_8025D0C4, 0xa0000, &sMemAllocator2, &sMemAllocator1);
-    fn_80100CD8("/tmp/HBMSE.brsar", lbl_8025D0C4, 0xa0000);
-    fn_80100940();
+    sHBMDataInfo.memSize = 0x80000;
+    fn_8008882C(&sHBMDataInfo.mem, 0x80000, &sMemAllocator2, &sMemAllocator1);
+    sHBMDataInfo.pAllocator = NULL;
+    fn_80088994(&sHBMDataInfo);
+    HBMCreate(&sHBMDataInfo);
+    fn_8008882C(&lbl_8025D0C4, 0xA0000, &sMemAllocator2, &sMemAllocator1);
+    HBMCreateSound("/tmp/HBMSE.brsar", lbl_8025D0C4, 0xA0000);
+    HBMInit();
 }
 
 bool fn_8005F5F4(HelpMenu* pHelpMenu, void* pObject, s32 nByteCount, HelpMenuCallback callback) {
@@ -849,7 +849,7 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
         AXSetMode(0);
         fn_800B1B84(1);
         fn_8005F1F4(fn_80083140());
-        fn_80100AD8(0);
+        HBMSetAdjustFlag(false);
 
         for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
             fn_800CB958(i);
@@ -867,7 +867,7 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
                     case 4:
                         if (!lbl_8025D0F0) {
                             lbl_8025D0F0 = true;
-                            fn_80100AE4();
+                            HBMStartBlackOut();
                         }
                         break;
                     default:
@@ -907,22 +907,22 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
                 case_4:
                 case 4:
                     helpMenuUnknownControllerInline();
-                    fn_80100E40();
-                    if (fn_80100948(&lbl_801CA670) == -1) {
+                    HBMUpdateSound();
+                    if (HBMCalc(&lbl_801CA670) == HBM_SELECT_NULL) {
                         break;
                     }
 
-                    switch (fn_80100AB8()) {
-                        case 1:
+                    switch (HBMGetSelectBtnNum()) {
+                        case HBM_SELECT_BTN1:
                             VISetBlack(true);
                             VIFlush();
                             fn_8000A830(gpSystem, 0x1004, NULL);
                             OSReturnToMenu();
-                        case 2:
+                        case HBM_SELECT_BTN2:
                             lbl_8025D110 = 0;
                             lbl_8025D0EC = true;
                             goto case_9;
-                        case 3:
+                        case HBM_SELECT_BTN3:
                             lbl_8025D118 = 6;
                             fn_80088660();
                             fn_8005F7E4_UnknownInline();
@@ -944,7 +944,7 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
                             lbl_8025D114 = -3;
                             lbl_8025D118 = 8;
                             goto case_8;
-                        case 0:
+                        case HBM_SELECT_HOMEBTN:
                             lbl_8025D118 = 8;
                             goto case_8;
                     }
@@ -998,7 +998,7 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
             GXSetBlendMode(GX_BM_NONE, GX_BL_ZERO, GX_BL_ZERO, GX_LO_CLEAR);
             GXSetZMode(GX_ENABLE, GX_LEQUAL, GX_ENABLE);
             GXSetCurrentMtx(3);
-            fn_8010098C();
+            HBMDraw();
             lbl_8025D0FC ^= 1;
             GXCopyDisp(lbl_8025D100[lbl_8025D0FC], GX_TRUE);
             GXDrawDone();
@@ -1014,14 +1014,14 @@ s32 fn_8005F7E4(HelpMenu* pHelpMenu) {
 
         lbl_8025D0C8 = NULL;
 
-        fn_80100E0C();
-        fn_801008F8();
+        HBMDeleteSound();
+        HBMDelete();
         fn_80083154();
         AXQuit();
         fn_800B1B80();
         AIStopDMA();
         AIRegisterDMACallback(lbl_8025D108);
-        fn_800888DC(&lbl_801C7D38.unk20);
+        fn_800888DC(&sHBMDataInfo.mem);
         contentReleaseHandleNAND(&sHandleNAND);
 
         if (!fn_800631B8(SYSTEM_CONTROLLER(gpSystem), 1)) {

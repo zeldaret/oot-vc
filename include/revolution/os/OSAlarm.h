@@ -36,6 +36,10 @@ void OSSetAlarmTag(OSAlarm* alarm, u32 tag);
 void OSSetAlarmUserData(OSAlarm* alarm, void* userData);
 void* OSGetAlarmUserData(const OSAlarm* alarm);
 
+#define OSGetAlarmUserDataAny(type_, alarm_) ((type_)(OSGetAlarmUserData(alarm_)))
+
+#define OSSetAlarmUserDataAny(alarm_, data_) OSSetAlarmUserData(alarm_, (void*)(data_))
+
 #ifdef __cplusplus
 }
 #endif

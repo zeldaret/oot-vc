@@ -1,9 +1,7 @@
 #ifndef _STDARG_H
 #define _STDARG_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef __cplusplus
 
 #if defined(__INTELLISENSE__) && defined(__cplusplus)
 #define __builtin_va_info(v) 0 /* definition for IDEs */
@@ -38,8 +36,6 @@ void* __va_arg(__va_list_struct* list, int type);
 
 #define va_end(ap) (void)0
 
-#ifdef __cplusplus
-}
 #endif
 
 #endif

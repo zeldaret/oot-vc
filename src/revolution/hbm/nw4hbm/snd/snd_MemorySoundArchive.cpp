@@ -1,0 +1,174 @@
+#include "revolution/hbm/nw4hbm/snd/MemorySoundArchive.h"
+
+#include <cstring.hpp> // std::memcpy
+#include <new.hpp>
+
+#include "revolution/types.h"
+
+#include "revolution/hbm/nw4hbm/snd/SoundArchive.h"
+#include "revolution/hbm/nw4hbm/snd/SoundArchiveFile.h"
+
+#include "revolution/hbm/nw4hbm/ut/FileStream.h"
+#include "revolution/hbm/nw4hbm/ut/RuntimeTypeInfo.h"
+#include "revolution/hbm/nw4hbm/ut/inlines.h"
+
+#include "revolution/hbm/HBMAssert.hpp"
+
+namespace nw4hbm {
+namespace snd {
+
+class MemorySoundArchive::MemoryFileStream : public ut::FileStream {
+public:
+    MemoryFileStream(const void* buffer, u32 size);
+
+    /* 0x10 */ virtual void Close();
+    /* 0x14 */ virtual s32 Read(void* dst, u32 size);
+    /* 0x44 */ virtual void Seek(s32 offset, u32 origin);
+
+    /* 0x50 */ virtual bool CanSeek() const { return true; }
+    /* 0x54 */ virtual bool CanCancel() const { return true; }
+    /* 0x28 */ virtual bool CanAsync() const { return false; }
+    /* 0x2C */ virtual bool CanRead() const { return true; }
+    /* 0x30 */ virtual bool CanWrite() const { return false; }
+
+    /* 0x58 */ virtual u32 Tell() const { return mOffset; }
+
+    /* 0x40 */ virtual u32 GetSize() const { return mSize; }
+
+private:
+    /* 0x14 */ const void* mData;
+    /* 0x18 */ s32 mSize;
+    /* 0x1C */ s32 mOffset;
+};
+
+MemorySoundArchive::MemorySoundArchive() :
+    mData(NULL) {}
+
+MemorySoundArchive::~MemorySoundArchive() {}
+
+bool MemorySoundArchive::Setup(const void* buffer) {
+    mFileReader.Init(buffer);
+    SoundArchive::Setup(&mFileReader);
+
+    const void* pInfoChunk = ut::AddOffsetToPtr(buffer, mFileReader.GetInfoChunkOffset());
+
+    mFileReader.SetInfoChunk(pInfoChunk, mFileReader.GetInfoChunkSize());
+
+    const void* pStringChunk = ut::AddOffsetToPtr(buffer, mFileReader.GetLabelStringChunkOffset());
+
+    mFileReader.SetStringChunk(pStringChunk, mFileReader.GetLabelStringChunkSize());
+
+    mData = buffer;
+    return true;
+}
+
+void MemorySoundArchive::Shutdown() {
+    mData = NULL;
+    SoundArchive::Shutdown();
+}
+
+const void* MemorySoundArchive::detail_GetFileAddress(u32 id) const {
+    SoundArchive::FilePos pos;
+    if (!detail_ReadFilePos(id, 0, &pos)) {
+        return NULL;
+    }
+
+    SoundArchive::GroupInfo groupInfo;
+    if (!detail_ReadGroupInfo(pos.groupId, &groupInfo)) {
+        return NULL;
+    }
+
+    SoundArchive::GroupItemInfo itemInfo;
+    if (!detail_ReadGroupItemInfo(pos.groupId, pos.index, &itemInfo)) {
+        return NULL;
+    }
+
+    if (groupInfo.extFilePath != NULL) {
+        return NULL;
+    }
+
+    return ut::AddOffsetToPtr(mData, groupInfo.offset + itemInfo.offset);
+}
+
+const void* MemorySoundArchive::detail_GetWaveDataFileAddress(u32 id) const {
+    SoundArchive::FilePos pos;
+    if (!detail_ReadFilePos(id, 0, &pos)) {
+        return NULL;
+    }
+
+    SoundArchive::GroupInfo groupInfo;
+    if (!detail_ReadGroupInfo(pos.groupId, &groupInfo)) {
+        return NULL;
+    }
+
+    SoundArchive::GroupItemInfo itemInfo;
+    if (!detail_ReadGroupItemInfo(pos.groupId, pos.index, &itemInfo)) {
+        return NULL;
+    }
+
+    if (groupInfo.extFilePath != NULL) {
+        return NULL;
+    }
+
+    return ut::AddOffsetToPtr(mData, groupInfo.waveDataOffset + itemInfo.waveDataOffset);
+}
+
+MemorySoundArchive::MemoryFileStream::MemoryFileStream(const void* buffer, u32 size) :
+    mData(buffer),
+    mSize(size),
+    mOffset(0) {}
+
+ut::FileStream* MemorySoundArchive::OpenStream(void* buffer, int size, u32 offset, u32 length) const {
+    if (mData == NULL) {
+        return nullptr;
+    }
+
+    if (size < sizeof(MemoryFileStream)) {
+        return nullptr;
+    }
+
+    return new (buffer) MemoryFileStream(ut::AddOffsetToPtr(mData, offset), length);
+}
+
+ut::FileStream* MemorySoundArchive::OpenExtStream(void* buffer, int size, const char* extPath, u32 offset,
+                                                  u32 length) const {
+    return nullptr;
+}
+
+int MemorySoundArchive::detail_GetRequiredStreamBufferSize() const { return sizeof(MemoryFileStream); }
+
+void MemorySoundArchive::MemoryFileStream::Close() {
+    mData = NULL;
+    mSize = 0;
+    mOffset = 0;
+}
+
+s32 MemorySoundArchive::MemoryFileStream::Read(void* dst, u32 size) {
+    u32 bytesRead = ut::Min<u32>(size, mSize - mOffset);
+    std::memcpy(dst, ut::AddOffsetToPtr(mData, mOffset), bytesRead);
+
+    return bytesRead;
+}
+
+void MemorySoundArchive::MemoryFileStream::Seek(s32 offset, u32 origin) {
+    switch (origin) {
+        case SEEK_BEG: {
+            mOffset = offset;
+            break;
+        }
+        case SEEK_CUR: {
+            mOffset += offset;
+            break;
+        }
+        case SEEK_END: {
+            mOffset = mSize - offset;
+            break;
+        }
+        default: {
+            return;
+        }
+    }
+}
+
+} // namespace snd
+} // namespace nw4hbm

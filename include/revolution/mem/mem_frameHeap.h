@@ -1,6 +1,7 @@
 #ifndef _RVL_SDK_MEM_FRAME_HEAP_H
 #define _RVL_SDK_MEM_FRAME_HEAP_H
 
+#include "revolution/mem/mem_heapCommon.h"
 #include "revolution/types.h"
 
 #ifdef __cplusplus
@@ -40,7 +41,6 @@ void MEMFreeToFrmHeap(struct MEMiHeapHead* heap, u32 flags);
 u32 MEMGetAllocatableSizeForFrmHeapEx(struct MEMiHeapHead* heap, s32 align);
 bool MEMRecordStateForFrmHeap(struct MEMiHeapHead* heap, u32 id);
 bool MEMFreeByStateToFrmHeap(struct MEMiHeapHead* heap, u32 id);
-u32 MEMAdjustFrmHeap(struct MEMiHeapHead* heap);
 u32 MEMResizeForMBlockFrmHeap(struct MEMiHeapHead* heap, void* memBlock, u32 size);
 
 static inline struct MEMiHeapHead* MEMCreateFrmHeap(void* start, u32 size) {

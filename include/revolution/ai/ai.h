@@ -27,6 +27,7 @@ u32 AIGetDSPSampleRate(void);
 void AIInit(void* stack);
 void AIReset(void);
 void __AIDHandler(__OSInterrupt intr, struct OSContext* ctx);
+bool AICheckInit(void);
 
 #ifdef __cplusplus
 }
