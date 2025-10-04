@@ -3528,9 +3528,9 @@ bool fn_8005329C(Frame* pFrame, s32 r, s32 g, s32 b) {
 }
 
 static inline bool frameEvent_UnknownInline(Frame* pFrame) {
-    if (!helpMenuSetupSize(SYSTEM_HELP(gpSystem), &pFrame->aPixelData, 0x30300000, &frameSetupCache)) {
+    if (!helpMenuAllocate(SYSTEM_HELP(gpSystem), &pFrame->aPixelData, 0x30300000, &frameSetupCache)) {
         return false;
-    } else if (!helpMenuSetupSize(SYSTEM_HELP(gpSystem), &pFrame->aColorData, 0x30050000, &frameSetupCache)) {
+    } else if (!helpMenuAllocate(SYSTEM_HELP(gpSystem), &pFrame->aColorData, 0x30050000, &frameSetupCache)) {
         return false;
     }
 
@@ -3628,7 +3628,7 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
             pFrame->nCopyBuffer = NULL;
             pFrame->nCameraBuffer = NULL;
 
-            if (!helpMenuSetupSize(SYSTEM_HELP(gpSystem), &pFrame->nTempBuffer, 0x30025800, NULL)) {
+            if (!helpMenuAllocate(SYSTEM_HELP(gpSystem), &pFrame->nTempBuffer, 0x30025800, NULL)) {
                 return false;
             }
 

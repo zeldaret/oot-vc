@@ -600,7 +600,7 @@ static void helpMenuInit(HelpMenu* pHelpMenu) {
     HBMInit();
 }
 
-bool helpMenuSetupSize(HelpMenu* pHelpMenu, void* pObject, s32 nByteCount, HelpMenuCallback callback) {
+bool helpMenuAllocate(HelpMenu* pHelpMenu, void* pObject, s32 nByteCount, HelpMenuCallback callback) {
     u32 nSize;
     s32 var_r7;
     s32 nSizeExtra;

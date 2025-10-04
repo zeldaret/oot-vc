@@ -33,7 +33,7 @@ typedef struct HelpMenu {
     /* 0x24 */ HelpMenuCallback unk24[8];
 } HelpMenu; // size = 0x28
 
-bool helpMenuSetupSize(HelpMenu* pHelpMenu, void* pObject, s32 nByteCount, HelpMenuCallback callback);
+bool helpMenuAllocate(HelpMenu* pHelpMenu, void* pObject, s32 nByteCount, HelpMenuCallback callback);
 s32 helpMenuUpdate(HelpMenu* pHelpMenu);
 bool helpMenu_800607B0(HelpMenu* pHelpMenu, bool arg1);
 bool helpMenu_800607C4(HelpMenu* pHelpMenu, bool arg1);
