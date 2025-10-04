@@ -631,7 +631,10 @@ revolution/mem/mem_expHeap.c:
 	.text       start:0x800B0910 end:0x800B107C
 
 revolution/mem/mem_frameHeap.c:
-	.text       start:0x800B107C end:0x800B1640
+	.text       start:0x800B107C end:0x800B1368
+
+revolution/mem/mem_unitHeap.c:
+	.text       start:0x800B1368 end:0x800B1640
 
 revolution/mem/mem_allocator.c:
 	.text       start:0x800B1640 end:0x800B16C4

@@ -495,8 +495,9 @@ config.libs = [
         "mem",
         [
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mem/mem_heapCommon.c"),
-            Object(NotLinked, "revolution/mem/mem_expHeap.c"),
-            Object(NotLinked, "revolution/mem/mem_frameHeap.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mem/mem_expHeap.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mem/mem_frameHeap.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mem/mem_unitHeap.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mem/mem_allocator.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mem/mem_list.c"),
         ]
