@@ -605,18 +605,6 @@ static void helpMenuInit(HelpMenu* pHelpMenu) {
     }
 #endif
 
-    fn_8005E2D0(&sHandleNAND, sp10, &sHBMDataInfo.layoutBuf, &sMemAllocator2, &sMemAllocator1);
-
-    strcpy(temp_r16, "Huf8_SpeakerSe.arc");
-    fn_8005E2D0(&sHandleNAND, sp10, &sHBMDataInfo.spkSeBuf, &sMemAllocator2, &sMemAllocator1);
-
-    strcpy(temp_r16, "home.csv");
-    fn_8005E2D0(&sHandleNAND, sp10, &sHBMDataInfo.msgBuf, &sMemAllocator2, &sMemAllocator1);
-
-    strcpy(temp_r16, "config.txt");
-    fn_8005E2D0(&sHandleNAND, sp10, &sHBMDataInfo.configBuf, &sMemAllocator2, &sMemAllocator1);
-
-    strcpy(lbl_8025D0F4, "index/index_Frameset.html");
     helpMenuReadNAND(&sHandleNAND, sp10, &sHBMDataInfo.layoutBuf, &sMemAllocator2, &sMemAllocator1);
 
     strcpy(temp_r16, "Huf8_SpeakerSe.arc");
