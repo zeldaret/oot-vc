@@ -544,6 +544,7 @@ static void helpMenuInit(HelpMenu* pHelpMenu) {
     void* sp8;
     char* temp_r16;
     char sp10[32] = "HomeButton3/";
+    u8 language;
 
     temp_r16 = &sp10[strlen(sp10)];
 
@@ -561,10 +562,49 @@ static void helpMenuInit(HelpMenu* pHelpMenu) {
 
     strcpy(sWebsitePath, "arc:/html/");
     lbl_8025D0F4 = sWebsitePath + strlen(sWebsitePath);
+
+#if VERSION == OOT_J
     sHBMDataInfo.region = SC_LANG_JP;
     strcpy(temp_r16, "LZ77_homeBtn.arc");
-
     strcpy(lbl_8025D0F4, "index/index_Frameset.html");
+#else
+    language = SCGetLanguage();
+    sHBMDataInfo.region = language;
+
+    switch (language) {
+#if VERSION == OOT_E
+        case SC_LANG_DE:
+            strcpy(temp_r16, "LZ77_homeBtn_GER.arc");
+            strcpy(lbl_8025D0F4, "startup_noe.html");
+            break;
+#endif
+        case SC_LANG_FR:
+            strcpy(temp_r16, "LZ77_homeBtn_FRA.arc");
+            strcpy(lbl_8025D0F4, "startup_fra.html");
+            break;
+        case SC_LANG_SP:
+            strcpy(temp_r16, "LZ77_homeBtn_SPA.arc");
+            strcpy(lbl_8025D0F4, "startup_esp.html");
+            break;
+#if VERSION == OOT_E
+        case SC_LANG_IT:
+            strcpy(temp_r16, "LZ77_homeBtn_ITA.arc");
+            strcpy(lbl_8025D0F4, "startup_ita.html");
+            break;
+        case SC_LANG_NL:
+            strcpy(temp_r16, "LZ77_homeBtn_NED.arc");
+            strcpy(lbl_8025D0F4, "startup_hol.html");
+            break;
+#endif
+        case SC_LANG_EN:
+        default:
+            strcpy(temp_r16, "LZ77_homeBtn_ENG.arc");
+            strcpy(lbl_8025D0F4, "startup.html");
+            OSReport("SC_LANG_ENGLISH\n");
+            break;
+    }
+#endif
+
     helpMenuReadNAND(&sHandleNAND, sp10, &sHBMDataInfo.layoutBuf, &sMemAllocator2, &sMemAllocator1);
 
     strcpy(temp_r16, "Huf8_SpeakerSe.arc");
