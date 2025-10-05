@@ -47,7 +47,6 @@ void* TRKTargetTranslate(u32* addr) {
         return addr;
     } else {
         return (void*)(((u32)addr & 0x3FFFFFFF) | BOOTINFO);
-        ;
     }
 }
 

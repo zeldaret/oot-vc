@@ -863,6 +863,7 @@ config.libs = [
             Object(Linked, "metrotrk/flush_cache.c"),
             Object(Linked, "metrotrk/mem_TRK.c"),
             Object(Linked, "metrotrk/string_TRK.c"),
+            Object(Linked, "metrotrk/__exception.s"),
             Object(Linked, "metrotrk/targimpl.c"),
             Object(Linked, "metrotrk/targsupp.c", extra_cflags=["-func_align 16"]),
             Object(Linked, "metrotrk/mpc_7xx_603e.c"),
