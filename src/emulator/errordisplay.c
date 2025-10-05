@@ -647,7 +647,7 @@ bool errorDisplayShow(ErrorIndex iString) {
 
     string.iString = ERROR_NONE;
 
-    if (!fn_800607B0(SYSTEM_HELP(gpSystem), 0)) {
+    if (!helpMenu_800607B0(SYSTEM_HELP(gpSystem), false)) {
         return false;
     }
 
@@ -671,12 +671,12 @@ bool errorDisplayShow(ErrorIndex iString) {
         xlCoreBeforeRender();
         errorDisplayDrawSetup();
         errorDisplayPrint(&string);
-        fn_8005F7E4(SYSTEM_HELP(gpSystem));
+        helpMenuUpdate(SYSTEM_HELP(gpSystem));
         simulatorDEMODoneRender();
         nResult = fn_80063688(&string, var_r31 & (var_r31 ^ var_r30));
     } while (nResult == 0);
 
-    if (fn_800607B0(SYSTEM_HELP(gpSystem), 1)) {
+    if (helpMenu_800607B0(SYSTEM_HELP(gpSystem), true)) {
         return nResult != 1;
     }
 
