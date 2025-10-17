@@ -317,7 +317,7 @@ config.libs = [
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/library.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/codeRVL.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/helpRVL.c"),
-            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/soundRVL.c"),
+            Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/soundRVL.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/video.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/storeRVL.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/controller.c", mw_version="GC/3.0a5.2"),
