@@ -136,7 +136,7 @@ static inline bool simulatorRun(SystemMode* peMode) {
     return true;
 }
 
-#if VERSION == MK64_U
+#if IS_MK64
 #define LINE_OFFSET -6
 #else
 #define LINE_OFFSET 0

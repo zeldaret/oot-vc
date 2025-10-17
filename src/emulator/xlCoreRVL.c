@@ -22,7 +22,7 @@ static inline u32 getFBTotalSize(f32 aspectRatio) {
     return fbWith * lineCount;
 }
 
-#if VERSION == MK64_U
+#if IS_MK64
 #define LINE_OFFSET -7
 #else
 #define LINE_OFFSET 0
@@ -146,7 +146,7 @@ bool fn_8007FC84(void) {
 }
 
 #undef LINE_OFFSET
-#if VERSION == MK64_U
+#if IS_MK64
 #define LINE_OFFSET -40
 #else
 #define LINE_OFFSET 0
@@ -191,7 +191,7 @@ int main(int nCount, char** aszArgument) {
         return false;
     }
 
-#if VERSION == MK64_U
+#if IS_MK64
     nSizeHeap = 0x87600;
     nSize = ((rmode->fbWidth + 0xF) & 0xFFF0) * rmode->xfbHeight * 2;
 #else

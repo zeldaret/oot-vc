@@ -150,7 +150,7 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
                 break;
             }
 
-#if VERSION == MK64_U
+#if IS_MK64
             var_r3 = var_r27 - (var_r29 * 32);
 #else
             var_r3 = var_r27 - var_r28;
@@ -167,7 +167,7 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
             var_r26 -= var_r5;
             var_r27 += var_r5;
             var_r26 -= var_r5; // again?
-#if VERSION == MK64_U
+#if IS_MK64
             var_r29 += 1;
 #else
             var_r28 += 0x20;
@@ -263,7 +263,7 @@ static inline void fn_80061DB8_Inline(Store* pStore) {
     }
 }
 
-#if VERSION == MK64_U
+#if IS_MK64
 #define IS_PSTORE_NULL(pStore) true
 #else
 #define IS_PSTORE_NULL(pStore) pStore != NULL
@@ -283,7 +283,7 @@ bool fn_80061DB8(void) {
 
     if (pFlash != NULL) {
         if (IS_PSTORE_NULL(pFlash->pStore)) {
-#if VERSION == MK64_U
+#if IS_MK64
             fn_80061DB8_Inline(pFlash->pStore);
 #else
             pStore = pFlash->pStore;

@@ -279,7 +279,7 @@ static SystemDevice gaSystemDevice[] = {
     },
 };
 
-#if VERSION == MK64_U
+#if IS_MK64
 u32 lbl_8016E268[] = {
     0x3C1A8007, 0x275ACEC0, 0x03400008, 0x00000000, 0x3C010010, 0x012A4824, 0x01214823, 0x3C01A460, 0xAC290000,
     0x3C08A460, 0x8D080010, 0x31080002, 0x5500FFFD, 0x3C08A460, 0x24081000, 0x010B4020, 0x010A4024, 0x3C01A460,
@@ -424,7 +424,7 @@ bool systemCreateStorageDevice(System* pSystem, void* pArgument) {
 static bool systemSetRamMode(System* pSystem) {
     s32 nSize;
     u32* anMode;
-#if VERSION == MK64_U
+#if IS_MK64
     s32* anUnknown;
 #endif
 
@@ -437,7 +437,7 @@ static bool systemSetRamMode(System* pSystem) {
     anMode[2] = 0xB0000000;
     anMode[3] = 0;
 
-#if VERSION == MK64_U
+#if IS_MK64
     anMode[4] = 0x17D7;
 #else
     anMode[4] = 0x17D5;
@@ -451,7 +451,7 @@ static bool systemSetRamMode(System* pSystem) {
 
     anMode[6] = nSize;
 
-#if VERSION == MK64_U
+#if IS_MK64
     if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&anUnknown, 0, NULL)) {
         return false;
     }
@@ -703,7 +703,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case CZLE:
             pArgument = 0x8000;
             nSizeSound = 0x1000;
-#if VERSION == MK64_U
+#if IS_MK64
             storageDevice = SOT_SRAM;
             gSystemRomConfigurationList.storageDevice = SOT_PIF;
             if (!simulatorGetArgument(SAT_RESET, &szArgument) || *szArgument == '1') {
@@ -875,7 +875,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NCUJ:
         case NCUP:
         case NCUE:
-#if VERSION == MK64_U
+#if IS_MK64
             gSystemRomConfigurationList.storageDevice = SOT_AUDIO;
 #else
             gSystemRomConfigurationList.storageDevice = SOT_RSP;
@@ -974,7 +974,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NFZP:
         case NFZJ:
         case CFZE:
-#if VERSION == MK64_U
+#if IS_MK64
             gSystemRomConfigurationList.storageDevice = SOT_RSP;
             pArgument = 0x1000;
             storageDevice = SOT_FLASH;
@@ -1217,7 +1217,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NTEJ:
         case NTEP:
         case NTEA:
-#if VERSION == MK64_U
+#if IS_MK64
             if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pBuffer2, 0x300, NULL)) {
                 return false;
             }
@@ -1261,7 +1261,7 @@ static bool systemSetupGameALL(System* pSystem) {
             if (!cpuSetCodeHack(pCPU, 0x800F04E8, 0x1218FFFB, 0)) {
                 return false;
             }
-#if VERSION == MK64_U
+#if IS_MK64
             storageDevice = SOT_SRAM;
             gSystemRomConfigurationList.storageDevice = SOT_PIF;
 #endif

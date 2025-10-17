@@ -297,7 +297,7 @@ struct Cpu {
     /* 0x00B5C */ CpuExecuteFunc pfRamF;
     /* 0x00B60 */ CpuDevice* apDevice[256];
     /* 0x00F60 */ u8 aiDevice[1 << DEVICE_ADDRESS_INDEX_BITS];
-#if VERSION == MK64_U
+#if IS_MK64
     u8 pad2[0x100];
 #endif
     /* 0x10F60 */ void* gHeap1;

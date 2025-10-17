@@ -12,6 +12,8 @@ extern "C" {
 #define MK64_J 4
 #define MK64_U 5
 #define MK64_E 6
+#define IS_OOT (VERSION == OOT_J || VERSION == OOT_U || VERSION == OOT_E)
+#define IS_MK64 (VERSION == MK64_J || VERSION == MK64_U || VERSION == MK64_E)
 
 #define ALIGN_PREV(X, N) ((X) & ~((N) - 1))
 #define ALIGN_NEXT(X, N) ALIGN_PREV(((X) + (N) - 1), N)

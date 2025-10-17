@@ -427,7 +427,7 @@ static bool fn_80042C98(Rom* pROM) {
         return false;
     }
 
-#if VERSION == MK64_U
+#if IS_MK64
     pCacheRAM = pROM->pCacheRAM;
     pROM->pBuffer = pCacheRAM;
 #endif
@@ -522,7 +522,7 @@ static bool romLoadFullOrPart(Rom* pROM) {
         if (OSCreateThread(&DefaultThread, (OSThreadFunc)__ROMEntry, pROM, (void*)((u8*)pBuffer + ROM_THREAD_SIZE),
                            ROM_THREAD_SIZE, OS_PRIORITY_MAX, 1)) {
             OSResumeThread(&DefaultThread);
-#if VERSION == MK64_U
+#if IS_MK64
             errorDisplayShow(ERROR_NO_CONTROLLER);
 #else
             errorDisplayShow(pROM->unk_C ? ERROR_NO_CONTROLLER : ERROR_BLANK);
