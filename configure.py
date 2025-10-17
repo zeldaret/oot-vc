@@ -322,7 +322,7 @@ config.libs = [
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/storeRVL.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/controller.c", mw_version="GC/3.0a5.2"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/errordisplay.c"),
-            Object(LinkedFor("oot-j", "oot-u"), "emulator/banner.c"),
+            Object(LinkedFor("mk64-u", "oot-j", "oot-u"), "emulator/banner.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/stringtable.c"),
             Object(NotLinked, "emulator/rsp.c"),
             Object(NotLinked, "emulator/rdp.c"),
