@@ -61,7 +61,7 @@ const s32 D_801360D8[2] = {
     0x00000000,
 };
 
-// special ``memset`` function?
+// special `memset` function?
 inline void BuildTevMemset(void* ptr, int value, size_t num) {
     u8* p = ptr;
 
@@ -174,7 +174,7 @@ s32 AddAlphaTevOrder(CombineModeTev* tvP, s32 foundTypes, s32 curStage) {
     return ret;
 }
 
-#pragma GLOBAL_ASM("asm/non_matchings/_buildtev/SetupStage.s")
+// SetupStage
 
 void BuildCycle(CombineModeTev* tvP, u8 (*stageValues)[4]) {
     s32 numCParts;

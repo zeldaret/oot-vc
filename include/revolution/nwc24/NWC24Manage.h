@@ -15,7 +15,6 @@ extern "C" {
 
 #define NWC24_IO_BUFFER_SIZE 512
 
-#define ROUND_UP(x, align) (((x) + (align) - 1) & (-(align)))
 #define WORK_SIZE(x) (ROUND_UP(sizeof(x), 0x100))
 
 typedef struct NWC24Work {

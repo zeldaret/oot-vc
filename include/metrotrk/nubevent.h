@@ -2,32 +2,35 @@
 #define _METROTRK_NUBEVENT_H
 
 #include "metrotrk/dserror.h"
+#include "metrotrk/msgbuf.h"
 #include "revolution/types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    kEventNone,
-    kEventWait,
-    kEventMessage,
-    kEventException,
-    kEventBreakpoint,
-    kEventSupportRequest
-} TRKEventType;
+typedef unsigned long NubEventID;
 
-typedef struct TRKEvent {
-    /* 0x0 */ TRKEventType type;
-    /* 0x4 */ unsigned int id;
-    /* 0x8 */ int buffer;
-} TRKEvent;
+typedef enum NubEventType {
+    kNullEvent = 0,
+    kShutdownEvent = 1,
+    kRequestEvent = 2,
+    kBreakpointEvent = 3,
+    kExceptionEvent = 4,
+    kSupportEvent = 5
+} NubEventType;
 
-void TRKDestructEvent(TRKEvent* event);
-void TRKConstructEvent(TRKEvent* event, TRKEventType type);
-DSError TRKPostEvent(TRKEvent* event);
-bool TRKGetNextEvent(TRKEvent* event);
-DSError TRKInitializeEventQueue(TRKEvent* event);
+typedef struct NubEvent {
+    /* 0x00 */ NubEventType fType;
+    /* 0x04 */ NubEventID fID;
+    /* 0x08 */ MessageBufferID fMessageBufferID;
+} NubEvent; // size = 0x0C
+
+DSError TRKInitializeEventQueue(void);
+bool TRKGetNextEvent(NubEvent*);
+DSError TRKPostEvent(NubEvent*);
+void TRKConstructEvent(NubEvent*, int);
+void TRKDestructEvent(NubEvent*);
 
 #ifdef __cplusplus
 }

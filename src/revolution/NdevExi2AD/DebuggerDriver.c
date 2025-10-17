@@ -13,14 +13,16 @@ static void __DBWaitForSendMail(void);
 void __DBMtrHandler(__OSInterrupt type, OSContext* ctx) {
     __DBEXIInputFlag = true;
 
-    if (__DBMtrCallback != NULL)
+    if (__DBMtrCallback != NULL) {
         __DBMtrCallback(0, ctx);
+    }
 }
 
 void __DBIntrHandler(__OSInterrupt type, OSContext* ctx) {
     PI_HW_REGS[PI_INTSR] = PI_INTSR_DEBUG;
-    if (__DBDbgCallback != NULL)
+    if (__DBDbgCallback != NULL) {
         __DBDbgCallback(type, ctx);
+    }
 }
 
 static void __DBCheckMailBox(void) {

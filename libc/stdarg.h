@@ -1,31 +1,41 @@
-#ifndef _STDARG_H_
-#define _STDARG_H_
+#ifndef _STDARG_H
+#define _STDARG_H
 
-#ifdef __MWERKS__
-typedef struct {
+#ifndef __cplusplus
+
+#if defined(__INTELLISENSE__) && defined(__cplusplus)
+#define __builtin_va_info(v) 0 /* definition for IDEs */
+#endif
+
+typedef enum _va_arg_type {
+    arg_ARGPOINTER,
+    arg_WORD,
+    arg_DOUBLEWORD,
+    arg_ARGREAL
+} _va_arg_type;
+
+typedef struct __va_list_struct {
     char gpr;
     char fpr;
     char reserved[2];
     char* input_arg_area;
     char* reg_save_area;
-} __va_list[1];
-typedef __va_list va_list;
+} __va_list_struct;
 
-#ifndef __MWERKS__
-extern void __builtin_va_info(va_list*);
-#endif
+typedef __va_list_struct va_list[1];
 
-void* __va_arg(va_list v_list, unsigned char type);
+void* __va_arg(__va_list_struct* list, int type);
 
+#ifdef __MWERKS__
 #define va_start(ap, fmt) ((void)fmt, __builtin_va_info(&ap))
 #define va_arg(ap, t) (*((t*)__va_arg(ap, _var_arg_typeof(t))))
+#else
+#define va_start(ap, fmt) 0
+#define va_arg(ap, t) 0
+#endif
+
 #define va_end(ap) (void)0
 
-#else
-typedef __builtin_va_list va_list;
-#define va_start(v, l) __builtin_va_start(v, l)
-#define va_end(v) __builtin_va_end(v)
-#define va_arg(v, l) __builtin_va_arg(v, l)
 #endif
 
 #endif

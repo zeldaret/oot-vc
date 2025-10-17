@@ -4,7 +4,6 @@
 #include "macros.h"
 #include "revolution/nand/nand.h"
 #include "revolution/types.h"
-#include "stddef.h"
 
 #ifdef __cplusplus
 extern "C" {

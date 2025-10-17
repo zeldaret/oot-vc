@@ -3,7 +3,6 @@
 
 #include "macros.h"
 #include "revolution/types.h"
-#include "stddef.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,28 +66,6 @@ DECL_ROM_SECTION(_stack);
 DECL_BSS_SECTION(_bss);
 DECL_BSS_SECTION(_sbss);
 DECL_BSS_SECTION(_sbss2);
-
-typedef struct RomSection {
-    /* 0x4 */ void* phys;
-    /* 0x0 */ void* virt;
-    /* 0x8 */ size_t size;
-} RomSection;
-
-typedef struct BssSection {
-    /* 0x0 */ void* virt;
-    /* 0x8 */ size_t size;
-} BssSection;
-
-typedef struct ExtabIndexInfo {
-    /* 0x0 */ void* section;
-    /* 0x4 */ struct ExtabIndexInfo* extab;
-    /* 0x8 */ void* codeStart;
-    /* 0xC */ u32 codeSize;
-} ExtabIndexInfo;
-
-INIT extern const RomSection _rom_copy_info[];
-INIT extern const BssSection _bss_init_info[];
-INIT extern const ExtabIndexInfo _eti_init_info[];
 
 #ifdef __cplusplus
 }

@@ -264,7 +264,8 @@ bool xlHeapCompact(s32 iHeap) {
 
     pBlockPrevious = NULL;
     pBlock = gpHeapBlockFirst[iHeap];
-    while (nBlock = *pBlock, (nBlockSize = BLOCK_SIZE(*pBlock)) != 0) {
+    while ((nBlockSize = BLOCK_SIZE(*pBlock)) != 0) {
+        nBlock = *pBlock;
         pBlockNext = pBlock + 1 + nBlockSize;
         nBlockNext = *pBlockNext;
 
@@ -385,7 +386,7 @@ bool xlHeapTake(void** ppHeap, s32 nByteCount) {
             }
 
             *pBlock = MAKE_BLOCK(nSize, FLAG_TAKEN);
-            gnHeapTakeCount[iHeap] += 1;
+            gnHeapTakeCount[iHeap]++;
 
             pBlock++;
             while (((u32)pBlock & nSizeExtra) != 0) {
@@ -631,7 +632,7 @@ static bool __xlHeapGetFree(s32 iHeap, s32* pnFreeBytes) {
     return true;
 }
 
-bool xlHeapGetFree(s32* pnFreeBytes) { return __xlHeapGetFree(0, pnFreeBytes); }
+bool xlHeapGetHeap1Free(s32* pnFreeBytes) { return __xlHeapGetFree(0, pnFreeBytes); }
 
 bool xlHeapSetup(void) {
     s32 gpHeap_align[2];

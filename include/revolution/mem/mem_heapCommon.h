@@ -5,7 +5,8 @@
 #include "revolution/mem/mem_list.h"
 #include "revolution/os.h"
 #include "revolution/types.h"
-#include "stdint.h"
+
+#define MEM_HEAP_INVALID_HANDLE 0
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,6 +34,8 @@ typedef struct MEMiHeapHead {
         };
     };
 } MEMiHeapHead;
+
+typedef MEMiHeapHead* MEMHeapHandle;
 
 void MEMiInitHeapHead(MEMiHeapHead* heap, u32 magic, void* start, void* end, u16 opt);
 void MEMiFinalizeHeap(MEMiHeapHead* heap);

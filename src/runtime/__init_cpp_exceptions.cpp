@@ -1,7 +1,8 @@
+#include "macros.h"
 #include "revolution/os.h"
 #include "runtime/Gecko_ExceptionPPC.h"
+#include "runtime/NMWException.h"
 #include "runtime/global_destructor_chain.h"
-#include "macros.h"
 
 static int fragmentID = -2;
 
@@ -16,8 +17,8 @@ void __fini_cpp_exceptions(void);
 }
 #endif
 
-static inline void* GetTOC(void) {
-    register void* toc;
+static inline char* GetTOC(void) {
+    register char* toc;
 
 #ifdef __MWERKS__ // clang-format off
     asm {

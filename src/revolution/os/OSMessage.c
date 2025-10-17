@@ -14,7 +14,7 @@ bool OSSendMessage(OSMessageQueue* queue, OSMessage mesg, u32 flags) {
     bool enabled = OSDisableInterrupts();
 
     while (queue->capacity <= queue->size) {
-        if (!(flags & OS_MSG_PERSISTENT)) {
+        if (!(flags & OS_MESSAGE_FLAG_PERSISTENT)) {
             OSRestoreInterrupts(enabled);
             return false;
         }
@@ -35,7 +35,7 @@ bool OSReceiveMessage(OSMessageQueue* queue, OSMessage* mesg, u32 flags) {
     bool enabled = OSDisableInterrupts();
 
     while (queue->size == 0) {
-        if (!(flags & OS_MSG_PERSISTENT)) {
+        if (!(flags & OS_MESSAGE_FLAG_PERSISTENT)) {
             OSRestoreInterrupts(enabled);
             return false;
         }

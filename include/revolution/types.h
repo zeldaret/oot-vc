@@ -5,6 +5,9 @@
 extern "C" {
 #endif
 
+#include "stddef.h"
+#include "stdint.h"
+
 typedef signed char s8;
 typedef unsigned char u8;
 typedef signed short int s16;
@@ -13,6 +16,7 @@ typedef signed long s32;
 typedef unsigned long u32;
 typedef signed long long int s64;
 typedef unsigned long long int u64;
+typedef unsigned char u128[16];
 
 typedef volatile u8 vu8;
 typedef volatile u16 vu16;
@@ -30,30 +34,43 @@ typedef double f64;
 typedef volatile f32 vf32;
 typedef volatile f64 vf64;
 
+typedef int BOOL;
+#define FALSE 0
+#define TRUE 1
+
 #ifndef __cplusplus
 typedef int bool;
-#endif
-
 #define false 0
 #define true 1
-
-#define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
-
-#ifndef NULL
-#define NULL (void*)0
 #endif
 
-// some conditions don't match if it's using `(void*)0`
-#ifndef null
-#define null 0
+#define DEFAULT_ALIGN 32
+#ifndef ATTRIBUTE_ALIGN
+#define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
 #endif
 
 typedef int UNKWORD;
 typedef void UNKTYPE;
 typedef void (*funcptr_t)(void);
 
+typedef unsigned long int byte4_t;
+typedef unsigned short int byte2_t;
+typedef unsigned char byte1_t;
+typedef byte1_t byte_t;
+typedef unsigned long int register_t;
+typedef unsigned char char_t;
+typedef unsigned char char8_t;
+typedef unsigned short char16_t;
+typedef unsigned long char32_t;
+
 #ifdef __cplusplus
 }
+#endif
+
+#if !defined(__cplusplus) && __STDC_VERSION__ >= 199901L
+#define RESTRICT restrict
+#else
+#define RESTRICT
 #endif
 
 #endif

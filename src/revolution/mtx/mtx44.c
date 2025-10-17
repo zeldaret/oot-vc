@@ -28,8 +28,7 @@ void C_MTXOrtho(Mtx44 mtx, f32 t, f32 b, f32 l, f32 r, f32 n, f32 f) {
     mtx[3][3] = 1.0f;
 }
 
-//! TODO: name this
-void fn_8009D008(Mtx44 m, Mtx44* src, Mtx44* dst) {
+void PSMTX44Identity(const register Mtx44 m) {
     f32 one = 1.0f;
     f32 zero = 0.0f;
 
@@ -122,8 +121,7 @@ ASM void PSMTX44Concat(const register Mtx44 mA, const register Mtx44 mB, registe
 #endif // clang-format on
 }
 
-//! TODO: name this
-ASM void fn_8009D140(Mtx44 m, Mtx44* src, Mtx44* dst){
+ASM void PSMTXTranspose(const register Mtx44 src, register Mtx44 dst){
 #ifdef __MWERKS__ // clang-format off
     nofralloc
 

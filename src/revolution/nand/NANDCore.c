@@ -4,9 +4,9 @@
 #include "revolution/os.h"
 #include "stdio.h"
 #include "string.h"
-#include "wchar.h"
+#include "wchar_io.h"
 
-#define NAND_BANNER_MAGIC 'WIBN'
+#define NAND_BANNER_SIGNATURE 'WIBN'
 
 typedef enum {
     NAND_LIB_UNINITIALIZED,
@@ -460,9 +460,9 @@ const char* nandGetHomeDir(void) { return s_homeDir; }
 void NANDInitBanner(NANDBanner* banner, u32 flags, const wchar_t* title, const wchar_t* subtitle) {
     memset(banner, 0, sizeof(NANDBanner));
     banner->flags = flags;
-    banner->magic = NAND_BANNER_MAGIC;
-    wcsncpy(banner->title, title, NAND_BANNER_TITLE_MAX);
-    wcsncpy(banner->subtitle, subtitle, NAND_BANNER_TITLE_MAX);
+    banner->signature = NAND_BANNER_SIGNATURE;
+    wcsncpy(banner->comment[0], title, NAND_BANNER_TITLE_MAX);
+    wcsncpy(banner->comment[1], subtitle, NAND_BANNER_TITLE_MAX);
 }
 
 /**

@@ -33,41 +33,38 @@ typedef struct PADClampRegion {
 #define RAD_STICK 56 // s8 radStick;
 #define RAD_SUBSTICK 44 // s8 radSubstick;
 
-static inline s32 ClampStick_Inline(s8* pn, s8 min) {
-    s32 var_r3;
-
-    if ((-min < *pn) && (*pn < min)) {
-        return 0;
-    }
-
-    var_r3 = *pn + min;
-
-    if (*pn > 0) {
-        var_r3 = *pn - min;
-    }
-
-    return var_r3;
-}
-
 void ClampStick(s8* px, s8* py, s8 max, s8 min) {
-    s32 squared;
-    s32 root;
-    s32 var_r30;
-    s32 var_r31;
+    int x = *px;
+    int y = *py;
+    int dsquared;
+    int d;
 
-    var_r31 = ClampStick_Inline(px, min);
-    var_r30 = ClampStick_Inline(py, min);
-
-    squared = SQ(var_r31) + SQ(var_r30);
-    if ((max * max) < squared) {
-        root = (f32)sqrt((f32)squared);
-
-        var_r31 = (var_r31 * max) / root;
-        var_r30 = (var_r30 * max) / root;
+    if (-min < x && x < min) {
+        x = 0;
+    } else if (0 < x) {
+        x -= min;
+    } else {
+        x += min;
     }
 
-    *px = var_r31;
-    *py = var_r30;
+    if (-min < y && y < min) {
+        y = 0;
+    } else if (0 < y) {
+        y -= min;
+    } else {
+        y += min;
+    }
+
+    dsquared = SQ(x) + SQ(y);
+    if (SQ(max) < dsquared) {
+        d = sqrtf(dsquared);
+
+        x = (x * max) / d;
+        y = (y * max) / d;
+    }
+
+    *px = x;
+    *py = y;
 }
 
 inline void ClampTrigger(u8* trigger, u8 min, u8 max) {

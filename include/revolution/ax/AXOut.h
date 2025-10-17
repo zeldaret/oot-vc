@@ -13,7 +13,7 @@ extern "C" {
 typedef void (*AXOutCallback)(void);
 typedef void (*AXExceedCallback)(u32 cycles);
 
-u32 __AXOutNewFrame(void);
+void __AXOutNewFrame(u32 cycles);
 void __AXOutAiCallback(void);
 void __AXOutInitDSP(void);
 void __AXOutInit(u32 mode);

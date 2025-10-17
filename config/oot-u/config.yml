@@ -20,6 +20,74 @@ extract:
 force_active:
 - lbl_801E3380
 - DemoAllocator2
+- TRKAccessFile
+- TRKOpenFile
+- TRKCloseFile
+- TRKPositionFile
+- sSetInfoAsync__Q210homebutton10Controller
+- lbl_8025DBBC__Q210homebutton10Controller
+
+add_relocations:
+- source: 0x8005C730
+  type: ha
+  target: fn_8005B6C0
+- source: 0x8005C764 
+  type: l
+  target: fn_8005B6C0
+- source: 0x8005C740
+  type: ha
+  target: fn_8005B6C8
+- source: 0x8005C78C 
+  type: l
+  target: fn_8005B6C8
+- source: 0x8005C75C
+  type: ha
+  target: fn_8005B6D0
+- source: 0x8005C7AC 
+  type: l
+  target: fn_8005B6D0
+- source: 0x8005C76C
+  type: ha
+  target: fn_8005B6D8
+- source: 0x8005C7CC 
+  type: l
+  target: fn_8005B6D8
+- source: 0x8005C788
+  type: ha
+  target: fn_8005B6E0
+- source: 0x8005C7EC 
+  type: l
+  target: fn_8005B6E0
+- source: 0x8005C7A8
+  type: ha
+  target: fn_8005B6F0
+- source: 0x8005C80C 
+  type: l
+  target: fn_8005B6F0
+- source: 0x8005C7C8
+  type: ha
+  target: fn_8005B6F8
+- source: 0x8005C82C 
+  type: l
+  target: fn_8005B6F8
+- source: 0x8005C7E8
+  type: ha
+  target: fn_8005B700
+- source: 0x8005C840 
+  type: l
+  target: fn_8005B700
+- source: 0x8005C808
+  type: ha
+  target: GenPerspective_1080
+- source: 0x8005C850 
+  type: l
+  target: GenPerspective_1080
+- source: 0x8005C828
+  type: ha
+  target: fn_8005B6E8
+- source: 0x8005C85C 
+  type: l
+  target: fn_8005B6E8
 
 block_relocations:
 # system.c

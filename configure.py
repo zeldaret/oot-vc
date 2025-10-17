@@ -14,9 +14,18 @@
 
 import argparse
 import sys
+import glob
 from pathlib import Path
 from typing import Any, Dict, List
-from tools.project import *
+
+from tools.project import (
+    Object,
+    ProgressCategory,
+    ProjectConfig,
+    calculate_progress,
+    generate_build,
+    is_windows,
+)
 
 ### Script's arguments
 
@@ -32,6 +41,11 @@ parser.add_argument(
     "--non-matching",
     action="store_true",
     help="create non-matching build for modding",
+)
+parser.add_argument(
+    "--no-asm-processor",
+    action="store_true",
+    help="disable asm_processor for progress calculation",
 )
 parser.add_argument(
     "--build-dir",
@@ -100,7 +114,12 @@ args = parser.parse_args()
 
 config = ProjectConfig()
 
-# Only configure versions for which content1.app exists
+
+# Only configure versions for which an orig file exists
+def version_exists(version: str) -> bool:
+    return glob.glob(str(Path("orig") / version / "*")) != []
+
+
 ALL_VERSIONS = [
     "oot-j",
     "oot-u",
@@ -112,14 +131,21 @@ ALL_VERSIONS = [
 config.versions = [
     version
     for version in ALL_VERSIONS
-    if (Path("orig") / version / "content1.app").exists()
+    if version_exists(version)
 ]
+
+if not config.versions:
+    sys.exit("Error: no orig files found for any version")
+
 if "oot-j" in config.versions:
     config.default_version = "oot-j"
+else:
+    # Use the earliest version as default
+    config.default_version = config.versions[0]
 
 config.warn_missing_config = True
 config.warn_missing_source = False
-config.progress_all = False
+config.progress_all = True
 
 config.build_dir = args.build_dir
 config.dtk_path = args.dtk
@@ -129,6 +155,7 @@ config.compilers_path = args.compilers
 config.generate_map = args.map
 config.sjiswrap_path = args.sjiswrap
 config.non_matching = args.non_matching
+config.asm_processor = not args.no_asm_processor
 
 if not is_windows():
     config.wrapper = args.wrapper
@@ -139,10 +166,10 @@ if args.no_asm:
 ### Tool versions
 
 config.binutils_tag = "2.42-1"
-config.compilers_tag = "20231018"
-config.dtk_tag = "v0.9.2"
-config.objdiff_tag = "v2.0.0-beta.5"
-config.sjiswrap_tag = "v1.1.1"
+config.compilers_tag = "20240706"
+config.dtk_tag = "v1.4.1"
+config.objdiff_tag = "v2.7.1"
+config.sjiswrap_tag = "v1.2.0"
 config.wibo_tag = "0.6.11"
 config.linker_version = "GC/3.0a5"
 
@@ -175,6 +202,8 @@ cflags_base = [
     "-sym on",
     "-i include",
     "-i libc",
+    "-i libcpp",
+    "-i src",
 ]
 
 if config.non_matching:
@@ -185,9 +214,13 @@ if config.non_matching:
 def EmulatorLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
-        "mw_version": "GC/3.0a5",
-        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-enc SJIS"],
-        "host": False,
+        "mw_versions": {
+            "oot-j": "GC/3.0a5",
+            "oot-u": "GC/3.0a5",
+            "oot-e": "GC/3.0a5",
+        },
+        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-enc SJIS", "-ipa file"],
+        "progress_category": "emulator",
         "objects": objects,
     }
 
@@ -196,25 +229,43 @@ def RevolutionLib(lib_name: str, objects: List[Object], cpp_exceptions: str = "o
         "lib": lib_name,
         "mw_version": "GC/3.0a5",
         "cflags": [*cflags_base, f"-Cpp_exceptions {cpp_exceptions}", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off"],
-        "host": False,
+        "progress_category": "revolution",
+        "objects": objects,
+    }
+
+def RevolutionHBMLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
+    return {
+        "lib": lib_name,
+        "mw_version": "GC/3.0a5",
+        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract off", "-lang c++", "-DHBM_ASSERT", "-sym off"],
+        "progress_category": "hbm",
         "objects": objects,
     }
 
 def LibC(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
-        "mw_version": "GC/3.0a3",
-        "cflags": [*cflags_base, "-Cpp_exceptions on", "-O4,p", "-rostr", "-use_lmw_stmw on", "-lang c"],
-        "host": False,
+        "mw_version": "GC/3.0a5",
+        "cflags": [*cflags_base, "-Cpp_exceptions on", "-O4,p", "-ipa file", "-rostr", "-use_lmw_stmw on", "-lang c", "-fp_contract off"],
+        "progress_category": "libc",
+        "objects": objects,
+    }
+
+def MathLibC(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
+    return {
+        "lib": lib_name,
+        "mw_version": "GC/3.0a5",
+        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-rostr", "-use_lmw_stmw on", "-lang c", "-fp_contract off"],
+        "progress_category": "libc",
         "objects": objects,
     }
 
 def RuntimeLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
-        "mw_version": "GC/3.0a3",
+        "mw_version": "GC/3.0a5",
         "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-rostr", "-use_lmw_stmw on", "-enc SJIS"],
-        "host": False,
+        "progress_category": "runtime",
         "objects": objects,
     }
 
@@ -222,20 +273,21 @@ def MetroTRKLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
         "mw_version": "GC/2.7",
-        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-rostr", "-use_lmw_stmw on", "-lang c"],
-        "host": False,
+        "cflags": [*cflags_base, "-Cpp_exceptions off", "-O4,p", "-rostr", "-use_lmw_stmw on", "-lang c", "-inline on,deferred", "-func_align 4", "-sdata 0", "-sdata2 0"],
+        "progress_category": "metrotrk",
         "objects": objects,
     }
+
 
 ### Link order
 
 # Not matching for any version
 NotLinked: List[str] = []
 
-# Matching for all versions
+# Linked for all versions
 Linked = config.versions
 
-# Matching for specific versions
+# Linked for specific versions
 def LinkedFor(*versions):
     return versions
 
@@ -251,7 +303,7 @@ config.libs = [
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/pi.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/mi.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/disk.c"),
-            Object(NotLinked, "emulator/cpu.c", asm_processor=True),
+            Object(NotLinked, "emulator/cpu.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/pif.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/ram.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/rom.c"),
@@ -262,15 +314,15 @@ config.libs = [
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/_frameGCNcc.c"),
             Object(NotLinked, "emulator/_buildtev.c"),
             Object(NotLinked, "emulator/frame.c"),
-            Object(NotLinked, "emulator/library.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/library.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/codeRVL.c"),
-            Object(NotLinked, "emulator/helpRVL.c"),
-            Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/soundRVL.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/helpRVL.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/soundRVL.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/video.c"),
-            Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/store.c", extra_cflags=["-ipa file"]),
-            Object(NotLinked, "emulator/controller.c"),
+            Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/storeRVL.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "emulator/controller.c", mw_version="GC/3.0a5.2"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/errordisplay.c"),
-            Object(NotLinked, "emulator/banner.c"),
+            Object(LinkedFor("oot-j", "oot-u"), "emulator/banner.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/stringtable.c"),
             Object(NotLinked, "emulator/rsp.c"),
             Object(NotLinked, "emulator/rdp.c"),
@@ -278,7 +330,7 @@ config.libs = [
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/xlPostRVL.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/xlFileRVL.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/xlText.c"),
-            Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/xlList.c", extra_cflags=["-ipa file"]),
+            Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/xlList.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/xlHeap.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/xlFile.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "emulator/xlObject.c"),
@@ -307,7 +359,7 @@ config.libs = [
     RevolutionLib(
         "os",
         [
-            Object(NotLinked, "revolution/os/OS.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OS.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSAlarm.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSAlloc.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/os/OSArena.c"),
@@ -380,7 +432,7 @@ config.libs = [
         "gx",
         [
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXInit.c"),
-            Object(NotLinked, "revolution/gx/GXFifo.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXFifo.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXAttr.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXMisc.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/gx/GXGeometry.c"),
@@ -397,7 +449,7 @@ config.libs = [
     RevolutionLib(
         "dvd",
         [
-            Object(NotLinked, "revolution/dvd/dvdfs.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dvd/dvdfs.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dvd/dvd.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dvd/dvdqueue.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/dvd/dvderror.c"),
@@ -424,9 +476,9 @@ config.libs = [
         [
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AX.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXAlloc.c"),
-            Object(NotLinked, "revolution/ax/AXAux.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXAux.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXCL.c"),
-            Object(NotLinked, "revolution/ax/AXOut.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXOut.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXSPB.c"),
             Object(NotLinked, "revolution/ax/AXVPB.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/ax/AXComp.c"),
@@ -446,8 +498,9 @@ config.libs = [
         "mem",
         [
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mem/mem_heapCommon.c"),
-            Object(NotLinked, "revolution/mem/mem_expHeap.c"),
-            Object(NotLinked, "revolution/mem/mem_frameHeap.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mem/mem_expHeap.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mem/mem_frameHeap.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mem/mem_unitHeap.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mem/mem_allocator.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/mem/mem_list.c"),
         ]
@@ -484,9 +537,15 @@ config.libs = [
         ]
     ),
     RevolutionLib(
+        "wenc",
+        [
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/wenc/wenc.c"),
+        ]
+    ),
+    RevolutionLib(
         "arc",
         [
-            Object(NotLinked, "revolution/arc/arc.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/arc/arc.c"),
         ]
     ),
     RevolutionLib(
@@ -507,8 +566,8 @@ config.libs = [
     RevolutionLib(
         "pad",
         [
-            Object(NotLinked, "revolution/pad/Padclamp.c"),
-            Object(NotLinked, "revolution/pad/Pad.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/pad/Padclamp.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/pad/Pad.c"),
         ]
     ),
     RevolutionLib(
@@ -576,12 +635,124 @@ config.libs = [
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/tpl/TPL.c"),
         ]
     ),
-    RevolutionLib(
+    RevolutionHBMLib(
         "hbm",
         [
-            Object(NotLinked, "revolution/hbm/code_80109CB8.cpp"),
-            Object(NotLinked, "revolution/hbm/nw4hbm/ut/ut_ResFont.cpp"),
-            Object(NotLinked, "revolution/hbm/code_80144E2C.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/homebutton/HBMBase.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/homebutton/HBMAnmController.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/homebutton/HBMFrameController.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/homebutton/HBMGUIManager.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/homebutton/HBMController.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/homebutton/HBMRemoteSpk.cpp"),
+        ],
+    ),
+    RevolutionHBMLib(
+        "nw4hbm/db",
+        [
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/db/db_assert.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/db/db_console.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/db/db_directPrint.cpp"),
+            Object(NotLinked, "revolution/hbm/nw4hbm/db/db_mapFile.cpp"),
+        ],
+    ),
+    RevolutionHBMLib(
+        "nw4hbm/lyt",
+        [
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/lyt/lyt_animation.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/lyt/lyt_arcResourceAccessor.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/lyt/lyt_bounding.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/lyt/lyt_common.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/lyt/lyt_drawInfo.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/lyt/lyt_group.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/lyt/lyt_layout.cpp"),
+            Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_material.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/lyt/lyt_pane.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/lyt/lyt_picture.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/lyt/lyt_textBox.cpp", mw_version="GC/3.0a5.2"),
+            Object(NotLinked, "revolution/hbm/nw4hbm/lyt/lyt_window.cpp", mw_version="GC/3.0a5.2"),
+        ],
+    ),
+    RevolutionHBMLib(
+        "nw4hbm/math",
+        [
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/math/math_triangular.cpp"),
+        ],
+    ),
+    RevolutionHBMLib(
+        "nw4hbm/snd",
+        [
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_AxManager.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_AxVoice.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_Bank.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_BankFile.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_BasicSound.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_Channel.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_DisposeCallbackManager.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_DvdSoundArchive.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_EnvGenerator.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_ExternalSoundPlayer.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_FrameHeap.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_InstancePool.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_Lfo.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_MemorySoundArchive.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_MidiSeqPlayer.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_MidiSeqTrack.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_MmlParser.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_MmlSeqTrack.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_MmlSeqTrackAllocator.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_NandSoundArchive.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_RemoteSpeaker.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_RemoteSpeakerManager.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_SeqFile.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_SeqPlayer.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_SeqSound.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_SeqSoundHandle.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_SeqTrack.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_SoundArchive.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_SoundArchiveFile.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_SoundArchiveLoader.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_SoundArchivePlayer.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_SoundHandle.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_SoundHeap.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_SoundPlayer.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_SoundStartable.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_SoundSystem.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_SoundThread.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_StrmChannel.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_StrmFile.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_StrmPlayer.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_StrmSound.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_StrmSoundHandle.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_TaskManager.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_TaskThread.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_Util.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_WaveFile.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_WavePlayer.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_WaveSound.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_WaveSoundHandle.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_WsdFile.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_WsdPlayer.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/snd/snd_WsdTrack.cpp"),
+        ],
+    ),
+    RevolutionHBMLib(
+        "nw4hbm/ut",
+        [
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/ut/ut_CharStrmReader.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/ut/ut_CharWriter.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/ut/ut_DvdFileStream.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/ut/ut_FileStream.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/ut/ut_Font.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/ut/ut_IOStream.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/ut/ut_LinkList.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/ut/ut_list.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/ut/ut_NandFileStream.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/ut/ut_ResFont.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/ut/ut_ResFontBase.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/ut/ut_TagProcessorBase.cpp"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "revolution/hbm/nw4hbm/ut/ut_TextWriterBase.cpp"),
         ]
     ),
     RuntimeLib(
@@ -590,114 +761,138 @@ config.libs = [
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/__mem.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/__va_arg.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/global_destructor_chain.c"),
-            Object(NotLinked, "runtime/New.cpp", extra_cflags=["-Cpp_exceptions on"]),
-            Object(NotLinked, "runtime/NMWException.cpp", extra_cflags=["-Cpp_exceptions on"]),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/New.cpp", extra_cflags=["-lang c++", "-Cpp_exceptions on", "-RTTI on"]),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/NMWException.cpp",  extra_cflags=["-lang c++", "-Cpp_exceptions on", "-RTTI on"]),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/ptmf.c"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/runtime.c"),
             Object(LinkedFor("mk64-u", "oot-j", "oot-u", "oot-e"), "runtime/__init_cpp_exceptions.cpp"),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/Gecko_setjmp.c"),
-            Object(NotLinked, "runtime/Gecko_ExceptionPPC.cpp", extra_cflags=["-Cpp_exceptions on"]),
+            Object(NotLinked, "runtime/Gecko_ExceptionPPC.cpp",  extra_cflags=["-lang c++", "-Cpp_exceptions on", "-RTTI on"]),
             Object(LinkedFor("oot-j", "oot-u", "oot-e"), "runtime/GCN_mem_alloc.c"),
         ]
     ),
     LibC(
         "libc",
         [
-            Object(NotLinked, "libc/alloc.c"),
-            Object(NotLinked, "libc/ansi_files.c"),
-            Object(NotLinked, "libc/ansi_fp.c"),
-            Object(NotLinked, "libc/arith.c"),
-            Object(NotLinked, "libc/bsearch.c"),
-            Object(NotLinked, "libc/buffer_io.c"),
-            Object(NotLinked, "libc/direct_io.c"),
-            Object(NotLinked, "libc/file_io.c"),
-            Object(NotLinked, "libc/file_pos.c"),
-            Object(NotLinked, "libc/mbstring.c"),
-            Object(NotLinked, "libc/mem.c"),
-            Object(NotLinked, "libc/mem_funcs.c"),
-            Object(NotLinked, "libc/misc_io.c"),
-            Object(NotLinked, "libc/printf.c"),
-            Object(NotLinked, "libc/qsort.c"),
-            Object(NotLinked, "libc/rand.c"),
-            Object(NotLinked, "libc/scanf.c"),
-            Object(NotLinked, "libc/signal.c"),
-            Object(NotLinked, "libc/string.c"),
-            Object(NotLinked, "libc/strtold.c"),
-            Object(NotLinked, "libc/strtoul.c"),
-            Object(NotLinked, "libc/time.c"),
-            Object(NotLinked, "libc/wstring.c"),
-            Object(NotLinked, "libc/wchar_io.c"),
-            Object(NotLinked, "libc/sysenv.c"),
-            Object(NotLinked, "libc/uart_console_io.c"),
-            Object(NotLinked, "libc/abort_exit_ppc_eabi.c"),
-            Object(NotLinked, "libc/extras.c"),
-            Object(NotLinked, "libc/e_acos.c"),
-            Object(NotLinked, "libc/e_asin.c"),
-            Object(NotLinked, "libc/e_atan2.c"),
-            Object(NotLinked, "libc/e_exp.c"),
-            Object(NotLinked, "libc/e_fmod.c"),
-            Object(NotLinked, "libc/e_log.c"),
-            Object(NotLinked, "libc/e_log10.c"),
-            Object(NotLinked, "libc/e_pow.c"),
-            Object(NotLinked, "libc/e_rem_pio2.c"),
-            Object(NotLinked, "libc/k_cos.c"),
-            Object(NotLinked, "libc/k_rem_pio2.c"),
-            Object(NotLinked, "libc/k_sin.c"),
-            Object(NotLinked, "libc/k_tan.c"),
-            Object(NotLinked, "libc/s_atan.c"),
-            Object(NotLinked, "libc/s_ceil.c"),
-            Object(NotLinked, "libc/s_copysign.c"),
-            Object(NotLinked, "libc/s_cos.c"),
-            Object(NotLinked, "libc/s_floor.c"),
-            Object(NotLinked, "libc/s_frexp.c"),
-            Object(NotLinked, "libc/s_ldexp.c"),
-            Object(NotLinked, "libc/s_sin.c"),
-            Object(NotLinked, "libc/s_tan.c"),
-            Object(NotLinked, "libc/w_acos.c"),
-            Object(NotLinked, "libc/w_asin.c"),
-            Object(NotLinked, "libc/w_atan2.c"),
-            Object(NotLinked, "libc/w_exp.c"),
-            Object(NotLinked, "libc/w_fmod.c"),
-            Object(NotLinked, "libc/w_log.c"),
-            Object(NotLinked, "libc/w_log10f.c"),
-            Object(NotLinked, "libc/w_pow.c"),
-            Object(NotLinked, "libc/e_sqrt.c"),
-            Object(NotLinked, "libc/math_ppc.c"),
-            Object(NotLinked, "libc/w_sqrt.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/alloc.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/ansi_files.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/ansi_fp.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/arith.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/bsearch.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/buffer_io.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/direct_io.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/ctype.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/errno.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/file_io.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/file_pos.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/float.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/locale.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/mbstring.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/mem.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/mem_funcs.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math_api.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/misc_io.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/printf.c", mw_version="GC/3.0a5.2"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/qsort.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/rand.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/scanf.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/signal.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/string.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/strtold.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/strtoul.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/time.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/wstring.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/wchar_io.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/wctype.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/sysenv.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/uart_console_io.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/abort_exit_ppc_eabi.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/extras.c"),
+        ]
+    ),
+    MathLibC(
+        "libm",
+        [
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/e_acos.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/e_asin.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/e_atan2.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/e_exp.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/e_fmod.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/e_log.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/e_log10.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/e_pow.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/e_rem_pio2.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/k_cos.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/k_rem_pio2.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/k_sin.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/k_tan.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/s_atan.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/s_ceil.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/s_copysign.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/s_cos.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/s_floor.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/s_frexp.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/s_ldexp.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/s_sin.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/s_tan.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/w_acos.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/w_asin.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/w_atan2.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/w_exp.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/w_fmod.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/w_log.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/w_log10f.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/w_pow.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/e_sqrt.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/math_ppc.c"),
+            Object(LinkedFor("oot-j", "oot-u", "oot-e"), "libc/math/w_sqrt.c"),
         ]
     ),
     MetroTRKLib(
         "metrotrk",
         [
-            Object(NotLinked, "metrotrk/mainloop.c"),
-            Object(NotLinked, "metrotrk/nubevent.c"),
-            Object(NotLinked, "metrotrk/nubinit.c"),
-            Object(NotLinked, "metrotrk/msg.c"),
-            Object(NotLinked, "metrotrk/msgbuf.c"),
-            Object(NotLinked, "metrotrk/serpoll.c"),
-            Object(NotLinked, "metrotrk/usr_put.c"),
-            Object(NotLinked, "metrotrk/dispatch.c"),
-            Object(NotLinked, "metrotrk/msghndlr.c"),
-            Object(NotLinked, "metrotrk/support.c"),
-            Object(NotLinked, "metrotrk/mutex_TRK.c"),
-            Object(NotLinked, "metrotrk/notify.c"),
-            Object(NotLinked, "metrotrk/flush_cache.c"),
-            Object(NotLinked, "metrotrk/mem_TRK.c"),
-            Object(NotLinked, "metrotrk/targimpl.c"),
-            Object(NotLinked, "metrotrk/targsupp.c"),
-            Object(NotLinked, "metrotrk/mpc_7xx_603e.c"),
-            Object(NotLinked, "metrotrk/mslsupp.c"),
-            Object(NotLinked, "metrotrk/dolphin_trk.c"),
-            Object(NotLinked, "metrotrk/main_TRK.c"),
-            Object(NotLinked, "metrotrk/dolphin_trk_glue.c"),
-            Object(NotLinked, "metrotrk/targcont.c"),
-            Object(NotLinked, "metrotrk/code_8016A0EC.c"),
-            Object(NotLinked, "metrotrk/cc_udp.c"),
-            Object(NotLinked, "metrotrk/cc_gdev.c"),
-            Object(NotLinked, "metrotrk/CircleBuffer.c"),
-            Object(NotLinked, "metrotrk/MWCriticalSection_gc.cpp"),
+            Object(Linked, "metrotrk/mainloop.c"),
+            Object(Linked, "metrotrk/nubevent.c"),
+            Object(Linked, "metrotrk/nubinit.c"),
+            Object(Linked, "metrotrk/msg.c"),
+            Object(Linked, "metrotrk/msgbuf.c"),
+            Object(Linked, "metrotrk/serpoll.c", extra_cflags=["-sdata 8"]),
+            Object(Linked, "metrotrk/usr_put.c"),
+            Object(Linked, "metrotrk/dispatch.c"),
+            Object(Linked, "metrotrk/msghndlr.c"),
+            Object(Linked, "metrotrk/support.c"),
+            Object(Linked, "metrotrk/mutex_TRK.c"),
+            Object(Linked, "metrotrk/notify.c"),
+            Object(Linked, "metrotrk/flush_cache.c"),
+            Object(Linked, "metrotrk/mem_TRK.c"),
+            Object(Linked, "metrotrk/string_TRK.c"),
+            Object(Linked, "metrotrk/__exception.s"),
+            Object(Linked, "metrotrk/targimpl.c"),
+            Object(Linked, "metrotrk/targsupp.c", extra_cflags=["-func_align 16"]),
+            Object(Linked, "metrotrk/mpc_7xx_603e.c"),
+            Object(Linked, "metrotrk/mslsupp.c"),
+            Object(Linked, "metrotrk/dolphin_trk.c"),
+            Object(Linked, "metrotrk/main_TRK.c"),
+            Object(Linked, "metrotrk/dolphin_trk_glue.c"),
+            Object(Linked, "metrotrk/targcont.c"),
+            Object(Linked, "metrotrk/target_options.c"),
+            Object(Linked, "metrotrk/cc_udp.c"),
+            Object(Linked, "metrotrk/cc_gdev.c", extra_cflags=["-sdata 8"]),
+            Object(Linked, "metrotrk/CircleBuffer.c"),
+            Object(Linked, "metrotrk/MWCriticalSection_gc.c"),
         ]
     )
+]
+
+# Optional extra categories for progress tracking
+# Adjust as desired for your project
+config.progress_categories = [
+    ProgressCategory("emulator", "Emulator"),
+    ProgressCategory("revolution", "Revolution SDK"),
+    ProgressCategory("hbm", "Home Button Menu"),
+    ProgressCategory("libc", "Libc"),
+    ProgressCategory("runtime", "Runtime"),
+    ProgressCategory("metrotrk", "MetroTRK"),
 ]
 
 ### Execute mode

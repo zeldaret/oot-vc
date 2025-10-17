@@ -134,7 +134,9 @@ emulator/helpRVL.c:
 	.text       start:0x8005E2D0 end:0x80060B1C
 	.rodata     start:0x8016A7E0 end:0x8016A820
 	.data       start:0x801743D0 end:0x801745E0
+	.bss        start:0x801C7F60 end:0x801C8038
 	.sdata      start:0x8025CAD0 end:0x8025CAE8
+	.sbss       start:0x8025D338 end:0x8025D3A0
 	.sdata2     start:0x8025E128 end:0x8025E198
 
 emulator/soundRVL.c:
@@ -148,7 +150,7 @@ emulator/video.c:
 	.data       start:0x801745F0 end:0x80174600
 	.sdata      start:0x8025CAF0 end:0x8025CAF8
 
-emulator/store.c:
+emulator/storeRVL.c:
 	.text       start:0x800617C4 end:0x80062080
 	.data       start:0x80174600 end:0x80174610
 	.sdata      start:0x8025CAF8 end:0x8025CB00
@@ -363,12 +365,12 @@ revolution/os/OSStateTM.c:
 	.bss        start:0x801DD920 end:0x801DD9E0
 	.sbss       start:0x8025D868 end:0x8025D888
 
+revolution/os/time.dolphin.c:
+	.text       start:0x800945FC end:0x80094648
+
 revolution/os/__start.c:
 	.init       start:0x80004000 end:0x800042E0
 	.sbss       start:0x8025D888 end:0x8025D890
-
-revolution/os/time.dolphin.c:
-	.text       start:0x800945FC end:0x80094648
 
 revolution/os/OSPlayRecord.c:
 	.text       start:0x80094648 end:0x80094D20
@@ -595,7 +597,7 @@ revolution/ax/AXCL.c:
 revolution/ax/AXOut.c:
 	.text       start:0x800AD3B8 end:0x800ADBD8
 	.bss        start:0x801E65E0 end:0x801EB3A0
-	.sbss       start:0x8025DBB4 end:0x8025DBF0
+	.sbss       start:0x8025DBB4 end:0x8025DBF8
 
 revolution/ax/AXSPB.c:
 	.text       start:0x800ADBD8 end:0x800ADFFC
@@ -629,7 +631,10 @@ revolution/mem/mem_expHeap.c:
 	.text       start:0x800B0910 end:0x800B107C
 
 revolution/mem/mem_frameHeap.c:
-	.text       start:0x800B107C end:0x800B1640
+	.text       start:0x800B107C end:0x800B1368
+
+revolution/mem/mem_unitHeap.c:
+	.text       start:0x800B1368 end:0x800B1640
 
 revolution/mem/mem_allocator.c:
 	.text       start:0x800B1640 end:0x800B16C4
@@ -693,8 +698,13 @@ revolution/sc/scapi_prdinfo.c:
 	.data       start:0x8018ACC0 end:0x8018AD08
 	.sdata      start:0x8025CE30 end:0x8025CE38
 
+revolution/wenc/wenc.c:
+	.text       start:0x800B7444 end:0x800B771C
+	.rodata     start:0x8016BE90 end:0x8016BED0
+	.sdata2     start:0x8025E710 end:0x8025E718
+
 revolution/arc/arc.c:
-	.text       start:0x800B7444 end:0x800B80BC
+	.text       start:0x800B771C end:0x800B80BC
 	.data       start:0x8018AD08 end:0x8018AD78
 	.sdata      start:0x8025CE38 end:0x8025CE40
 
@@ -725,6 +735,7 @@ revolution/fs/fs.c:
 
 revolution/pad/Padclamp.c:
 	.text       start:0x800BB2E8 end:0x800BB4EC
+	.sdata2     start:0x8025E718 end:0x8025E720
 
 revolution/pad/Pad.c:
 	.text       start:0x800BB4EC end:0x800BCCCC
@@ -787,16 +798,486 @@ revolution/tpl/TPL.c:
 	.sdata      start:0x8025CFD0 end:0x8025CFD8
 	.sdata2     start:0x8025E810 end:0x8025E818
 
-revolution/hbm/code_80109CB8.cpp:
-	.text       start:0x80109CE8 end:0x80143E44
-	.ctors      start:0x8016A708 end:0x8016A750
+revolution/hbm/homebutton/HBMBase.cpp:
+	.text       start:0x80100888 end:0x80109BC8
+	.rodata     start:0x8016C388 end:0x8016C638
+	.data       start:0x80193D30 end:0x80194C60
+	.bss        start:0x80244158 end:0x80244178
+	.sdata      start:0x8025CFD8 end:0x8025D0A0
+	.sbss       start:0x8025DE20 end:0x8025DE28
+	.sdata2     start:0x8025E818 end:0x8025E878
+
+revolution/hbm/homebutton/HBMAnmController.cpp:
+	.text       start:0x80109BC8 end:0x80109CE8
+	.data       start:0x80194C60 end:0x80194C70
+
+revolution/hbm/homebutton/HBMFrameController.cpp:
+	.text       start:0x80109CE8 end:0x80109E88
+	.sdata2     start:0x8025E878 end:0x8025E880
+
+revolution/hbm/homebutton/HBMGUIManager.cpp:
+	.text       start:0x80109E88 end:0x8010B50C
+	.data       start:0x80194C70 end:0x80194E50
+	.sdata      start:0x8025D0A0 end:0x8025D0A8
+	.sbss       start:0x8025DE28 end:0x8025DE30
+	.sdata2     start:0x8025E880 end:0x8025E890
+
+revolution/hbm/homebutton/HBMController.cpp:
+	.text       start:0x8010B50C end:0x8010C028
+	.bss        start:0x80244178 end:0x80244308
+	.sbss       start:0x8025DE30 end:0x8025DE40
+	.sdata2     start:0x8025E890 end:0x8025E8A0
+
+revolution/hbm/homebutton/HBMRemoteSpk.cpp:
+	.text       start:0x8010C028 end:0x8010C804
+	.data       start:0x80194E50 end:0x80194E60
+
+revolution/hbm/nw4hbm/db/db_assert.cpp:
+	.text       start:0x8010C804 end:0x8010CE14
+	.data       start:0x80194E60 end:0x80194F10
+	.bss        start:0x80244308 end:0x80244338
+	.sdata      start:0x8025D0A8 end:0x8025D0B0
+	.sbss       start:0x8025DE40 end:0x8025DE50
+
+revolution/hbm/nw4hbm/db/db_console.cpp:
+	.text       start:0x8010CE14 end:0x8010D754
+	.data       start:0x80194F10 end:0x80195030
+	.bss        start:0x80244338 end:0x80244750
+	.sdata      start:0x8025D0B0 end:0x8025D0B8
+
+revolution/hbm/nw4hbm/db/db_directPrint.cpp:
+	.text       start:0x8010D754 end:0x8010E164
+	.rodata     start:0x8016C638 end:0x8016C8F0
+	.data       start:0x80195030 end:0x801950E0
+	.bss        start:0x80244750 end:0x80244774
+	.sbss       start:0x8025DE50 end:0x8025DE58
+
+revolution/hbm/nw4hbm/db/db_mapFile.cpp:
+	.text       start:0x8010E164 end:0x8010EA78
+	.data       start:0x801950E0 end:0x801952E8
+	.bss        start:0x80244780 end:0x802449C0
+	.sdata      start:0x8025D0B8 end:0x8025D0C0
+	.sbss       start:0x8025DE58 end:0x8025DE68
+
+revolution/hbm/nw4hbm/lyt/lyt_animation.cpp:
+	.text       start:0x8010EA78 end:0x8010F9E8
+	.data       start:0x801952E8 end:0x80195758
+	.sdata      start:0x8025D0C0 end:0x8025D0C8
+	.sdata2     start:0x8025E8A0 end:0x8025E8C0
+
+revolution/hbm/nw4hbm/lyt/lyt_arcResourceAccessor.cpp:
+	.text       start:0x8010F9E8 end:0x801100EC
+	.data       start:0x80195758 end:0x801959D0
+	.sdata      start:0x8025D0C8 end:0x8025D0D0
+
+revolution/hbm/nw4hbm/lyt/lyt_bounding.cpp:
+	.text       start:0x801100EC end:0x80110204
+	.ctors      start:0x8016A708 end:0x8016A70C
+	.data       start:0x801959D0 end:0x80195A38
+	.sbss       start:0x8025DE68 end:0x8025DE70
+
+revolution/hbm/nw4hbm/lyt/lyt_common.cpp:
+	.text       start:0x80110204 end:0x80111084
+	.data       start:0x80195A38 end:0x80195AA8
+	.bss        start:0x802449C0 end:0x802449E0
+	.sbss       start:0x8025DE70 end:0x8025DE78
+	.sdata2     start:0x8025E8C0 end:0x8025E8D0
+
+revolution/hbm/nw4hbm/lyt/lyt_drawInfo.cpp:
+	.text       start:0x80111084 end:0x80111138
+	.data       start:0x80195AA8 end:0x80195AB8
+	.sdata2     start:0x8025E8D0 end:0x8025E8D8
+
+revolution/hbm/nw4hbm/lyt/lyt_group.cpp:
+	.text       start:0x80111138 end:0x801115E0
+	.data       start:0x80195AB8 end:0x80195BB8
+
+revolution/hbm/nw4hbm/lyt/lyt_layout.cpp:
+	.text       start:0x801115E0 end:0x80112594
+	.data       start:0x80195BB8 end:0x80195E20
+	.sbss       start:0x8025DE78 end:0x8025DE80
+	.sdata2     start:0x8025E8D8 end:0x8025E8E0
+
+revolution/hbm/nw4hbm/lyt/lyt_material.cpp:
+	.text       start:0x80112594 end:0x80115CD8
+	.data       start:0x80195E20 end:0x80196420
+	.sdata2     start:0x8025E8E0 end:0x8025E900
+	.sbss2      start:0x8025F230 end:0x8025F238
+
+revolution/hbm/nw4hbm/lyt/lyt_pane.cpp:
+	.text       start:0x80115CD8 end:0x80117030
+	.ctors      start:0x8016A70C end:0x8016A710
+	.data       start:0x80196420 end:0x801967B0
+	.sbss       start:0x8025DE80 end:0x8025DE88
+	.sdata2     start:0x8025E900 end:0x8025E920
+
+revolution/hbm/nw4hbm/lyt/lyt_picture.cpp:
+	.text       start:0x80117030 end:0x80117750
+	.ctors      start:0x8016A710 end:0x8016A714
+	.data       start:0x801967B0 end:0x801969D8
+	.sbss       start:0x8025DE88 end:0x8025DE90
+	.sdata2     start:0x8025E920 end:0x8025E928
+
+revolution/hbm/nw4hbm/lyt/lyt_resourceAccessor.cpp:
+	.text       start:0x80117750 end:0x801177A8
+	.data       start:0x801969D8 end:0x801969F0
+
+revolution/hbm/nw4hbm/lyt/lyt_textBox.cpp:
+	.text       start:0x801177A8 end:0x8011A5F0
+	.ctors      start:0x8016A714 end:0x8016A718
+	.data       start:0x801969F0 end:0x80197068
+	.sdata      start:0x8025D0D0 end:0x8025D0E0
+	.sbss       start:0x8025DE90 end:0x8025DE98
+	.sdata2     start:0x8025E928 end:0x8025E940
+
+revolution/hbm/nw4hbm/lyt/lyt_window.cpp:
+	.text       start:0x8011A5F0 end:0x8011CEC4
+	.ctors      start:0x8016A718 end:0x8016A71C
+	.data       start:0x80197068 end:0x801972C8
+	.sbss       start:0x8025DE98 end:0x8025DEA0
+	.sdata2     start:0x8025E940 end:0x8025E958
+
+revolution/hbm/nw4hbm/math/math_triangular.cpp:
+	.text       start:0x8011CEC4 end:0x8011D134
+	.data       start:0x801972C8 end:0x801983E0
+	.sdata2     start:0x8025E958 end:0x8025E978
+
+revolution/hbm/nw4hbm/snd/snd_AxManager.cpp:
+	.text       start:0x8011D134 end:0x8011EE54
+	.data       start:0x80198410 end:0x80198638
+	.bss        start:0x802449E0 end:0x8024B7F8
+	.sbss       start:0x8025DEA0 end:0x8025DEA8
+	.sdata2     start:0x8025E978 end:0x8025E990
+
+revolution/hbm/nw4hbm/snd/snd_AxVoice.cpp:
+	.text       start:0x8011EE54 end:0x80122A50
+	.data       start:0x80198638 end:0x80198980
+	.sdata2     start:0x8025E990 end:0x8025E9E0
+
+revolution/hbm/nw4hbm/snd/snd_Bank.cpp:
+	.text       start:0x80122A50 end:0x80122C78
+	.sdata2     start:0x8025E9E0 end:0x8025EA00
+
+revolution/hbm/nw4hbm/snd/snd_BankFile.cpp:
+	.text       start:0x80122C78 end:0x801232C8
+	.data       start:0x80198980 end:0x80198C20
+	.sdata      start:0x8025D0E8 end:0x8025D108
+	.sdata2     start:0x8025EA00 end:0x8025EA08
+
+revolution/hbm/nw4hbm/snd/snd_BasicSound.cpp:
+	.text       start:0x801232C8 end:0x801245D0
+	.ctors      start:0x8016A71C end:0x8016A720
+	.data       start:0x80198C20 end:0x80198D78
+	.sbss       start:0x8025DEA8 end:0x8025DEB0
+	.sdata2     start:0x8025EA08 end:0x8025EA18
+
+revolution/hbm/nw4hbm/snd/snd_Channel.cpp:
+	.text       start:0x801245D0 end:0x80125864
+	.ctors      start:0x8016A720 end:0x8016A724
+	.data       start:0x80198D78 end:0x80198FB0
+	.bss        start:0x8024B7F8 end:0x8024F310
+	.sbss       start:0x8025DEB0 end:0x8025DEB8
+	.sdata2     start:0x8025EA18 end:0x8025EA40
+
+revolution/hbm/nw4hbm/snd/snd_DisposeCallbackManager.cpp:
+	.text       start:0x80125864 end:0x80125D04
+	.data       start:0x80198FB0 end:0x80199010
+	.bss        start:0x8024F310 end:0x8024F328
+	.sbss       start:0x8025DEB8 end:0x8025DEC0
+
+revolution/hbm/nw4hbm/snd/snd_DvdSoundArchive.cpp:
+	.text       start:0x80125D04 end:0x80125D44
+
+revolution/hbm/nw4hbm/snd/snd_EnvGenerator.cpp:
+	.text       start:0x80125D44 end:0x80126354
+	.rodata     start:0x8016C8F0 end:0x8016CBF0
+	.data       start:0x80199010 end:0x80199160
+	.sdata2     start:0x8025EA40 end:0x8025EA70
+
+revolution/hbm/nw4hbm/snd/snd_ExternalSoundPlayer.cpp:
+	.text       start:0x80126354 end:0x80126520
+	.data       start:0x80199160 end:0x801991F0
+
+revolution/hbm/nw4hbm/snd/snd_FrameHeap.cpp:
+	.text       start:0x80126520 end:0x80126F78
+	.data       start:0x801991F0 end:0x801994E8
+
+revolution/hbm/nw4hbm/snd/snd_InstancePool.cpp:
+	.text       start:0x80126F78 end:0x80127228
+	.data       start:0x801994E8 end:0x80199530
+
+revolution/hbm/nw4hbm/snd/snd_Lfo.cpp:
+	.text       start:0x80127228 end:0x80127484
+	.rodata     start:0x8016CBF0 end:0x8016CC18
+	.data       start:0x80199530 end:0x80199578
+	.sdata2     start:0x8025EA70 end:0x8025EAA0
+
+revolution/hbm/nw4hbm/snd/snd_MemorySoundArchive.cpp:
+	.text       start:0x80127484 end:0x80127530
+
+revolution/hbm/nw4hbm/snd/snd_MidiSeqPlayer.cpp:
+	.text       start:0x80127530 end:0x801275CC
+
+revolution/hbm/nw4hbm/snd/snd_MidiSeqTrack.cpp:
+	.text       start:0x801275CC end:0x8012760C
+	.data       start:0x80199578 end:0x80199588
+
+revolution/hbm/nw4hbm/snd/snd_MmlParser.cpp:
+	.text       start:0x8012760C end:0x80128740
+	.data       start:0x80199588 end:0x80199A80
+	.sdata      start:0x8025D108 end:0x8025D118
+	.sbss       start:0x8025DEC0 end:0x8025DEC8
+	.sdata2     start:0x8025EAA0 end:0x8025EAC0
+
+revolution/hbm/nw4hbm/snd/snd_MmlSeqTrack.cpp:
+	.text       start:0x80128740 end:0x8012880C
+	.data       start:0x80199A80 end:0x80199A90
+
+revolution/hbm/nw4hbm/snd/snd_MmlSeqTrackAllocator.cpp:
+	.text       start:0x8012880C end:0x80128954
+	.data       start:0x80199A90 end:0x80199AF0
+
+revolution/hbm/nw4hbm/snd/snd_NandSoundArchive.cpp:
+	.text       start:0x80128954 end:0x8012928C
+	.data       start:0x80199AF0 end:0x80199E18
+	.sbss       start:0x8025DEC8 end:0x8025DED0
+
+revolution/hbm/nw4hbm/snd/snd_RemoteSpeaker.cpp:
+	.text       start:0x8012928C end:0x8012979C
+	.data       start:0x80199E18 end:0x80199ED0
+
+revolution/hbm/nw4hbm/snd/snd_RemoteSpeakerManager.cpp:
+	.text       start:0x8012979C end:0x80129A74
+	.data       start:0x80199ED0 end:0x80199F98
+	.bss        start:0x8024F328 end:0x8024F5E0
+	.sbss       start:0x8025DED0 end:0x8025DED8
+
+revolution/hbm/nw4hbm/snd/snd_SeqFile.cpp:
+	.text       start:0x80129A74 end:0x80129C28
+	.data       start:0x80199F98 end:0x8019A100
+
+revolution/hbm/nw4hbm/snd/snd_SeqPlayer.cpp:
+	.text       start:0x80129C28 end:0x8012B588
+	.ctors      start:0x8016A724 end:0x8016A728
+	.data       start:0x8019A100 end:0x8019A638
+	.bss        start:0x8024F5E0 end:0x8024F618
+	.sdata2     start:0x8025EAC0 end:0x8025EAD0
+
+revolution/hbm/nw4hbm/snd/snd_SeqSound.cpp:
+	.text       start:0x8012B588 end:0x8012BC00
+	.ctors      start:0x8016A728 end:0x8016A72C
+	.data       start:0x8019A638 end:0x8019A968
+	.sbss       start:0x8025DED8 end:0x8025DEE0
+
+revolution/hbm/nw4hbm/snd/snd_SeqSoundHandle.cpp:
+	.text       start:0x8012BC00 end:0x8012BC38
+
+revolution/hbm/nw4hbm/snd/snd_SeqTrack.cpp:
+	.text       start:0x8012BC38 end:0x8012D474
+	.rodata     start:0x8016CC18 end:0x8016CC40
+	.data       start:0x8019A968 end:0x8019ADB8
+	.sdata2     start:0x8025EAD0 end:0x8025EB00
+
+revolution/hbm/nw4hbm/snd/snd_SoundArchive.cpp:
+	.text       start:0x8012D474 end:0x8012DB78
+	.data       start:0x8019ADB8 end:0x8019AE70
+
+revolution/hbm/nw4hbm/snd/snd_SoundArchiveFile.cpp:
+	.text       start:0x8012DB78 end:0x8012EEF8
+	.data       start:0x8019AE70 end:0x8019B448
+	.sdata      start:0x8025D118 end:0x8025D1A8
+	.sbss       start:0x8025DEE0 end:0x8025DEE8
+
+revolution/hbm/nw4hbm/snd/snd_SoundArchiveLoader.cpp:
+	.text       start:0x8012EEF8 end:0x8012F8A0
+	.data       start:0x8019B448 end:0x8019B490
+
+revolution/hbm/nw4hbm/snd/snd_SoundArchivePlayer.cpp:
+	.text       start:0x8012F8A0 end:0x80132F6C
+	.data       start:0x8019B490 end:0x8019C208
+	.bss        start:0x8024F620 end:0x8024F838
+	.sbss       start:0x8025DEE8 end:0x8025DEF0
+	.sdata2     start:0x8025EB00 end:0x8025EB10
+
+revolution/hbm/nw4hbm/snd/snd_SoundHandle.cpp:
+	.text       start:0x80132F6C end:0x80133038
+	.data       start:0x8019C208 end:0x8019C248
+
+revolution/hbm/nw4hbm/snd/snd_SoundHeap.cpp:
+	.text       start:0x80133038 end:0x801331C4
+	.data       start:0x8019C248 end:0x8019C258
+
+revolution/hbm/nw4hbm/snd/snd_SoundPlayer.cpp:
+	.text       start:0x801331C4 end:0x80134EC0
+	.data       start:0x8019C258 end:0x8019C9C0
+	.sdata2     start:0x8025EB10 end:0x8025EB18
+
+revolution/hbm/nw4hbm/snd/snd_SoundStartable.cpp:
+	.text       start:0x80134EC0 end:0x80134F2C
+
+revolution/hbm/nw4hbm/snd/snd_SoundSystem.cpp:
+	.text       start:0x80134F2C end:0x80135110
+	.data       start:0x8019C9C0 end:0x8019CA58
+	.sbss       start:0x8025DEF0 end:0x8025DEF8
+
+revolution/hbm/nw4hbm/snd/snd_SoundThread.cpp:
+	.text       start:0x80135110 end:0x80135668
+	.data       start:0x8019CA58 end:0x8019CAE8
+	.bss        start:0x8024F838 end:0x80251BE0
+	.sbss       start:0x8025DEF8 end:0x8025DF00
+
+revolution/hbm/nw4hbm/snd/snd_StrmChannel.cpp:
+	.text       start:0x80135668 end:0x801358B0
+	.data       start:0x8019CAE8 end:0x8019CB20
+
+revolution/hbm/nw4hbm/snd/snd_StrmFile.cpp:
+	.text       start:0x801358B0 end:0x80135F78
+	.data       start:0x8019CB20 end:0x8019CD70
+	.sdata      start:0x8025D1B0 end:0x8025D1D0
+
+revolution/hbm/nw4hbm/snd/snd_StrmPlayer.cpp:
+	.text       start:0x80135F78 end:0x80138748
+	.ctors      start:0x8016A72C end:0x8016A730
+	.data       start:0x8019CD70 end:0x8019D290
+	.bss        start:0x80251BE0 end:0x80255C20
+	.sdata2     start:0x8025EB18 end:0x8025EB20
+
+revolution/hbm/nw4hbm/snd/snd_StrmSound.cpp:
+	.text       start:0x80138748 end:0x80138B50
+	.ctors      start:0x8016A730 end:0x8016A734
+	.data       start:0x8019D290 end:0x8019D410
+	.sbss       start:0x8025DF00 end:0x8025DF08
+
+revolution/hbm/nw4hbm/snd/snd_StrmSoundHandle.cpp:
+	.text       start:0x80138B50 end:0x80138B88
+
+revolution/hbm/nw4hbm/snd/snd_TaskManager.cpp:
+	.text       start:0x80138B88 end:0x80139370
+	.data       start:0x8019D410 end:0x8019D5E0
+	.bss        start:0x80255C20 end:0x80257CB8
+	.sbss       start:0x8025DF08 end:0x8025DF10
+
+revolution/hbm/nw4hbm/snd/snd_TaskThread.cpp:
+	.text       start:0x80139370 end:0x801395A8
+	.data       start:0x8019D5E0 end:0x8019D618
+	.bss        start:0x80257CB8 end:0x8025A020
+	.sbss       start:0x8025DF10 end:0x8025DF18
+
+revolution/hbm/nw4hbm/snd/snd_Util.cpp:
+	.text       start:0x801395A8 end:0x80139944
+	.rodata     start:0x8016CC40 end:0x8016E388
+	.data       start:0x8019D618 end:0x8019D648
+	.sdata      start:0x8025D1D0 end:0x8025D1D8
+	.sdata2     start:0x8025EB20 end:0x8025EB68
+
+revolution/hbm/nw4hbm/snd/snd_WaveFile.cpp:
+	.text       start:0x80139944 end:0x80139B74
+
+revolution/hbm/nw4hbm/snd/snd_WavePlayer.cpp:
+	.text       start:0x80139B74 end:0x8013A738
+	.ctors      start:0x8016A734 end:0x8016A738
+	.data       start:0x8019D648 end:0x8019DB08
+	.bss        start:0x8025A020 end:0x8025A038
+	.sdata2     start:0x8025EB68 end:0x8025EB70
+
+revolution/hbm/nw4hbm/snd/snd_WaveSound.cpp:
+	.text       start:0x8013A738 end:0x8013ABBC
+	.ctors      start:0x8016A738 end:0x8016A73C
+	.data       start:0x8019DB08 end:0x8019DCF8
+	.sbss       start:0x8025DF18 end:0x8025DF20
+
+revolution/hbm/nw4hbm/snd/snd_WaveSoundHandle.cpp:
+	.text       start:0x8013ABBC end:0x8013ABF4
+
+revolution/hbm/nw4hbm/snd/snd_WsdFile.cpp:
+	.text       start:0x8013ABF4 end:0x8013B12C
+	.data       start:0x8019DCF8 end:0x8019DF38
+	.sdata      start:0x8025D1D8 end:0x8025D1F8
+	.sdata2     start:0x8025EB70 end:0x8025EB78
+
+revolution/hbm/nw4hbm/snd/snd_WsdPlayer.cpp:
+	.text       start:0x8013B12C end:0x8013C20C
+	.ctors      start:0x8016A73C end:0x8016A740
+	.data       start:0x8019DF38 end:0x8019E2C0
+	.bss        start:0x8025A038 end:0x8025A050
+	.sdata2     start:0x8025EB78 end:0x8025EB80
+
+revolution/hbm/nw4hbm/snd/snd_WsdTrack.cpp:
+	.text       start:0x8013C20C end:0x8013CD94
+	.data       start:0x8019E2C0 end:0x8019E4E8
+	.sdata2     start:0x8025EB80 end:0x8025EBA8
+
+revolution/hbm/nw4hbm/ut/ut_binaryFileFormat.cpp:
+	.text       start:0x8013CD94 end:0x8013CFEC
+	.data       start:0x8019E4E8 end:0x8019E638
+
+revolution/hbm/nw4hbm/ut/ut_CharStrmReader.cpp:
+	.text       start:0x8013CFEC end:0x8013D94C
+	.data       start:0x8019E638 end:0x8019E780
+
+revolution/hbm/nw4hbm/ut/ut_CharWriter.cpp:
+	.text       start:0x8013D94C end:0x80141EA8
+	.data       start:0x8019E780 end:0x8019EA60
+	.bss        start:0x8025A050 end:0x8025A070
+	.sbss       start:0x8025DF20 end:0x8025DF28
+	.sdata2     start:0x8025EBA8 end:0x8025EBC8
+
+revolution/hbm/nw4hbm/ut/ut_DvdFileStream.cpp:
+	.text       start:0x80141EA8 end:0x80141EB4
+	.ctors      start:0x8016A740 end:0x8016A744
+	.sbss       start:0x8025DF28 end:0x8025DF30
+
+revolution/hbm/nw4hbm/ut/ut_FileStream.cpp:
+	.text       start:0x80141EB4 end:0x80142144
+	.ctors      start:0x8016A744 end:0x8016A748
+	.data       start:0x8019EA60 end:0x8019EB48
+	.sbss       start:0x8025DF30 end:0x8025DF38
+
+revolution/hbm/nw4hbm/ut/ut_Font.cpp:
+	.text       start:0x80142144 end:0x80142308
+	.data       start:0x8019EB48 end:0x8019EBC0
+
+revolution/hbm/nw4hbm/ut/ut_IOStream.cpp:
+	.text       start:0x80142308 end:0x80142544
+	.ctors      start:0x8016A748 end:0x8016A74C
+	.data       start:0x8019EBC0 end:0x8019EC88
+	.sbss       start:0x8025DF38 end:0x8025DF40
+
+revolution/hbm/nw4hbm/ut/ut_LinkList.cpp:
+	.text       start:0x80142544 end:0x80142AB0
+	.data       start:0x8019EC88 end:0x8019EE30
+
+revolution/hbm/nw4hbm/ut/ut_list.cpp:
+	.text       start:0x80142AB0 end:0x80142E58
+	.data       start:0x8019EE30 end:0x8019EE90
+
+revolution/hbm/nw4hbm/ut/ut_NandFileStream.cpp:
+	.text       start:0x80142E58 end:0x80143E44
+	.ctors      start:0x8016A74C end:0x8016A750
+	.data       start:0x8019EE90 end:0x8019F040
+	.sbss       start:0x8025DF40 end:0x8025DF48
 
 revolution/hbm/nw4hbm/ut/ut_ResFont.cpp:
 	.text       start:0x80143E44 end:0x80144E5C
+	.data       start:0x8019F040 end:0x8019F8F8
 
-revolution/hbm/code_80144E2C.cpp:
-	.text       start:0x80144E5C end:0x80152528
+revolution/hbm/nw4hbm/ut/ut_ResFontBase.cpp:
+	.text       start:0x80144E5C end:0x8014863C
+	.data       start:0x8019F8F8 end:0x8019FC10
+
+revolution/hbm/nw4hbm/ut/ut_TagProcessorBase.cpp:
+	.text       start:0x8014863C end:0x80149844
+	.data       start:0x8019FC10 end:0x8019FCE8
+	.sdata2     start:0x8025EBC8 end:0x8025EBD0
+
+revolution/hbm/nw4hbm/ut/ut_TextWriterBase.cpp:
+	.text       start:0x80149844 end:0x80152528
 	.ctors      start:0x8016A750 end:0x8016A754
+	.data       start:0x8019FCE8 end:0x801A02E0
+	.bss        start:0x8025A070 end:0x8025A088
+	.sdata      start:0x8025D1F8 end:0x8025D200
+	.sbss       start:0x8025DF48 end:0x8025DF58
+	.sdata2     start:0x8025EBD0 end:0x8025EBE8
 
 runtime/__mem.c:
 	.init       start:0x80004338 end:0x8000446C
@@ -813,11 +1294,16 @@ runtime/New.cpp:
 	extab       start:0x80006688 end:0x800066BC
 	extabindex  start:0x80006C1C end:0x80006C34
 	.text       start:0x8015266C end:0x80152770
+	.rodata     start:0x8016E388 end:0x8016E3E0
+	.data       start:0x801A02E0 end:0x801A0308
+	.sdata      start:0x8025D200 end:0x8025D210
+	.sbss       start:0x8025DF60 end:0x8025DF68
 
 runtime/NMWException.cpp:
 	extab       start:0x800066BC end:0x800066FC
 	extabindex  start:0x80006C34 end:0x80006C64
 	.text       start:0x80152770 end:0x80152CFC
+	.sdata      start:0x8025D210 end:0x8025D218
 
 runtime/ptmf.c:
 	.text       start:0x80152CFC end:0x80152D60
@@ -840,6 +1326,10 @@ runtime/Gecko_ExceptionPPC.cpp:
 	extab       start:0x800066FC end:0x80006770
 	extabindex  start:0x80006C64 end:0x80006CB8
 	.text       start:0x801538CC end:0x80155014
+	.rodata     start:0x8016E3F8 end:0x8016E460
+	.data       start:0x801A0308 end:0x801A0408
+	.bss        start:0x8025A088 end:0x8025A098
+	.sdata      start:0x8025D220 end:0x8025D228
 
 runtime/GCN_mem_alloc.c:
 	.text       start:0x80155014 end:0x80155184
@@ -849,16 +1339,34 @@ libc/alloc.c:
 	extab       start:0x80006770 end:0x800067A8
 	extabindex  start:0x80006CB8 end:0x80006D0C
 	.text       start:0x80155184 end:0x80155F84
+	.rodata     start:0x8016E4D0 end:0x8016E4E8
+	.bss        start:0x8025A098 end:0x8025A0D0
+	.sbss       start:0x8025DF68 end:0x8025DF70
+
+libc/errno.c:
+	.sbss       start:0x8025DF70 end:0x8025DF78
 
 libc/ansi_files.c:
 	extab       start:0x800067A8 end:0x800067B8
 	extabindex  start:0x80006D0C end:0x80006D24
 	.text       start:0x80155F84 end:0x80156094
+	.data       start:0x801A0408 end:0x801A0548
+	.bss        start:0x8025A0D0 end:0x8025A3D0
 
 libc/ansi_fp.c:
 	extab       start:0x800067B8 end:0x800067F0
 	extabindex  start:0x80006D24 end:0x80006D78
 	.text       start:0x80156094 end:0x80157A04
+	.rodata     start:0x8016E4E8 end:0x8016E5C8
+	.data       start:0x801A0548 end:0x801A06B0
+	.sdata2     start:0x8025EBE8 end:0x8025EC20
+
+libc/ctype.c:
+	.rodata     start:0x8016E5C8 end:0x8016E9C8
+
+libc/locale.c:
+	.rodata     start:0x8016E9C8 end:0x8016EB00
+	.sdata2     start:0x8025EC20 end:0x8025EC38
 
 libc/arith.c:
 	extab       start:0x800067F0 end:0x80006800
@@ -901,9 +1409,12 @@ libc/mem.c:
 	.text       start:0x80158888 end:0x801589F8
 
 libc/mem_funcs.c:
+	.text       start:0x801589F8 end:0x80158CC8
+
+libc/math_api.c:
 	extab       start:0x80006848 end:0x80006858
 	extabindex  start:0x80006DFC end:0x80006E14
-	.text       start:0x801589F8 end:0x80158D60
+	.text       start:0x80158CC8 end:0x80158D60
 
 libc/misc_io.c:
 	.text       start:0x80158D60 end:0x80158D70
@@ -912,6 +1423,9 @@ libc/printf.c:
 	extab       start:0x80006858 end:0x800068C8
 	extabindex  start:0x80006E14 end:0x80006EBC
 	.text       start:0x80158D70 end:0x8015B2C4
+	.data       start:0x801A06B0 end:0x801A0AF8
+	.sdata      start:0x8025D228 end:0x8025D230
+	.sdata2     start:0x8025EC38 end:0x8025EC40
 
 libc/qsort.c:
 	extab       start:0x800068C8 end:0x800068D0
@@ -920,16 +1434,23 @@ libc/qsort.c:
 
 libc/rand.c:
 	.text       start:0x8015B434 end:0x8015B45C
+	.sdata      start:0x8025D230 end:0x8025D238
+
+libc/float.c:
+	.sdata      start:0x8025D238 end:0x8025D248
 
 libc/scanf.c:
 	extab       start:0x800068D0 end:0x800068E8
 	extabindex  start:0x80006EC8 end:0x80006EEC
 	.text       start:0x8015B45C end:0x8015C9C8
+	.rodata     start:0x8016EB00 end:0x8016EB28
+	.data       start:0x801A0AF8 end:0x801A0C18
 
 libc/signal.c:
 	extab       start:0x800068E8 end:0x800068F0
 	extabindex  start:0x80006EEC end:0x80006EF8
 	.text       start:0x8015C9C8 end:0x8015CA78
+	.bss        start:0x8025A3D0 end:0x8025A3F0
 
 libc/string.c:
 	extab       start:0x800068F0 end:0x80006908
@@ -940,16 +1461,26 @@ libc/strtold.c:
 	extab       start:0x80006908 end:0x80006910
 	extabindex  start:0x80006F1C end:0x80006F28
 	.text       start:0x8015D024 end:0x8015E418
+	.rodata     start:0x8016EB28 end:0x8016EB38
+	.sdata2     start:0x8025EC40 end:0x8025EC60
 
 libc/strtoul.c:
 	extab       start:0x80006910 end:0x80006940
 	extabindex  start:0x80006F28 end:0x80006F70
 	.text       start:0x8015E418 end:0x8015F028
+	.data       start:0x801A0C18 end:0x801A0CA0
 
 libc/time.c:
 	extab       start:0x80006940 end:0x80006988
 	extabindex  start:0x80006F70 end:0x80006FDC
 	.text       start:0x8015F028 end:0x80160950
+	.rodata     start:0x8016EB38 end:0x8016EC60
+	.data       start:0x801A0CA0 end:0x801A0DF8
+	.bss        start:0x8025A3F0 end:0x8025A478
+	.sdata2     start:0x8025EC60 end:0x8025EC80
+
+libc/wctype.c:
+	.rodata     start:0x8016EC60 end:0x8016F260
 
 libc/wstring.c:
 	.text       start:0x80160950 end:0x801609B0
@@ -964,142 +1495,185 @@ libc/uart_console_io.c:
 	extab       start:0x80006988 end:0x80006990
 	extabindex  start:0x80006FDC end:0x80006FE8
 	.text       start:0x80160A44 end:0x80160B1C
+	.sbss       start:0x8025DF78 end:0x8025DF80
 
 libc/abort_exit_ppc_eabi.c:
 	extab       start:0x80006990 end:0x80006998
 	extabindex  start:0x80006FE8 end:0x80006FF4
 	.text       start:0x80160B1C end:0x80160B50
+	.sbss       start:0x8025DF80 end:0x8025DF88
 
 libc/extras.c:
 	extab       start:0x80006998 end:0x800069A0
 	extabindex  start:0x80006FF4 end:0x80007000
 	.text       start:0x80160B50 end:0x80160C40
 
-libc/e_acos.c:
+libc/math/e_acos.c:
 	.text       start:0x80160C40 end:0x80160F04
+	.sdata2     start:0x8025EC80 end:0x8025ED08
 
-libc/e_asin.c:
+libc/math/e_asin.c:
 	.text       start:0x80160F04 end:0x8016119C
+	.sdata2     start:0x8025ED08 end:0x8025ED90
 
-libc/e_atan2.c:
+libc/math/e_atan2.c:
 	.text       start:0x8016119C end:0x8016140C
+	.sdata2     start:0x8025ED90 end:0x8025EDE8
 
-libc/e_exp.c:
+libc/math/e_exp.c:
 	.text       start:0x8016140C end:0x80161640
+	.rodata     start:0x8016F260 end:0x8016F290
+	.sdata2     start:0x8025EDE8 end:0x8025EE60
 
-libc/e_fmod.c:
+libc/math/e_fmod.c:
 	.text       start:0x80161640 end:0x80161970
+	.rodata     start:0x8016F290 end:0x8016F2A0
 
-libc/e_log.c:
+libc/math/e_log.c:
 	.text       start:0x80161970 end:0x80161C24
+	.sbss       start:0x8025DF88 end:0x8025DF90
+	.sdata2     start:0x8025EE60 end:0x8025EEE0
 
-libc/e_log10.c:
+libc/math/e_log10.c:
 	.text       start:0x80161C24 end:0x80161D38
+	.sbss       start:0x8025DF90 end:0x8025DF98
+	.sdata2     start:0x8025EEE0 end:0x8025EF10
 
-libc/e_pow.c:
+libc/math/e_pow.c:
 	.text       start:0x80161D38 end:0x80162580
+	.rodata     start:0x8016F2A0 end:0x8016F2D0
+	.sdata2     start:0x8025EF10 end:0x8025F020
 
-libc/e_rem_pio2.c:
+libc/math/e_rem_pio2.c:
 	.text       start:0x80162580 end:0x80162918
+	.rodata     start:0x8016F2D0 end:0x8016F458
+	.sdata2     start:0x8025F020 end:0x8025F078
 
-libc/k_cos.c:
+libc/math/k_cos.c:
 	.text       start:0x80162918 end:0x80162A28
+	.sdata2     start:0x8025F078 end:0x8025F0C0
 
-libc/k_rem_pio2.c:
+libc/math/k_rem_pio2.c:
 	.text       start:0x80162A28 end:0x80164134
+	.rodata     start:0x8016F458 end:0x8016F4A8
+	.sdata2     start:0x8025F0C0 end:0x8025F100
 
-libc/k_sin.c:
+libc/math/k_sin.c:
 	.text       start:0x80164134 end:0x801641F4
+	.sdata2     start:0x8025F100 end:0x8025F138
 
-libc/k_tan.c:
+libc/math/k_tan.c:
 	.text       start:0x801641F4 end:0x8016444C
+	.rodata     start:0x8016F4A8 end:0x8016F510
+	.sdata2     start:0x8025F138 end:0x8025F170
 
-libc/s_atan.c:
+libc/math/s_atan.c:
 	.text       start:0x8016444C end:0x8016468C
+	.rodata     start:0x8016F510 end:0x8016F5A8
+	.sdata2     start:0x8025F170 end:0x8025F198
 
-libc/s_ceil.c:
+libc/math/s_ceil.c:
 	.text       start:0x8016468C end:0x801647CC
+	.sdata2     start:0x8025F198 end:0x8025F1A8
 
-libc/s_copysign.c:
+libc/math/s_copysign.c:
 	.text       start:0x801647CC end:0x801647F8
 
-libc/s_cos.c:
+libc/math/s_cos.c:
 	.text       start:0x801647F8 end:0x801648CC
+	.sdata2     start:0x8025F1A8 end:0x8025F1B0
 
-libc/s_floor.c:
+libc/math/s_floor.c:
 	.text       start:0x801648CC end:0x80164A10
+	.sdata2     start:0x8025F1B0 end:0x8025F1C0
 
-libc/s_frexp.c:
+libc/math/s_frexp.c:
 	.text       start:0x80164A10 end:0x80164A98
+	.sdata2     start:0x8025F1C0 end:0x8025F1C8
 
-libc/s_ldexp.c:
+libc/math/s_ldexp.c:
 	.text       start:0x80164A98 end:0x80164C04
+	.sdata2     start:0x8025F1C8 end:0x8025F1F0
 
-libc/s_sin.c:
+libc/math/s_sin.c:
 	.text       start:0x80164C04 end:0x80164CDC
+	.sdata2     start:0x8025F1F0 end:0x8025F1F8
 
-libc/s_tan.c:
+libc/math/s_tan.c:
 	.text       start:0x80164CDC end:0x80164D54
+	.sdata2     start:0x8025F1F8 end:0x8025F200
 
-libc/w_acos.c:
+libc/math/w_acos.c:
 	.text       start:0x80164D54 end:0x80164D58
 
-libc/w_asin.c:
+libc/math/w_asin.c:
 	.text       start:0x80164D58 end:0x80164D5C
 
-libc/w_atan2.c:
+libc/math/w_atan2.c:
 	.text       start:0x80164D5C end:0x80164D60
 
-libc/w_exp.c:
+libc/math/w_exp.c:
 	.text       start:0x80164D60 end:0x80164D64
 
-libc/w_fmod.c:
+libc/math/w_fmod.c:
 	.text       start:0x80164D64 end:0x80164D68
 
-libc/w_log.c:
+libc/math/w_log.c:
 	.text       start:0x80164D68 end:0x80164D6C
 
-libc/w_log10f.c:
+libc/math/w_log10f.c:
 	.text       start:0x80164D6C end:0x80164D70
 
-libc/w_pow.c:
+libc/math/w_pow.c:
 	.text       start:0x80164D70 end:0x80164D74
 
-libc/e_sqrt.c:
+libc/math/e_sqrt.c:
 	.text       start:0x80164D74 end:0x80164FBC
+	.sdata2     start:0x8025F200 end:0x8025F208
 
-libc/math_ppc.c:
+libc/math/math_ppc.c:
 	.text       start:0x80164FBC end:0x80164FC0
 
-libc/w_sqrt.c:
+libc/math/w_sqrt.c:
 	.text       start:0x80164FC0 end:0x80164FC4
 
 metrotrk/mainloop.c:
-	.text       start:0x80164FC4 end:0x8016528C
+	.text       start:0x80164FC4 end:0x801650BC
 
 metrotrk/nubevent.c:
-	.text       start:0x8016528C end:0x801652E4
+	.text       start:0x801650BC end:0x801652E4
+	.bss        start:0x8025A478 end:0x8025A4A0
 
 metrotrk/nubinit.c:
 	.text       start:0x801652E4 end:0x80165468
+	.rodata     start:0x8016F5A8 end:0x8016F5C8
+	.bss        start:0x8025A4A0 end:0x8025A4A8
 
 metrotrk/msg.c:
 	.text       start:0x80165468 end:0x80165494
 
 metrotrk/msgbuf.c:
-	.text       start:0x80165494 end:0x80165CD8
+	.text       start:0x80165494 end:0x80165CD0
+	.rodata     start:0x8016F5C8 end:0x8016F5E8
+	.bss        start:0x8025A4A8 end:0x8025BE58
 
 metrotrk/serpoll.c:
-	.text       start:0x80165CD8 end:0x80165E7C
+	.text       start:0x80165CD0 end:0x80165E7C
+	.bss        start:0x8025BE58 end:0x8025BE70
+	.sbss       start:0x8025DF98 end:0x8025DFA0
 
 metrotrk/usr_put.c:
-	.text       start:0x80165E7C end:0x80165E80
+	.text       start:0x80165E7C end:0x80165F08
 
 metrotrk/dispatch.c:
-	.text       start:0x80165E80 end:0x80166050
+	.text       start:0x80165F08 end:0x80166050
+	.data       start:0x801A0DF8 end:0x801A0E68
 
 metrotrk/msghndlr.c:
 	.text       start:0x80166050 end:0x8016712C
+	.rodata     start:0x8016F5E8 end:0x8016F620
+	.data       start:0x801A0E68 end:0x801A0EA0
+	.bss        start:0x8025BE70 end:0x8025BE78
 
 metrotrk/support.c:
 	.text       start:0x8016712C end:0x801677E0
@@ -1117,8 +1691,14 @@ metrotrk/mem_TRK.c:
 	.init       start:0x8000446C end:0x800044C0
 	.text       start:0x801678C8 end:0x80167980
 
+metrotrk/string_TRK.c:
+	.text       start:0x80167980 end:0x8016799C
+
 metrotrk/targimpl.c:
-	.text       start:0x80167980 end:0x801693C0
+	.text       start:0x8016799C end:0x801693C0
+	.rodata     start:0x8016F620 end:0x8016F6A8
+	.data       start:0x801A0EA0 end:0x801A0ED0
+	.bss        start:0x8025BE78 end:0x8025C3F8
 
 metrotrk/targsupp.c:
 	.text       start:0x801693C0 end:0x801693E0
@@ -1129,30 +1709,42 @@ metrotrk/mpc_7xx_603e.c:
 metrotrk/mslsupp.c:
 	.text       start:0x80169750 end:0x801698C8
 
+metrotrk/__exception.s:
+	.init       start:0x800044C0 end:0x800063F4
+
 metrotrk/dolphin_trk.c:
 	.init       start:0x800063F4 end:0x80006420
 	.text       start:0x801698C8 end:0x80169BE4
+	.data       start:0x801A0ED0 end:0x801A0F10
+	.bss        start:0x8025C3F8 end:0x8025C400
 
 metrotrk/main_TRK.c:
 	.text       start:0x80169BE4 end:0x80169C28
+	.bss        start:0x8025C400 end:0x8025C408
 
 metrotrk/dolphin_trk_glue.c:
 	.text       start:0x80169C28 end:0x8016A0E8
+	.rodata     start:0x8016F6A8 end:0x8016F7B0
+	.data       start:0x801A0F10 end:0x801A0F38
+	.bss        start:0x8025C408 end:0x8025C410
 
 metrotrk/targcont.c:
 	.text       start:0x8016A0E8 end:0x8016A11C
 
-metrotrk/code_8016A0EC.c:
+metrotrk/target_options.c:
 	.text       start:0x8016A11C end:0x8016A138
+	.bss        start:0x8025C410 end:0x8025C418
 
 metrotrk/cc_udp.c:
 	.text       start:0x8016A138 end:0x8016A180
 
 metrotrk/cc_gdev.c:
-	.text       start:0x8016A180 end:0x8016A3F4
+	.text       start:0x8016A180 end:0x8016A440
+	.bss        start:0x8025C418 end:0x8025C934
+	.sbss       start:0x8025DFA0 end:0x8025DFA4
 
 metrotrk/CircleBuffer.c:
-	.text       start:0x8016A3F4 end:0x8016A6A8
+	.text       start:0x8016A440 end:0x8016A6A8
 
-metrotrk/MWCriticalSection_gc.cpp:
+metrotrk/MWCriticalSection_gc.c:
 	.text       start:0x8016A6A8 end:0x8016A700

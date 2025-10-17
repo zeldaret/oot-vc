@@ -17,10 +17,12 @@ extern "C" {
 // N64 frame buffer dimensions
 #define N64_FRAME_WIDTH 320
 #define N64_FRAME_HEIGHT 240
+#define N64_FRAME_HEIGHT_PAL (N64_FRAME_HEIGHT + 47)
 
 // GC is rendered at double the resolution
 #define GC_FRAME_WIDTH (N64_FRAME_WIDTH * 2)
 #define GC_FRAME_HEIGHT (N64_FRAME_HEIGHT * 2)
+#define GC_FRAME_HEIGHT_PAL (GC_FRAME_HEIGHT + 48)
 
 // Dimensions of the player preview on the equipment menu of the Zelda pause screen
 #define ZELDA_PAUSE_EQUIP_PLAYER_WIDTH 64
@@ -257,32 +259,38 @@ typedef struct Rectangle {
     /* 0x24 */ f32 rDeltaT;
 } Rectangle; // size = 0x28
 
-//! TODO: fix the offsets
+//! TODO: fix the names and offsets
 typedef struct Frame {
     /* 0x00000 */ u32 anCIMGAddresses[8];
     /* 0x00020 */ u16 nNumCIMGAddresses;
-    /* 0x00024 */ bool bBlurOn;
-    /* 0x00028 */ bool bHackPause;
-    /* 0x0002C */ s32 nHackCount;
-    /* 0x00030 */ s32 nFrameCounter;
-    /* 0x00034 */ bool bPauseThisFrame;
-    /* 0x00038 */ bool bCameFromBomberNotes;
-    /* 0x0003C */ bool bInBomberNotes;
-    /* 0x00040 */ s32 bShrinking; // bitfield (not a bool)
-    /* 0x00044 */ bool bSnapShot;
-    /* 0x00048 */ bool bUsingLens;
-    /* 0x0004C */ u32 cBlurAlpha;
-    /* 0x00050 */ bool bBlurredThisFrame;
-    /* 0x00054 */ s32 nFrameCIMGCalls;
-    /* 0x00058 */ bool bModifyZBuffer;
-    /* 0x0005C */ bool bOverrideDepth;
-    /* 0x00060 */ s32 nZBufferSets;
-    /* 0x00064 */ s32 nLastFrameZSets;
-    /* 0x00068 */ bool bPauseBGDrawn;
-    /* 0x0006C */ bool bFrameOn;
-    /* 0x00070 */ bool bBackBufferDrawn;
-    /* 0x00074 */ bool bGrabbedFrame;
-    /* 0x00078 */ s32 pad1[7];
+    /* 0x00024 */ s32 unk_24;
+    /* 0x00028 */ s32 unk_28;
+    /* 0x0002C */ s32 unk_2C;
+    /* 0x00030 */ s32 unk_30;
+    /* 0x00034 */ s32 unk_34;
+    /* 0x00038 */ s32 unk_38;
+    /* 0x0003C */ s32 unk_3C;
+    /* 0x00040 */ s32 unk_40;
+    /* 0x00044 */ s32 unk_44;
+    /* 0x00048 */ u32 unk_48;
+    /* 0x0004C */ u32 unk_4C;
+    /* 0x00050 */ bool bBlurOn;
+    /* 0x00054 */ bool bHackPause;
+    /* 0x00058 */ s32 nHackCount;
+    /* 0x0005C */ s32 nFrameCounter;
+    /* 0x00060 */ bool bPauseThisFrame;
+    /* 0x00064 */ bool bCameFromBomberNotes;
+    /* 0x00068 */ bool bInBomberNotes;
+    /* 0x0006C */ s32 bShrinking; // bitfield (not a bool)
+    /* 0x00070 */ s32 bSnapShot; // bitfield (not a bool)
+    /* 0x00074 */ u32 bUsingLens;
+    /* 0x00078 */ u8 cBlurAlpha;
+    /* 0x0007C */ bool bBlurredThisFrame;
+    /* 0x00080 */ s32 nFrameCIMGCalls;
+    /* 0x00084 */ bool bModifyZBuffer;
+    /* 0x00088 */ s32 nZBufferSets;
+    /* 0x0008C */ s32 nLastFrameZSets;
+    /* 0x00090 */ bool bPauseBGDrawn;
     /* 0x00094 */ u64* pnGBI;
     /* 0x00098 */ u32 nFlag;
     /* 0x0009C */ f32 rScaleX;
@@ -290,29 +298,29 @@ typedef struct Frame {
     /* 0x000A4 */ f32 unk_A4;
     /* 0x000A8 */ f32 unk_A8;
     /* 0x000AC */ u32 nCountFrames;
-    /* 0x000B0 */ u32 nMode;
+    /* 0x000B0 */ volatile u32 nMode;
     /* 0x000B4 */ u32 aMode[FMT_COUNT];
     /* 0x000DC */ Viewport viewport;
-    /* 0x000FC */ FrameBuffer aBuffer[FBT_COUNT];
+    /* 0x000EC */ FrameBuffer aBuffer[FBT_COUNT];
     /* 0x0013C */ u32 nOffsetDepth0;
     /* 0x00140 */ u32 nOffsetDepth1;
     /* 0x00144 */ s32 nWidthLine;
     /* 0x00148 */ f32 rDepth;
     /* 0x0014C */ f32 rDelta;
-    /* 0x00154 */ FrameDrawFunc aDraw[4];
+    /* 0x00150 */ FrameDrawFunc aDraw[4];
     /* 0x00160 */ s32 nCountLight;
     /* 0x00164 */ Light aLight[8];
-    /* 0x00360 */ LookAt lookAt;
+    /* 0x00344 */ LookAt lookAt;
     /* 0x00378 */ s32 nCountVertex;
-    /* 0x00390 */ Vertex aVertex[80];
-    /* 0x00C44 */ TextureMemory TMEM;
+    /* 0x0037C */ Vertex aVertex[80];
+    /* 0x00C40 */ TextureMemory TMEM;
     /* 0x01C40 */ void* aPixelData;
     /* 0x01C44 */ void* aColorData;
     /* 0x01C48 */ s32 nBlocksPixel;
-    /* 0x01C54 */ s32 nBlocksMaxPixel;
-    /* 0x01C4C */ s32 nBlocksColor;
-    /* 0x01C58 */ s32 nBlocksMaxColor;
-    /* 0x01C50 */ s32 nBlocksTexture;
+    /* 0x01C4C */ s32 nBlocksMaxPixel;
+    /* 0x01C50 */ s32 nBlocksColor;
+    /* 0x01C54 */ s32 nBlocksMaxColor;
+    /* 0x01C58 */ s32 nBlocksTexture;
     /* 0x01C5C */ s32 nBlocksMaxTexture;
     /* 0x01C60 */ u32 anPackPixel[48];
     /* 0x01D20 */ u32 anPackColor[320];
@@ -327,10 +335,10 @@ typedef struct Frame {
     /* 0x3E370 */ s32 iTileLoad;
     /* 0x3E374 */ u32 n2dLoadTexType;
     /* 0x3E378 */ s32 nLastX0;
-    /* 0x3E380 */ s32 nLastY0;
-    /* 0x3E384 */ s32 nLastX1;
-    /* 0x3E388 */ s32 nLastY1;
-    /* 0x3E3A8 */ Tile aTile[8];
+    /* 0x3E37C */ s32 nLastY0;
+    /* 0x3E380 */ s32 nLastX1;
+    /* 0x3E384 */ s32 nLastY1;
+    /* 0x3E388 */ Tile aTile[8];
     /* 0x3E4E8 */ s32 anSizeX[FS_COUNT];
     /* 0x3E4F0 */ s32 anSizeY[FS_COUNT];
     /* 0x3E4F8 */ s32 iHintMatrix;
@@ -341,24 +349,23 @@ typedef struct Frame {
     /* 0x3E548 */ s32 iHintHack;
     /* 0x3E54C */ FrameMatrixProjection eTypeProjection;
     /* 0x3E550 */ Mtx44 aMatrixModel[10];
-    /* 0x3E590 */ Mtx44 matrixProjection;
-    /* 0x3E5D0 */ Mtx44 matrixProjectionExtra;
-    /* 0x3E610 */ MatrixHint aMatrixHint[64];
-    /* 0x3EF10 */ Mtx44 unknown;
-    /* 0x3EF10 */ Mtx44 unknown2;
-    s32 pad2[0x12]; // 1 Mtx44 + 2 floats?
-    /* 0x3F212 */ u8 primLODmin;
-    /* 0x3F214 */ u8 primLODfrac;
-    /* 0x3F218 */ u8 lastTile;
-    /* 0x3F21C */ u8 iTileDrawn;
-    /* 0x3F220 */ GXColor aColor[FCT_COUNT];
+    /* 0x3E7D0 */ Mtx44 matrixProjection;
+    /* 0x3E810 */ Mtx44 matrixProjectionExtra;
+    /* 0x3E850 */ MatrixHint aMatrixHint[64];
+    /* 0x3F150 */ Mtx44 unk_3F150;
+    /* 0x3F190 */ Mtx44 unk_3F190;
+    /* 0x3F1D0 */ Mtx44 unk_3F1D0;
+    /* 0x3F210 */ f32 unk_3F210; // rNear
+    /* 0x3F214 */ f32 unk_3F214; // rFar
+    /* 0x3F218 */ u8 primLODmin;
+    /* 0x3F219 */ u8 primLODfrac;
+    /* 0x3F21A */ u8 lastTile;
+    /* 0x3F21B */ u8 iTileDrawn;
+    /* 0x3F21C */ GXColor aColor[FCT_COUNT];
     /* 0x3F230 */ u32 nModeVtx;
-
-    //! TODO: find which of these members got removed
     /* 0x3F234 */ u16* nTempBuffer;
     /* 0x3F238 */ u16* nCopyBuffer;
-    /* 0x3F23C */ u32* nLensBuffer;
-    // /* 0x3F008 */ u16* nCameraBuffer;
+    /* 0x3F23C */ u8* nCameraBuffer;
 } Frame; // size = 0x3F240
 
 extern _XL_OBJECTTYPE gClassFrame;
