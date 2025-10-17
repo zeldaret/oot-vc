@@ -82,9 +82,9 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
             }
 
             switch (gpSystem->eTypeROM) {
-                case 'CZLE':
-                case 'CZLJ':
-                case 'NZLP':
+                case CZLE:
+                case CZLJ:
+                case NZLP:
                     if (!frameHackCIMG_Zelda(pFrame, pBuffer, pnGBI, nCommandLo, nCommandHi)) {
                         return false;
                     }
@@ -118,9 +118,9 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
             FrameBuffer* pBuffer = &pFrame->aBuffer[FBT_IMAGE];
 
             switch (gpSystem->eTypeROM) {
-                case 'CZLE':
-                case 'CZLJ':
-                case 'NZLP':
+                case CZLE:
+                case CZLJ:
+                case NZLP:
                     if (!frameHackTIMG_Zelda(pFrame, &pnGBI, &nCommandLo, &nCommandHi)) {
                         return false;
                     }
@@ -263,11 +263,15 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
             }
             break;
         case 0xF8: // G_SETFOGCOLOR
+
+#if IS_OOT
             if (gpSystem->eTypeROM == 'CZLJ' || gpSystem->eTypeROM == 'CZLE' || gpSystem->eTypeROM == 'NZLP') {
                 if (pFrame->unk_30 != 0 && nCommandLo == 0xFF0000FF) {
                     nCommandLo = 0x3C0000FF;
                 }
             }
+#endif
+
             if (!frameSetColor(pFrame, FCT_FOG, nCommandLo)) {
                 return false;
             }
@@ -708,12 +712,15 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                     primitive.nY0 = 0;
                     primitive.nY1 = 0;
                 }
-            } else if ((gpSystem->eTypeROM == 'CZLJ' || gpSystem->eTypeROM == 'CZLE' || gpSystem->eTypeROM == 'NZLP') &&
+            } 
+#if IS_OOT
+            else if ((gpSystem->eTypeROM == 'CZLJ' || gpSystem->eTypeROM == 'CZLE' || gpSystem->eTypeROM == 'NZLP') &&
                        pFrame->unk_24 != 0 && primitive.nX0 == (204 << 2) && primitive.nX1 == (300 << 2) &&
                        primitive.nY0 == (140 << 2) && primitive.nY1 == (225 << 2)) {
                 pFrame->unk_24 = 0;
                 break;
             }
+#endif
 
             nCommandLo = GBI_COMMAND_LO(pnGBI);
             nCommandHi = GBI_COMMAND_HI(pnGBI);

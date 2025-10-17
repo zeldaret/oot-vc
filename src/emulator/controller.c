@@ -45,7 +45,10 @@ _XL_OBJECTTYPE gClassController = {
 };
 
 MEMAllocator gControllerAllocator;
+
+#if IS_OOT
 struct_801C7DC8 lbl_801C7DC8;
+#endif
 ControllerThread gControllerThread;
 static void* sControllerHeap;
 static VIRetraceCallback sControllerVICallback;
@@ -190,7 +193,13 @@ static inline s32 fn_800623F4_UnknownInline(f32 value) {
     }
 }
 
+extern bool fn_800CAFB8(s32, struct_801C7DC8*, s32);
+
 static bool fn_800623F4(Controller* pController) {
+#if IS_MK64
+    struct_801C7DC8 lbl_801C7DC8;
+#endif
+
     PADStatus status[PAD_MAX_CONTROLLERS];
     s32 i;
     s32 var_r26;
@@ -203,8 +212,6 @@ static bool fn_800623F4(Controller* pController) {
     s32 var_r19;
     s32 var_r18;
     s32 var_r17;
-    s32 var_r16;
-    s32 var_r15;
     s32 sp98;
     s32 sp94;
     s32 sp90;
@@ -213,6 +220,8 @@ static bool fn_800623F4(Controller* pController) {
     s32 sp84;
     s32 sp80;
     s32 var_r14;
+    s32 var_r16;
+    s32 var_r15;
     s32 var_r3;
     s32 var_r4;
     s32 var_r5;
@@ -286,8 +295,14 @@ static bool fn_800623F4(Controller* pController) {
                 }
             }
         }
+
+#if IS_OOT
         fn_800CAFB8(i, &lbl_801C7DC8, 10);
-        if (lbl_801C7DC8.status[0].wpad_err == 0) {
+        if (lbl_801C7DC8.status[0].wpad_err == 0)
+#elif IS_MK64
+        if (fn_800CAFB8(i, &lbl_801C7DC8, 10) && lbl_801C7DC8.status[0].wpad_err == 0)
+#endif
+        {
             value4 |= 2;
             if (lbl_801C7DC8.status[0].hold & 0x8000) {
                 value3 |= 0x10;
@@ -425,8 +440,12 @@ static bool fn_800623F4(Controller* pController) {
                 var_r18 = sp80;
                 var_r17 = var_r14;
             }
+
+#if IS_OOT
             var_r20 = fn_800623F4_UnknownInline(var_r20);
             var_r19 = fn_800623F4_UnknownInline(var_r19);
+#endif
+
             if (var_r20 < -0x3F) {
                 value3 |= 0x800;
             }
