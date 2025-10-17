@@ -61,7 +61,7 @@ emulator/system.c:
 	.text       start:0x8000A100 end:0x8000D8B4
 	.data       start:0x8016DCE8 end:0x8016E5E0
 	.bss        start:0x8019FB78 end:0x8019FCC8
-	.sdata      start:0x8025A498 end:0x8025A4EC
+	.sdata      start:0x8025A498 end:0x8025A4F0
 	.sdata2     start:0x8025BB10 end:0x8025BB20
 
 emulator/ai.c:
@@ -187,7 +187,7 @@ emulator/video.c:
 	.data       start:0x801727D8 end:0x801727E8
 	.sdata      start:0x8025A640 end:0x8025A648
 
-emulator/store.c:
+emulator/storeRVL.c:
 	.text       start:0x80062A4C end:0x800632B8
 	.data       start:0x801727E8 end:0x801727F8
 	.sdata      start:0x8025A648 end:0x8025A650
