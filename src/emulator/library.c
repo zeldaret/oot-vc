@@ -2825,11 +2825,13 @@ bool fn_8005B6E0(Cpu* pCPU) { return true; }
 
 bool fn_8005B6E8(Cpu* pCPU) { return true; }
 
+#if IS_OOT
 bool fn_8005B6F0(Cpu* pCPU) { return true; }
 
 bool fn_8005B6F8(Cpu* pCPU) { return true; }
 
 bool fn_8005B700(Cpu* pCPU) { return true; }
+#endif
 
 bool fn_8005B708(Cpu* pCPU) { return true; }
 
@@ -2851,7 +2853,7 @@ bool osViSwapBuffer_Entry(Cpu* pCPU) {
     return true;
 }
 
-LibraryFunc gaFunction[62] = {
+LibraryFunc gaFunction[] = {
     {
         NULL,
         (LibraryFuncImpl)send_mesg,
@@ -3123,6 +3125,7 @@ LibraryFunc gaFunction[62] = {
         (LibraryFuncImpl)fn_8005B6E8,
         {0x00000042, 0x082895D5, 0x0000001D, 0x7730CD62},
     },
+#if IS_OOT
     {
         NULL,
         (LibraryFuncImpl)fn_8005B6F0,
@@ -3138,6 +3141,7 @@ LibraryFunc gaFunction[62] = {
         (LibraryFuncImpl)fn_8005B700,
         {0x00000A3B, 0xAC09CF16, 0x00000A0E, 0x0A2781CF},
     },
+#endif
     {
         NULL,
         (LibraryFuncImpl)GenPerspective_1080,
@@ -3158,11 +3162,13 @@ LibraryFunc gaFunction[62] = {
         (LibraryFuncImpl)fn_8005B710,
         {0x0000008B, 0x9804924C},
     },
+#if IS_OOT
     {
         NULL,
         (LibraryFuncImpl)fn_8005B710,
         {0x00000022, 0x5D447143, 0x00000033, 0xBFD9B964, 0x00000082, 0x110CA1BB},
     },
+#endif
 };
 
 static bool libraryFindException(Library* pLibrary, bool bException) {
@@ -3565,12 +3571,19 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                     }
                 }
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B708) {
+#if IS_MK64
+                pFrame = SYSTEM_FRAME(gpSystem);
+#endif
+
                 if (gpSystem->eTypeROM == NSMP) {
                     bDone = true;
                     bFlag = false;
                     pFrame->unk_48++;
                 }
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B710) {
+#if IS_MK64
+                pFrame = SYSTEM_FRAME(gpSystem);
+#endif
                 if (gpSystem->eTypeROM == NSMJ || gpSystem->eTypeROM == NSME || gpSystem->eTypeROM == NSMP) {
                     bDone = true;
                     bFlag = false;
@@ -3589,7 +3602,9 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                         pFrame->unk_40 = 0;
                         treeCleanUpCheck(SYSTEM_CPU(gpSystem), NULL);
                     }
-                } else if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
+                }
+#if IS_OOT
+                else if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
                     if (pFrame->unk_38 == 0 && pFrame->unk_3C == 0 && nChecksum == 0x5D447143) {
                         pFrame->unk_38 = 1;
                         pFrame->unk_3C = 0x3C;
@@ -3604,8 +3619,12 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                     bDone = true;
                     bFlag = false;
                 }
+#endif
             } else {
                 if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
+#if IS_MK64
+                    pFrame = SYSTEM_FRAME(gpSystem);
+#endif
                     if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6C0) {
                         pFrame->unk_34 = 1;
                         bDone = true;
@@ -3654,7 +3673,10 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                         pFrame->unk_3C = 0;
                         pFrame->unk_40 = 0;
                     }
-                } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6F0) {
+                }
+
+#if IS_OOT
+                else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6F0) {
                     if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
                         pFrame->unk_30 = 1;
                         bDone = true;
@@ -3672,7 +3694,10 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                         bDone = true;
                         bFlag = false;
                     }
-                } else if (gpSystem->eTypeROM != NTEJ && gpSystem->eTypeROM != NTEA && gpSystem->eTypeROM != NTEP) {
+                }
+#endif
+
+                else if (gpSystem->eTypeROM != NTEJ && gpSystem->eTypeROM != NTEA && gpSystem->eTypeROM != NTEP) {
                     if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)GenPerspective_1080) {
                         bFlag = false;
                     }

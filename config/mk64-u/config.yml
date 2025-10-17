@@ -21,6 +21,44 @@ mw_comment_version: 14
 # - lbl_801E3380
 # - DemoAllocator2
 
+add_relocations:
+- source: 0x8005dbc0
+  type: ha
+  target: fn_8005B6C8
+- source: 0x8005dbf4
+  type: l
+  target: fn_8005B6C8
+- source: 0x8005dbd0
+  type: ha
+  target: fn_8005B6D0
+- source: 0x8005dc1c
+  type: l
+  target: fn_8005B6D0
+- source: 0x8005dbec
+  type: ha
+  target: fn_8005B6D8
+- source: 0x8005dc3c
+  type: l
+  target: fn_8005B6D8
+- source: 0x8005dbfc
+  type: ha
+  target: fn_8005B6E0
+- source: 0x8005dc5c
+  type: l
+  target: fn_8005B6E0
+- source: 0x8005dc18
+  type: ha
+  target: GenPerspective_1080
+- source: 0x8005dc7c
+  type: l
+  target: GenPerspective_1080
+- source: 0x8005dc38
+  type: ha
+  target: fn_8005B6E8
+- source: 0x8005dc9c
+  type: l
+  target: fn_8005B6E8
+
 block_relocations:
 # system.c
 - source: 0x8000B044
