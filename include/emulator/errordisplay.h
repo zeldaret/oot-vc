@@ -6,6 +6,7 @@
 #include "revolution/gx.h"
 #include "revolution/sc.h"
 #include "revolution/types.h"
+#include "versions.h"
 
 #ifdef __cplusplus
 extern "C" {
