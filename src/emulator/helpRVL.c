@@ -606,7 +606,7 @@ static void helpMenuInit(HelpMenu* pHelpMenu) {
     strcpy(sWebsitePath, "arc:/html/");
     lbl_8025D0F4 = sWebsitePath + strlen(sWebsitePath);
 
-#if VERSION == OOT_J
+#if VERSION == MK64_J || VERSION == OOT_J
     sHBMDataInfo.region = SC_LANG_JP;
     strcpy(temp_r16, "LZ77_homeBtn.arc");
     strcpy(lbl_8025D0F4, "index/index_Frameset.html");

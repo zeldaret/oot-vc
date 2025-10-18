@@ -418,7 +418,7 @@ static bool fn_80042C98(Rom* pROM) {
     u32* pBuffer;
     u32 nBuffer;
 
-#if VERSION != MK64_U
+#if !IS_MK64
     pCacheRAM = pROM->pCacheRAM;
     pROM->pBuffer = pCacheRAM;
 #endif
@@ -953,7 +953,7 @@ bool romEvent(Rom* pROM, s32 nEvent, void* pArgument) {
             pROM->bFlip = false;
             pROM->acNameFile[0] = '\0';
             pROM->eModeLoad = RLM_NONE;
-#if VERSION != MK64_U
+#if !IS_MK64
             pROM->unk_C = 1;
 #endif
             pROM->pBuffer = NULL;

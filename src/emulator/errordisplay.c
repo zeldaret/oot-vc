@@ -39,7 +39,7 @@ static EDStringInfo sStringBase[] = {
     {SID_ERROR_REMOTE_BATTERY, 0, NULL, 0x00000000, 0x00000000},
     {SID_ERROR_REMOTE_COMMUNICATION, 0, NULL, 0x00000000, 0x00000000},
     {SID_ERROR_BLANK, 0, NULL, 0x00000000, 0x00000000},
-#if VERSION != MK64_U
+#if !IS_MK64
     {SID_NONE, 0, NULL, 0x00000000, 0x00000000},
 #endif
 };
@@ -211,7 +211,7 @@ ErrorDisplay sStringDraw[] = {
         0,
         0,
     },
-#if VERSION != MK64_U
+#if !IS_MK64
     {
         {&sStringBase[ERROR_BLANK], FLAG_RESET_FADE_TIMER, 0, 0},
         {
@@ -254,13 +254,13 @@ struct_80174988 lbl_80174988[] = {
 };
 
 static DisplayFiles sSTFiles[] = {
-#if VERSION == OOT_J
+#if VERSION == MK64_J || VERSION == OOT_J
     {SC_LANG_JP, "Errors_VC64ErrorStrings_jp.bin", "saveComments_saveComments_jp.bin"},
 #elif VERSION == MK64_U || VERSION == OOT_U
     {SC_LANG_EN, "Errors_VC64ErrorStrings_en.bin", "saveComments_saveComments_en.bin"},
     {SC_LANG_FR, "Errors_VC64ErrorStrings_fr.bin", "saveComments_saveComments_fr.bin"},
     {SC_LANG_SP, "Errors_VC64ErrorStrings_es.bin", "saveComments_saveComments_es.bin"},
-#elif VERSION == OOT_E
+#elif VERSION == MK64_E || VERSION == OOT_E
     {SC_LANG_EN, "Errors_VC64ErrorStrings_en.bin", "saveComments_saveComments_en.bin"},
     {SC_LANG_FR, "Errors_VC64ErrorStrings_fr.bin", "saveComments_saveComments_fr.bin"},
     {SC_LANG_SP, "Errors_VC64ErrorStrings_es.bin", "saveComments_saveComments_es.bin"},

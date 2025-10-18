@@ -51,7 +51,7 @@ static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
         case VI_MPAL:
         case VI_EURGB60:
             rmode = &GXPal528IntDf;
-#if VERSION != MK64_U
+#if !IS_MK64
             rmode->viXOrigin -= 32;
             rmode->viWidth += 64;
             rmode->xfbHeight = rmode->viHeight = 574;
@@ -63,7 +63,7 @@ static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
             break;
     }
 
-#if VERSION != MK64_U
+#if !IS_MK64
     rmode->efbHeight = 480;
 #endif
 
@@ -207,7 +207,7 @@ int main(int nCount, char** aszArgument) {
     xlHeapTake(&DemoFrameBuffer1, nSize | 0x70000000);
     xlHeapTake(&DemoFrameBuffer2, nSize | 0x70000000);
 
-#if VERSION != MK64_U
+#if !IS_MK64
     xlHeapFill32(DemoFrameBuffer1, nSize, 0);
     xlHeapFill32(DemoFrameBuffer2, nSize, 0);
     DCStoreRange(DemoFrameBuffer1, nSize);

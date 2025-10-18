@@ -28,40 +28,40 @@ force_active:
 - lbl_8025DBBC__Q210homebutton10Controller
 
 add_relocations:
-- source: 0x8005dbc0
+- source: 0x8005DBC0
   type: ha
   target: fn_8005B6C8
-- source: 0x8005dbf4
+- source: 0x8005DBF4
   type: l
   target: fn_8005B6C8
-- source: 0x8005dbd0
+- source: 0x8005DBD0
   type: ha
   target: fn_8005B6D0
-- source: 0x8005dc1c
+- source: 0x8005DC1C
   type: l
   target: fn_8005B6D0
-- source: 0x8005dbec
+- source: 0x8005DBEC
   type: ha
   target: fn_8005B6D8
-- source: 0x8005dc3c
+- source: 0x8005DC3C
   type: l
   target: fn_8005B6D8
-- source: 0x8005dbfc
+- source: 0x8005DBFC
   type: ha
   target: fn_8005B6E0
-- source: 0x8005dc5c
+- source: 0x8005DC5C
   type: l
   target: fn_8005B6E0
-- source: 0x8005dc18
+- source: 0x8005DC18
   type: ha
   target: GenPerspective_1080
-- source: 0x8005dc7c
+- source: 0x8005DC7C
   type: l
   target: GenPerspective_1080
-- source: 0x8005dc38
+- source: 0x8005DC38
   type: ha
   target: fn_8005B6E8
-- source: 0x8005dc9c
+- source: 0x8005DC9C
   type: l
   target: fn_8005B6E8
 
