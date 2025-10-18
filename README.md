@@ -18,6 +18,9 @@ A work-in-progress decompilation of the N64 emulator used in the Wii Virtual Con
 
 Supported versions:
 
+- `mk64-j`: Mario Kart 64 (Wii Virtual Console) - Japan
+- `mk64-u`: Mario Kart 64 (Wii Virtual Console) - North America
+- `mk64-e`: Mario Kart 64 (Wii Virtual Console) - Europe/Australia
 - `oot-j`: The Legend of Zelda: Ocarina of Time (Wii Virtual Console) - Japan
 - `oot-u`: The Legend of Zelda: Ocarina of Time (Wii Virtual Console) - North America
 - `oot-e`: The Legend of Zelda: Ocarina of Time (Wii Virtual Console) - Europe/Australia

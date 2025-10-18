@@ -8,4 +8,4 @@ set -euo pipefail
 
 VERSION=${1:-oot-j}
 ninja "build/$VERSION/ok"
-build/tools/dtk dol apply "config/$VERSION/config.yml" "build/$VERSION/oot-vc.elf"
+build/tools/dtk dol apply "config/$VERSION/config.yml" "build/$VERSION/wii-vc.elf"

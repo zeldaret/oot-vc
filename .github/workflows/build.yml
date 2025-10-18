@@ -32,7 +32,7 @@ jobs:
     - name: Build
       run: |
         python configure.py --map --binutils /binutils --compilers /compilers
-        ninja all_source build/{oot-j,oot-u,oot-e}/progress.json build/report.json
+        ninja all_source build/{mk64-j,mk64-u,mk64-e,oot-j,oot-u,oot-e}/progress.json build/report.json
 
     # Upload map files
     - name: Upload map

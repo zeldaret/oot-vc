@@ -22,6 +22,7 @@
 #include "revolution/nand.h"
 #include "revolution/os.h"
 #include "revolution/vi.h"
+#include "versions.h"
 
 static s32 fn_80063680(EDString* pEDString);
 static s32 errorDisplayReturnToMenu(EDString* pEDString);
@@ -39,7 +40,9 @@ static EDStringInfo sStringBase[] = {
     {SID_ERROR_REMOTE_BATTERY, 0, NULL, 0x00000000, 0x00000000},
     {SID_ERROR_REMOTE_COMMUNICATION, 0, NULL, 0x00000000, 0x00000000},
     {SID_ERROR_BLANK, 0, NULL, 0x00000000, 0x00000000},
+#if VERSION >= OOT_J
     {SID_NONE, 0, NULL, 0x00000000, 0x00000000},
+#endif
 };
 
 ErrorDisplay sStringDraw[] = {
@@ -209,6 +212,7 @@ ErrorDisplay sStringDraw[] = {
         0,
         0,
     },
+#if VERSION >= OOT_J
     {
         {&sStringBase[ERROR_BLANK], FLAG_RESET_FADE_TIMER, 0, 0},
         {
@@ -227,6 +231,7 @@ ErrorDisplay sStringDraw[] = {
         0,
         0,
     },
+#endif
 };
 
 struct_80174988 lbl_80174988[] = {
@@ -250,13 +255,13 @@ struct_80174988 lbl_80174988[] = {
 };
 
 static DisplayFiles sSTFiles[] = {
-#if VERSION == OOT_J
+#if REGION_JP
     {SC_LANG_JP, "Errors_VC64ErrorStrings_jp.bin", "saveComments_saveComments_jp.bin"},
-#elif VERSION == OOT_U
+#elif REGION_US
     {SC_LANG_EN, "Errors_VC64ErrorStrings_en.bin", "saveComments_saveComments_en.bin"},
     {SC_LANG_FR, "Errors_VC64ErrorStrings_fr.bin", "saveComments_saveComments_fr.bin"},
     {SC_LANG_SP, "Errors_VC64ErrorStrings_es.bin", "saveComments_saveComments_es.bin"},
-#elif VERSION == OOT_E
+#elif REGION_EU
     {SC_LANG_EN, "Errors_VC64ErrorStrings_en.bin", "saveComments_saveComments_en.bin"},
     {SC_LANG_FR, "Errors_VC64ErrorStrings_fr.bin", "saveComments_saveComments_fr.bin"},
     {SC_LANG_SP, "Errors_VC64ErrorStrings_es.bin", "saveComments_saveComments_es.bin"},

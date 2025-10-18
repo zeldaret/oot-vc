@@ -11,6 +11,7 @@
 #include "emulator/xlHeap.h"
 #include "macros.h"
 #include "revolution/os.h"
+#include "versions.h"
 
 static bool romMakeFreeCache(Rom* pROM, s32* piCache, RomCacheType eType);
 static bool romSetBlockCache(Rom* pROM, s32 iBlock, RomCacheType eType);
@@ -418,12 +419,19 @@ static bool fn_80042C98(Rom* pROM) {
     u32* pBuffer;
     u32 nBuffer;
 
+#if VERSION >= OOT_J
     pCacheRAM = pROM->pCacheRAM;
     pROM->pBuffer = pCacheRAM;
+#endif
 
     if (!xlFileOpen(&pFile, XLFT_BINARY, pROM->acNameFile)) {
         return false;
     }
+
+#if IS_MK64
+    pCacheRAM = pROM->pCacheRAM;
+    pROM->pBuffer = pCacheRAM;
+#endif
 
     nSize = pROM->nSize;
 
@@ -515,8 +523,12 @@ static bool romLoadFullOrPart(Rom* pROM) {
         if (OSCreateThread(&DefaultThread, (OSThreadFunc)__ROMEntry, pROM, (void*)((u8*)pBuffer + ROM_THREAD_SIZE),
                            ROM_THREAD_SIZE, OS_PRIORITY_MAX, 1)) {
             OSResumeThread(&DefaultThread);
+#if IS_MK64
+            errorDisplayShow(ERROR_NO_CONTROLLER);
+#else
             errorDisplayShow(pROM->unk_C ? ERROR_NO_CONTROLLER : ERROR_BLANK);
             pROM->unk_C = 0;
+#endif
         }
 
         if (!xlHeapFree(&pBuffer)) {
@@ -942,7 +954,9 @@ bool romEvent(Rom* pROM, s32 nEvent, void* pArgument) {
             pROM->bFlip = false;
             pROM->acNameFile[0] = '\0';
             pROM->eModeLoad = RLM_NONE;
+#if VERSION >= OOT_J
             pROM->unk_C = 1;
+#endif
             pROM->pBuffer = NULL;
             pROM->offsetToRom = 0;
             pROM->anOffsetBlock = NULL;
