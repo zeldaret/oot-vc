@@ -1314,6 +1314,13 @@ runtime/runtime.c:
 	.text       start:0x80150EA0 end:0x80151788
 	.rodata     start:0x8016C520 end:0x8016C538
 
+runtime/__init_cpp_exceptions.cpp:
+	.text       start:0x80151788 end:0x801517F8
+	.ctors      start:0x80168840 end:0x80168844 rename:.ctors$10
+	.dtors      start:0x801688A0 end:0x801688A4 rename:.dtors$10
+	.dtors      start:0x801688A4 end:0x801688A8 rename:.dtors$15
+	.sdata      start:0x8025AA18 end:0x8025AA20
+
 runtime/Gecko_setjmp.c:
 	.text       start:0x801517F8 end:0x80151A0C
 
