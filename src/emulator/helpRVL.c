@@ -22,6 +22,7 @@
 #include "revolution/tpl.h"
 #include "revolution/vi.h"
 #include "string.h"
+#include "versions.h"
 
 //! TODO: move to the proper headers when documented properly
 extern char* fn_800887C8(void*, char*, u8);
@@ -563,7 +564,7 @@ static void helpMenuInit(HelpMenu* pHelpMenu) {
     strcpy(sWebsitePath, "arc:/html/");
     lbl_8025D0F4 = sWebsitePath + strlen(sWebsitePath);
 
-#if VERSION == OOT_J
+#if REGION_JP
     sHBMDataInfo.region = SC_LANG_JP;
     strcpy(temp_r16, "LZ77_homeBtn.arc");
     strcpy(lbl_8025D0F4, "index/index_Frameset.html");
@@ -572,7 +573,7 @@ static void helpMenuInit(HelpMenu* pHelpMenu) {
     sHBMDataInfo.region = language;
 
     switch (language) {
-#if VERSION == OOT_E
+#if REGION_EU
         case SC_LANG_DE:
             strcpy(temp_r16, "LZ77_homeBtn_GER.arc");
             strcpy(lbl_8025D0F4, "startup_noe.html");
@@ -586,7 +587,7 @@ static void helpMenuInit(HelpMenu* pHelpMenu) {
             strcpy(temp_r16, "LZ77_homeBtn_SPA.arc");
             strcpy(lbl_8025D0F4, "startup_esp.html");
             break;
-#if VERSION == OOT_E
+#if REGION_EU
         case SC_LANG_IT:
             strcpy(temp_r16, "LZ77_homeBtn_ITA.arc");
             strcpy(lbl_8025D0F4, "startup_ita.html");

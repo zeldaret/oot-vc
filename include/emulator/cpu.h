@@ -6,6 +6,7 @@
 #include "macros.h"
 #include "revolution/os.h"
 #include "revolution/types.h"
+#include "versions.h"
 
 #ifdef __cplusplus
 extern "C" {
