@@ -1,5 +1,5 @@
 # See config.example.yml for documentation.
-name: oot-vc
+name: wii-vc
 object: orig/oot-e/content1.app
 hash: dd77f97a971ff3c056791be8c3c97f1617393af6
 symbols: config/oot-e/symbols.txt
@@ -90,6 +90,7 @@ add_relocations:
   target: fn_8005B6E8
 
 block_relocations:
+# system.c
 - source: 0x800083A0
 - source: 0x800083B0
 - source: 0x800083CC
