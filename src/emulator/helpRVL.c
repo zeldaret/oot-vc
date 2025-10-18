@@ -615,7 +615,7 @@ static void helpMenuInit(HelpMenu* pHelpMenu) {
     sHBMDataInfo.region = language;
 
     switch (language) {
-#if VERSION == OOT_E
+#if VERSION == MK64_E || VERSION == OOT_E
         case SC_LANG_DE:
             strcpy(temp_r16, "LZ77_homeBtn_GER.arc");
             strcpy(lbl_8025D0F4, "startup_noe.html");
@@ -629,7 +629,7 @@ static void helpMenuInit(HelpMenu* pHelpMenu) {
             strcpy(temp_r16, "LZ77_homeBtn_SPA.arc");
             strcpy(lbl_8025D0F4, "startup_esp.html");
             break;
-#if VERSION == OOT_E
+#if VERSION == MK64_E || VERSION == OOT_E
         case SC_LANG_IT:
             strcpy(temp_r16, "LZ77_homeBtn_ITA.arc");
             strcpy(lbl_8025D0F4, "startup_ita.html");
