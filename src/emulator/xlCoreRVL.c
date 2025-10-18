@@ -23,9 +23,9 @@ static inline u32 getFBTotalSize(f32 aspectRatio) {
 }
 
 #if IS_MK64
-#define LINE_OFFSET -7
-#else
-#define LINE_OFFSET 0
+#define LN(mk64, oot) mk64
+#elif IS_OOT
+#define LN(mk64, oot) oot
 #endif
 
 static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
@@ -59,7 +59,7 @@ static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
 #endif
             break;
         default:
-            OSPanic("xlCoreRVL.c", 138 + LINE_OFFSET, "DEMOInit: invalid TV format\n");
+            OSPanic("xlCoreRVL.c", LN(131, 138), "DEMOInit: invalid TV format\n");
             break;
     }
 
@@ -145,14 +145,7 @@ bool fn_8007FC84(void) {
     return false;
 }
 
-#undef LINE_OFFSET
-#if IS_MK64
-#define LINE_OFFSET -40
-#else
-#define LINE_OFFSET 0
-#endif
-
-void xlExit(void) { OSPanic("xlCoreRVL.c", 524 + LINE_OFFSET, "xlExit"); }
+void xlExit(void) { OSPanic("xlCoreRVL.c", LN(484, 524), "xlExit"); }
 
 int main(int nCount, char** aszArgument) {
     s32 nSizeHeap;
@@ -237,6 +230,6 @@ int main(int nCount, char** aszArgument) {
         return false;
     }
 
-    OSPanic("xlCoreRVL.c", 603 + LINE_OFFSET, "CORE DONE!");
+    OSPanic("xlCoreRVL.c", LN(563, 603), "CORE DONE!");
     return false;
 }

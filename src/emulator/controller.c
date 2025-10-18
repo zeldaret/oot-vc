@@ -49,6 +49,7 @@ MEMAllocator gControllerAllocator;
 #if IS_OOT
 struct_801C7DC8 lbl_801C7DC8;
 #endif
+
 ControllerThread gControllerThread;
 static void* sControllerHeap;
 static VIRetraceCallback sControllerVICallback;

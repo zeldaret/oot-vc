@@ -168,7 +168,7 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
             var_r27 += var_r5;
             var_r26 -= var_r5; // again?
 #if IS_MK64
-            var_r29 += 1;
+            var_r29++;
 #else
             var_r28 += 0x20;
 #endif

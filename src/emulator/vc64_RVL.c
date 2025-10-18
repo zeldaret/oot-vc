@@ -137,9 +137,9 @@ static inline bool simulatorRun(SystemMode* peMode) {
 }
 
 #if IS_MK64
-#define LINE_OFFSET -6
-#else
-#define LINE_OFFSET 0
+#define LN(mk64, oot) mk64
+#elif IS_OOT
+#define LN(mk64, oot) oot
 #endif
 
 bool xlMain(void) {
@@ -157,7 +157,7 @@ bool xlMain(void) {
 
     if (nSize0 > 0x01800000) {
         OSReport("\n\nERROR: This program MUST be run on a system with 24MB (or less) memory!\n");
-        OSPanic("vc64_RVL.c", 1352 + LINE_OFFSET,
+        OSPanic("vc64_RVL.c", LN(1346, 1352),
                 "       Please reduce memory-size to 24MB (using 'setsmemsize 0x1800000')\n\n");
     }
 

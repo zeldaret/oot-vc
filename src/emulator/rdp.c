@@ -712,15 +712,15 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                     primitive.nY0 = 0;
                     primitive.nY1 = 0;
                 }
-            } 
+
 #if IS_OOT
-            else if ((gpSystem->eTypeROM == 'CZLJ' || gpSystem->eTypeROM == 'CZLE' || gpSystem->eTypeROM == 'NZLP') &&
+            } else if ((gpSystem->eTypeROM == 'CZLJ' || gpSystem->eTypeROM == 'CZLE' || gpSystem->eTypeROM == 'NZLP') &&
                        pFrame->unk_24 != 0 && primitive.nX0 == (204 << 2) && primitive.nX1 == (300 << 2) &&
                        primitive.nY0 == (140 << 2) && primitive.nY1 == (225 << 2)) {
                 pFrame->unk_24 = 0;
                 break;
-            }
 #endif
+            }
 
             nCommandLo = GBI_COMMAND_LO(pnGBI);
             nCommandHi = GBI_COMMAND_HI(pnGBI);

@@ -3602,9 +3602,8 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                         pFrame->unk_40 = 0;
                         treeCleanUpCheck(SYSTEM_CPU(gpSystem), NULL);
                     }
-                }
 #if IS_OOT
-                else if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
+                } else if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
                     if (pFrame->unk_38 == 0 && pFrame->unk_3C == 0 && nChecksum == 0x5D447143) {
                         pFrame->unk_38 = 1;
                         pFrame->unk_3C = 0x3C;
@@ -3618,8 +3617,8 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
 
                     bDone = true;
                     bFlag = false;
-                }
 #endif
+                }
             } else {
                 if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
 #if IS_MK64
@@ -3673,10 +3672,9 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                         pFrame->unk_3C = 0;
                         pFrame->unk_40 = 0;
                     }
-                }
 
 #if IS_OOT
-                else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6F0) {
+                } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6F0) {
                     if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
                         pFrame->unk_30 = 1;
                         bDone = true;
@@ -3694,10 +3692,8 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                         bDone = true;
                         bFlag = false;
                     }
-                }
 #endif
-
-                else if (gpSystem->eTypeROM != NTEJ && gpSystem->eTypeROM != NTEA && gpSystem->eTypeROM != NTEP) {
+                } else if (gpSystem->eTypeROM != NTEJ && gpSystem->eTypeROM != NTEA && gpSystem->eTypeROM != NTEP) {
                     if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)GenPerspective_1080) {
                         bFlag = false;
                     }
