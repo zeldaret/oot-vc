@@ -8,6 +8,7 @@
 #include "revolution/kpad/KPAD.h"
 #include "revolution/pad.h"
 #include "revolution/types.h"
+#include "versions.h"
 
 #ifdef __cplusplus
 extern "C" {

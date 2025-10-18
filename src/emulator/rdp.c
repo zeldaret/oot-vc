@@ -7,6 +7,7 @@
 #include "emulator/xlCoreRVL.h"
 #include "macros.h"
 #include "revolution/gx/GXMisc.h"
+#include "versions.h"
 
 //! TODO: document these
 void fn_8004BB60(Frame* pFrame, FrameBuffer* pBuffer, s32* unknown);

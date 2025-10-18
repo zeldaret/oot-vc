@@ -4,6 +4,7 @@
 #include "emulator/xlObject.h"
 #include "macros.h"
 #include "revolution/types.h"
+#include "versions.h"
 
 #ifdef __cplusplus
 extern "C" {

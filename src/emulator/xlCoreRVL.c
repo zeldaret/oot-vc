@@ -8,6 +8,7 @@
 #include "revolution/demo.h"
 #include "revolution/sc.h"
 #include "revolution/vi.h"
+#include "versions.h"
 
 static GXRenderModeObj rmodeobj;
 static s32 gnCountArgument;
@@ -51,7 +52,7 @@ static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
         case VI_MPAL:
         case VI_EURGB60:
             rmode = &GXPal528IntDf;
-#if !IS_MK64
+#if VERSION >= OOT_J
             rmode->viXOrigin -= 32;
             rmode->viWidth += 64;
             rmode->xfbHeight = rmode->viHeight = 574;
@@ -63,7 +64,7 @@ static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
             break;
     }
 
-#if !IS_MK64
+#if VERSION >= OOT_J
     rmode->efbHeight = 480;
 #endif
 
@@ -200,7 +201,7 @@ int main(int nCount, char** aszArgument) {
     xlHeapTake(&DemoFrameBuffer1, nSize | 0x70000000);
     xlHeapTake(&DemoFrameBuffer2, nSize | 0x70000000);
 
-#if !IS_MK64
+#if VERSION >= OOT_J
     xlHeapFill32(DemoFrameBuffer1, nSize, 0);
     xlHeapFill32(DemoFrameBuffer2, nSize, 0);
     DCStoreRange(DemoFrameBuffer1, nSize);

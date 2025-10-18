@@ -18,6 +18,7 @@
 #include "macros.h"
 #include "math.h"
 #include "string.h"
+#include "versions.h"
 
 static bool send_mesg(Cpu* pCPU);
 static bool __osEnqueueThread(Cpu* pCPU);

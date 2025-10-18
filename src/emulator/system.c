@@ -29,6 +29,7 @@
 #include "revolution/vi.h"
 #include "stdlib.h"
 #include "string.h"
+#include "versions.h"
 
 // clang-format off
 static u32 contMap[][GCN_BTN_COUNT] = {
@@ -852,7 +853,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NBCJ:
         case NBCP:
         case NBCE:
-#if !IS_MK64
+#if VERSION >= OOT_J
             gSystemRomConfigurationList.storageDevice = SOT_RSP;
             pArgument = 0x1000;
             storageDevice = SOT_FLASH;
@@ -882,7 +883,7 @@ static bool systemSetupGameALL(System* pSystem) {
 #endif
             pArgument = 0x1000;
             storageDevice = SOT_FLASH;
-#if !IS_MK64
+#if VERSION >= OOT_J
             if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pBuffer2, 0x300, NULL)) {
                 return false;
             }
@@ -898,7 +899,7 @@ static bool systemSetupGameALL(System* pSystem) {
                 return false;
             }
             break;
-#if !IS_MK64
+#if VERSION >= OOT_J
         case NDYE:
         case NDYP:
         case NDYJ:
@@ -964,7 +965,7 @@ static bool systemSetupGameALL(System* pSystem) {
             storageDevice = SOT_FLASH;
             pCPU->nCompileFlag |= 0x10;
             break;
-#if !IS_MK64
+#if VERSION >= OOT_J
         case NSIJ:
             pArgument = 0x8000;
             gSystemRomConfigurationList.storageDevice = SOT_PIF;
@@ -1036,7 +1037,7 @@ static bool systemSetupGameALL(System* pSystem) {
                 return false;
             }
             gSystemRomConfigurationList.storageDevice = SOT_AI;
-#if !IS_MK64
+#if VERSION >= OOT_J
             pArgument = 0x4000;
 #endif
             storageDevice = SOT_FLASH;
@@ -1051,12 +1052,12 @@ static bool systemSetupGameALL(System* pSystem) {
         case NMWP:
         case NMWE:
         case NMWJ:
-#if !IS_MK64
+#if VERSION >= OOT_J
             gSystemRomConfigurationList.storageDevice = SOT_RSP;
 #endif
             pArgument = 0x1000;
             storageDevice = SOT_FLASH;
-#if !IS_MK64
+#if VERSION >= OOT_J
             if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pBuffer2, 0x300, NULL)) {
                 return false;
             }
@@ -1067,7 +1068,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NMVP:
         case NMVE:
             gSystemRomConfigurationList.storageDevice = SOT_AI;
-#if !IS_MK64
+#if VERSION >= OOT_J
             pArgument = 0x4000;
 #endif
             storageDevice = SOT_FLASH;
@@ -1076,7 +1077,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NRIE:
         case NRIJ:
             gSystemRomConfigurationList.storageDevice = SOT_AI;
-#if !IS_MK64
+#if VERSION >= OOT_J
             pArgument = 0x4000;
 #endif
             storageDevice = SOT_FLASH;
@@ -1086,7 +1087,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NMQE:
             gSystemRomConfigurationList.storageDevice = SOT_RAM;
             storageDevice = SOT_FLASH;
-#if !IS_MK64
+#if VERSION >= OOT_J
             pArgument = 0x20000;
             if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pBuffer, 0, NULL)) {
                 return false;
@@ -1147,7 +1148,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NGUJ:
         case NGUP:
         case NGUE:
-#if !IS_MK64
+#if VERSION >= OOT_J
             gSystemRomConfigurationList.storageDevice = SOT_RSP;
             pArgument = 0x1000;
             storageDevice = SOT_FLASH;
@@ -1160,7 +1161,7 @@ static bool systemSetupGameALL(System* pSystem) {
                 return false;
             }
             break;
-#if !IS_MK64
+#if VERSION >= OOT_J
         case NSQP:
         case NSQJ:
         case NSQE:
@@ -1193,7 +1194,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NALP:
         case NALE:
             gSystemRomConfigurationList.storageDevice = SOT_AI;
-#if !IS_MK64
+#if VERSION >= OOT_J
             pArgument = 0x4000;
 #endif
             storageDevice = SOT_FLASH;
@@ -1298,11 +1299,11 @@ static bool systemSetupGameALL(System* pSystem) {
         case NYSP:
         case NYSE:
             gSystemRomConfigurationList.storageDevice = SOT_AI;
-#if !IS_MK64
+#if VERSION >= OOT_J
             pArgument = 0x4000;
 #endif
             storageDevice = SOT_FLASH;
-#if !IS_MK64
+#if VERSION >= OOT_J
             if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pBuffer2, 0x300, NULL)) {
                 return false;
             }
@@ -1326,7 +1327,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NBNE:
         case NBNJ:
             gSystemRomConfigurationList.storageDevice = SOT_AI;
-#if !IS_MK64
+#if VERSION >= OOT_J
             pArgument = 0x4000;
 #endif
             storageDevice = SOT_FLASH;
@@ -1340,7 +1341,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NRBJ:
         case NRBP:
         case NRBE:
-#if !IS_MK64
+#if VERSION >= OOT_J
             gSystemRomConfigurationList.storageDevice = SOT_AI;
             pArgument = 0x4000;
 #endif
@@ -1539,7 +1540,7 @@ static bool systemPut64(System* pSystem, u32 nAddress, s64* pData) {
 static bool systemGetBlock(System* pSystem, CpuBlock* pBlock) {
     void* pBuffer;
 
-#if !IS_MK64
+#if VERSION >= OOT_J
     if (pBlock->nAddress1 < 0x04000000) {
         if (!ramGetBuffer(SYSTEM_RAM(gpSystem), &pBuffer, pBlock->nAddress1, &pBlock->nSize)) {
             return false;

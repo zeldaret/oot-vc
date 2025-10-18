@@ -10,6 +10,7 @@
 #include "revolution/gx.h"
 #include "revolution/vi.h"
 #include "string.h"
+#include "versions.h"
 
 static char* gaszArgument[12];
 System* gpSystem;

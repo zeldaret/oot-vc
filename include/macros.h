@@ -5,16 +5,6 @@
 extern "C" {
 #endif
 
-// The VERSION macro will be set to one of these version numbers.
-#define OOT_J 1
-#define OOT_U 2
-#define OOT_E 3
-#define MK64_J 4
-#define MK64_U 5
-#define MK64_E 6
-#define IS_OOT (VERSION == OOT_J || VERSION == OOT_U || VERSION == OOT_E)
-#define IS_MK64 (VERSION == MK64_J || VERSION == MK64_U || VERSION == MK64_E)
-
 #define ALIGN_PREV(X, N) ((X) & ~((N) - 1))
 #define ALIGN_NEXT(X, N) ALIGN_PREV(((X) + (N) - 1), N)
 #define ALIGN(X, N) ((X + N) & ~N)

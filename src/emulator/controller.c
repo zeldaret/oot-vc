@@ -10,6 +10,7 @@
 #include "revolution/mem.h"
 #include "revolution/vi.h"
 #include "revolution/wpad.h"
+#include "versions.h"
 
 static void* fn_80061FB0(u32 nSize);
 static bool fn_80061FF8(Controller* pController);

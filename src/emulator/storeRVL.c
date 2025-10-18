@@ -9,6 +9,7 @@
 #include "mem_funcs.h"
 #include "revolution/nand.h"
 #include "revolution/os.h"
+#include "versions.h"
 
 #define STORE_OBJ (*(Store**)ppObject)
 
@@ -118,7 +119,7 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
             return true;
         }
 
-#if !IS_MK64
+#if VERSION >= OOT_J
         if (arg2 == 0) {
             DCInvalidateRange(arg1, arg3);
 
@@ -137,7 +138,7 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
             continue;
         }
 
-#if !IS_MK64
+#if VERSION >= OOT_J
         var_r28 = var_r29 * 32;
 #endif
         var_r27 = arg2;
