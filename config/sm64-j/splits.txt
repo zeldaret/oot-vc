@@ -1,0 +1,21 @@
+Sections:
+	.init       type:code align:32
+	extab       type:rodata align:32
+	extabindex  type:rodata align:32
+	.text       type:code align:32
+	.ctors      type:rodata align:32
+	.dtors      type:rodata align:32
+	.rodata     type:rodata align:32
+	.data       type:data align:32
+	.bss        type:bss align:64
+	.sdata      type:data align:32
+	.sbss       type:bss align:32
+	.sdata2     type:rodata align:32
+	.sbss2      type:bss align:32
+
+runtime/__init_cpp_exceptions.cpp:
+	.text       start:0x80150120 end:0x80150190
+	.ctors      start:0x801671E0 end:0x801671E4 rename:.ctors$10
+	.dtors      start:0x80167240 end:0x80167244 rename:.dtors$10
+	.dtors      start:0x80167244 end:0x80167248 rename:.dtors$15
+	.sdata      start:0x8025B258 end:0x8025B260

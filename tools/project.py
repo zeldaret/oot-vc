@@ -1343,10 +1343,10 @@ def calculate_progress(config: ProjectConfig, version: str) -> None:
                 self.objects_progress += 1
 
         def code_frac(self) -> float:
-            return self.code_progress / self.code_total
+            return self.code_progress / self.code_total if self.code_total > 0 else 0.0
 
         def data_frac(self) -> float:
-            return self.data_progress / self.data_total
+            return self.data_progress / self.data_total if self.data_total > 0 else 0.0
 
     progress_units: Dict[str, ProgressUnit] = {}
     if config.progress_all:
