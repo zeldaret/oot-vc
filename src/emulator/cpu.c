@@ -11657,6 +11657,7 @@ bool cpuReset(Cpu* pCPU) {
 
     pCPU->nCompileFlag = 1;
 
+#if VERSION >= MK64_J
     pCPU->unk_12228[0] = 0;
     pCPU->unk_12228[1] = 0;
     pCPU->unk_12228[2] = 0;
@@ -11675,6 +11676,7 @@ bool cpuReset(Cpu* pCPU) {
     pCPU->unk_12228[15] = 0;
     pCPU->unk_12228[16] = 0;
     pCPU->unk_12228[17] = 0;
+#endif
 
     return true;
 }

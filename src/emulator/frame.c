@@ -825,6 +825,7 @@ static inline void fn_8004A314_inline(Mtx44 mtx, f32 a[4], f32 d) {
     a[3] /= length;
 }
 
+#if VERSION >= MK64_J
 void fn_8004A314(Frame* pFrame) {
     Mtx44 sp28;
     f32 sp18[4];
@@ -895,6 +896,7 @@ void fn_8004A314(Frame* pFrame) {
         pFrame->eTypeProjection = FMP_ORTHOGRAPHIC;
     }
 }
+#endif
 
 bool frameDrawSetupFog_StarFox(Frame* pFrame) {
     GXColor color;
@@ -912,8 +914,11 @@ bool frameDrawSetupFog_StarFox(Frame* pFrame) {
     rMultiplier = (s16)(pFrame->aMode[0] >> 16);
     rOffset = (s16)(pFrame->aMode[0] & 0xFFFF);
 
+#if VERSION >= MK64_J
     rFar = pFrame->unk_3F210;
     rNear = pFrame->unk_3F214;
+#endif
+
     color = pFrame->aColor[FCT_FOG];
     nFogType = GX_FOG_EXP;
 
@@ -924,7 +929,10 @@ bool frameDrawSetupFog_StarFox(Frame* pFrame) {
 
     var_f6 = -rOffset;
     var_f9 = var_f6 / rMultiplier;
+
+#if VERSION >= MK64_J
     rStart = pFrame->unk_3F150[3][2] / (var_f9 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
+#endif
 
     var_f5 = 253.0f;
     var_f6 = var_f5 + var_f6;
@@ -946,7 +954,11 @@ bool frameDrawSetupFog_StarFox(Frame* pFrame) {
         if (var_f6 > 1.0f) {
             var_f6 = 1.0f;
         }
+
+#if VERSION >= MK64_J
         rEnd = pFrame->unk_3F150[3][2] / (var_f6 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
+#endif
+
         if (rEnd < rNear) {
             rEnd = rNear;
         }
@@ -981,8 +993,11 @@ bool frameDrawSetupFog_Default(Frame* pFrame) {
     rMultiplier = (s16)(pFrame->aMode[0] >> 16);
     rOffset = (s16)(pFrame->aMode[0] & 0xFFFF);
 
+#if VERSION >= MK64_J
     rFar = pFrame->unk_3F210;
     rNear = pFrame->unk_3F214;
+#endif
+
     color = pFrame->aColor[FCT_FOG];
     nFogType = GX_FOG_EXP;
 
@@ -993,7 +1008,10 @@ bool frameDrawSetupFog_Default(Frame* pFrame) {
 
     var_f6 = -rOffset;
     var_f9 = var_f6 / rMultiplier;
+
+#if VERSION >= MK64_J
     rStart = pFrame->unk_3F150[3][2] / (var_f9 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
+#endif
 
     var_f5 = 249.0f;
     var_f6 = var_f5 + var_f6;
@@ -1015,7 +1033,11 @@ bool frameDrawSetupFog_Default(Frame* pFrame) {
         if (var_f6 > 1.0f) {
             var_f6 = 1.0f;
         }
+
+#if VERSION >= MK64_J
         rEnd = pFrame->unk_3F150[3][2] / (var_f6 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
+#endif
+
         if (rEnd < rNear) {
             rEnd = rNear;
         }
@@ -1919,9 +1941,13 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
         memcpy(matrix44, pFrame->matrixProjection, sizeof(Mtx44));
         if (pFrame->eTypeProjection == FMP_PERSPECTIVE) {
             eTypeProjection = GX_PERSPECTIVE;
+
+#if VERSION >= MK64_J
             if ((pFrame->aMode[FMT_OTHER0] & 0xC00) == 0xC00) {
                 matrix44[2][3] = -((0.1f * (0.015f * pFrame->unk_3F214)) - matrix44[2][3]);
             }
+#endif
+
         } else {
             eTypeProjection = GX_ORTHOGRAPHIC;
         }
@@ -3049,10 +3075,12 @@ bool frameSetScissor(Frame* pFrame, Rectangle* pScissor) {
     s32 nX1;
     s32 nY1;
 
+#if VERSION >= MK64_J
     nX0 = pFrame->unk_A4 + (s32)(pScissor->nX0 / 4.0f * pFrame->rScaleX);
     nY0 = pFrame->unk_A8 + (s32)(pScissor->nY0 / 4.0f * pFrame->rScaleY);
     nX1 = pFrame->unk_A4 + (s32)(pScissor->nX1 / 4.0f * pFrame->rScaleX);
     nY1 = pFrame->unk_A8 + (s32)(pScissor->nY1 / 4.0f * pFrame->rScaleY);
+#endif
 
     if (nX1 < nX0) {
         nTemp = nX1;
@@ -3263,6 +3291,7 @@ bool frameEnd(Frame* pFrame) {
         if (pFrame->unk_4C > 12900) {
             frameEnd_UnknownInline(pFrame, 73);
         }
+#if VERSION >= SM64_E
     } else if (gpSystem->eTypeROM == NSMP) {
         if (pFrame->unk_48 != 0) {
             pFrame->unk_48++;
@@ -3271,38 +3300,46 @@ bool frameEnd(Frame* pFrame) {
                 pFrame->unk_48 = 0;
             }
         }
+#endif
     } else if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
         if (pFrame->unk_30 != 0 && lbl_8025D168 >= 2) {
             frameEnd_UnknownInline(pFrame, 93);
+#if VERSION >= MK64_J
         } else if (pFrame->unk_38 != 0 && lbl_8025D168 == 3 && gpSystem->eTypeROM == NKTP) {
             frameEnd_UnknownInline(pFrame, 73);
         } else if (pFrame->unk_3C && lbl_8025D168 == 3 && (gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTJ)) {
             frameEnd_UnknownInline(pFrame, 73);
         } else if (pFrame->unk_40 && lbl_8025D168 == 3 && (gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTJ)) {
             frameEnd_UnknownInline(pFrame, 80);
+#endif
         } else if (pFrame->unk_4C != 0) {
             if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE) {
                 frameEnd_UnknownInline(pFrame, 66);
             } else {
                 frameEnd_UnknownInline(pFrame, 79);
             }
+#if VERSION >= MK64_J
         } else if (pFrame->unk_44 != 0) {
             if (lbl_8025D168 >= 4) {
                 frameEnd_UnknownInline(pFrame, 80);
             } else {
                 frameEnd_UnknownInline(pFrame, 25);
             }
+#endif
         }
         fn_8004B940(pFrame, pCPU);
     } else if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
         s32 var_r29;
 
+#if VERSION >= MK64_J
         if (pFrame->unk_3C > 0) {
             pFrame->unk_3C--;
             if (pFrame->unk_3C == 0) {
                 pFrame->unk_38 = 0;
             }
         }
+#endif
+
         if (pFrame->unk_4C != 0) {
             pFrame->unk_4C++;
             if (gpSystem->eTypeROM == NZLP) {
@@ -3578,7 +3615,10 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
             pFrame->anSizeY[FS_SOURCE] = N64_FRAME_HEIGHT;
             pFrame->rScaleX = (f32)pFrame->anSizeX[FS_TARGET] / (f32)N64_FRAME_WIDTH;
             pFrame->rScaleY = (f32)pFrame->anSizeY[FS_TARGET] / (f32)N64_FRAME_HEIGHT;
+
+#if VERSION >= MK64_J
             pFrame->unk_A4 = pFrame->unk_A8 = 0.0f;
+#endif
 
             temp_r7 = var_r30 >> (xlCoreHiResolution() ? 0 : 1);
             if (temp_r7 > 0) {
@@ -3586,7 +3626,10 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
                 pFrame->anSizeY[FS_TARGET] = temp_r7;
                 pFrame->rScaleX = GC_FRAME_WIDTH / (f32)pFrame->anSizeX[FS_SOURCE];
                 pFrame->rScaleY = temp_r7 / (f32)pFrame->anSizeY[FS_SOURCE];
+
+#if VERSION >= MK64_J
                 pFrame->unk_A4 = pFrame->unk_A8 = 0.0f;
+#endif
             }
             GXSetDrawDoneCallback(&frameDrawDone);
 
@@ -3596,11 +3639,18 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
             pFrame->unk_2C = 0;
             pFrame->unk_30 = 0;
             pFrame->unk_34 = 0;
+
+#if VERSION >= MK64_J
             pFrame->unk_38 = 0;
             pFrame->unk_3C = 0;
             pFrame->unk_40 = 0;
             pFrame->unk_44 = 0;
+#endif
+
+#if VERSION >= SM64_E
             pFrame->unk_48 = 0;
+#endif
+
             pFrame->unk_4C = 0;
             pFrame->nHackCount = 0;
             pFrame->bBlurOn = false;
@@ -3714,11 +3764,15 @@ bool frameSetSize(Frame* pFrame, FrameSize eSize, s32 nSizeX, s32 nSizeY) {
         if (eSize == FS_SOURCE) {
             pFrame->rScaleX = (f32)pFrame->anSizeX[FS_TARGET] / nSizeX;
             pFrame->rScaleY = (f32)pFrame->anSizeY[FS_TARGET] / nSizeY;
+#if VERSION >= MK64_J
             pFrame->unk_A4 = pFrame->unk_A8 = 0.0f;
+#endif
         } else if (eSize == FS_TARGET) {
             pFrame->rScaleX = (f32)nSizeX / pFrame->anSizeX[FS_SOURCE];
             pFrame->rScaleY = (f32)nSizeY / pFrame->anSizeY[FS_SOURCE];
+#if VERSION >= MK64_J
             pFrame->unk_A4 = pFrame->unk_A8 = 0.0f;
+#endif
         }
     }
 
@@ -4003,7 +4057,10 @@ bool frameLoadVertex(Frame* pFrame, void* pBuffer, s32 iVertex0, s32 nCount) {
             fn_8004A314(pFrame);
             pFrame->nMode |= 0x08000000;
         }
+
+#if VERSION >= MK64_J
         PSMTX44Concat(matrixModel, pFrame->unk_3F190, pFrame->matrixView);
+#endif
         pFrame->nMode |= 0x400000;
     }
 
@@ -4237,7 +4294,10 @@ bool frameCullDL(Frame* pFrame, s32 nVertexStart, s32 nVertexEnd) {
     s32 nCode;
     s32 nCodeFull;
 
+#if VERSION >= MK64_J
     matrix = pFrame->unk_3F150;
+#endif
+
     vtxP = &pFrame->aVertex[nVertexStart];
     endVtxP = &pFrame->aVertex[nVertexEnd];
     nCodeFull = 0xFF;
@@ -4394,8 +4454,10 @@ bool frameSetViewport(Frame* pFrame, s16* pData) {
     rSizeX = (arScale[0] * 2.0f) * pFrame->rScaleX;
     rSizeY = (arScale[1] * 2.0f) * pFrame->rScaleY;
 
+#if VERSION >= MK64_J
     rX = pFrame->unk_A4 + (center[0] - arScale[0]) * pFrame->rScaleX;
     rY = pFrame->unk_A8 + (center[1] - arScale[1]) * pFrame->rScaleY;
+#endif
 
     pFrame->viewport.rX = rX;
     pFrame->viewport.rY = rY;
