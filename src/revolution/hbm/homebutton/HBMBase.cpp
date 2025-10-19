@@ -8,8 +8,13 @@
 
 #include "decomp.h"
 #include "new.hpp"
+#include "versions.h"
 
-#define REVO_IPL_FONT "RevoIpl_UtrilloProGrecoStd_M_32_I4.brfnt"
+#if HBM_REVISION == 1
+#define LN(rev1, rev2) rev1
+#else
+#define LN(rev1, rev2) rev2
+#endif
 
 struct AnmControllerTable {
     /* 0x00 */ int pane;
@@ -116,8 +121,8 @@ void HomeButton::initSound(const char* path) {
         mpNandSoundArchive = new (pvVar4) nw4hbm::snd::NandSoundArchive();
     }
 
-    NW4HBMAssert_Line(mpNandSoundArchive, 3884);
-    NW4HBMAssertMessage_Line(mpNandSoundArchive->Open(path), 3889, "Cannot open \"%s\"", path);
+    NW4HBMAssert_Line(mpNandSoundArchive, LN(3941, 3884));
+    NW4HBMAssertMessage_Line(mpNandSoundArchive->Open(path), LN(3946, 3889), "Cannot open \"%s\"", path);
 
     u32 size = mpNandSoundArchive->GetHeaderSize();
     mpNandSoundArchive->LoadHeader(MEMAllocFromAllocator(&sSoundAllocator, size), size);
@@ -992,6 +997,13 @@ void HomeButton::calc(const HBMControllerData* pController) {
                 mpLayout->GetRootPane()->FindPaneByName(scFuncPaneName[0], true)->SetVisible(false);
                 mpPairGroupAnmController[0]->setState(0);
             }
+
+#if HBM_REVISION == 1
+            if (mpPairGroupAnmController[14]->isPlaying() && mpPairGroupAnmController[14]->getCurrentFrame() < mpPairGroupAnmController[14]->getDelta()) {
+                mpPairGroupAnmController[14]->setCurrentFrame(0.0f);
+                mpPairGroupAnmController[14]->setState(0);
+            }
+#endif
             break;
 
         case 3:
@@ -1028,18 +1040,15 @@ void HomeButton::calc(const HBMControllerData* pController) {
                 break;
             }
 
-            // mDisConnectCount = 0;
-
             mState = 5;
             mMsgCount = 0;
+
+#if HBM_REVISION > 1
             mSoundRetryCnt = 0;
+#endif
+
             mSimpleSyncCallback = WPADSetSimpleSyncCallback(&SimpleSyncCallback);
             mEndSimpleSyncFlag = false;
-            // mForthConnectFlag = false;
-
-            // for (i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
-            //     getController(i)->setRumble();
-            // }
 
             mSimpleSyncFlag = WPADStartFastSimpleSync();
 
@@ -1069,11 +1078,13 @@ void HomeButton::calc(const HBMControllerData* pController) {
                         mMsgCount = 0xDF2;
                     }
 
+#if HBM_REVISION > 1
                     mSoundRetryCnt++;
                     if (mSoundRetryCnt > 0xDF2) {
                         mState = 6;
                         mMsgCount = 0xDF2;
                     }
+#endif
                 } else {
                     mMsgCount++;
                     if (mMsgCount > 0xE10) {
@@ -1100,14 +1111,21 @@ void HomeButton::calc(const HBMControllerData* pController) {
 
             WPADSetSimpleSyncCallback(mSimpleSyncCallback);
             mSimpleSyncCallback = nullptr;
+
+#if HBM_REVISION > 1
             mpRemoteSpk->ClearPcm();
+#endif
+
             reset_guiManager(-1);
 
             mSelectAnmNum = 6;
             mpPairGroupAnmController[mSelectAnmNum]->start();
 
             mState = 8;
+
+#if HBM_REVISION > 1
             mpPairGroupAnmController[14]->setAnimType(0);
+#endif
 
             play_sound(21);
 
@@ -1280,7 +1298,7 @@ void HomeButton::calc(const HBMControllerData* pController) {
                 }
             }
 
-            NW4HBMAssert_Line(result, 1649);
+            NW4HBMAssert_Line(result, LN(1671, 1649));
 
             if (mSelectBtnNum != HBM_SELECT_BTN3 && mpHBInfo->sound_callback != NULL) {
                 mpHBInfo->sound_callback(4, 0);
@@ -1556,8 +1574,10 @@ void HomeButton::update(const HBMControllerData* pController) {
                 anm_no = findGroupAnimator(i + 31, 17);
                 mpGroupAnmController[anm_no]->start();
 
+#if HBM_REVISION > 1
                 anm_no = findGroupAnimator(i + 31, 18);
                 mpGroupAnmController[anm_no]->stop();
+#endif
 
                 anm_no = findGroupAnimator(i + 31, 15);
                 mpGroupAnmController[anm_no]->start();
@@ -1663,12 +1683,13 @@ void HomeButton::update_controller(int id) {
             if (mSequence == eSeq_Control) {
                 mpPaneManager->update(id, 0.0f, -180.0f, 0, 0, 0, 0);
 
+#if HBM_REVISION > 1
                 mSelectAnmNum = 4;
                 mpPairGroupAnmController[mSelectAnmNum]->start();
+#endif
 
                 mSelectAnmNum = 2;
                 mpPairGroupAnmController[mSelectAnmNum]->start();
-
                 int anm_no = 11; // ?
                 mpPairGroupAnmController[anm_no]->start();
 
@@ -2131,6 +2152,21 @@ void HomeButton::startTrigEvent(const char* pPane) {
 
                 u16 len;
                 if (mpHBInfo->messageFlag & (btn_no + 1)) {
+#if HBM_REVISION == 1
+                    for (len = 0; true; len++) {
+                        if (mpText[mpHBInfo->region][btn_no + 2][len] != 0x0D) {
+                            continue;
+                        }
+
+                        if (mpText[mpHBInfo->region][btn_no + 2][len + 1] != 0x0A) {
+                            continue;
+                        }
+
+                        break;
+                    }
+
+                    p_text->SetString(mpText[mpHBInfo->region][btn_no + 2], 0, len);
+#else
                     for (len = 0; true; len++) {
                         // U+FF1F FULLWIDTH QUESTION MARK
                         if (mpText[mpHBInfo->region][btn_no + 2][len] == L'？') {
@@ -2144,6 +2180,8 @@ void HomeButton::startTrigEvent(const char* pPane) {
                     }
 
                     p_text->SetString(mpText[mpHBInfo->region][btn_no + 2], 0, ++len);
+#endif
+
                 } else {
                     p_text->SetString(mpText[mpHBInfo->region][btn_no + 2], 0);
                 }
@@ -2175,8 +2213,10 @@ void HomeButton::startTrigEvent(const char* pPane) {
                 case 1:
                 case 9:
                     if (mSequence == eSeq_Control) {
+#if HBM_REVISION > 1
                         mSelectAnmNum = 4;
                         mpPairGroupAnmController[mSelectAnmNum]->start();
+#endif
 
                         mSelectAnmNum = 2;
                         mpPairGroupAnmController[mSelectAnmNum]->start();
@@ -2633,12 +2673,21 @@ void HomeButton::startBlackOut() {
 }
 
 static void drawBlackPlate(f32 left, f32 top, f32 right, f32 bottom) {
+#if HBM_REVISION == 1
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    GXPosition2f32(left, top);
+    GXPosition2f32(right, top);
+    GXPosition2f32(right, bottom);
+    GXPosition2f32(left, bottom);
+    GXEnd();
+#else
     GXBegin(GX_QUADS, GX_VTXFMT0, 4);
     GXPosition2f32(left, top);
     GXPosition2f32(left, bottom);
     GXPosition2f32(right, bottom);
     GXPosition2f32(right, top);
     GXEnd();
+#endif
 }
 
 static void initgx() {
@@ -2670,9 +2719,11 @@ static void initgx() {
     GXSetAlphaUpdate(false);
     GXSetZMode(false, GX_ALWAYS, false);
 
+#if HBM_REVISION > 1
     GXSetNumIndStages(0);
     GXSetTevSwapModeTable(GX_TEV_SWAP0, GX_CH_RED, GX_CH_GREEN, GX_CH_BLUE, GX_CH_ALPHA);
     GXSetTevSwapMode(GX_TEVSTAGE0, GX_TEV_SWAP0, GX_TEV_SWAP0);
+#endif
 }
 
 void HomeButton::createSound(nw4hbm::snd::NandSoundArchive* pNandSoundArchive, bool bCreateSoundHeap) {
@@ -2680,7 +2731,7 @@ void HomeButton::createSound(nw4hbm::snd::NandSoundArchive* pNandSoundArchive, b
     if (buffer != NULL) {
         mpSoundArchivePlayer = new (buffer) nw4hbm::snd::SoundArchivePlayer();
     }
-    NW4HBMAssert_Line(mpSoundArchivePlayer, 3695);
+    NW4HBMAssert_Line(mpSoundArchivePlayer, LN(3752, 3695));
 
     void* memBuffer;
     void* strmBuffer;
@@ -2689,27 +2740,27 @@ void HomeButton::createSound(nw4hbm::snd::NandSoundArchive* pNandSoundArchive, b
     strmBuffer = MEMAllocFromAllocator(&sSoundAllocator, strmSize);
     memBuffer = MEMAllocFromAllocator(&sSoundAllocator, memSize);
     bool result = mpSoundArchivePlayer->Setup(pNandSoundArchive, memBuffer, memSize, strmBuffer, strmSize);
-    NW4HBMAssert_Line(result, 3713);
+    NW4HBMAssert_Line(result, LN(3770, 3713));
 
     buffer = MEMAllocFromAllocator(&sSoundAllocator, sizeof(nw4hbm::snd::SoundHandle));
     if (buffer != NULL) {
         mpSoundHandle = new (buffer) nw4hbm::snd::SoundHandle();
     }
-    NW4HBMAssert_Line(mpSoundHandle, 3720);
+    NW4HBMAssert_Line(mpSoundHandle, LN(3777, 3720));
 
     if (bCreateSoundHeap) {
         buffer = MEMAllocFromAllocator(&sSoundAllocator, sizeof(nw4hbm::snd::SoundHeap));
         if (buffer != NULL) {
             mpSoundHeap = new (buffer) nw4hbm::snd::SoundHeap();
         }
-        NW4HBMAssert_Line(mpSoundHeap, 3729);
+        NW4HBMAssert_Line(mpSoundHeap, LN(3786, 3729));
 
         u32 size = mButtonNum == 2 ? 0x60000 : 0x6F800;
         mpSoundHeap->Create(MEMAllocFromAllocator(&sSoundAllocator, size), size);
-        NW4HBMAssert_Line(mpSoundHeap->IsValid(), 3737);
+        NW4HBMAssert_Line(mpSoundHeap->IsValid(), LN(3794, 3737));
 
         bool result = mpSoundArchivePlayer->LoadGroup(0, mpSoundHeap, 0);
-        NW4HBMAssert_Line(result, 3740);
+        NW4HBMAssert_Line(result, LN(3797, 3740));
     } else {
         mpSoundHeap = nullptr;
     }

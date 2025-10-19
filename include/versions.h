@@ -20,4 +20,10 @@
 #define REGION_US (VERSION == SM64_U || VERSION == MK64_U || VERSION == OOT_U)
 #define REGION_EU (VERSION == SM64_E || VERSION == MK64_E || VERSION == OOT_E)
 
+#if VERSION == SM64_J || VERSION == SM64_U
+#define HBM_REVISION 1
+#else
+#define HBM_REVISION 2
+#endif
+
 #endif

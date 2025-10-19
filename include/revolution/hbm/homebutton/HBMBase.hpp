@@ -17,6 +17,7 @@
 #include "revolution/wpad/WPAD.h"
 
 #include "new.hpp"
+#include "versions.h"
 
 namespace homebutton {
 static void initgx();
@@ -225,7 +226,9 @@ private:
     /* 0x08E */ bool mEndInitSoundFlag;
     /* 0x08F */ bool mForceStopSyncFlag;
     /* 0x090 */ bool mForceEndMsgAnmFlag;
+#if HBM_REVISION > 1
     /* 0x094 */ int mSoundRetryCnt;
+#endif
     /* 0x098 */ int mDialogFlag[4];
     /* 0x0A8 */ char* mpLayoutName;
     /* 0x0AC */ char* mpAnmName;

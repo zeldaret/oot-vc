@@ -644,7 +644,7 @@ config.libs = [
     RevolutionHBMLib(
         "hbm",
         [
-            Object(LinkedFor("sm64-e", *OOT), "revolution/hbm/homebutton/HBMBase.cpp"),
+            Object(LinkedFor(*SM64, *OOT), "revolution/hbm/homebutton/HBMBase.cpp"),
             Object(LinkedFor(*SM64, *OOT), "revolution/hbm/homebutton/HBMAnmController.cpp"),
             Object(LinkedFor(*SM64, *OOT), "revolution/hbm/homebutton/HBMFrameController.cpp"),
             Object(LinkedFor(*SM64, *OOT), "revolution/hbm/homebutton/HBMGUIManager.cpp"),
