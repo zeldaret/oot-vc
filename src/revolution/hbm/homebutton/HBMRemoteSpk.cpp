@@ -80,7 +80,6 @@ void RemoteSpk::UpdateSpeaker(OSAlarm*, OSContext*) {
                     pinfo->in_pcm = nullptr;
                 }
 #endif
-
             }
 
             OSRestoreInterrupts(intrStatus);

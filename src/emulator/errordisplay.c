@@ -94,7 +94,7 @@ ErrorDisplay sStringDraw[] = {
         0,
     },
     {
-    {SID_ERROR_DATA_CORRUPT, 0, 0, 0},
+        {SID_ERROR_DATA_CORRUPT, 0, 0, 0},
         {
             {
                 {SID_ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU, FLAG_COLOR_WHITE, 0, 0, 0},

@@ -284,7 +284,8 @@ bool SetTevStageTable(Frame* pFrame, s32 numCycles) {
     }
 
 #if IS_SM64
-    ctP = BuildCombineModeTev(tempColor1, tempAlpha1, tempColor2, tempAlpha2, numCycles, (pFrame->aMode[FMT_OTHER1] >> 0x10) & 1);
+    ctP = BuildCombineModeTev(tempColor1, tempAlpha1, tempColor2, tempAlpha2, numCycles,
+                              (pFrame->aMode[FMT_OTHER1] >> 0x10) & 1);
 #else
     ctP = BuildCombineModeTev(tempColor1, tempAlpha1, tempColor2, tempAlpha2, numCycles,
                               (pFrame->aMode[FMT_OTHER1] >> 0x10) & 1,

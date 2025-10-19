@@ -999,7 +999,8 @@ void HomeButton::calc(const HBMControllerData* pController) {
             }
 
 #if HBM_REVISION == 1
-            if (mpPairGroupAnmController[14]->isPlaying() && mpPairGroupAnmController[14]->getCurrentFrame() < mpPairGroupAnmController[14]->getDelta()) {
+            if (mpPairGroupAnmController[14]->isPlaying() &&
+                mpPairGroupAnmController[14]->getCurrentFrame() < mpPairGroupAnmController[14]->getDelta()) {
                 mpPairGroupAnmController[14]->setCurrentFrame(0.0f);
                 mpPairGroupAnmController[14]->setState(0);
             }
