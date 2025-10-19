@@ -9,23 +9,23 @@ splits: config/sm64-u/splits.txt
 # See config.example.yml for a list.
 mw_comment_version: 14
 
-# extract:
-# # DSPCode.c
-# - symbol: axDspSlave
-#   header: axDspSlave.inc
-# # AXComp.c
-# - symbol: __AXCompressorTable
-#   header: __AXCompressorTable.inc
+extract:
+# DSPCode.c
+- symbol: axDspSlave
+  header: axDspSlave.inc
+# AXComp.c
+- symbol: __AXCompressorTable
+  header: __AXCompressorTable.inc
 
-# force_active:
-# - lbl_801E3380
-# - DemoAllocator2
-# - TRKAccessFile
-# - TRKOpenFile
-# - TRKCloseFile
-# - TRKPositionFile
-# - sSetInfoAsync__Q210homebutton10Controller
-# - lbl_8025DBBC__Q210homebutton10Controller
+force_active:
+- lbl_801E3380
+- DemoAllocator2
+- TRKAccessFile
+- TRKOpenFile
+- TRKCloseFile
+- TRKPositionFile
+- sSetInfoAsync__Q210homebutton10Controller
+- lbl_8025DBBC__Q210homebutton10Controller
 
 # add_relocations:
 # - source: 0x8005C714
@@ -89,132 +89,93 @@ mw_comment_version: 14
 #   type: l
 #   target: fn_8005B6E8
 
-# block_relocations:
-# # system.c
-# - source: 0x8002C248
-# - source: 0x8002B758
-# - source: 0x8003E3BC
-# - source: 0x8003E3C0
-# - source: 0x8003E39C
-# - source: 0x8003E3A0
-# - source: 0x80008478
-# - source: 0x8000849C
-# - source: 0x800083A0
-# - source: 0x800083B0
-# - source: 0x800083CC
-# - source: 0x80008400
-# - source: 0x800083DC
-# - source: 0x80008424
-# - source: 0x80008448
-# - source: 0x800084F0
-# - source: 0x80008500
-# - source: 0x8000851C
-# - source: 0x8000852C
-# - source: 0x80008550
-# - source: 0x80008574
-# - source: 0x80008598
-# - source: 0x800085C8
-# - source: 0x800085B8
-# - source: 0x80008640
-# - source: 0x80008650
-# - source: 0x8000866C
-# - source: 0x8000867C
-# - source: 0x800086A0
-# - source: 0x800086C4
-# - source: 0x800086E8
-# - source: 0x80008708
-# - source: 0x80008718
-# - source: 0x8000873C
-# - source: 0x800088C0
-# - source: 0x800088EC
-# - source: 0x800088D0
-# - source: 0x800088F4
-# - source: 0x80008918
-# - source: 0x8000893C
-# - source: 0x80008964
-# - source: 0x80008974
-# - source: 0x80008990
-# - source: 0x80008998
-# - source: 0x800089BC
-# - source: 0x800089E0
-# - source: 0x80008A0C
-# - source: 0x80008A1C
-# - source: 0x80008A38
-# - source: 0x80008A40
-# - source: 0x80008A68
-# - source: 0x80008A8C
-# - source: 0x800090AC
-# - source: 0x800090BC
-# - source: 0x800090DC
-# - source: 0x800090EC
-# - source: 0x8000910C
-# - source: 0x80009038
-# - source: 0x80009048
-# - source: 0x80009298
-# - source: 0x800092A0
-# - source: 0x800092C4
-# - source: 0x800092E8
-# - source: 0x8000930C
-# - source: 0x80009314
-# - source: 0x80009338
-# - source: 0x8000935C
-# - source: 0x800093EC
-# - source: 0x800093FC
-# - source: 0x8000941C
-# - source: 0x80009448
-# - source: 0x8000946C
-# - source: 0x800094B0
-# - source: 0x800094D0
-# - source: 0x800094E0
-# - source: 0x8000951C
-# - source: 0x8000952C
-# - source: 0x80009550
-# - source: 0x800085EC
-# - source: 0x80009484
-# - source: 0x8000970C
-# - source: 0x8000971C
-# - source: 0x80009740
-# - source: 0x80009768
-# - source: 0x80009778
-# - source: 0x8000979C
-# - source: 0x80009808
-# - source: 0x80009830
-# - source: 0x80009854
-# - source: 0x80009880
-# - source: 0x800098E4
-# - source: 0x800098F4
-# - source: 0x80009A1C
-# - source: 0x80009A2C
-# - source: 0x80009A48
-# - source: 0x80009A98
-# - source: 0x80009C18
-# - source: 0x80009C28
-# - source: 0x80009C48
-# - source: 0x80009C60
-# - source: 0x80009C98
-# - source: 0x80009CA0
-# - source: 0x80009CC0
-# - source: 0x80009CD0
-# - source: 0x80009CF4
-# - source: 0x80009E98
-# - source: 0x80009EB0
-# - source: 0x80008DCC
-# - source: 0x80008DD4
-# - source: 0x80008DFC
-# - source: 0x80008E04
-# - source: 0x80008E24
-# - source: 0x80008E2C
-# - source: 0x80008D94
-# - source: 0x80008D9C
-# - source: 0x80008F18
-# - source: 0x80008F20
-# - source: 0x80008F48
-# - source: 0x80008F50
-# - source: 0x80009008
-# - source: 0x80009018
-# - source: 0x80009A68
-# - source: 0x800097D4
-# - source: 0x800097E4
-# - source: 0x8008A060
-# - source: 0x8008A0D8
-# - source: 0x80009A78
+block_relocations:
+# system.c
+- source: 0x8000B15C
+- source: 0x8000B16C
+- source: 0x8000B188
+- source: 0x8000B190
+- source: 0x8000B1B4
+- source: 0x8000B1D8
+- source: 0x8000B200
+- source: 0x8000B210
+- source: 0x8000B22C
+- source: 0x8000B234
+- source: 0x8000B258
+- source: 0x8000B27C
+- source: 0x8000B2A8
+- source: 0x8000B2B8
+- source: 0x8000B2D4
+- source: 0x8000B2DC
+- source: 0x8000B304
+- source: 0x8000B328
+- source: 0x8000B668
+- source: 0x8000B670
+- source: 0x8000B698
+- source: 0x8000B6A0
+- source: 0x8000B6C0
+- source: 0x8000B6C8
+- source: 0x8000B7E4
+- source: 0x8000B7EC
+- source: 0x8000B85C
+- source: 0x8000B86C
+- source: 0x8000B888
+- source: 0x8000B898
+- source: 0x8000B8B8
+- source: 0x8000B8D0
+- source: 0x8000B8F8
+- source: 0x8000B908
+- source: 0x8000B928
+- source: 0x8000B9B4
+- source: 0x8000B9BC
+- source: 0x8000B9E0
+- source: 0x8000BA04
+- source: 0x8000BA28
+- source: 0x8000BA30
+- source: 0x8000BA54
+- source: 0x8000BA78
+- source: 0x8000BAC8
+- source: 0x8000BAE0
+- source: 0x8000BB10
+- source: 0x8000BB38
+- source: 0x8000BB58
+- source: 0x8000BB68
+- source: 0x8000BB88
+- source: 0x8000BBB4
+- source: 0x8000B630
+- source: 0x8000B638
+- source: 0x8000B7B4
+- source: 0x8000B7BC
+- source: 0x8000BBD8
+- source: 0x8000BBF0
+- source: 0x8000BC1C
+- source: 0x8000BC3C
+- source: 0x8000BC4C
+- source: 0x8000BC88
+- source: 0x8000BC98
+- source: 0x8000BCBC
+- source: 0x8000BD7C
+- source: 0x8000BD8C
+- source: 0x8000BDB0
+- source: 0x8000BDD8
+- source: 0x8000BDFC
+- source: 0x8000BE28
+- source: 0x8000BE44
+- source: 0x8000BE54
+- source: 0x8000BEB0
+- source: 0x8000BEC0
+- source: 0x8000BEDC
+- source: 0x8000BEFC
+- source: 0x8000BF0C
+- source: 0x8000BF2C
+- source: 0x8000C000
+- source: 0x8000C010
+- source: 0x8000C048
+- source: 0x8000C060
+- source: 0x8000C098
+- source: 0x8000C0A0
+- source: 0x8000C0C0
+- source: 0x8000C0D0
+- source: 0x8000C0F4
+- source: 0x8000C1AC
+- source: 0x8000C1BC

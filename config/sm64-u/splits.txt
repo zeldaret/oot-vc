@@ -7,7 +7,7 @@ Sections:
 	.dtors      type:rodata align:32
 	.rodata     type:rodata align:32
 	.data       type:data align:32
-	.bss        type:bss align:64
+	.bss        type:bss align:32
 	.sdata      type:data align:32
 	.sbss       type:bss align:32
 	.sdata2     type:rodata align:32
@@ -19,7 +19,7 @@ emulator/xlCoreRVL.c:
 	.bss        start:0x8019D440 end:0x8019D480
 	.sdata      start:0x8025AAC0 end:0x8025AAC8
 	.sbss       start:0x8025B3E0 end:0x8025B3F8
-	.sdata2     start:0x8025C140 end:0x8025C148
+	.sdata2     start:0x8025C140 end:0x8025C150
 
 emulator/xlPostRVL.c:
 	.text       start:0x80007748 end:0x80007758
