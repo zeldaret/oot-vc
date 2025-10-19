@@ -1639,3 +1639,112 @@ libc/math/math_ppc.c:
 
 libc/math/w_sqrt.c:
 	.text       start:0x801623C8 end:0x801623CC
+
+metrotrk/mainloop.c:
+	.text       start:0x801623CC end:0x801624C4
+
+metrotrk/nubevent.c:
+	.text       start:0x801624C4 end:0x801626EC
+	.bss        start:0x80258FF8 end:0x80259020
+
+metrotrk/nubinit.c:
+	.text       start:0x801626EC end:0x80162870
+	.rodata     start:0x8016C9A8 end:0x8016C9C8
+	.bss        start:0x80259020 end:0x80259028
+
+metrotrk/msg.c:
+	.text       start:0x80162870 end:0x8016289C
+
+metrotrk/msgbuf.c:
+	.text       start:0x8016289C end:0x801630D8
+	.rodata     start:0x8016C9C8 end:0x8016C9E8
+	.bss        start:0x80259028 end:0x8025A9D8
+
+metrotrk/serpoll.c:
+	.text       start:0x801630D8 end:0x80163284
+	.bss        start:0x8025A9D8 end:0x8025A9F0
+	.sbss       start:0x8025CB18 end:0x8025CB20
+
+metrotrk/usr_put.c:
+	.text       start:0x80163284 end:0x80163310
+
+metrotrk/dispatch.c:
+	.text       start:0x80163310 end:0x80163458
+	.data       start:0x8019DCD8 end:0x8019DD48
+
+metrotrk/msghndlr.c:
+	.text       start:0x80163458 end:0x80164534
+	.rodata     start:0x8016C9E8 end:0x8016CA20
+	.data       start:0x8019DD48 end:0x8019DD80
+	.bss        start:0x8025A9F0 end:0x8025A9F8
+
+metrotrk/support.c:
+	.text       start:0x80164534 end:0x80164BE8
+
+metrotrk/mutex_TRK.c:
+	.text       start:0x80164BE8 end:0x80164C00
+
+metrotrk/notify.c:
+	.text       start:0x80164C00 end:0x80164C98
+
+metrotrk/flush_cache.c:
+	.text       start:0x80164C98 end:0x80164CD0
+
+metrotrk/mem_TRK.c:
+	.init       start:0x8000446C end:0x800044C0
+	.text       start:0x80164CD0 end:0x80164D88
+
+metrotrk/string_TRK.c:
+	.text       start:0x80164D88 end:0x80164DA4
+
+metrotrk/targimpl.c:
+	.text       start:0x80164DA4 end:0x801667BC
+	.rodata     start:0x8016CA20 end:0x8016CAA8
+	.data       start:0x8019DD80 end:0x8019DDB0
+	.bss        start:0x8025A9F8 end:0x8025AF78
+
+metrotrk/targsupp.c:
+	.text       start:0x801667C0 end:0x801667E0
+
+metrotrk/mpc_7xx_603e.c:
+	.text       start:0x801667E0 end:0x80166B50
+
+metrotrk/mslsupp.c:
+	.text       start:0x80166B50 end:0x80166CC8
+
+metrotrk/dolphin_trk.c:
+	.init       start:0x800063F4 end:0x80006420
+	.text       start:0x80166CC8 end:0x80166FE4
+	.data       start:0x8019DDB0 end:0x8019DDF0
+	.bss        start:0x8025AF78 end:0x8025AF80
+
+metrotrk/main_TRK.c:
+	.text       start:0x80166FE4 end:0x80167028
+	.bss        start:0x8025AF80 end:0x8025AF88
+
+metrotrk/dolphin_trk_glue.c:
+	.text       start:0x80167028 end:0x801674E8
+	.rodata     start:0x8016CAA8 end:0x8016CBB0
+	.data       start:0x8019DDF0 end:0x8019DE18
+	.bss        start:0x8025AF88 end:0x8025AF90
+
+metrotrk/targcont.c:
+	.text       start:0x801674E8 end:0x8016751C
+
+metrotrk/target_options.c:
+	.text       start:0x8016751C end:0x80167538
+	.bss        start:0x8025AF90 end:0x8025AF98
+
+metrotrk/cc_udp.c:
+	.text       start:0x80167538 end:0x80167580
+
+metrotrk/cc_gdev.c:
+	.text       start:0x80167580 end:0x80167840
+	.bss        start:0x8025AF98 end:0x8025B4B4
+	.sbss       start:0x8025CB20 end:0x8025CB24
+
+metrotrk/CircleBuffer.c:
+	.text       start:0x80167840 end:0x80167AA8
+
+metrotrk/MWCriticalSection_gc.c:
+	.text       start:0x80167AA8 end:0x80167B00
