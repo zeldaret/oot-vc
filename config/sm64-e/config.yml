@@ -27,67 +27,13 @@ force_active:
 - sSetInfoAsync__Q210homebutton10Controller
 - lbl_8025DBBC__Q210homebutton10Controller
 
-# add_relocations:
-# - source: 0x8005C714
-#   type: ha
-#   target: fn_8005B6C0
-# - source: 0x8005C748
-#   type: l
-#   target: fn_8005B6C0
-# - source: 0x8005C724
-#   type: ha
-#   target: fn_8005B6C8
-# - source: 0x8005C770
-#   type: l
-#   target: fn_8005B6C8
-# - source: 0x8005C740
-#   type: ha
-#   target: fn_8005B6D0
-# - source: 0x8005C790
-#   type: l
-#   target: fn_8005B6D0
-# - source: 0x8005C750
-#   type: ha
-#   target: fn_8005B6D8
-# - source: 0x8005C7B0
-#   type: l
-#   target: fn_8005B6D8
-# - source: 0x8005C76C
-#   type: ha
-#   target: fn_8005B6E0
-# - source: 0x8005C7D0
-#   type: l
-#   target: fn_8005B6E0
-# - source: 0x8005C78C
-#   type: ha
-#   target: fn_8005B6F0
-# - source: 0x8005C7F0
-#   type: l
-#   target: fn_8005B6F0
-# - source: 0x8005C7AC
-#   type: ha
-#   target: fn_8005B6F8
-# - source: 0x8005C810
-#   type: l
-#   target: fn_8005B6F8
-# - source: 0x8005C7CC
-#   type: ha
-#   target: fn_8005B700
-# - source: 0x8005C824
-#   type: l
-#   target: fn_8005B700
-# - source: 0x8005C7EC
-#   type: ha
-#   target: GenPerspective_1080
-# - source: 0x8005C834
-#   type: l
-#   target: GenPerspective_1080
-# - source: 0x8005C80C
-#   type: ha
-#   target: fn_8005B6E8
-# - source: 0x8005C840
-#   type: l
-#   target: fn_8005B6E8
+add_relocations:
+- source: 0x8005D0B0
+  type: ha
+  target: GenPerspective_1080
+- source: 0x8005D0D8
+  type: l
+  target: GenPerspective_1080
 
 block_relocations:
 # system.c

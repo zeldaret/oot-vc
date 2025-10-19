@@ -4435,8 +4435,14 @@ bool frameSetBuffer(Frame* pFrame, FrameBufferType eType) {
     return true;
 }
 
+#if IS_SM64
 bool frameSetMatrixHint(Frame* pFrame, FrameMatrixProjection eProjection, s32 nAddressFloat, s32 nAddressFixed,
-                        f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale, void* mf) {
+                        f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale)
+#else
+bool frameSetMatrixHint(Frame* pFrame, FrameMatrixProjection eProjection, s32 nAddressFloat, s32 nAddressFixed,
+                        f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale, void* mf)
+#endif
+{
     s32 iHint;
 
     if (nAddressFloat != 0) {

@@ -8,6 +8,7 @@
 #include "revolution/demo.h"
 #include "revolution/sc.h"
 #include "revolution/vi.h"
+#include "versions.h"
 
 static GXRenderModeObj rmodeobj;
 static s32 gnCountArgument;
@@ -22,6 +23,16 @@ static inline u32 getFBTotalSize(f32 aspectRatio) {
     return fbWith * lineCount;
 }
 
+#if VERSION == SM64_J || VERSION == SM64_U
+#define LN(sm64, mk64, oot) sm64
+#elif VERSION == SM64_E
+#define LN(sm64, mk64, oot) (mk64 - 1)
+#elif IS_MK64
+#define LN(sm64, mk64, oot) mk64
+#elif IS_OOT
+#define LN(sm64, mk64, oot) oot
+#endif
+
 static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
     u32 nTickLast;
 
@@ -35,6 +46,29 @@ static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
         return;
     }
 
+#if VERSION == SM64_J || VERSION == SM64_U
+    switch (VIGetTvFormat()) {
+        case VI_NTSC:
+            rmode = VIGetDTVStatus() && SCGetProgressiveMode() == 1 ? &GXNtsc480Prog : &GXNtsc480IntDf;
+            rmode->viXOrigin -= 32;
+            rmode->viWidth += 64;
+            break;
+        case VI_PAL:
+            rmode = &GXPal528IntDf;
+            break;
+        case VI_MPAL:
+            rmode = &GXMpal480IntDf;
+            break;
+        case VI_EURGB60:
+            rmode = &GXEurgb60Hz480IntDf;
+            rmode->viXOrigin -= 32;
+            rmode->viWidth += 64;
+            break;
+        default:
+            OSPanic("xlCoreRVL.c", LN(121, 131, 138), "DEMOInit: invalid TV format\n");
+            break;
+    }
+#else
     switch (VIGetTvFormat()) {
         case VI_NTSC:
             rmode = VIGetDTVStatus() && SCGetProgressiveMode() == 1 ? &GXNtsc480Prog : &GXNtsc480IntDf;
@@ -45,17 +79,23 @@ static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
         case VI_MPAL:
         case VI_EURGB60:
             rmode = &GXPal528IntDf;
+#if VERSION >= OOT_J
             rmode->viXOrigin -= 32;
             rmode->viWidth += 64;
             rmode->xfbHeight = rmode->viHeight = 574;
             rmode->viYOrigin = (s32)(574 - rmode->viHeight) / 2;
+#endif
             break;
         default:
-            OSPanic("xlCoreRVL.c", 138, "DEMOInit: invalid TV format\n");
+            OSPanic("xlCoreRVL.c", LN(121, 131, 138), "DEMOInit: invalid TV format\n");
             break;
     }
+#endif
 
+#if VERSION >= OOT_J
     rmode->efbHeight = 480;
+#endif
+
     GXAdjustForOverscan(rmode, &rmodeobj, 0, 0);
     rmode = &rmodeobj;
 }
@@ -134,7 +174,7 @@ bool fn_8007FC84(void) {
     return false;
 }
 
-void xlExit(void) { OSPanic("xlCoreRVL.c", 524, "xlExit"); }
+void xlExit(void) { OSPanic("xlCoreRVL.c", LN(447, 484, 524), "xlExit"); }
 
 int main(int nCount, char** aszArgument) {
     s32 nSizeHeap;
@@ -173,9 +213,14 @@ int main(int nCount, char** aszArgument) {
         return false;
     }
 
+#if VERSION < OOT_J
+    nSizeHeap = 0x87600;
+    nSize = ((rmode->fbWidth + 0xF) & 0xFFF0) * rmode->xfbHeight * 2;
+#else
     aspectRatio = (f32)rmode->xfbHeight / (f32)rmode->efbHeight;
     nSizeHeap = fn_8007FC84() ? 0xBB800 : 0x87600;
     nSize = getFBTotalSize(aspectRatio) * 2;
+#endif
 
     if (nSize < nSizeHeap) {
         nSize = nSizeHeap;
@@ -183,10 +228,13 @@ int main(int nCount, char** aszArgument) {
 
     xlHeapTake(&DemoFrameBuffer1, nSize | 0x70000000);
     xlHeapTake(&DemoFrameBuffer2, nSize | 0x70000000);
+
+#if VERSION >= OOT_J
     xlHeapFill32(DemoFrameBuffer1, nSize, 0);
     xlHeapFill32(DemoFrameBuffer2, nSize, 0);
     DCStoreRange(DemoFrameBuffer1, nSize);
     DCStoreRange(DemoFrameBuffer2, nSize);
+#endif
 
     xlHeapTake(&DefaultFifo, 0x40000 | 0x30000000);
     DefaultFifoObj = GXInit(DefaultFifo, 0x40000);
@@ -211,6 +259,6 @@ int main(int nCount, char** aszArgument) {
         return false;
     }
 
-    OSPanic("xlCoreRVL.c", 603, "CORE DONE!");
+    OSPanic("xlCoreRVL.c", LN(526, 563, 603), "CORE DONE!");
     return false;
 }

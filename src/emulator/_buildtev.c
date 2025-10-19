@@ -199,7 +199,12 @@ void BuildCycle(CombineModeTev* tvP, u8 (*stageValues)[4]) {
     }
 }
 
-CombineModeTev* BuildCombineModeTev(u32 color1, u32 alpha1, u32 color2, u32 alpha2, u32 numCycles, u32 arg5, u32 arg6) {
+#if IS_SM64
+CombineModeTev* BuildCombineModeTev(u32 color1, u32 alpha1, u32 color2, u32 alpha2, u32 numCycles, u32 arg5)
+#else
+CombineModeTev* BuildCombineModeTev(u32 color1, u32 alpha1, u32 color2, u32 alpha2, u32 numCycles, u32 arg5, u32 arg6)
+#endif
+{
     u8 stageValues[2][2][4];
     s32 i;
     s32 j;

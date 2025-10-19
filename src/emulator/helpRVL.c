@@ -31,6 +31,12 @@ extern void* fn_80083140(void);
 extern void fn_800888DC(void**);
 extern HBMControllerData lbl_801CA670;
 
+#if IS_OOT
+#define UNK1C_HEAP_SIZE 0x02900000
+#elif IS_SM64 || IS_MK64
+#define UNK1C_HEAP_SIZE 0x01B00000
+#endif
+
 static void helpMenuResetCallback(void);
 static void helpMenuPowerCallback(void);
 
@@ -76,7 +82,7 @@ s32 lbl_8025D0C0;
 char* lbl_8025D0BC;
 u8 lbl_8025D0B8;
 
-GXColor lbl_8025C850[] = {255, 255, 255, 255};
+GXColor helpMenu_lbl_8025C850[] = {255, 255, 255, 255};
 
 static s32 helpMenuReadNAND(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, MEMAllocator* arg3, void* arg4) {
     CNTFileInfoNAND fileInfo;
@@ -198,6 +204,7 @@ static void helpMenuSetupColoredQuad(GXColor color) {
 
 #pragma inline_max_auto_size(100)
 
+#if VERSION == SM64_J || VERSION == SM64_U
 void helpMenuSetupRender(GXTexObj* pTexObj) {
     Rect rect = {0};
     GXColor color;
@@ -209,26 +216,17 @@ void helpMenuSetupRender(GXTexObj* pTexObj) {
     f32 y0 = 0.0f;
     f32 x0 = 0.0f;
 
-    rect.x1 = sRenderMode->fbWidth / 2;
-    rect.y1 = sRenderMode->xfbHeight / 2;
-
     GXInvalidateVtxCache();
     GXInvalidateTexAll();
 
-    if (fn_8007FC84()) {
-        fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
-        fHeight = ((sRenderMode->viHeight - 574) * 287) / 1148.0f;
-        C_MTXOrtho(matrix44, -fHeight, fHeight + 287.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
-    } else {
-        fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
-        fHeight = ((sRenderMode->viHeight - 480) * 240) / 960.0f;
-        C_MTXOrtho(matrix44, -fHeight, fHeight + 240.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
-    }
+    fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
+    fHeight = ((sRenderMode->viHeight - 480) * 240) / 960.0f;
 
     GXSetViewport(0.0f, 0.0f, sRenderMode->fbWidth, sRenderMode->efbHeight, 0.0f, 1.0f);
+    C_MTXOrtho(matrix44, -fHeight, fHeight + 240.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
     GXSetProjection(matrix44, GX_ORTHOGRAPHIC);
 
-    GXSetFog(GX_FOG_NONE, lbl_8025C850[0], 0.0f, 0.0f, 0.0f, 1000.0f);
+    GXSetFog(GX_FOG_NONE, helpMenu_lbl_8025C850[0], 0.0f, 0.0f, 0.0f, 1000.0f);
     GXFlush();
 
     color.a = color.r = color.g = color.b = 0xFF;
@@ -249,9 +247,142 @@ void helpMenuSetupRender(GXTexObj* pTexObj) {
     GXTexCoord2u8(1, 0);
     GXEnd();
 }
+#else
+void helpMenuSetupRender(GXTexObj* pTexObj) {
+    Rect rect = {0};
+    GXColor color;
+    f32 fWidth;
+    f32 fHeight;
+    Mtx44 matrix44;
+    f32 x1 = 0.0f;
+    f32 y1 = 0.0f;
+    f32 y0 = 0.0f;
+    f32 x0 = 0.0f;
+
+#if IS_OOT
+    rect.x1 = sRenderMode->fbWidth / 2;
+    rect.y1 = sRenderMode->xfbHeight / 2;
+
+    GXInvalidateVtxCache();
+    GXInvalidateTexAll();
+
+    if (fn_8007FC84()) {
+        fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
+        fHeight = ((sRenderMode->viHeight - 574) * 287) / 1148.0f;
+        C_MTXOrtho(matrix44, -fHeight, fHeight + 287.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
+    } else {
+        fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
+        fHeight = ((sRenderMode->viHeight - 480) * 240) / 960.0f;
+        C_MTXOrtho(matrix44, -fHeight, fHeight + 240.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
+    }
+#elif VERSION == SM64_E || IS_MK64
+    rect.x1 = lbl_8025D0DC / 2;
+    rect.y1 = lbl_8025D0D8 / 2;
+
+    GXInvalidateVtxCache();
+    GXInvalidateTexAll();
+
+    if (fn_8007FC84()) {
+        fWidth = ((sRenderMode->viWidth - 640) * 320) / 1280.0f;
+        fHeight = ((sRenderMode->viHeight - 528) * 264) / 1056.0f;
+        C_MTXOrtho(matrix44, -fHeight, fHeight + 264.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
+    } else {
+        fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
+        fHeight = ((sRenderMode->viHeight - 480) * 240) / 960.0f;
+        C_MTXOrtho(matrix44, -fHeight, fHeight + 240.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
+    }
+#endif
+
+    GXSetViewport(0.0f, 0.0f, sRenderMode->fbWidth, sRenderMode->efbHeight, 0.0f, 1.0f);
+    GXSetProjection(matrix44, GX_ORTHOGRAPHIC);
+
+    GXSetFog(GX_FOG_NONE, helpMenu_lbl_8025C850[0], 0.0f, 0.0f, 0.0f, 1000.0f);
+    GXFlush();
+
+    color.a = color.r = color.g = color.b = 0xFF;
+    helpMenuSetupTexturedQuad(pTexObj, color);
+
+    GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+    x0 = rect.x0;
+    y0 = rect.y0;
+    x1 = rect.x1;
+    y1 = rect.y1;
+    GXPosition3f32(x0, y0, 0.0f);
+    GXTexCoord2u8(0, 0);
+    GXPosition3f32(x0, y1, 0.0f);
+    GXTexCoord2u8(0, 1);
+    GXPosition3f32(x1, y1, 0.0f);
+    GXTexCoord2u8(1, 1);
+    GXPosition3f32(x1, y0, 0.0f);
+    GXTexCoord2u8(1, 0);
+    GXEnd();
+}
+#endif
 
 #pragma inline_max_auto_size(10)
 
+#if VERSION == SM64_J || VERSION == SM64_U
+static void helpMenu_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5, u32 param_6) {
+    f32 view[6];
+    void* pBuffer;
+    Rect rect;
+    Rect rectPAL;
+
+    if (param_6 != 0) {
+        GXColor local_54;
+        local_54.r = local_54.g = local_54.b = 0;
+        local_54.a = param_6;
+        rect = lbl_8016A7C0;
+        rectPAL = lbl_8016A7D0;
+
+        GXGetViewportv(view);
+
+        {
+            f32 x1;
+            f32 y1;
+            f32 y0;
+            f32 x0;
+
+            GXSetViewport(0.0f, 0.0f, GC_FRAME_WIDTH, GC_FRAME_HEIGHT, 0.0f, 1.0f);
+            GXSetScissor(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
+
+            helpMenuSetupColoredQuad(local_54);
+
+            GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+            x0 = rect.x0;
+            y0 = rect.y0;
+            x1 = rect.x1;
+            y1 = rect.y1;
+            GXPosition3f32(x0, y0, 0.0f);
+            GXColor1u32(0xFFFFFFFF);
+            GXPosition3f32(x0, y1, 0.0f);
+            GXColor1u32(0xFFFFFFFF);
+            GXPosition3f32(x1, y1, 0.0f);
+            GXColor1u32(0xFFFFFFFF);
+            GXPosition3f32(x1, y0, 0.0f);
+            GXColor1u32(0xFFFFFFFF);
+            GXEnd();
+        }
+
+        GXSetViewport(view[0], view[1], view[2], view[3], view[4], view[5]);
+    }
+
+    GXSetDispCopySrc(0, 0, param_3, param_4);
+
+    GXSetDispCopyDst(0x260, 0x1C8);
+    pBuffer = (void*)((s32)lbl_8025D100[lbl_8025D0FC ^ 1] + ((param_1 + param_2 * 0x260) * 2));
+    GXCopyDisp(pBuffer, GX_TRUE);
+
+    GXDrawDone();
+
+    if (param_5 != 0) {
+        lbl_8025D0FC ^= 1;
+        VISetNextFrameBuffer(lbl_8025D100[lbl_8025D0FC]);
+        VIFlush();
+        VIWaitForRetrace();
+    }
+}
+#else
 static void helpMenu_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4, s32 param_5, u32 param_6) {
     f32 view[6];
     void* pBuffer;
@@ -340,11 +471,89 @@ static void helpMenu_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4
         VIWaitForRetrace();
     }
 }
+#endif
 
 bool helpMenuUpdate_UnknownInline(void) {
     return helpMenuAllocateFile(SYSTEM_HELP(gpSystem), "html.arc", &lbl_8025D0F8, &sMemAllocator2);
 }
 
+#if IS_OOT
+#define VI_X_ORIGIN (720 - sp8.viWidth) / 2
+#elif IS_SM64 || IS_MK64
+#define VI_X_ORIGIN 25
+#endif
+
+#if VERSION == SM64_J || VERSION == SM64_U
+static void helpMenu_8005EAFC(void) {
+    GXRenderModeObj sp8;
+    s32 var_r31;
+
+    var_r31 = MB(20);
+
+    if (lbl_8025D0BC == NULL) {
+        lbl_8025D0BC = sWebsitePath;
+    }
+
+    sp8 = *sRenderMode;
+
+    sp8.fbWidth = 0x260;
+    sp8.efbHeight = 0x1C8;
+    sp8.xfbHeight = 0x1C8;
+    sp8.viWidth = 0x29E;
+    sp8.viHeight = 0x1C8;
+
+    switch (VIGetTvFormat()) {
+        case VI_TV_FMT_NTSC:
+            sp8.viXOrigin = VI_X_ORIGIN;
+            sp8.viYOrigin = 12;
+            break;
+        case VI_TV_FMT_PAL:
+            sp8.viXOrigin = VI_X_ORIGIN;
+            sp8.viYOrigin = 59;
+            break;
+        case VI_TV_FMT_MPAL:
+            sp8.viXOrigin = VI_X_ORIGIN;
+            sp8.viYOrigin = 12;
+            break;
+        case VI_TV_FMT_EURGB60:
+            sp8.viXOrigin = VI_X_ORIGIN;
+            sp8.viYOrigin = 12;
+            break;
+        default:
+            break;
+    }
+
+    VIConfigure(&sp8);
+    VIFlush();
+
+    VIWaitForRetrace();
+    VIWaitForRetrace();
+
+    fn_80088668(0x260, 0x1C8);
+    fn_8008866C(0x260, 0x1C8);
+
+    fn_80088670(0xC);
+
+    for (; var_r31 > 0; var_r31 -= MB(1)) {
+        if (fn_80088678(var_r31) != 0) {
+            break;
+        }
+    }
+
+    if (var_r31 <= 0) {
+        OSPanic("helpRVL.c", 863, ".");
+    }
+
+    fn_800887CC(sWebsitePath);
+    lbl_8025D0BC = fn_800887C8(helpMenu_8005E800, lbl_8025D0BC, lbl_8025D0B8);
+
+    VIConfigure(sRenderMode);
+    VIFlush();
+
+    VIWaitForRetrace();
+    VIWaitForRetrace();
+}
+#else
 static void helpMenu_8005EAFC(void) {
     GXRenderModeObj sp8;
     s32 var_r31;
@@ -364,6 +573,11 @@ static void helpMenu_8005EAFC(void) {
         sp8.xfbHeight = 0x210;
         sp8.efbHeight = 0x210;
     } else {
+
+#if IS_SM64 || IS_MK64
+        sp8 = *sRenderMode;
+#endif
+
         sp8.fbWidth = 0x260;
         sp8.viHeight = 0x1C8;
         sp8.xfbHeight = 0x1C8;
@@ -371,20 +585,20 @@ static void helpMenu_8005EAFC(void) {
     }
 
     if (fn_8007FC84()) {
-        sp8.viXOrigin = (720 - sp8.viWidth) / 2;
+        sp8.viXOrigin = VI_X_ORIGIN;
         sp8.viYOrigin = 23;
     } else {
         switch (VIGetTvFormat()) {
             case VI_TV_FMT_NTSC:
-                sp8.viXOrigin = (720 - sp8.viWidth) / 2;
+                sp8.viXOrigin = VI_X_ORIGIN;
                 sp8.viYOrigin = 12;
                 break;
             case VI_TV_FMT_MPAL:
-                sp8.viXOrigin = (720 - sp8.viWidth) / 2;
+                sp8.viXOrigin = VI_X_ORIGIN;
                 sp8.viYOrigin = 12;
                 break;
             case VI_TV_FMT_EURGB60:
-                sp8.viXOrigin = (720 - sp8.viWidth) / 2;
+                sp8.viXOrigin = VI_X_ORIGIN;
                 sp8.viYOrigin = 12;
                 break;
             default:
@@ -394,7 +608,11 @@ static void helpMenu_8005EAFC(void) {
 
     VIConfigure(&sp8);
     VIFlush();
+
+#if IS_OOT
     GXSetDispCopyYScale((f32)sp8.xfbHeight / (f32)sp8.efbHeight);
+#endif
+
     VIWaitForRetrace();
     VIWaitForRetrace();
 
@@ -415,7 +633,7 @@ static void helpMenu_8005EAFC(void) {
     }
 
     if (var_r31 <= 0) {
-        OSPanic("helpRVL.c", 938, ".");
+        OSPanic("helpRVL.c", IS_OOT ? 938 : 936, ".");
     }
 
     fn_800887CC(sWebsitePath);
@@ -423,10 +641,15 @@ static void helpMenu_8005EAFC(void) {
 
     VIConfigure(sRenderMode);
     VIFlush();
+
+#if IS_OOT
     GXSetDispCopyYScale((f32)sRenderMode->xfbHeight / (f32)sRenderMode->efbHeight);
+#endif
+
     VIWaitForRetrace();
     VIWaitForRetrace();
 }
+#endif
 
 static inline void helpMenu_8005EDFC_UnknownInline(GXColor color) {
     GXTexObj texObj;
@@ -739,7 +962,7 @@ static inline bool helpMenuAllocateHeap(HelpMenu* pHelpMenu) {
     }
     MEMInitAllocatorForExpHeap(&sMemAllocator1, lbl_8025D0E4, 0x20);
 
-    lbl_8025D0E0 = MEMCreateExpHeapEx(pHelpMenu->unk1C, 0x2900000, 0x0);
+    lbl_8025D0E0 = MEMCreateExpHeapEx(pHelpMenu->unk1C, UNK1C_HEAP_SIZE, 0x0);
     if (lbl_8025D0E0 == NULL) {
         return false;
     }
@@ -812,6 +1035,21 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
             return false;
         }
 
+#if VERSION == SM64_J || VERSION == SM64_U
+        if (lbl_8025D0C8 == NULL) {
+            lbl_8025D0C8 = MEMAllocFromAllocator(&sMemAllocator2, 0x25800);
+        }
+
+        GXSetTexCopySrc(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
+        GXSetTexCopyDst(GC_FRAME_WIDTH / 2, GC_FRAME_HEIGHT / 2, GX_TF_RGB565, GX_ENABLE);
+        GXCopyTex(lbl_8025D0C8, 0);
+        GXDrawDone();
+
+        DCInvalidateRange(lbl_8025D0C8, 0x25800);
+        GXInitTexObj(&sTexObj, lbl_8025D0C8, GC_FRAME_WIDTH / 2, GC_FRAME_HEIGHT / 2, GX_TF_RGB565, GX_CLAMP, GX_CLAMP,
+                     GX_DISABLE);
+        GXInitTexObjLOD(&sTexObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+#else
         lbl_8025D0DC = rmode->fbWidth;
         lbl_8025D0D8 = rmode->efbHeight;
 
@@ -830,6 +1068,8 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
         GXInitTexObj(&sTexObj, lbl_8025D0C8, lbl_8025D0DC / 2, lbl_8025D0D8 / 2, GX_TF_RGB565, GX_CLAMP, GX_CLAMP,
                      GX_DISABLE);
         GXInitTexObjLOD(&sTexObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+#endif
+
         lbl_8025D100[0] = DemoFrameBuffer1;
         lbl_8025D100[1] = DemoFrameBuffer2;
         pCurrentFrameBuffer = VIGetCurrentFrameBuffer();
@@ -987,11 +1227,21 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
                 helpMenuSetupRender(&sTexObj);
             }
 
+#if IS_OOT
             if (fn_8007FC84()) {
                 C_MTXOrtho(matrix44_4, 240.0f, -243.84001f, -320.0f, 320.0f, 0.0f, 500.0f);
             } else {
                 C_MTXOrtho(matrix44_4, 240.0f, -240.0f, -320.0f, 320.0f, 0.0f, 500.0f);
             }
+#elif VERSION == SM64_E || IS_MK64
+            if (fn_8007FC84()) {
+                C_MTXOrtho(matrix44_4, 224.0f, -227.58401f, -304.0f, 304.0f, 0.0f, 500.0f);
+            } else {
+                C_MTXOrtho(matrix44_4, 228.0f, -237.12f, -304.0f, 310.08f, 0.0f, 500.0f);
+            }
+#elif VERSION == SM64_J || VERSION == SM64_U
+            C_MTXOrtho(matrix44_4, 228.0f, -237.12f, -304.0f, 310.08f, 0.0f, 500.0f);
+#endif
 
             GXSetProjection(matrix44_4, GX_ORTHOGRAPHIC);
             GXSetCullMode(GX_CULL_NONE);
@@ -1038,23 +1288,32 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
             return false;
         }
 
-        if (!xlCoreInitGX()) {
-            return false;
+#if IS_SM64 || IS_MK64
+        if (!lbl_8025D0EC && !lbl_8025D0E8)
+#endif
+        {
+            if (!xlCoreInitGX()) {
+                return false;
+            }
+
+            frameDrawReset(SYSTEM_FRAME(gpSystem), 0x5FFED);
+
+            if (!helpMenuDestroyHeap(pHelpMenu)) {
+                return false;
+            }
+
+            lbl_8025D0D0 = OSGetTime();
         }
-
-        frameDrawReset(SYSTEM_FRAME(gpSystem), 0x5FFED);
-
-        if (!helpMenuDestroyHeap(pHelpMenu)) {
-            return false;
-        }
-
-        lbl_8025D0D0 = OSGetTime();
     }
 
     if (lbl_8025D0E8) {
         VISetBlack(true);
         VIFlush();
+
+#if IS_OOT
         VIWaitForRetrace();
+#endif
+
         fn_8000A830(gpSystem, 0x1004, NULL);
         OSShutdownSystem();
     }
@@ -1062,7 +1321,10 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
     if (lbl_8025D0EC) {
         VISetBlack(true);
         VIFlush();
+
+#if IS_OOT
         VIWaitForRetrace();
+#endif
 
         if (!fn_8000A8A8(gpSystem)) {
             return false;
@@ -1074,7 +1336,11 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
 
 bool helpMenu_800607B0(HelpMenu* pHelpMenu, bool arg1) {
     pHelpMenu->unk0C = arg1;
+
+#if IS_OOT
     pHelpMenu->unk08 = false;
+#endif
+
     return true;
 }
 
@@ -1100,13 +1366,13 @@ static inline bool helpMenuHeapTake(HelpMenu* pHelpMenu) {
         return false;
     }
 
-    if (!xlHeapTake((void**)&pHelpMenu->unk1C, 0x2900000 | 0x70000000)) {
+    if (!xlHeapTake((void**)&pHelpMenu->unk1C, UNK1C_HEAP_SIZE | 0x70000000)) {
         return false;
     }
 
     pHelpMenu->unk00 = 0x00700000;
     pHelpMenu->unk18 = (s32)pHelpMenu->unk14;
-    pHelpMenu->unk04 = 0x02900000;
+    pHelpMenu->unk04 = UNK1C_HEAP_SIZE;
     pHelpMenu->unk20 = (s32)pHelpMenu->unk1C;
 
     return true;

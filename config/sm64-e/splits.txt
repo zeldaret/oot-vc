@@ -154,13 +154,13 @@ emulator/frame.c:
 	.bss        start:0x8019EB48 end:0x801C7BC0
 	.sdata      start:0x8025B628 end:0x8025B648
 	.sbss       start:0x8025BED0 end:0x8025BF20
-	.sdata2     start:0x8025CB90 end:0x8025CC80
+	.sdata2     start:0x8025CB90 end:0x8025CC98
 
 emulator/library.c:
 	.text       start:0x80056174 end:0x8005E910
 	.data       start:0x80170068 end:0x80171330
 	.sdata      start:0x8025B648 end:0x8025B658
-	.sdata2     start:0x8025CC80 end:0x8025CCC0
+	.sdata2     start:0x8025CC98 end:0x8025CCD8
 
 emulator/codeRVL.c:
 	.text       start:0x8005E910 end:0x8005E944
@@ -174,7 +174,7 @@ emulator/helpRVL.c:
 	.bss        start:0x801C7BC0 end:0x801C7C98
 	.sdata      start:0x8025B660 end:0x8025B678
 	.sbss       start:0x8025BF20 end:0x8025BF88
-	.sdata2     start:0x8025CCC0 end:0x8025CD60
+	.sdata2     start:0x8025CCD8 end:0x8025CD60
 
 emulator/soundRVL.c:
 	.text       start:0x80061198 end:0x80061E0C
