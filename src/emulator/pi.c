@@ -69,7 +69,7 @@ bool piPut32(PI* pPI, u32 nAddress, s32* pData) {
 #if IS_SM64
             pPI->nAddressRAM = *pData & 0xFFFFFF;
 #else
-            pPI->nAddressRAM = *pData & ~0xFF800007;
+            pPI->nAddressRAM = *pData & 0x7FFFF8;
 #endif
             break;
         case 0x04:

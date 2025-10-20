@@ -78,7 +78,7 @@ bool siGet32(SI* pSI, u32 nAddress, s32* pData) {
 #if IS_SM64
             *pData = 0;
 #else
-            *pData = systemExceptionPending(gpSystem, SIT_SI) ? 4096 : 0;
+            *pData = systemExceptionPending(gpSystem, SIT_SI) ? 0x1000 : 0;
 #endif
             break;
         default:

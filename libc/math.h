@@ -45,6 +45,8 @@ static inline float sinf(float x) { return (float)sin((double)x); }
 
 static inline float cosf(float x) { return (float)cos((double)x); }
 
+static inline float tanf(float x) { return (float)tan((double)x); }
+
 static inline double fabs(double x) { return __fabs(x); }
 
 static inline float sqrtf(float x) { return (float)sqrt((double)x); }

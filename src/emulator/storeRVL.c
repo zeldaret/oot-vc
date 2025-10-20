@@ -138,12 +138,12 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
             continue;
         }
 
-#if VERSION >= OOT_J
-        var_r28 = var_r29 * 32;
-#endif
         var_r27 = arg2;
         var_r26 = arg3;
+
         while (var_r26 > 0) {
+            var_r28 = var_r29 * 32;
+
             DCInvalidateRange(pStore->unk_9C, 0x20);
 
             if (NANDRead(&pStore->nandFileInfo, pStore->unk_9C, 0x20) < 0) {
@@ -151,11 +151,7 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
                 break;
             }
 
-#if IS_SM64 || IS_MK64
-            var_r3 = var_r27 - (var_r29 * 32);
-#else
             var_r3 = var_r27 - var_r28;
-#endif
             var_r5 = 0x20 - var_r3;
             if (var_r5 > var_r26) {
                 var_r5 = var_r26;
@@ -168,11 +164,7 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
             var_r26 -= var_r5;
             var_r27 += var_r5;
             var_r26 -= var_r5; // again?
-#if IS_SM64 || IS_MK64
             var_r29++;
-#else
-            var_r28 += 0x20;
-#endif
         }
 
         if (var_r26 <= 0) {

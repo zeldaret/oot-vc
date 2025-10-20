@@ -46,13 +46,8 @@ static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
         return;
     }
 
-#if VERSION == SM64_J || VERSION == SM64_U
     switch (VIGetTvFormat()) {
-        case VI_NTSC:
-            rmode = VIGetDTVStatus() && SCGetProgressiveMode() == 1 ? &GXNtsc480Prog : &GXNtsc480IntDf;
-            rmode->viXOrigin -= 32;
-            rmode->viWidth += 64;
-            break;
+#if VERSION < SM64_E
         case VI_PAL:
             rmode = &GXPal528IntDf;
             break;
@@ -64,33 +59,27 @@ static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
             rmode->viXOrigin -= 32;
             rmode->viWidth += 64;
             break;
-        default:
-            OSPanic("xlCoreRVL.c", LN(121, 131, 138), "DEMOInit: invalid TV format\n");
-            break;
-    }
-#else
-    switch (VIGetTvFormat()) {
-        case VI_NTSC:
-            rmode = VIGetDTVStatus() && SCGetProgressiveMode() == 1 ? &GXNtsc480Prog : &GXNtsc480IntDf;
-            rmode->viXOrigin -= 32;
-            rmode->viWidth += 64;
-            break;
+#elif VERSION < OOT_J
         case VI_PAL:
         case VI_MPAL:
         case VI_EURGB60:
             rmode = &GXPal528IntDf;
-#if VERSION >= OOT_J
+            break;
+#else
+        case VI_PAL:
+        case VI_MPAL:
+        case VI_EURGB60:
+            rmode = &GXPal528IntDf;
             rmode->viXOrigin -= 32;
             rmode->viWidth += 64;
             rmode->xfbHeight = rmode->viHeight = 574;
             rmode->viYOrigin = (s32)(574 - rmode->viHeight) / 2;
-#endif
             break;
+#endif
         default:
             OSPanic("xlCoreRVL.c", LN(121, 131, 138), "DEMOInit: invalid TV format\n");
             break;
     }
-#endif
 
 #if VERSION >= OOT_J
     rmode->efbHeight = 480;
