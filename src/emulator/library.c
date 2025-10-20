@@ -892,9 +892,63 @@ void osVirtualToPhysical(Cpu* pCPU) {
 }
 
 bool fn_80057E60(Cpu* pCPU) {}
+
 bool fn_80058078(Cpu* pCPU) {}
-bool fn_80058230(Cpu* pCPU) {}
-bool fn_80058324(Cpu* pCPU) {}
+
+#if IS_SM64
+void fn_80058230(Cpu* pCPU) {
+    s32 i;
+    s32 j;
+    f32* mf;
+    CpuFpr data1;
+    CpuFpr data0;
+
+    data0.f32 = 0.0f;
+
+    // float ordering fix
+    (void)65536.0f;
+
+    data1.f32 = 1.0f;
+
+    cpuGetAddressBuffer(pCPU, (void**)&mf, pCPU->aGPR[4].u32);
+
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            if (i == j) {
+                mf[i * 4 + j] = data1.f32;
+            } else {
+                mf[i * 4 + j] = data0.f32;
+            }
+        }
+    }
+}
+#endif
+
+bool fn_80058324(Cpu* pCPU) {
+    u32* sp8;
+
+    cpuGetAddressBuffer(pCPU, (void**)&sp8, pCPU->aGPR[4].u32);
+
+    sp8[0] = 0x10000;
+    sp8[1] = 0;
+    sp8[2] = 1;
+    sp8[3] = 0;
+    sp8[4] = 0;
+
+    sp8[5] = 0x10000;
+    sp8[6] = 0;
+    sp8[7] = 1;
+    sp8[8] = 0;
+    sp8[9] = 0;
+
+    sp8[10] = 0;
+    sp8[11] = 0;
+    sp8[12] = 0;
+    sp8[13] = 0;
+    sp8[14] = 0;
+
+    sp8[15] = 0;
+}
 
 void guOrthoF(Cpu* pCPU) {
     s32 i;
