@@ -203,12 +203,23 @@ struct FrameTexture {
     /* 0x12 */ s16 nSizeY;
     /* 0x14 */ u32 nAddress;
     /* 0x18 */ FrameTexture* pTextureNext;
+
+#if IS_SM64
+    /* 0x1C */ u32 nData0;
+    /* 0x20 */ u32 nData1;
+    /* 0x24 */ u32 nData2;
+    /* 0x28 */ u32 nData3;
+    /* 0x2C */ u32 nCodePixel;
+    /* 0x30 */ u32 nCodeColor;
+#else
     /* 0x1C */ u32 nCodePixel;
     /* 0x20 */ u32 nCodeColor;
     /* 0x24 */ u32 nData0;
     /* 0x28 */ u32 nData1;
     /* 0x2C */ u32 nData2;
     /* 0x30 */ u32 nData3;
+#endif
+
     /* 0x34 */ u32 unk_34;
     /* 0x38 */ GXTexFmt eFormat;
     /* 0x3C */ GXTlutObj objectTLUT;
@@ -218,11 +229,11 @@ struct FrameTexture {
 }; // size = 0x70
 
 typedef struct Tile {
-    /* 0x00 */ s32 nSize;
-    /* 0x04 */ s32 nTMEM;
-    /* 0x08 */ s32 iTLUT;
-    /* 0x0C */ s32 nSizeX;
-    /* 0x10 */ s32 nFormat;
+    /* 0x00 */ int nSize;
+    /* 0x04 */ int nTMEM;
+    /* 0x08 */ int iTLUT;
+    /* 0x0C */ int nSizeX;
+    /* 0x10 */ int nFormat;
     /* 0x14 */ s16 nMaskS;
     /* 0x16 */ s16 nMaskT;
     /* 0x18 */ s16 nModeS;
