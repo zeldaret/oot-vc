@@ -1821,7 +1821,7 @@ static bool fn_8000E81C(Cpu* pCPU, s32 nOpcode, s32 nOpcodePrev, s32 nOpcodeNext
 }
 
 //! TODO: fake
-#if VERSION < MK64_J
+#if VERSION < OOT_J
 #pragma optimization_level 1
 #endif
 

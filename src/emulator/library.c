@@ -807,76 +807,65 @@ static void __cosf(Cpu* pCPU) { pCPU->aFPR[0].f32 = cosf(pCPU->aFPR[12].f32); }
 
 static void __sinf(Cpu* pCPU) { pCPU->aFPR[0].f32 = sinf(pCPU->aFPR[12].f32); }
 
-#if VERSION < MK64_J
 void _bzero(Cpu* pCPU) {
     s32 nSize;
     void* pBuffer;
 
+#if VERSION < MK64_J
     cpuGetAddressBuffer(pCPU, &pBuffer, pCPU->aGPR[4].u32);
     nSize = pCPU->aGPR[5].s32;
-
     memset(pBuffer, 0, nSize);
-}
-
-void _bcopy(Cpu* pCPU) {
-    s32 nSize;
-    void* pSource;
-    void* pTarget;
-
-    cpuGetAddressBuffer(pCPU, &pSource, pCPU->aGPR[4].u32);
-    cpuGetAddressBuffer(pCPU, &pTarget, pCPU->aGPR[5].u32);
-    nSize = pCPU->aGPR[6].s32;
-
-    xlHeapCopy(pTarget, pSource, nSize);
-    pCPU->aGPR[2].u32 = pCPU->aGPR[5].u32;
-}
-
-void _memcpy(Cpu* pCPU) {
-    s32 nSize;
-    void* pSource;
-    void* pTarget;
-
-    cpuGetAddressBuffer(pCPU, &pTarget, pCPU->aGPR[4].u32);
-    cpuGetAddressBuffer(pCPU, &pSource, pCPU->aGPR[5].u32);
-    nSize = pCPU->aGPR[6].s32;
-
-    xlHeapCopy(pTarget, pSource, nSize);
-    pCPU->aGPR[2].u32 = pCPU->aGPR[4].u32;
-}
 #else
-void _bzero(Cpu* pCPU) {
-    s32 nSize = pCPU->aGPR[5].s32;
-    void* pBuffer;
-
+    nSize = pCPU->aGPR[5].s32;
     if (cpuGetAddressBuffer(pCPU, &pBuffer, pCPU->aGPR[4].u32) && nSize > 0) {
         memset(pBuffer, 0, nSize);
     }
+#endif
 }
 
 void _bcopy(Cpu* pCPU) {
-    s32 nSize = pCPU->aGPR[6].s32;
+    s32 nSize;
     void* pSource;
     void* pTarget;
 
+#if VERSION < MK64_J
+    cpuGetAddressBuffer(pCPU, &pSource, pCPU->aGPR[4].u32);
+    cpuGetAddressBuffer(pCPU, &pTarget, pCPU->aGPR[5].u32);
+    nSize = pCPU->aGPR[6].s32;
+    xlHeapCopy(pTarget, pSource, nSize);
+    pCPU->aGPR[2].u32 = pCPU->aGPR[5].u32;
+#else
+    nSize = pCPU->aGPR[6].s32;
     if (cpuGetAddressBuffer(pCPU, &pSource, pCPU->aGPR[4].u32) &&
         cpuGetAddressBuffer(pCPU, &pTarget, pCPU->aGPR[5].u32) && nSize > 0) {
         xlHeapCopy(pTarget, pSource, nSize);
     }
+#endif
+
     pCPU->aGPR[2].u32 = pCPU->aGPR[5].u32;
 }
 
 void _memcpy(Cpu* pCPU) {
-    s32 nSize = pCPU->aGPR[6].s32;
+    s32 nSize;
     void* pSource;
     void* pTarget;
 
+#if VERSION < MK64_J
+    cpuGetAddressBuffer(pCPU, &pTarget, pCPU->aGPR[4].u32);
+    cpuGetAddressBuffer(pCPU, &pSource, pCPU->aGPR[5].u32);
+    nSize = pCPU->aGPR[6].s32;
+    xlHeapCopy(pTarget, pSource, nSize);
+    pCPU->aGPR[2].u32 = pCPU->aGPR[4].u32;
+#else
+    nSize = pCPU->aGPR[6].s32;
     if (cpuGetAddressBuffer(pCPU, &pTarget, pCPU->aGPR[4].u32) &&
         cpuGetAddressBuffer(pCPU, &pSource, pCPU->aGPR[5].u32) && nSize > 0) {
         xlHeapCopy(pTarget, pSource, nSize);
     }
+#endif
+
     pCPU->aGPR[2].u32 = pCPU->aGPR[4].u32;
 }
-#endif
 
 void osPhysicalToVirtual(Cpu* pCPU) { pCPU->aGPR[2].u32 = pCPU->aGPR[4].u32 | 0x80000000; }
 
@@ -1365,6 +1354,7 @@ void GenPerspective_1080(Cpu* pCPU) {
     frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, 1.0f,
                        NULL);
 #endif
+
     pFrame->iHintHack = pFrame->iHintLast;
 }
 
@@ -2997,13 +2987,11 @@ bool fn_8005B6E0(Cpu* pCPU) { return true; }
 
 bool fn_8005B6E8(Cpu* pCPU) { return true; }
 
-#if VERSION > MK64_E
 bool fn_8005B6F0(Cpu* pCPU) { return true; }
 
 bool fn_8005B6F8(Cpu* pCPU) { return true; }
 
 bool fn_8005B700(Cpu* pCPU) { return true; }
-#endif
 
 bool fn_8005B708(Cpu* pCPU) { return true; }
 
@@ -3354,9 +3342,9 @@ LibraryFunc gaFunction[] = {
         (LibraryFuncImpl)fn_8005B700,
         {0x00000A3B, 0xAC09CF16, 0x00000A0E, 0x0A2781CF},
     },
-#endif
+#endif // VERSION > MK64_E
 
-#endif
+#endif // VERSION >= MK64_J
 
     {
         NULL,
@@ -3389,10 +3377,9 @@ LibraryFunc gaFunction[] = {
         (LibraryFuncImpl)fn_8005B710,
         {0x00000022, 0x5D447143, 0x00000033, 0xBFD9B964, 0x00000082, 0x110CA1BB},
     },
-#endif
+#endif // VERSION > MK64_E
 
-#endif
-
+#endif // VERSION >= MK64_J
 };
 
 static bool libraryFindException(Library* pLibrary, bool bException) {
@@ -3817,6 +3804,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
 
 #if VERSION >= SM64_E
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B708) {
+
 #if VERSION < OOT_J
                 pFrame = SYSTEM_FRAME(gpSystem);
 #endif
@@ -3829,6 +3817,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
 #endif
 
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B710) {
+
 #if VERSION < OOT_J
                 pFrame = SYSTEM_FRAME(gpSystem);
 #endif
@@ -3873,6 +3862,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                 }
             } else {
                 if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
+
 #if VERSION < OOT_J
                     pFrame = SYSTEM_FRAME(gpSystem);
 #endif
@@ -3895,11 +3885,11 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                         pFrame->unk_40 = 0;
 #endif
                     } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6D0) {
-#if VERSION < MK64_J
                         pFrame->unk_30 = 0;
                         bDone = true;
                         bFlag = false;
-#else
+
+#if VERSION > SM64_E
                         pFrame->unk_30 = 0;
                         bDone = true;
                         bFlag = false;

@@ -103,38 +103,26 @@ static u32 contMap[][GCN_BTN_COUNT] = {
         N64_BTN_CRIGHT, // GCN_BTN_CSTICK_RIGHT
     },
     // Controller Configuration No. 4
-#if VERSION < MK64_J 
     {
         N64_BTN_A,      // GCN_BTN_A
         N64_BTN_B,      // GCN_BTN_B
         N64_BTN_Z,      // GCN_BTN_X
         N64_BTN_Z,      // GCN_BTN_Y
+
+#if VERSION < MK64_J
         N64_BTN_L,      // GCN_BTN_L
-        N64_BTN_R,      // GCN_BTN_R
-        N64_BTN_Z,      // GCN_BTN_Z
-        N64_BTN_START,  // GCN_BTN_START
-        0x08000000,     // GCN_BTN_UNK8
-        0x04000000,     // GCN_BTN_UNK9
-        0x02000000,     // GCN_BTN_UNK10
-        0x01000000,     // GCN_BTN_UNK11
-        N64_BTN_DUP,    // GCN_BTN_DPAD_UP
-        N64_BTN_DDOWN,  // GCN_BTN_DPAD_DOWN
-        N64_BTN_DLEFT,  // GCN_BTN_DPAD_LEFT
-        N64_BTN_DRIGHT, // GCN_BTN_DPAD_RIGHT
-        N64_BTN_CUP,    // GCN_BTN_CSTICK_UP
-        N64_BTN_CDOWN,  // GCN_BTN_CSTICK_DOWN
-        N64_BTN_CLEFT,  // GCN_BTN_CSTICK_LEFT
-        N64_BTN_CRIGHT, // GCN_BTN_CSTICK_RIGHT
-    }, 
 #else
-    {
-        N64_BTN_A,      // GCN_BTN_A
-        N64_BTN_B,      // GCN_BTN_B
-        N64_BTN_Z,      // GCN_BTN_X
-        N64_BTN_Z,      // GCN_BTN_Y
         N64_BTN_Z,      // GCN_BTN_L
+#endif
+
         N64_BTN_R,      // GCN_BTN_R
+
+#if VERSION < MK64_J
+        N64_BTN_Z,      // GCN_BTN_Z
+#else
         N64_BTN_L,      // GCN_BTN_Z
+#endif
+
         N64_BTN_START,  // GCN_BTN_START
         0x08000000,     // GCN_BTN_UNK8
         0x04000000,     // GCN_BTN_UNK9
@@ -149,7 +137,6 @@ static u32 contMap[][GCN_BTN_COUNT] = {
         N64_BTN_CLEFT,  // GCN_BTN_CSTICK_LEFT
         N64_BTN_CRIGHT, // GCN_BTN_CSTICK_RIGHT
     }, 
-#endif
     // Controller Configuration No. 5
     {
         N64_BTN_A,      // GCN_BTN_A
@@ -320,7 +307,7 @@ static SystemDevice gaSystemDevice[] = {
     },
 };
 
-#if VERSION > SM64_E && VERSION < OOT_J
+#if VERSION == MK64_J || VERSION == MK64_U || VERSION == MK64_E
 u32 lbl_8016E268[] = {
     0x3C1A8007, 0x275ACEC0, 0x03400008, 0x00000000, 0x3C010010, 0x012A4824, 0x01214823, 0x3C01A460, 0xAC290000,
     0x3C08A460, 0x8D080010, 0x31080002, 0x5500FFFD, 0x3C08A460, 0x24081000, 0x010B4020, 0x010A4024, 0x3C01A460,
@@ -492,7 +479,7 @@ static bool systemSetRamMode(System* pSystem) {
 
     anMode[6] = nSize;
 
-#if VERSION > SM64_E && VERSION < OOT_J
+#if VERSION == MK64_J || VERSION == MK64_U || VERSION == MK64_E
     if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&anUnknown, 0, NULL)) {
         return false;
     }
@@ -1591,6 +1578,10 @@ static bool systemPut64(System* pSystem, u32 nAddress, s64* pData) {
 static bool systemGetBlock(System* pSystem, CpuBlock* pBlock) {
     void* pBuffer;
 
+#if VERSION < MK64_J
+    return false;
+#else
+
 #if VERSION >= OOT_J
     if (pBlock->nAddress1 < 0x04000000) {
         if (!ramGetBuffer(SYSTEM_RAM(gpSystem), &pBuffer, pBlock->nAddress1, &pBlock->nSize)) {
@@ -1601,14 +1592,11 @@ static bool systemGetBlock(System* pSystem, CpuBlock* pBlock) {
     }
 #endif
 
-#if VERSION >= MK64_J
     if (pBlock->pfUnknown != NULL && !pBlock->pfUnknown(pBlock, 1)) {
         return false;
     }
 
     return true;
-#else
-    return false;
 #endif
 }
 

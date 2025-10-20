@@ -523,11 +523,11 @@ static bool romLoadFullOrPart(Rom* pROM) {
         if (OSCreateThread(&DefaultThread, (OSThreadFunc)__ROMEntry, pROM, (void*)((u8*)pBuffer + ROM_THREAD_SIZE),
                            ROM_THREAD_SIZE, OS_PRIORITY_MAX, 1)) {
             OSResumeThread(&DefaultThread);
-#if VERSION >= OOT_J
+#if VERSION < OOT_J
+            errorDisplayShow(ERROR_NO_CONTROLLER);
+#else
             errorDisplayShow(pROM->unk_C ? ERROR_NO_CONTROLLER : ERROR_BLANK);
             pROM->unk_C = 0;
-#else
-            errorDisplayShow(ERROR_NO_CONTROLLER);
 #endif
         }
 

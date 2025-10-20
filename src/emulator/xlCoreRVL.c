@@ -27,9 +27,9 @@ static inline u32 getFBTotalSize(f32 aspectRatio) {
 #define LN(sm64, mk64, oot) sm64
 #elif VERSION == SM64_E
 #define LN(sm64, mk64, oot) (mk64 - 1)
-#elif VERSION > SM64_E && VERSION < OOT_J
+#elif VERSION == MK64_J || VERSION == MK64_U || VERSION == MK64_E
 #define LN(sm64, mk64, oot) mk64
-#elif VERSION > MK64_E
+#else
 #define LN(sm64, mk64, oot) oot
 #endif
 

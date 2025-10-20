@@ -300,11 +300,11 @@ static bool fn_800623F4(Controller* pController) {
             }
         }
 
-#if VERSION > MK64_E
+#if VERSION < OOT_J
+        if (fn_800CAFB8(i, &lbl_801C7DC8, 10) && lbl_801C7DC8.status[0].wpad_err == 0)
+#else
         fn_800CAFB8(i, &lbl_801C7DC8, 10);
         if (lbl_801C7DC8.status[0].wpad_err == 0)
-#elif VERSION < OOT_J
-        if (fn_800CAFB8(i, &lbl_801C7DC8, 10) && lbl_801C7DC8.status[0].wpad_err == 0)
 #endif
         {
             value4 |= 2;
