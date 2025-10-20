@@ -891,6 +891,11 @@ void osVirtualToPhysical(Cpu* pCPU) {
     }
 }
 
+bool fn_80057E60(Cpu* pCPU) {}
+bool fn_80058078(Cpu* pCPU) {}
+bool fn_80058230(Cpu* pCPU) {}
+bool fn_80058324(Cpu* pCPU) {}
+
 void guOrthoF(Cpu* pCPU) {
     s32 i;
     s32 j;
@@ -938,6 +943,10 @@ void guOrthoF(Cpu* pCPU) {
 
     data1.f32 = 1.0f;
 
+#if IS_SM64
+    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, pCPU->aGPR[4].u32, 0, n, f, 0.0f, 0.0f, scale);
+#endif
+
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
             if (i == j) {
@@ -969,9 +978,7 @@ void guOrthoF(Cpu* pCPU) {
     data.f32 = 1.0f;
     mf[3 * 4 + 3] = data.u32;
 
-#if IS_SM64
-    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, pCPU->aGPR[4].u32, 0, n, f, 0.0f, 0.0f, scale);
-#else
+#if VERSION >= MK64_J
     frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, pCPU->aGPR[4].u32, 0, n, f, 0.0f, 0.0f, scale,
                        (void*)mf);
 #endif
@@ -1020,6 +1027,10 @@ void guOrtho(Cpu* pCPU) {
     data.u32 = sp[7];
     scale = data.f32;
 
+#if IS_SM64
+    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, 0, pCPU->aGPR[4].u32, n, f, 0.0f, 0.0f, scale);
+#endif
+
     mf[0][0] = 1.0f;
     mf[0][1] = 0.0f;
     mf[0][2] = 0.0f;
@@ -1045,9 +1056,7 @@ void guOrtho(Cpu* pCPU) {
     mf[3][2] = -(f + n) / (f - n);
     mf[3][3] = 1.0f;
 
-#if IS_SM64
-    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, 0, pCPU->aGPR[4].u32, n, f, 0.0f, 0.0f, scale);
-#else
+#if VERSION >= MK64_J
     frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, 0, pCPU->aGPR[4].u32, n, f, 0.0f, 0.0f, scale,
                        (void*)mf);
 #endif
@@ -1102,6 +1111,10 @@ void guPerspectiveF(Cpu* pCPU) {
     data0.f32 = 0.0f;
     data1.f32 = 1.0f;
 
+#if IS_SM64
+    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, scale);
+#endif
+
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
             if (i == j) {
@@ -1132,9 +1145,8 @@ void guPerspectiveF(Cpu* pCPU) {
 
     data.f32 = 0.0f;
     mf[3 * 4 + 3] = data.u32;
-#if IS_SM64
-    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, scale);
-#else
+
+#if VERSION >= MK64_J
     frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, scale,
                        (void*)mf);
 #endif
@@ -1176,6 +1188,10 @@ void guPerspective(Cpu* pCPU) {
     data.u32 = sp[6];
     scale = data.f32;
 
+#if IS_SM64
+    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, 0, pCPU->aGPR[4].u32, rNear, rFar, fovy, aspect, scale);
+#endif
+
     mf[0][0] = 1.0f;
     mf[0][1] = 0.0f;
     mf[0][2] = 0.0f;
@@ -1203,9 +1219,7 @@ void guPerspective(Cpu* pCPU) {
     mf[3][2] = 2 * rNear * rFar / (rNear - rFar);
     mf[3][3] = 0.0f;
 
-#if IS_SM64
-    frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, 0, pCPU->aGPR[4].u32, rNear, rFar, fovy, aspect, scale);
-#else
+#if VERSION >= MK64_J
     frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, 0, pCPU->aGPR[4].u32, rNear, rFar, fovy, aspect, scale,
                        (void*)mf);
 #endif
@@ -1221,15 +1235,6 @@ void guPerspective(Cpu* pCPU) {
         }
     }
 }
-
-bool fn_80057E60(Cpu* pCPU) {}
-bool fn_80058078(Cpu* pCPU) {}
-bool fn_80058230(Cpu* pCPU) {}
-bool fn_80058324(Cpu* pCPU) {}
-bool fn_800583D8(Cpu* pCPU) {}
-bool fn_8005867C(Cpu* pCPU) {}
-bool fn_800588D4(Cpu* pCPU) {}
-bool fn_80058B60(Cpu* pCPU) {}
 
 void GenPerspective_1080(Cpu* pCPU) {
     CpuFpr data;
@@ -3047,22 +3052,22 @@ LibraryFunc gaFunction[] = {
     },
     {
         NULL,
-        (LibraryFuncImpl)fn_800583D8,
+        (LibraryFuncImpl)guOrthoF,
         {0x00000055, 0x7F37D860, 0x00000080, 0x7C65E2F4},
     },
     {
         NULL,
-        (LibraryFuncImpl)fn_8005867C,
+        (LibraryFuncImpl)guOrtho,
         {0x0000001A, 0xB0EC9807, 0x00000053, 0xA76A660F},
     },
     {
         NULL,
-        (LibraryFuncImpl)fn_800588D4,
+        (LibraryFuncImpl)guPerspectiveF,
         {0x0000008C, 0x9EC5FEAB},
     },
     {
         NULL,
-        (LibraryFuncImpl)fn_80058B60,
+        (LibraryFuncImpl)guPerspective,
         {0x00000072, 0x2B0214E7, 0x00000016, 0x99A85378, 0x0000001B, 0x8CC9B39E},
     },
     {
