@@ -2031,6 +2031,10 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
     s32 nCount;
     s32 iIndex;
 
+#if IS_SM64
+    Mtx44* pMtx = &gRealProjectionMtx;
+#endif
+
     nColors = 0;
     bTextureGen = (pFrame->aMode[FMT_GEOMETRY] & 0xA0) == 0xA0;
 
@@ -2112,6 +2116,13 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
                 rFar = 32000.0f;
                 eTypeProjection = GX_PERSPECTIVE;
             }
+
+            if (gpSystem->eTypeROM == NSMJ || gpSystem->eTypeROM == NSME || gpSystem->eTypeROM == NSMP) {
+                if (pFrame->unk_4C > 1) {
+                    rNear *= 10.0;
+                }
+            }
+
             if (eTypeProjection == GX_PERSPECTIVE) {
                 C_MTXPerspective(matrixProjection, 30.0f, 4.0f / 3.0f, 0.1f * rNear, rFar);
             } else {
@@ -2122,24 +2133,26 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
 
             rValue23 = matrixProjection[2][3];
             if ((pFrame->aMode[FMT_OTHER0] & 0xC00) == 0xC00 && eTypeProjection == GX_PERSPECTIVE) {
-                rValue23 = -(0.1f * (0.0015f * rNear) - rValue23);
+                rValue23 = -((rNear * 1669.0f * 1000.0f) - rValue23);
             }
 
             if (eTypeProjection == GX_PERSPECTIVE) {
-                gNearVal = matrix44[2][3] * ((matrix44[2][2] + 1.0f) / (matrix44[2][3] - 1.0f) - 1.0f) * 0.5f;
-                gFarVal = gNearVal * ((matrix44[2][2] + 1.0f) / (matrix44[2][2] + 1.0f) + 1.0f);
+                gNearVal = matrix44[2][3] * ((matrix44[2][2] + 1.0f) / (matrix44[2][2] - 1.0f) - 1.0f) / 2.0f;
+                gFarVal = gNearVal * ((matrix44[2][2] - 1.0f) / (matrix44[2][2] + 1.0f) + 1.0f);
             } else {
                 gNearVal = (matrix44[2][3] + 1.0f) / matrix44[2][2];
                 gFarVal = (matrix44[2][3] - 1.0f) / matrix44[2][2];
+                matrix44[2][2] = matrixProjection[2][2];
+                matrix44[2][3] = rValue23;
             }
 
             matrix44[2][2] = matrixProjection[2][2];
             matrix44[2][3] = rValue23;
 
-            memcpy(gRealProjectionMtx, matrix44, sizeof(Mtx44));
-            C_MTXPerspective(matrix44, 30.0f, 4.0f / 3.0f, rNear, rFar);
-            gRealProjectionMtx[2][2] = matrixProjection[2][2];
-            gRealProjectionMtx[2][3] = matrixProjection[2][3];
+            memcpy(pMtx, matrix44, sizeof(Mtx44));
+            C_MTXPerspective(matrixProjection, 30.0f, 4.0f / 3.0f, rNear, rFar);
+            pMtx[0][2][2] = matrixProjection[2][2];
+            pMtx[0][2][3] = matrixProjection[2][3];
             gRealProjectionType = eTypeProjection;
 
             GXSetProjection(matrix44, eTypeProjection);
@@ -2175,6 +2188,46 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
                  (((s32)((pFrame->aMode[FMT_TEXTURE2] >> 8) & 7) < 7 && pFrame->aTile[iTile + 1].nSizeX != 0) ? 1 : 0);
 
         if (pFrame->nFlag & 1) {
+#if IS_SM64
+            for (iIndex = 0; iTile <= nCount; iTile++, iIndex++) {
+                if (frameLoadTile(pFrame, &gpTexture[iTile], iTile | (iIndex << 4))) {
+                    if (bTextureGen) {
+                        rSlideS = (pFrame->aTile[iTile].nX0 / 4.0f) / gpTexture[iTile]->nSizeX;
+                        rSlideT = (pFrame->aTile[iTile].nY0 / 4.0f) / gpTexture[iTile]->nSizeY;
+
+                        rScaleS = 65536.0f * ((pFrame->aMode[FMT_TEXTURE1] >> 16) / 65536.0f);
+                        rScaleS = rScaleS / (gpTexture[iTile]->nSizeX << 6);
+                        rScaleT = 65536.0f * ((pFrame->aMode[FMT_TEXTURE1] & 0xFFFF) / 65536.0f);
+                        rScaleT = rScaleT / (gpTexture[iTile]->nSizeY << 6);
+                    } else {
+                        rSlideS = ((pFrame->aTile[iTile].nX0 / 4.0f) - 0.5f) / gpTexture[iTile]->nSizeX;
+                        rSlideT = ((pFrame->aTile[iTile].nY0 / 4.0f) - 0.5f) / gpTexture[iTile]->nSizeY;
+
+                        rScaleS = (pFrame->aMode[FMT_TEXTURE1] >> 16) / 65536.0f;
+                        rScaleS = rScaleS / gpTexture[iTile]->nSizeX;
+                        rScaleT = (pFrame->aMode[FMT_TEXTURE1] & 0xFFFF) / 65536.0f;
+                        rScaleT = rScaleT / gpTexture[iTile]->nSizeY;
+                    }
+
+                    if (pFrame->aTile[iTile].nShiftS < 11) {
+                        rScaleS /= (1 << pFrame->aTile[iTile].nShiftS);
+                    } else {
+                        rScaleS *= (1 << (16 - pFrame->aTile[iTile].nShiftS));
+                    }
+
+                    if (pFrame->aTile[iTile].nShiftT < 11) {
+                        rScaleT /= (1 << pFrame->aTile[iTile].nShiftT);
+                    } else {
+                        rScaleT *= (1 << (16 - pFrame->aTile[iTile].nShiftT));
+                    }
+
+                    PSMTXTrans(matrixA, -rSlideS, -rSlideT, 0.0f);
+                    PSMTXScale(matrixB, rScaleS * scale, rScaleT * scale, 0.0f);
+                    PSMTXConcat(matrixA, matrixB, gTextureMatrix[iIndex]);
+                    GXLoadTexMtxImm(gTextureMatrix[iIndex], ganNameTexMtx[iIndex], GX_MTX2x4);
+                }
+            }
+#else
             for (iIndex = 0; iTile <= nCount; iTile++, iIndex++) {
                 if (frameLoadTile(pFrame, &pTexture[iTile], iTile | (iIndex << 4))) {
                     if (bTextureGen) {
@@ -2213,6 +2266,7 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
                     GXLoadTexMtxImm(matrix, ganNameTexMtx[iIndex], GX_MTX2x4);
                 }
             }
+#endif
         }
     } else {
         bFlag = false;
