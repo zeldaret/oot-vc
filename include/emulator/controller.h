@@ -24,7 +24,7 @@ typedef struct struct_801C7DC8 {
     /* 0x000 */ KPADStatus status[KPAD_MAX_CONTROLLERS];
 #if VERSION > MK64_E
     /* 0x220 */ u8 pad[0x330];
-#elif VERSION < OOT_J 
+#elif VERSION < OOT_J
     /* 0x220 */ u8 pad[0x1320];
 #endif
 } struct_801C7DC8; // size = 0x550 ; 0x1540

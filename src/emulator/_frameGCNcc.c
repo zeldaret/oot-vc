@@ -283,7 +283,7 @@ bool SetTevStageTable(Frame* pFrame, s32 numCycles) {
         tempColor2 = 0;
     }
 
-#if VERSION < MK64_J 
+#if VERSION < MK64_J
     ctP = BuildCombineModeTev(tempColor1, tempAlpha1, tempColor2, tempAlpha2, numCycles,
                               (pFrame->aMode[FMT_OTHER1] >> 0x10) & 1);
 #else

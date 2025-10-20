@@ -200,7 +200,7 @@ static inline s32 fn_800623F4_UnknownInline(f32 value) {
 extern bool fn_800CAFB8(s32, struct_801C7DC8*, s32);
 
 static bool fn_800623F4(Controller* pController) {
-#if VERSION < OOT_J 
+#if VERSION < OOT_J
     struct_801C7DC8 lbl_801C7DC8;
 #endif
 
@@ -303,7 +303,7 @@ static bool fn_800623F4(Controller* pController) {
 #if VERSION > MK64_E
         fn_800CAFB8(i, &lbl_801C7DC8, 10);
         if (lbl_801C7DC8.status[0].wpad_err == 0)
-#elif VERSION < OOT_J 
+#elif VERSION < OOT_J
         if (fn_800CAFB8(i, &lbl_801C7DC8, 10) && lbl_801C7DC8.status[0].wpad_err == 0)
 #endif
         {

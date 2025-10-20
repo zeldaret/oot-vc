@@ -137,7 +137,7 @@ static inline bool simulatorRun(SystemMode* peMode) {
     return true;
 }
 
-#if VERSION < OOT_J 
+#if VERSION < OOT_J
 #define LN(mk64, oot) mk64
 #elif VERSION > MK64_E
 #define LN(mk64, oot) oot

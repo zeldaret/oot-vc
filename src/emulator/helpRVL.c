@@ -33,7 +33,7 @@ extern HBMControllerData lbl_801CA670;
 
 #if VERSION > MK64_E
 #define UNK1C_HEAP_SIZE 0x02900000
-#elif VERSION < OOT_J 
+#elif VERSION < OOT_J
 #define UNK1C_HEAP_SIZE 0x01B00000
 #endif
 
@@ -479,7 +479,7 @@ bool helpMenuUpdate_UnknownInline(void) {
 
 #if VERSION > MK64_E
 #define VI_X_ORIGIN (720 - sp8.viWidth) / 2
-#elif VERSION < OOT_J 
+#elif VERSION < OOT_J
 #define VI_X_ORIGIN 25
 #endif
 
@@ -574,7 +574,7 @@ static void helpMenu_8005EAFC(void) {
         sp8.efbHeight = 0x210;
     } else {
 
-#if VERSION < OOT_J 
+#if VERSION < OOT_J
         sp8 = *sRenderMode;
 #endif
 
@@ -1288,7 +1288,7 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
             return false;
         }
 
-#if VERSION < OOT_J 
+#if VERSION < OOT_J
         if (!lbl_8025D0EC && !lbl_8025D0E8)
 #endif
         {

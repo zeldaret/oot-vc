@@ -259,7 +259,7 @@ static inline void bannerSetString(char* src, wchar_t* dest, s32 max) {
         dest++;
         nSize++;
     }
-#elif VERSION < OOT_J 
+#elif VERSION < OOT_J
     while (src[0] != 0x00 && nSize < max) {
         ((char*)dest)[1] = *src++;
         ((char*)dest)[0] = *src++;

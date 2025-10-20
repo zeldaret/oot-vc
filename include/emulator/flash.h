@@ -13,7 +13,7 @@ extern "C" {
 typedef struct Flash {
     /*  OoT - SM64 - MK64 */
     /* 0x00 - 0x00 - 0x00 */ u32 nFlashSize;
-#if VERSION < OOT_J 
+#if VERSION < OOT_J
     /*  N/A - 0x04 - 0x04 */ void* unk_04;
 #endif
     /* 0x04 - 0x08 - 0x08 */ struct Store* pStore;

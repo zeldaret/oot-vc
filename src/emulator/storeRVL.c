@@ -256,7 +256,7 @@ static inline void fn_80061DB8_Inline(Store* pStore) {
     }
 }
 
-#if VERSION < OOT_J 
+#if VERSION < OOT_J
 #define IS_PSTORE_NULL(pStore) true
 #else
 #define IS_PSTORE_NULL(pStore) pStore != NULL
@@ -276,7 +276,7 @@ bool fn_80061DB8(void) {
 
     if (pFlash != NULL) {
         if (IS_PSTORE_NULL(pFlash->pStore)) {
-#if VERSION < OOT_J 
+#if VERSION < OOT_J
             fn_80061DB8_Inline(pFlash->pStore);
 #else
             pStore = pFlash->pStore;

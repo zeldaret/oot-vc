@@ -204,7 +204,7 @@ struct FrameTexture {
     /* 0x14 */ u32 nAddress;
     /* 0x18 */ FrameTexture* pTextureNext;
 
-#if VERSION < MK64_J 
+#if VERSION < MK64_J
     /* 0x1C */ u32 nData0;
     /* 0x20 */ u32 nData1;
     /* 0x24 */ u32 nData2;
@@ -437,7 +437,7 @@ bool frameResetUCode(Frame* pFrame, FrameResetType eType);
 bool frameSetBuffer(Frame* pFrame, FrameBufferType eType);
 bool frameFixMatrixHint(Frame* pFrame, s32 nAddressFloat, s32 nAddressFixed);
 
-#if VERSION < MK64_J 
+#if VERSION < MK64_J
 bool frameSetMatrixHint(Frame* pFrame, FrameMatrixProjection eProjection, s32 nAddressFloat, s32 nAddressFixed,
                         f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale);
 #else

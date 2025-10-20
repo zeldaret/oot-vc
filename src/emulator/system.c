@@ -465,7 +465,7 @@ bool systemCreateStorageDevice(System* pSystem, void* pArgument) {
 static bool systemSetRamMode(System* pSystem) {
     s32 nSize;
     u32* anMode;
-#if VERSION < OOT_J 
+#if VERSION < OOT_J
     s32* anUnknown;
 #endif
 
@@ -478,7 +478,7 @@ static bool systemSetRamMode(System* pSystem) {
     anMode[2] = 0xB0000000;
     anMode[3] = 0;
 
-#if VERSION < OOT_J 
+#if VERSION < OOT_J
     anMode[4] = 0x17D7;
 #else
     anMode[4] = 0x17D5;
@@ -748,7 +748,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case CZLE:
             pArgument = 0x8000;
             nSizeSound = 0x1000;
-#if VERSION < OOT_J 
+#if VERSION < OOT_J
             storageDevice = SOT_SRAM;
             gSystemRomConfigurationList.storageDevice = SOT_PIF;
             if (!simulatorGetArgument(SAT_RESET, &szArgument) || *szArgument == '1') {
@@ -920,7 +920,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NCUJ:
         case NCUP:
         case NCUE:
-#if VERSION < OOT_J 
+#if VERSION < OOT_J
             gSystemRomConfigurationList.storageDevice = SOT_AUDIO;
 #else
             gSystemRomConfigurationList.storageDevice = SOT_RSP;
@@ -1019,7 +1019,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NFZP:
         case NFZJ:
         case CFZE:
-#if VERSION < OOT_J 
+#if VERSION < OOT_J
             gSystemRomConfigurationList.storageDevice = SOT_RSP;
             pArgument = 0x1000;
             storageDevice = SOT_FLASH;
@@ -1262,7 +1262,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NTEJ:
         case NTEP:
         case NTEA:
-#if VERSION < OOT_J 
+#if VERSION < OOT_J
             if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pBuffer2, 0x300, NULL)) {
                 return false;
             }
@@ -1311,7 +1311,7 @@ static bool systemSetupGameALL(System* pSystem) {
                 return false;
             }
 
-#if VERSION < OOT_J 
+#if VERSION < OOT_J
             storageDevice = SOT_SRAM;
             gSystemRomConfigurationList.storageDevice = SOT_PIF;
 #endif

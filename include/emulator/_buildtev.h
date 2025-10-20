@@ -44,7 +44,7 @@ void SetAlpha(u8* stageValues, u32 alphaVal, u8 cycle, u32 colorVal, u32 color2V
 s32 SetupStage(CombineModeTev* tvP, u8* stageValues, s32 type);
 void BuildCycle(CombineModeTev* tvP, u8 (*stageValues)[4]);
 
-#if VERSION < MK64_J 
+#if VERSION < MK64_J
 CombineModeTev* BuildCombineModeTev(u32 color1, u32 alpha1, u32 color2, u32 alpha2, u32 numCycles, u32 arg5);
 #else
 CombineModeTev* BuildCombineModeTev(u32 color1, u32 alpha1, u32 color2, u32 alpha2, u32 numCycles, u32 arg5, u32 arg6);
