@@ -391,6 +391,17 @@ static bool rspParseGBI_F3DEX1(Rsp* pRSP, u64** ppnGBI, bool* pbDone) {
                     break;
                 }
                 case 0x02: // G_MW_NUMLIGHT
+#if IS_SM64
+                    if ((nCommandLo & 0xFF) == 0) {
+                        if (!frameSetLightCount(pFrame, (nCommandLo >> 8) & 0xFF)) {
+                            return false;
+                        }
+                    } else {
+                        if (!frameSetLightCount(pFrame, ((s32)(nCommandLo & 0xFF) / 32) - 1)) {
+                            return false;
+                        }
+                    }
+#else
                     if ((nCommandLo & 0xFF) == 0 && (nCommandLo & 0x80000000) == 0) {
                         if (!frameSetLightCount(pFrame, (nCommandLo >> 8) & 0xFF)) {
                             return false;
@@ -400,6 +411,7 @@ static bool rspParseGBI_F3DEX1(Rsp* pRSP, u64** ppnGBI, bool* pbDone) {
                             return false;
                         }
                     }
+#endif
                     break;
                 case 0x04: // G_MW_CLIP
                     break;
@@ -556,7 +568,7 @@ static bool rspParseGBI_F3DEX1(Rsp* pRSP, u64** ppnGBI, bool* pbDone) {
         case 0xB4: { // F3DEX1: G_RDPHALF_1
             u32 nValue = nCommandLo;
 
-            nCommandHi = GBI_COMMAND_HI(pnGBI);
+            u32 nCommandHi = GBI_COMMAND_HI(pnGBI);
             nCommandLo = GBI_COMMAND_LO(pnGBI);
             switch ((nCommandHi >> 24) & 0xFF) {
                 case 0xB0: { // G_BRANCH_Z
