@@ -807,7 +807,7 @@ static void __cosf(Cpu* pCPU) { pCPU->aFPR[0].f32 = cosf(pCPU->aFPR[12].f32); }
 
 static void __sinf(Cpu* pCPU) { pCPU->aFPR[0].f32 = sinf(pCPU->aFPR[12].f32); }
 
-#if IS_SM64
+#if VERSION < MK64_J 
 void _bzero(Cpu* pCPU) {
     s32 nSize;
     void* pBuffer;
@@ -1041,7 +1041,7 @@ void guOrthoF(Cpu* pCPU) {
     data0.f32 = 0.0f;
     data1.f32 = 1.0f;
 
-#if IS_SM64
+#if VERSION < MK64_J 
     frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, pCPU->aGPR[4].u32, 0, n, f, 0.0f, 0.0f, scale);
 #endif
 
@@ -1125,7 +1125,7 @@ void guOrtho(Cpu* pCPU) {
     data.u32 = sp[7];
     scale = data.f32;
 
-#if IS_SM64
+#if VERSION < MK64_J 
     frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, 0, pCPU->aGPR[4].u32, n, f, 0.0f, 0.0f, scale);
 #endif
 
@@ -1209,7 +1209,7 @@ void guPerspectiveF(Cpu* pCPU) {
     data0.f32 = 0.0f;
     data1.f32 = 1.0f;
 
-#if IS_SM64
+#if VERSION < MK64_J 
     frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, scale);
 #endif
 
@@ -1286,7 +1286,7 @@ void guPerspective(Cpu* pCPU) {
     data.u32 = sp[6];
     scale = data.f32;
 
-#if IS_SM64
+#if VERSION < MK64_J 
     frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, 0, pCPU->aGPR[4].u32, rNear, rFar, fovy, aspect, scale);
 #endif
 
@@ -1359,7 +1359,7 @@ void GenPerspective_1080(Cpu* pCPU) {
     data.u32 = sp[4];
     rFar = data.f32;
 
-#if IS_SM64
+#if VERSION < MK64_J 
     frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, 1.0f);
 #else
     frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, 1.0f,
@@ -2997,7 +2997,7 @@ bool fn_8005B6E0(Cpu* pCPU) { return true; }
 
 bool fn_8005B6E8(Cpu* pCPU) { return true; }
 
-#if IS_OOT
+#if VERSION > MK64_E
 bool fn_8005B6F0(Cpu* pCPU) { return true; }
 
 bool fn_8005B6F8(Cpu* pCPU) { return true; }
@@ -3126,7 +3126,7 @@ LibraryFunc gaFunction[] = {
         (LibraryFuncImpl)osPhysicalToVirtual,
         {0x0000000D, 0x2B8FBACB, 0x00000003, 0x0000F000},
     },
-#if IS_SM64
+#if VERSION < MK64_J 
     {
         NULL,
         (LibraryFuncImpl)guMtxF2L,
@@ -3162,7 +3162,7 @@ LibraryFunc gaFunction[] = {
     {
         NULL,
         (LibraryFuncImpl)guPerspectiveF,
-#if IS_SM64
+#if VERSION < MK64_J 
         {0x0000008C, 0x9EC5FEAB},
 #else
         {0x0000008C, 0x9EC5FEAB, 0x0000006C, 0xD2EF2D00},
@@ -3299,7 +3299,7 @@ LibraryFunc gaFunction[] = {
         (LibraryFuncImpl)fn_8005B6C0,
         {0x00000039, 0xEC894F9D},
     },
-#if IS_SM64
+#if VERSION < MK64_J 
     {
         NULL,
         (LibraryFuncImpl)fn_8005C014,
@@ -3314,7 +3314,7 @@ LibraryFunc gaFunction[] = {
     {
         NULL,
         (LibraryFuncImpl)fn_8005B6D0,
-#if IS_SM64
+#if VERSION < MK64_J 
         {0x00000042, 0x082895D5, 0x0000001D, 0x7730CD62},
 #else
         {0x00000005, 0x09A69029},
@@ -3338,7 +3338,7 @@ LibraryFunc gaFunction[] = {
         {0x00000042, 0x082895D5, 0x0000001D, 0x7730CD62},
     },
 
-#if IS_OOT
+#if VERSION > MK64_E
     {
         NULL,
         (LibraryFuncImpl)fn_8005B6F0,
@@ -3383,7 +3383,7 @@ LibraryFunc gaFunction[] = {
         {0x0000008B, 0x9804924C},
     },
 
-#if IS_OOT
+#if VERSION > MK64_E
     {
         NULL,
         (LibraryFuncImpl)fn_8005B710,
@@ -3740,7 +3740,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
             bFlag = MIPS_OP(nOpcode) == 0x1F ? false : true;
             if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)osEepromLongRead && nChecksum == 0x5B919EF9) {
                 nAddress = (pFunction->nAddress0 & 0xF0000000) | (MIPS_TARGET(pnCode[17]) << 2);
-#if IS_SM64
+#if VERSION < MK64_J 
                 if (!cpuGetAddressBuffer(SYSTEM_CPU(gpSystem), (void**)&pnCodeTemp, nAddress)) {
                     return false;
                 }
@@ -3759,7 +3759,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)osEepromLongWrite &&
                        nChecksum == 0x5B919EF9) {
                 nAddress = (pFunction->nAddress0 & 0xF0000000) | (MIPS_TARGET(pnCode[17]) << 2);
-#if IS_SM64
+#if VERSION < MK64_J 
                 if (!cpuGetAddressBuffer(SYSTEM_CPU(gpSystem), (void**)&pnCodeTemp, nAddress)) {
                     return false;
                 }
@@ -3817,7 +3817,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
 
 #if VERSION >= SM64_E
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B708) {
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
                 pFrame = SYSTEM_FRAME(gpSystem);
 #endif
 
@@ -3829,7 +3829,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
 #endif
 
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B710) {
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
                 pFrame = SYSTEM_FRAME(gpSystem);
 #endif
                 if (gpSystem->eTypeROM == NSMJ || gpSystem->eTypeROM == NSME || gpSystem->eTypeROM == NSMP) {
@@ -3854,7 +3854,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                     }
 #endif
 
-#if IS_OOT
+#if VERSION > MK64_E
                 } else if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
                     if (pFrame->unk_38 == 0 && pFrame->unk_3C == 0 && nChecksum == 0x5D447143) {
                         pFrame->unk_38 = 1;
@@ -3873,7 +3873,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                 }
             } else {
                 if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
                     pFrame = SYSTEM_FRAME(gpSystem);
 #endif
 
@@ -3882,7 +3882,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                         bDone = true;
                         bFlag = false;
                     } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6C8) {
-#if IS_SM64
+#if VERSION < MK64_J 
                         pFrame->unk_30 = 1;
                         bDone = true;
                         bFlag = false;
@@ -3895,7 +3895,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                         pFrame->unk_40 = 0;
 #endif
                     } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6D0) {
-#if IS_SM64
+#if VERSION < MK64_J 
                         pFrame->unk_30 = 0;
                         bDone = true;
                         bFlag = false;
@@ -3941,7 +3941,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
 #endif
                     }
 
-#if IS_OOT
+#if VERSION > MK64_E
                 } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6F0) {
                     if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
                         pFrame->unk_30 = 1;

@@ -66,14 +66,14 @@ bool piPut32(PI* pPI, u32 nAddress, s32* pData) {
 
     switch (nAddress & 0x3F) {
         case 0x00:
-#if IS_SM64
+#if VERSION < MK64_J 
             pPI->nAddressRAM = *pData & 0xFFFFFF;
 #else
             pPI->nAddressRAM = *pData & 0x7FFFF8;
 #endif
             break;
         case 0x04:
-#if IS_SM64
+#if VERSION < MK64_J 
             pPI->nAddressROM = *pData;
 #else
             pPI->nAddressROM = *pData & ~0x1;
@@ -90,7 +90,7 @@ bool piPut32(PI* pPI, u32 nAddress, s32* pData) {
                 return false;
             }
 
-#if IS_SM64
+#if VERSION < MK64_J 
             pNewBlock->nSize = pPI->nSizeGet + 1;
 #else
             pNewBlock->nSize = nSize;
@@ -115,7 +115,7 @@ bool piPut32(PI* pPI, u32 nAddress, s32* pData) {
                 return false;
             }
 
-#if IS_SM64
+#if VERSION < MK64_J 
             pNewBlock->nSize = pPI->nSizePut + 1;
 #else
             pNewBlock->nSize = nSize;

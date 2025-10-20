@@ -73,7 +73,7 @@ typedef struct Rom {
     /* 0x00218 */ s32 unk_218;
 #endif
     /* 0x0021C - 0x00214 - 0x00218 */ RomModeLoad eModeLoad;
-    /* 0x00220 - 0x00218 - 0x0021C */ RomBlock aBlock[IS_SM64 ? 4096 : 6144];
+    /* 0x00220 - 0x00218 - 0x0021C */ RomBlock aBlock[VERSION < MK64_J  ? 4096 : 6144];
     /* 0x18220 - 0x10218 - 0x1821C */ u32 nTick;
     /* 0x18224 - 0x1021C - 0x18220 */ u8* pCacheRAM;
     /* 0x18228 - 0x10220 - 0x18224 */ u8 anBlockCachedRAM[4096]; // Bitfield, one bit per block

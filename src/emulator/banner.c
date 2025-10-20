@@ -247,7 +247,7 @@ static inline void bannerSetString(char* src, wchar_t* dest, s32 max) {
 
     nSize = 0;
 
-#if IS_OOT
+#if VERSION > MK64_E
     for (i = 0; i < max; i++) {
         if (src[0] == 0x00 && src[1] == (char)0xBB) {
             break;
@@ -259,7 +259,7 @@ static inline void bannerSetString(char* src, wchar_t* dest, s32 max) {
         dest++;
         nSize++;
     }
-#elif IS_SM64 || IS_MK64
+#elif VERSION < OOT_J 
     while (src[0] != 0x00 && nSize < max) {
         ((char*)dest)[1] = *src++;
         ((char*)dest)[0] = *src++;

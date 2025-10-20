@@ -31,9 +31,9 @@ extern void* fn_80083140(void);
 extern void fn_800888DC(void**);
 extern HBMControllerData lbl_801CA670;
 
-#if IS_OOT
+#if VERSION > MK64_E
 #define UNK1C_HEAP_SIZE 0x02900000
-#elif IS_SM64 || IS_MK64
+#elif VERSION < OOT_J 
 #define UNK1C_HEAP_SIZE 0x01B00000
 #endif
 
@@ -259,7 +259,7 @@ void helpMenuSetupRender(GXTexObj* pTexObj) {
     f32 y0 = 0.0f;
     f32 x0 = 0.0f;
 
-#if IS_OOT
+#if VERSION > MK64_E
     rect.x1 = sRenderMode->fbWidth / 2;
     rect.y1 = sRenderMode->xfbHeight / 2;
 
@@ -275,7 +275,7 @@ void helpMenuSetupRender(GXTexObj* pTexObj) {
         fHeight = ((sRenderMode->viHeight - 480) * 240) / 960.0f;
         C_MTXOrtho(matrix44, -fHeight, fHeight + 240.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
     }
-#elif VERSION == SM64_E || IS_MK64
+#elif VERSION >= SM64_E && VERSION < OOT_J
     rect.x1 = lbl_8025D0DC / 2;
     rect.y1 = lbl_8025D0D8 / 2;
 
@@ -477,9 +477,9 @@ bool helpMenuUpdate_UnknownInline(void) {
     return helpMenuAllocateFile(SYSTEM_HELP(gpSystem), "html.arc", &lbl_8025D0F8, &sMemAllocator2);
 }
 
-#if IS_OOT
+#if VERSION > MK64_E
 #define VI_X_ORIGIN (720 - sp8.viWidth) / 2
-#elif IS_SM64 || IS_MK64
+#elif VERSION < OOT_J 
 #define VI_X_ORIGIN 25
 #endif
 
@@ -574,7 +574,7 @@ static void helpMenu_8005EAFC(void) {
         sp8.efbHeight = 0x210;
     } else {
 
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
         sp8 = *sRenderMode;
 #endif
 
@@ -609,7 +609,7 @@ static void helpMenu_8005EAFC(void) {
     VIConfigure(&sp8);
     VIFlush();
 
-#if IS_OOT
+#if VERSION > MK64_E
     GXSetDispCopyYScale((f32)sp8.xfbHeight / (f32)sp8.efbHeight);
 #endif
 
@@ -633,7 +633,7 @@ static void helpMenu_8005EAFC(void) {
     }
 
     if (var_r31 <= 0) {
-        OSPanic("helpRVL.c", IS_OOT ? 938 : 936, ".");
+        OSPanic("helpRVL.c", VERSION > MK64_E ? 938 : 936, ".");
     }
 
     fn_800887CC(sWebsitePath);
@@ -642,7 +642,7 @@ static void helpMenu_8005EAFC(void) {
     VIConfigure(sRenderMode);
     VIFlush();
 
-#if IS_OOT
+#if VERSION > MK64_E
     GXSetDispCopyYScale((f32)sRenderMode->xfbHeight / (f32)sRenderMode->efbHeight);
 #endif
 
@@ -1227,13 +1227,13 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
                 helpMenuSetupRender(&sTexObj);
             }
 
-#if IS_OOT
+#if VERSION > MK64_E
             if (fn_8007FC84()) {
                 C_MTXOrtho(matrix44_4, 240.0f, -243.84001f, -320.0f, 320.0f, 0.0f, 500.0f);
             } else {
                 C_MTXOrtho(matrix44_4, 240.0f, -240.0f, -320.0f, 320.0f, 0.0f, 500.0f);
             }
-#elif VERSION == SM64_E || IS_MK64
+#elif VERSION >= SM64_E && VERSION < OOT_J
             if (fn_8007FC84()) {
                 C_MTXOrtho(matrix44_4, 224.0f, -227.58401f, -304.0f, 304.0f, 0.0f, 500.0f);
             } else {
@@ -1288,7 +1288,7 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
             return false;
         }
 
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
         if (!lbl_8025D0EC && !lbl_8025D0E8)
 #endif
         {
@@ -1310,7 +1310,7 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
         VISetBlack(true);
         VIFlush();
 
-#if IS_OOT
+#if VERSION > MK64_E
         VIWaitForRetrace();
 #endif
 
@@ -1322,7 +1322,7 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
         VISetBlack(true);
         VIFlush();
 
-#if IS_OOT
+#if VERSION > MK64_E
         VIWaitForRetrace();
 #endif
 
@@ -1337,7 +1337,7 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
 bool helpMenu_800607B0(HelpMenu* pHelpMenu, bool arg1) {
     pHelpMenu->unk0C = arg1;
 
-#if IS_OOT
+#if VERSION > MK64_E
     pHelpMenu->unk08 = false;
 #endif
 

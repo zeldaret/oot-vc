@@ -672,7 +672,7 @@ static inline bool treeForceCleanUp(Cpu* pCPU, CpuFunction* tree, s32 kill_limit
     return true;
 }
 
-#if IS_SM64
+#if VERSION < MK64_J 
 static bool cpuHackHandler(Cpu* pCPU) {
     u32 nSize;
     u32* pnCode;
@@ -976,7 +976,7 @@ bool cpuException(Cpu* pCPU, CpuExceptionCode eCode, s32 nMaskIP) {
  * @param nType An argument which will be passed back to the device's event handler.
  * @return bool true on success, false otherwise.
  */
-#if IS_SM64
+#if VERSION < MK64_J 
 static bool cpuMakeDevice(Cpu* pCPU, s32* piDevice, void* pObject, s32 nOffset, u32 nAddress0, u32 nAddress1,
                           s32 nType) {
     CpuDevice* pDevice;
@@ -1081,7 +1081,7 @@ static inline bool cpuFreeDevice(Cpu* pCPU, s32 iDevice) {
     }
 }
 
-#if IS_SM64
+#if VERSION < MK64_J 
 static bool cpuMapAddress(Cpu* pCPU, s32* piDevice, u32 nVirtual, u32 nPhysical, s32 nSize) {
     s32 iDeviceTarget;
     s32 iDeviceSource;
@@ -1398,7 +1398,7 @@ static bool cpuSetCP0_Status(Cpu* pCPU, u64 nStatus, u32 unknown) NO_INLINE {
     return true;
 }
 
-#if IS_SM64
+#if VERSION < MK64_J 
 bool cpuSetRegisterCP0(Cpu* pCPU, s32 iRegister, s64 nData) {
     s32 pad;
     s32 bFlag = false;
@@ -1821,7 +1821,7 @@ static bool fn_8000E81C(Cpu* pCPU, s32 nOpcode, s32 nOpcodePrev, s32 nOpcodeNext
 }
 
 //! TODO: fake
-#if IS_SM64
+#if VERSION < MK64_J 
 #pragma optimization_level 1
 #endif
 
@@ -9331,7 +9331,7 @@ static s32 cpuExecuteOpcode(Cpu* pCPU, s32 nCount0, s32 nAddressN64, s32 nAddres
     aiDevice = pCPU->aiDevice;
     apDevice = pCPU->apDevice;
 
-#if IS_SM64
+#if VERSION < MK64_J 
     ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&opcode, nAddressN64, NULL);
 #else
     if (!cpuGetAddressBuffer(pCPU, (void**)&opcode, nAddressN64)) {
@@ -10934,7 +10934,7 @@ static s32 cpuExecuteLoadStore(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAddr
     interpret = 0;
     check2 = 0x90C30000 + OFFSETOF(pCPU, nWaitPC);
 
-#if IS_SM64
+#if VERSION < MK64_J 
     ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&opcode, nAddressN64, NULL);
 #else
     if (!cpuGetAddressBuffer(pCPU, (void**)&opcode, nAddressN64)) {
@@ -11221,7 +11221,7 @@ static s32 cpuExecuteLoadStoreF(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAdd
     interpret = 0;
     check2 = 0x90C30000 + OFFSETOF(pCPU, nWaitPC);
 
-#if IS_SM64
+#if VERSION < MK64_J 
     ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&opcode, nAddressN64, NULL);
 #else
     if (!cpuGetAddressBuffer(pCPU, (void**)&opcode, nAddressN64)) {
@@ -11733,7 +11733,7 @@ bool cpuExecute(Cpu* pCPU, s32 nCount, u64 nAddressBreak) {
  * @param nType An argument which will be passed back to the device on creation.
  * @return bool true on success, false otherwise.
  */
-#if IS_SM64
+#if VERSION < MK64_J 
 bool cpuMapObject(Cpu* pCPU, void* pObject, u32 nAddress0, u32 nAddress1, s32 nType) {
     s32 iDevice;
     s32 iAddress;
@@ -12094,7 +12094,7 @@ bool cpuEvent(Cpu* pCPU, s32 nEvent, void* pArgument) {
             }
             break;
         case 3:
-#if IS_SM64
+#if VERSION < MK64_J 
             if (!cpuFreeAllDevices(pCPU)) {
                 return false;
             }
@@ -12142,7 +12142,7 @@ bool cpuGetAddressOffset(Cpu* pCPU, s32* pnOffset, u32 nAddress) {
 bool cpuGetAddressBuffer(Cpu* pCPU, void** ppBuffer, u32 nAddress) {
     CpuDevice* pDevice = pCPU->apDevice[pCPU->aiDevice[nAddress >> DEVICE_ADDRESS_OFFSET_BITS]];
 
-#if IS_SM64
+#if VERSION < MK64_J 
     if ((Ram*)pDevice->pObject == SYSTEM_RAM(gpSystem)) {
         if (!ramGetBuffer(SYSTEM_RAM(gpSystem), ppBuffer, nAddress + pDevice->nOffsetAddress, NULL)) {
             return false;
@@ -12244,7 +12244,7 @@ bool cpuInvalidateCache(Cpu* pCPU, s32 nAddress0, s32 nAddress1) {
     return true;
 }
 
-#if IS_SM64
+#if VERSION < MK64_J 
 bool cpuGetFunctionChecksum(Cpu* pCPU, u32* pnChecksum, CpuFunction* pFunction) {
     s32 nSize;
     u32* pnBuffer;
@@ -13115,7 +13115,7 @@ static bool treeKillNodes(Cpu* pCPU, CpuFunction* tree) {
                 kill = current;
                 current = current->prev;
 
-#if IS_SM64
+#if VERSION < MK64_J 
                 treeCallerKill(pCPU, kill);
                 if (kill->pfCode != NULL) {
                     cpuHeapFree(pCPU, kill);
@@ -13146,7 +13146,7 @@ static bool treeKillNodes(Cpu* pCPU, CpuFunction* tree) {
             kill = current;
             current = current->prev;
 
-#if IS_SM64
+#if VERSION < MK64_J 
             treeCallerKill(pCPU, kill);
             if (kill->pfCode != NULL) {
                 cpuHeapFree(pCPU, kill);
@@ -13276,7 +13276,7 @@ static bool treeDeleteNode(Cpu* pCPU, CpuFunction** top, CpuFunction* kill) {
         }
     }
 
-#if IS_SM64
+#if VERSION < MK64_J 
     treeCallerKill(pCPU, kill);
     if (kill->pfCode != NULL) {
         cpuHeapFree(pCPU, kill);
@@ -13685,7 +13685,7 @@ static bool treeKillRange(Cpu* pCPU, CpuFunction* tree, s32 start, s32 end) {
 
         count += treeKillNodes(pCPU, node1);
 
-#if IS_SM64
+#if VERSION < MK64_J 
         treeCallerKill(pCPU, node1);
         if (node1->pfCode != NULL) {
             cpuHeapFree(pCPU, node1);
@@ -13803,7 +13803,7 @@ static bool treeKillRange(Cpu* pCPU, CpuFunction* tree, s32 start, s32 end) {
 
         count += treeKillNodes(pCPU, node2);
 
-#if IS_SM64
+#if VERSION < MK64_J 
         treeCallerKill(pCPU, node2);
         if (node2->pfCode != NULL) {
             cpuHeapFree(pCPU, node2);

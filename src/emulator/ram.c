@@ -64,7 +64,7 @@ static bool ramPutControl32(Ram* pRAM, u32 nAddress, s32* pData) {
             return false;
     }
 
-#if IS_SM64
+#if VERSION < MK64_J 
     return false;
 #else
     return true;
@@ -137,7 +137,7 @@ static bool ramGetControl32(Ram* pRAM, u32 nAddress, s32* pData) {
             return false;
     }
 
-#if IS_SM64
+#if VERSION < MK64_J 
     return false;
 #else
     return true;
@@ -184,7 +184,7 @@ static bool ramPutRI32(Ram* pRAM, u32 nAddress, s32* pData) {
             return false;
     }
 
-#if IS_SM64
+#if VERSION < MK64_J 
     return false;
 #else
     return true;
@@ -236,7 +236,7 @@ static bool ramGetRI32(Ram* pRAM, u32 nAddress, s32* pData) {
             return false;
     }
 
-#if IS_SM64
+#if VERSION < MK64_J 
     return false;
 #else
     return true;

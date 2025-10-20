@@ -830,7 +830,7 @@ void fn_8004A314(Frame* pFrame) {
 }
 #endif
 
-#if IS_SM64
+#if VERSION < MK64_J 
 bool frameDrawSetupFog_Default(Frame* pFrame) {
     GXColor color;
     GXFogType nFogType;
@@ -1510,7 +1510,7 @@ bool fn_8004B940(Frame* pFrame, Cpu* pCPU) {
     if (pFrame->unk_34 != 0) {
         pFrame->unk_34++;
 
-#if IS_SM64
+#if VERSION < MK64_J 
         switch (pFrame->unk_34)
 #else
         switch (pFrame->unk_34 & 0xFF)
@@ -1567,7 +1567,7 @@ bool fn_8004B940(Frame* pFrame, Cpu* pCPU) {
             case 0x12:
                 fn_8009C5B0(VI_GM_0_8);
                 break;
-#if IS_SM64
+#if VERSION < MK64_J 
             default:
                 fn_8009C5B0(VI_GM_1_0);
 
@@ -2031,7 +2031,7 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
     s32 nCount;
     s32 iIndex;
 
-#if IS_SM64
+#if VERSION < MK64_J 
     Mtx44* pMtx = &gRealProjectionMtx;
 #endif
 
@@ -2085,7 +2085,7 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
         pFrame->nMode &= ~0x40000000;
     }
 
-#if IS_SM64
+#if VERSION < MK64_J 
     if ((pFrame->nFlag & 0x40000) && (pFrame->nMode & 0x04000000)) {
         pFrame->nFlag &= ~0x40000;
         if (pFrame->nMode & 0x20000000) {
@@ -2188,7 +2188,7 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
                  (((s32)((pFrame->aMode[FMT_TEXTURE2] >> 8) & 7) < 7 && pFrame->aTile[iTile + 1].nSizeX != 0) ? 1 : 0);
 
         if (pFrame->nFlag & 1) {
-#if IS_SM64
+#if VERSION < MK64_J 
             for (iIndex = 0; iTile <= nCount; iTile++, iIndex++) {
                 if (frameLoadTile(pFrame, &gpTexture[iTile], iTile | (iIndex << 4))) {
                     if (bTextureGen) {
@@ -3341,7 +3341,7 @@ bool frameSetScissor(Frame* pFrame, Rectangle* pScissor) {
     s32 nX1;
     s32 nY1;
 
-#if IS_SM64
+#if VERSION < MK64_J 
     nX0 = (s32)(pScissor->nX0 / 4.0f * pFrame->rScaleX);
     nY0 = (s32)(pScissor->nY0 / 4.0f * pFrame->rScaleY);
     nX1 = (s32)(pScissor->nX1 / 4.0f * pFrame->rScaleX);
@@ -3671,7 +3671,7 @@ bool frameEnd(Frame* pFrame) {
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
     GXSetColorUpdate(GX_TRUE);
 
-#if IS_SM64
+#if VERSION < MK64_J 
     GXCopyDisp(DemoCurrentBuffer, GX_TRUE);
 #elif VERSION >= MK64_J
     fn_8004BF58(pFrame);
@@ -3902,7 +3902,7 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
             pFrame->viewport.rX = 0.0f;
             pFrame->viewport.rY = 0.0f;
 
-#if IS_SM64
+#if VERSION < MK64_J 
             var_r30 = (u32)VIGetTvFormat() == VI_TV_FMT_PAL ? GC_FRAME_HEIGHT_PAL : GC_FRAME_HEIGHT;
 #else
             var_r30 = rmode->efbHeight;
@@ -4201,7 +4201,7 @@ bool frameSetMatrix(Frame* pFrame, Mtx44 matrix, FrameMatrixType eType, bool bLo
         case FMT_PROJECTION:
             pFrame->nMode &= ~0x20000000;
 
-#if IS_SM64
+#if VERSION < MK64_J 
             if (gpSystem->eTypeROM == NTEJ || gpSystem->eTypeROM == NTEA || gpSystem->eTypeROM == NTEP) {
                 if (matrix[0][0] < 0.006240f || matrix[0][0] > 0.006242f) {
                     if (!frameSetProjection(pFrame, pFrame->iHintHack)) {
@@ -4391,7 +4391,7 @@ bool frameLoadVertex(Frame* pFrame, void* pBuffer, s32 iVertex0, s32 nCount) {
 
     matrixModel = pFrame->aMatrixModel[pFrame->iMatrixModel];
 
-#if IS_SM64
+#if VERSION < MK64_J 
     if (pFrame->nMode & 0x08000000) {
         if (!(pFrame->nMode & 0x400000)) {
             PSMTX44Concat(matrixModel, pFrame->matrixProjectionExtra, pFrame->matrixView);
@@ -4656,7 +4656,7 @@ bool frameCullDL(Frame* pFrame, s32 nVertexStart, s32 nVertexEnd) {
     s32 nCode;
     s32 nCodeFull;
 
-#if IS_SM64
+#if VERSION < MK64_J 
     matrix = pFrame->matrixProjection;
 #else
     matrix = pFrame->unk_3F150;
@@ -5075,7 +5075,7 @@ bool frameSetViewport(Frame* pFrame, s16* pData) {
     rSizeX = (arScale[0] * 2.0f) * pFrame->rScaleX;
     rSizeY = (arScale[1] * 2.0f) * pFrame->rScaleY;
 
-#if IS_SM64
+#if VERSION < MK64_J 
     rX = (center[0] - arScale[0]) * pFrame->rScaleX;
     rY = (center[1] - arScale[1]) * pFrame->rScaleY;
 #else
@@ -5144,7 +5144,7 @@ bool frameFixMatrixHint(Frame* pFrame, s32 nAddressFloat, s32 nAddressFixed) {
     return false;
 }
 
-#if IS_SM64
+#if VERSION < MK64_J 
 bool frameSetMatrixHint(Frame* pFrame, FrameMatrixProjection eProjection, s32 nAddressFloat, s32 nAddressFixed,
                         f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale)
 #else

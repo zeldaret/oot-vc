@@ -428,7 +428,7 @@ static bool fn_80042C98(Rom* pROM) {
         return false;
     }
 
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
     pCacheRAM = pROM->pCacheRAM;
     pROM->pBuffer = pCacheRAM;
 #endif

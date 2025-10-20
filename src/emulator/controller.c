@@ -47,7 +47,7 @@ _XL_OBJECTTYPE gClassController = {
 
 MEMAllocator gControllerAllocator;
 
-#if IS_OOT
+#if VERSION > MK64_E
 struct_801C7DC8 lbl_801C7DC8;
 #endif
 
@@ -200,7 +200,7 @@ static inline s32 fn_800623F4_UnknownInline(f32 value) {
 extern bool fn_800CAFB8(s32, struct_801C7DC8*, s32);
 
 static bool fn_800623F4(Controller* pController) {
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
     struct_801C7DC8 lbl_801C7DC8;
 #endif
 
@@ -300,10 +300,10 @@ static bool fn_800623F4(Controller* pController) {
             }
         }
 
-#if IS_OOT
+#if VERSION > MK64_E
         fn_800CAFB8(i, &lbl_801C7DC8, 10);
         if (lbl_801C7DC8.status[0].wpad_err == 0)
-#elif IS_SM64 || IS_MK64
+#elif VERSION < OOT_J 
         if (fn_800CAFB8(i, &lbl_801C7DC8, 10) && lbl_801C7DC8.status[0].wpad_err == 0)
 #endif
         {
@@ -445,7 +445,7 @@ static bool fn_800623F4(Controller* pController) {
                 var_r17 = var_r14;
             }
 
-#if IS_OOT
+#if VERSION > MK64_E
             var_r20 = fn_800623F4_UnknownInline(var_r20);
             var_r19 = fn_800623F4_UnknownInline(var_r19);
 #endif

@@ -74,7 +74,7 @@ static bool flashPut32(Flash* pFLASH, u32 nAddress, s32* pData) {
         case 0x78000000:
             pFLASH->flashStatus = 0x11118008;
 
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
             for (i = 0; i < ARRAY_COUNT(buffer); i++) {
                 buffer[i] = 0;
             }
@@ -104,7 +104,7 @@ static bool flashPut32(Flash* pFLASH, u32 nAddress, s32* pData) {
 #endif
             break;
         case 0xA5000000:
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
             pFLASH->flashStatus = 0x11118004;
             if (!fn_80061BC0(pFLASH->pStore, pFLASH->unk_04, (*pData << 7) & 0x7FFFFF80, 0x80)) {
                 return false;
@@ -136,7 +136,7 @@ static bool flashGet8(Flash* pFLASH, u32 nAddress, s8* pData) { return true; }
 static bool flashGet16(Flash* pFLASH, u32 nAddress, s16* pData) { return true; }
 
 static bool flashGet32(Flash* pFLASH, u32 nAddress, s32* pData) {
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
     switch (pFLASH->flashCommand & 0xFF000000) {
         case 0x00000000:
         case 0xF0000000:
@@ -222,7 +222,7 @@ bool flashGetSize(Flash* pFLASH, u32* pnFlashSize) {
 }
 
 static inline bool flashEvent_UnknownInline(Flash* pFLASH, void* pArgument) {
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
     xlHeapTake((void**)&pFLASH->unk_04, 0x80);
 #endif
 
@@ -261,7 +261,7 @@ bool flashEvent(Flash* pFLASH, s32 nEvent, void* pArgument) {
 #endif
             break;
         case 3:
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
             xlHeapFree((void**)&pFLASH->unk_04);
 #endif
             if (pFLASH->pStore != NULL && !storeFreeObject((void**)&pFLASH->pStore)) {

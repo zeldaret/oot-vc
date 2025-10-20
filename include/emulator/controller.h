@@ -22,16 +22,16 @@ typedef enum ControllerStickAxis {
 
 typedef struct struct_801C7DC8 {
     /* 0x000 */ KPADStatus status[KPAD_MAX_CONTROLLERS];
-#if IS_OOT
+#if VERSION > MK64_E
     /* 0x220 */ u8 pad[0x330];
-#elif IS_SM64 || IS_MK64
+#elif VERSION < OOT_J 
     /* 0x220 */ u8 pad[0x1320];
 #endif
 } struct_801C7DC8; // size = 0x550 ; 0x1540
 
 typedef struct ControllerThread {
     /* 0x000 */ OSThread thread;
-#if IS_OOT
+#if VERSION > MK64_E
     /* 0x318 */ u8 unk_318[0xA];
 #endif
 } ControllerThread; // size = 0x328 ; 0x318

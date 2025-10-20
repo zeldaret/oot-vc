@@ -103,7 +103,7 @@ static u32 contMap[][GCN_BTN_COUNT] = {
         N64_BTN_CRIGHT, // GCN_BTN_CSTICK_RIGHT
     },
     // Controller Configuration No. 4
-#if IS_SM64
+#if VERSION < MK64_J 
     {
         N64_BTN_A,      // GCN_BTN_A
         N64_BTN_B,      // GCN_BTN_B
@@ -320,7 +320,7 @@ static SystemDevice gaSystemDevice[] = {
     },
 };
 
-#if IS_MK64
+#if VERSION > SM64_E && VERSION < OOT_J
 u32 lbl_8016E268[] = {
     0x3C1A8007, 0x275ACEC0, 0x03400008, 0x00000000, 0x3C010010, 0x012A4824, 0x01214823, 0x3C01A460, 0xAC290000,
     0x3C08A460, 0x8D080010, 0x31080002, 0x5500FFFD, 0x3C08A460, 0x24081000, 0x010B4020, 0x010A4024, 0x3C01A460,
@@ -465,7 +465,7 @@ bool systemCreateStorageDevice(System* pSystem, void* pArgument) {
 static bool systemSetRamMode(System* pSystem) {
     s32 nSize;
     u32* anMode;
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
     s32* anUnknown;
 #endif
 
@@ -478,7 +478,7 @@ static bool systemSetRamMode(System* pSystem) {
     anMode[2] = 0xB0000000;
     anMode[3] = 0;
 
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
     anMode[4] = 0x17D7;
 #else
     anMode[4] = 0x17D5;
@@ -492,7 +492,7 @@ static bool systemSetRamMode(System* pSystem) {
 
     anMode[6] = nSize;
 
-#if IS_MK64
+#if VERSION > SM64_E && VERSION < OOT_J
     if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&anUnknown, 0, NULL)) {
         return false;
     }
@@ -748,7 +748,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case CZLE:
             pArgument = 0x8000;
             nSizeSound = 0x1000;
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
             storageDevice = SOT_SRAM;
             gSystemRomConfigurationList.storageDevice = SOT_PIF;
             if (!simulatorGetArgument(SAT_RESET, &szArgument) || *szArgument == '1') {
@@ -920,7 +920,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NCUJ:
         case NCUP:
         case NCUE:
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
             gSystemRomConfigurationList.storageDevice = SOT_AUDIO;
 #else
             gSystemRomConfigurationList.storageDevice = SOT_RSP;
@@ -1019,7 +1019,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NFZP:
         case NFZJ:
         case CFZE:
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
             gSystemRomConfigurationList.storageDevice = SOT_RSP;
             pArgument = 0x1000;
             storageDevice = SOT_FLASH;
@@ -1262,7 +1262,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NTEJ:
         case NTEP:
         case NTEA:
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
             if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pBuffer2, 0x300, NULL)) {
                 return false;
             }
@@ -1311,7 +1311,7 @@ static bool systemSetupGameALL(System* pSystem) {
                 return false;
             }
 
-#if IS_SM64 || IS_MK64
+#if VERSION < OOT_J 
             storageDevice = SOT_SRAM;
             gSystemRomConfigurationList.storageDevice = SOT_PIF;
 #endif

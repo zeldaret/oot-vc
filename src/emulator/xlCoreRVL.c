@@ -27,9 +27,9 @@ static inline u32 getFBTotalSize(f32 aspectRatio) {
 #define LN(sm64, mk64, oot) sm64
 #elif VERSION == SM64_E
 #define LN(sm64, mk64, oot) (mk64 - 1)
-#elif IS_MK64
+#elif VERSION > SM64_E && VERSION < OOT_J
 #define LN(sm64, mk64, oot) mk64
-#elif IS_OOT
+#elif VERSION > MK64_E
 #define LN(sm64, mk64, oot) oot
 #endif
 
@@ -47,6 +47,12 @@ static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
     }
 
     switch (VIGetTvFormat()) {
+        case VI_NTSC:
+            rmode = VIGetDTVStatus() && SCGetProgressiveMode() == 1 ? &GXNtsc480Prog : &GXNtsc480IntDf;
+            rmode->viXOrigin -= 32;
+            rmode->viWidth += 64;
+            break;
+
 #if VERSION < SM64_E
         case VI_PAL:
             rmode = &GXPal528IntDf;
@@ -76,6 +82,7 @@ static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
             rmode->viYOrigin = (s32)(574 - rmode->viHeight) / 2;
             break;
 #endif
+
         default:
             OSPanic("xlCoreRVL.c", LN(121, 131, 138), "DEMOInit: invalid TV format\n");
             break;

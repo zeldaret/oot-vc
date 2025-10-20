@@ -391,7 +391,7 @@ static bool rspParseGBI_F3DEX1(Rsp* pRSP, u64** ppnGBI, bool* pbDone) {
                     break;
                 }
                 case 0x02: // G_MW_NUMLIGHT
-#if IS_SM64
+#if VERSION < MK64_J 
                     if ((nCommandLo & 0xFF) == 0) {
                         if (!frameSetLightCount(pFrame, (nCommandLo >> 8) & 0xFF)) {
                             return false;

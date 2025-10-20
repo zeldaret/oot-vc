@@ -15,7 +15,7 @@ _XL_OBJECTTYPE gClassPIF = {
 };
 
 // this function is a copy-paste of `__osContDataCrc`
-#if IS_SM64
+#if VERSION < MK64_J 
 static u8 pifContDataCrc(Pif* pPIF, u8* data) {
     u32 temp = 0;
     u32 i;
@@ -140,7 +140,7 @@ static inline bool pifReadController(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s3
 bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
     switch (*buffer) {
         case 0x00:
-#if IS_SM64
+#if VERSION < MK64_J 
             if (!fn_80040BF4(pPIF, buffer, ptx, prx, channel)) {
                 return false;
             }
@@ -168,7 +168,7 @@ bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
             u8* pBuffer = buffer + 3;
             int i = 0;
 
-#if IS_SM64
+#if VERSION < MK64_J 
             switch (pPIF->eControllerType[channel]) {
                 case CT_CONTROLLER_W_RPAK:
                     //! TODO: fake match?
@@ -279,7 +279,7 @@ bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
 
             switch (pPIF->eControllerType[channel]) {
                 case CT_CONTROLLER_W_RPAK:
-#if IS_SM64
+#if VERSION < MK64_J 
                     switch (nAddress) {
                         case 0x600:
                             if (*pBuffer == 1) {
@@ -304,7 +304,7 @@ bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
                     break;
             }
 
-#if IS_SM64
+#if VERSION < MK64_J 
             buffer[0x23] = pifContDataCrc(pPIF, buffer + 3);
 #else
             buffer[0x23] = pifContDataCrc(buffer + 3);
@@ -493,7 +493,7 @@ bool pifProcessOutputData(Pif* pPIF) {
     return true;
 }
 
-#if IS_SM64
+#if VERSION < MK64_J 
 bool pifSetData(Pif* pPIF, u8* acData) {
     if (!xlHeapCopy(pPIF->pRAM, acData, 0x40)) {
         return false;
