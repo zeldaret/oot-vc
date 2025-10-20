@@ -4497,6 +4497,29 @@ bool frameSetBuffer(Frame* pFrame, FrameBufferType eType) {
     return true;
 }
 
+bool frameFixMatrixHint(Frame* pFrame, s32 nAddressFloat, s32 nAddressFixed) {
+    s32 iHint;
+    s32 iHintTest;
+
+    for (iHint = 0; iHint < pFrame->iHintMatrix; iHint++) {
+        if (pFrame->aMatrixHint[iHint].nAddressFloat == nAddressFloat && pFrame->aMatrixHint[iHint].nCount >= 0) {
+            pFrame->aMatrixHint[iHint].nAddressFloat = 0;
+            pFrame->aMatrixHint[iHint].nAddressFixed = nAddressFixed;
+
+            for (iHintTest = 0; iHintTest < pFrame->iHintMatrix; iHintTest++) {
+                if (iHintTest != iHint && pFrame->aMatrixHint[iHintTest].nAddressFixed == nAddressFixed) {
+                    pFrame->aMatrixHint[iHintTest].nAddressFloat = 0;
+                    pFrame->aMatrixHint[iHintTest].nAddressFixed = 0;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
 #if IS_SM64
 bool frameSetMatrixHint(Frame* pFrame, FrameMatrixProjection eProjection, s32 nAddressFloat, s32 nAddressFixed,
                         f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale)

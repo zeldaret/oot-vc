@@ -891,25 +891,78 @@ void osVirtualToPhysical(Cpu* pCPU) {
     }
 }
 
-bool fn_80057E60(Cpu* pCPU) {}
-
-bool fn_80058078(Cpu* pCPU) {}
-
-#if IS_SM64
-void fn_80058230(Cpu* pCPU) {
+void guMtxCatF(Cpu* pCPU) {
     s32 i;
     s32 j;
+    s32 k;
+    f32 temp[4][4];
+    CpuFpr data1;
+    CpuFpr data2;
+    u32* mf;
+    u32* nf;
+    u32* res;
+
+    cpuGetAddressBuffer(pCPU, (void**)&mf, pCPU->aGPR[4].u32);
+    cpuGetAddressBuffer(pCPU, (void**)&nf, pCPU->aGPR[5].u32);
+    cpuGetAddressBuffer(pCPU, (void**)&res, pCPU->aGPR[6].u32);
+
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            temp[i][j] = 0.0f;
+            for (k = 0; k < 4; k++) {
+                data1.u32 = mf[i * 4 + k];
+                data2.u32 = nf[k * 4 + j];
+                temp[i][j] += data1.f32 * data2.f32;
+            }
+        }
+    }
+
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            data1.f32 = temp[i][j];
+            res[i * 4 + j] = data1.u32;
+        }
+    }
+}
+
+void guMtxF2L(Cpu* pCPU) {
     f32* mf;
+    s32 e1;
+    s32 e2;
+    s32 i;
+    s32 j;
+    s32* m;
+    CpuFpr data;
+    s32* ai;
+    s32* af;
+
+    cpuGetAddressBuffer(pCPU, (void**)&mf, pCPU->aGPR[4].u32);
+    cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[5].u32);
+    frameFixMatrixHint(SYSTEM_FRAME(gpSystem), pCPU->aGPR[4].u32, pCPU->aGPR[5].u32);
+
+    ai = &m[0];
+    af = &m[8];
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j += 2) {
+            data.f32 = mf[i * 4 + j];
+            e1 = 0x10000 * data.f32;
+            data.f32 = mf[i * 4 + j + 1];
+            e2 = 0x10000 * data.f32;
+            *(ai++) = (e1 & 0xFFFF0000) | ((e2 >> 16) & 0xFFFF);
+            *(af++) = ((e1 << 16) & 0xFFFF0000) | (e2 & 0xFFFF);
+        }
+    }
+}
+
+void guMtxIdentF(Cpu* pCPU) {
+    f32* mf;
+    s32 i;
+    s32 j;
     CpuFpr data1;
     CpuFpr data0;
 
     data0.f32 = 0.0f;
-
-    // float ordering fix
-    (void)65536.0f;
-
     data1.f32 = 1.0f;
-
     cpuGetAddressBuffer(pCPU, (void**)&mf, pCPU->aGPR[4].u32);
 
     for (i = 0; i < 4; i++) {
@@ -922,32 +975,27 @@ void fn_80058230(Cpu* pCPU) {
         }
     }
 }
-#endif
 
-bool fn_80058324(Cpu* pCPU) {
-    u32* sp8;
+void guMtxIdent(Cpu* pCPU) {
+    s32* m;
 
-    cpuGetAddressBuffer(pCPU, (void**)&sp8, pCPU->aGPR[4].u32);
-
-    sp8[0] = 0x10000;
-    sp8[1] = 0;
-    sp8[2] = 1;
-    sp8[3] = 0;
-    sp8[4] = 0;
-
-    sp8[5] = 0x10000;
-    sp8[6] = 0;
-    sp8[7] = 1;
-    sp8[8] = 0;
-    sp8[9] = 0;
-
-    sp8[10] = 0;
-    sp8[11] = 0;
-    sp8[12] = 0;
-    sp8[13] = 0;
-    sp8[14] = 0;
-
-    sp8[15] = 0;
+    cpuGetAddressBuffer(pCPU, (void**)&m, pCPU->aGPR[4].u32);
+    m[0] = 0x10000;
+    m[1] = 0;
+    m[2] = 1;
+    m[3] = 0;
+    m[4] = 0;
+    m[5] = 0x10000;
+    m[6] = 0;
+    m[7] = 1;
+    m[8] = 0;
+    m[9] = 0;
+    m[10] = 0;
+    m[11] = 0;
+    m[12] = 0;
+    m[13] = 0;
+    m[14] = 0;
+    m[15] = 0;
 }
 
 void guOrthoF(Cpu* pCPU) {
@@ -991,10 +1039,6 @@ void guOrthoF(Cpu* pCPU) {
     scale = data.f32;
 
     data0.f32 = 0.0f;
-
-    // float ordering fix
-    (void)65536.0f;
-
     data1.f32 = 1.0f;
 
 #if IS_SM64
@@ -3085,23 +3129,23 @@ LibraryFunc gaFunction[] = {
     },
     {
         NULL,
-        (LibraryFuncImpl)fn_80058078,
+        (LibraryFuncImpl)guMtxF2L,
         {0x00000026, 0x686C0856, 0x00000019, 0x7CC68902, 0x00000040, 0x4425DE45, 0x0000005C, 0x220BB2B0, 0x00000027,
          0x60FF87FD},
     },
     {
         NULL,
-        (LibraryFuncImpl)fn_80057E60,
+        (LibraryFuncImpl)guMtxCatF,
         {0x00000037, 0x91255B90},
     },
     {
         NULL,
-        (LibraryFuncImpl)fn_80058230,
+        (LibraryFuncImpl)guMtxIdentF,
         {0x00000014, 0x14BCF092, 0x00000022, 0x69E2607E, 0x0000003B, 0x03585A21},
     },
     {
         NULL,
-        (LibraryFuncImpl)fn_80058324,
+        (LibraryFuncImpl)guMtxIdent,
         {0x0000003C, 0xA20CBF46},
     },
     {
