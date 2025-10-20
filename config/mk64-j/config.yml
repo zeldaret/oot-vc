@@ -1,0 +1,187 @@
+# See config.example.yml for documentation.
+name: wii-vc
+object: orig/mk64-j/content1.app
+hash: bfa2416d69894fce8614b580e6897b3658c1762c
+symbols: config/mk64-j/symbols.txt
+splits: config/mk64-j/splits.txt
+
+# Change this to match the linker verison.
+# See config.example.yml for a list.
+mw_comment_version: 14
+
+extract:
+# DSPCode.c
+- symbol: axDspSlave
+  header: axDspSlave.inc
+# AXComp.c
+- symbol: __AXCompressorTable
+  header: __AXCompressorTable.inc
+
+force_active:
+- lbl_801E3380
+- DemoAllocator2
+- TRKAccessFile
+- TRKOpenFile
+- TRKCloseFile
+- TRKPositionFile
+- sSetInfoAsync__Q210homebutton10Controller
+- lbl_8025DBBC__Q210homebutton10Controller
+
+add_relocations:
+- source: 0x8005DA24
+  type: ha
+  target: fn_8005B6C8
+- source: 0x8005DA58
+  type: l
+  target: fn_8005B6C8
+- source: 0x8005DA34
+  type: ha
+  target: fn_8005B6D0
+- source: 0x8005DA80
+  type: l
+  target: fn_8005B6D0
+- source: 0x8005DA50
+  type: ha
+  target: fn_8005B6D8
+- source: 0x8005DAA0
+  type: l
+  target: fn_8005B6D8
+- source: 0x8005DA60
+  type: ha
+  target: fn_8005B6E0
+- source: 0x8005DAC0
+  type: l
+  target: fn_8005B6E0
+- source: 0x8005DA7C
+  type: ha
+  target: GenPerspective_1080
+- source: 0x8005DAE0
+  type: l
+  target: GenPerspective_1080
+- source: 0x8005DA9C
+  type: ha
+  target: fn_8005B6E8
+- source: 0x8005DB00
+  type: l
+  target: fn_8005B6E8
+
+block_relocations:
+# system.c
+- source: 0x8000B044
+- source: 0x8000B054
+- source: 0x8000B070
+- source: 0x8000B080
+- source: 0x8000B0A4
+- source: 0x8000B0C8
+- source: 0x8000B0EC
+- source: 0x8000B10C
+- source: 0x8000B11C
+- source: 0x8000B140
+- source: 0x8000B194
+- source: 0x8000B1A4
+- source: 0x8000B1C0
+- source: 0x8000B1D0
+- source: 0x8000B1F4
+- source: 0x8000B218
+- source: 0x8000B23C
+- source: 0x8000B25C
+- source: 0x8000B26C
+- source: 0x8000B290
+- source: 0x8000B2E4
+- source: 0x8000B2F4
+- source: 0x8000B310
+- source: 0x8000B320
+- source: 0x8000B344
+- source: 0x8000B368
+- source: 0x8000B38C
+- source: 0x8000B3AC
+- source: 0x8000B3BC
+- source: 0x8000B3E0
+- source: 0x8000B6CC
+- source: 0x8000B6DC
+- source: 0x8000B6F8
+- source: 0x8000B700
+- source: 0x8000B724
+- source: 0x8000B748
+- source: 0x8000B770
+- source: 0x8000B780
+- source: 0x8000B79C
+- source: 0x8000B7A4
+- source: 0x8000B7C8
+- source: 0x8000B7EC
+- source: 0x8000B818
+- source: 0x8000B828
+- source: 0x8000B844
+- source: 0x8000B84C
+- source: 0x8000B874
+- source: 0x8000B898
+- source: 0x8000BBA0
+- source: 0x8000BBA8
+- source: 0x8000BBD8
+- source: 0x8000BBE0
+- source: 0x8000BC08
+- source: 0x8000BC10
+- source: 0x8000BC30
+- source: 0x8000BC38
+- source: 0x8000BD24
+- source: 0x8000BD2C
+- source: 0x8000BD54
+- source: 0x8000BD5C
+- source: 0x8000BDCC
+- source: 0x8000BDDC
+- source: 0x8000BDF8
+- source: 0x8000BE08
+- source: 0x8000BE28
+- source: 0x8000BE40
+- source: 0x8000BE68
+- source: 0x8000BE78
+- source: 0x8000BE98
+- source: 0x8000BF24
+- source: 0x8000BF2C
+- source: 0x8000BF50
+- source: 0x8000BF74
+- source: 0x8000BF98
+- source: 0x8000BFA0
+- source: 0x8000BFC4
+- source: 0x8000BFE8
+- source: 0x8000C038
+- source: 0x8000C050
+- source: 0x8000C080
+- source: 0x8000C0A8
+- source: 0x8000C0C8
+- source: 0x8000C0D8
+- source: 0x8000C0F8
+- source: 0x8000C124
+- source: 0x8000C148
+- source: 0x8000C160
+- source: 0x8000C18C
+- source: 0x8000C1AC
+- source: 0x8000C1BC
+- source: 0x8000C1F8
+- source: 0x8000C208
+- source: 0x8000C22C
+- source: 0x8000C2EC
+- source: 0x8000C2FC
+- source: 0x8000C320
+- source: 0x8000C348
+- source: 0x8000C36C
+- source: 0x8000C398
+- source: 0x8000C3B4
+- source: 0x8000C3C4
+- source: 0x8000C420
+- source: 0x8000C430
+- source: 0x8000C44C
+- source: 0x8000C46C
+- source: 0x8000C47C
+- source: 0x8000C49C
+- source: 0x8000C5C4
+- source: 0x8000C5D4
+- source: 0x8000C60C
+- source: 0x8000C624
+- source: 0x8000C65C
+- source: 0x8000C664
+- source: 0x8000C684
+- source: 0x8000C694
+- source: 0x8000C6B8
+- source: 0x8000C770
+- source: 0x8000C780

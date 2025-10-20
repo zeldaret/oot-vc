@@ -85,6 +85,30 @@ typedef struct Rom {
     /* 0x19AC0 */ DVDFileInfo fileInfo;
     /* 0x19AFC */ s32 offsetToRom;
 } Rom; // size = 0x19B00
+#elif IS_SM64
+typedef struct Rom {
+    /* 0x00000 */ void* pBuffer;
+    /* 0x00004 */ bool bFlip;
+    /* 0x00008 */ bool bLoad;
+    /* 0x0000C */ char acNameFile[513];
+    /* 0x00210 */ u32 nSize;
+    /* 0x00214 */ RomModeLoad eModeLoad;
+    /* 0x00218 */ RomBlock aBlock[4096];
+    /* 0x10218 */ u32 nTick;
+    /* 0x1021C */ u8* pCacheRAM;
+    /* 0x10220 */ u8 anBlockCachedRAM[4096]; // Bitfield, one bit per block
+    /* 0x11220 */ u8 anBlockCachedARAM[2046]; // Bitfield, one bit per block
+    /* 0x11A20 */ RomCopyState copy;
+    /* 0x11A34 */ RomLoadState load;
+    /* 0x11A64 */ s32 nCountBlockRAM;
+    /* 0x11A68 */ s32 nSizeCacheRAM;
+    /* 0x11A6C */ u8 acHeader[64];
+    /* 0x11AAC */ u32* anOffsetBlock;
+    /* 0x11AB0 */ s32 nCountOffsetBlocks;
+    /* 0x11AB4 */ s32 nChecksum;
+    /* 0x11AB8 */ DVDFileInfo fileInfo;
+    /* 0x11AF4 */ s32 offsetToRom;
+} Rom; // size = 0x11AF8
 #elif IS_MK64
 typedef struct Rom {
     /* 0x00000 */ void* pBuffer;
@@ -110,30 +134,6 @@ typedef struct Rom {
     /* 0x19ABC */ DVDFileInfo fileInfo;
     /* 0x19AF8 */ s32 offsetToRom;
 } Rom; // size = 0x19AFC
-#elif IS_SM64
-typedef struct Rom {
-    /* 0x00000 */ void* pBuffer;
-    /* 0x00004 */ bool bFlip;
-    /* 0x00008 */ bool bLoad;
-    /* 0x0000C */ char acNameFile[513];
-    /* 0x00210 */ u32 nSize;
-    /* 0x00214 */ RomModeLoad eModeLoad;
-    /* 0x00218 */ RomBlock aBlock[4096];
-    /* 0x10218 */ u32 nTick;
-    /* 0x1021C */ u8* pCacheRAM;
-    /* 0x10220 */ u8 anBlockCachedRAM[4096]; // Bitfield, one bit per block
-    /* 0x11220 */ u8 anBlockCachedARAM[2046]; // Bitfield, one bit per block
-    /* 0x11A20 */ RomCopyState copy;
-    /* 0x11A34 */ RomLoadState load;
-    /* 0x11A64 */ s32 nCountBlockRAM;
-    /* 0x11A68 */ s32 nSizeCacheRAM;
-    /* 0x11A6C */ u8 acHeader[64];
-    /* 0x11AAC */ u32* anOffsetBlock;
-    /* 0x11AB0 */ s32 nCountOffsetBlocks;
-    /* 0x11AB4 */ s32 nChecksum;
-    /* 0x11AB8 */ DVDFileInfo fileInfo;
-    /* 0x11AF4 */ s32 offsetToRom;
-} Rom; // size = 0x11AF8
 #endif
 
 s32 fn_80042E30(EDString* pSTString);
