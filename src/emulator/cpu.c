@@ -672,6 +672,71 @@ static inline bool treeForceCleanUp(Cpu* pCPU, CpuFunction* tree, s32 kill_limit
     return true;
 }
 
+#if IS_SM64
+static bool cpuHackHandler(Cpu* pCPU) {
+    u32 nSize;
+    u32* pnCode;
+    s32 iCode;
+    s32 iSave1;
+    s32 iSave2;
+    s32 iLoad;
+
+    iSave1 = iSave2 = iLoad = 0;
+
+    if (xlObjectTest(SYSTEM_RAM(gpSystem), &gClassRAM) &&
+        ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pnCode, 0, NULL)) {
+        if (!ramGetSize(SYSTEM_RAM(gpSystem), (s32*)&nSize)) {
+            return false;
+        }
+
+        for (iCode = 0; iCode < (nSize >> 2) && (iSave1 != -1 || iSave2 != -1 || iLoad != -1); iCode++) {
+            if (iSave1 != -1) {
+                if (pnCode[iCode] == ganOpcodeSaveFP1[iSave1]) {
+                    iSave1 += 1;
+                    if (iSave1 == 5U) {
+                        pnCode[iCode - 3] = 0;
+                        iSave1 = -1;
+                    }
+                } else {
+                    iSave1 = 0;
+                }
+            }
+
+            if (iSave2 != -1) {
+                if (pnCode[iCode] == ganOpcodeSaveFP2_0[iSave2]) {
+                    iSave2 += 1;
+                    if (iSave2 == 5U) {
+                        pnCode[iCode - 3] = 0;
+                        iSave2 = -1;
+                    }
+                } else if (pnCode[iCode] == ganOpcodeSaveFP2_1[iSave2]) {
+                    iSave2 += 1;
+                    if (iSave2 == 3U) {
+                        pnCode[iCode - 2] = 0;
+                        iSave2 = -1;
+                    }
+                } else {
+                    iSave2 = 0;
+                }
+            }
+
+            if (iLoad != -1) {
+                if (pnCode[iCode] == ganOpcodeLoadFP[iLoad]) {
+                    iLoad += 1;
+                    if (iLoad == 5U) {
+                        pnCode[iCode - 3] = 0;
+                        iLoad = -1;
+                    }
+                } else {
+                    iLoad = 0;
+                }
+            }
+        }
+    }
+
+    return (iSave1 == -1 && iSave2 == -1 && iLoad == -1) ? true : false;
+}
+#else
 static bool cpuHackHandler(Cpu* pCPU) {
     s32 iSave1;
     s32 iSave2;
@@ -735,6 +800,7 @@ static bool cpuHackHandler(Cpu* pCPU) {
 
     return (iSave1 == -1 && iSave2 == -1 && iLoad == -1) ? true : false;
 }
+#endif
 
 static inline bool cpuMakeCachedAddress(Cpu* pCPU, s32 nAddressN64, s32 nAddressHost, CpuFunction* pFunction) {
     s32 iAddress;
@@ -910,6 +976,42 @@ bool cpuException(Cpu* pCPU, CpuExceptionCode eCode, s32 nMaskIP) {
  * @param nType An argument which will be passed back to the device's event handler.
  * @return bool true on success, false otherwise.
  */
+#if IS_SM64
+static bool cpuMakeDevice(Cpu* pCPU, s32* piDevice, void* pObject, s32 nOffset, u32 nAddress0, u32 nAddress1,
+                          s32 nType) {
+    CpuDevice* pDevice;
+    s32 iDevice;
+    s32 pad;
+
+    iDevice = (nType & 0x100) ? (ARRAY_COUNT(pCPU->apDevice) / 2) : 0;
+    for (; iDevice < ARRAY_COUNT(pCPU->apDevice); iDevice++) {
+        if (pCPU->apDevice[iDevice] == NULL) {
+            break;
+        }
+    }
+    if (iDevice == ARRAY_COUNT(pCPU->apDevice)) {
+        return false;
+    }
+
+    *piDevice = iDevice;
+    if (!xlHeapTake((void**)&pDevice, sizeof(CpuDevice))) {
+        return false;
+    }
+
+    pCPU->apDevice[iDevice] = pDevice;
+    pDevice->nType = nType;
+    pDevice->pObject = pObject;
+    pDevice->nOffsetAddress = nOffset;
+    pDevice->nAddressPhysical0 = nAddress0;
+    pDevice->nAddressPhysical1 = nAddress1;
+
+    if (!xlObjectEvent(pObject, 0x1002, pDevice)) {
+        return false;
+    }
+
+    return true;
+}
+#else
 static bool cpuMakeDevice(Cpu* pCPU, s32* piDevice, void* pObject, u32 nOffset, u32 nAddress, u32 nSize, s32 nType) {
     CpuDevice* pDevice;
     s32 iDevice;
@@ -960,6 +1062,7 @@ static bool cpuMakeDevice(Cpu* pCPU, s32* piDevice, void* pObject, u32 nOffset, 
 
     return false;
 }
+#endif
 
 static inline bool cpuFreeDevice(Cpu* pCPU, s32 iDevice) {
     s32 ret;
@@ -978,6 +1081,96 @@ static inline bool cpuFreeDevice(Cpu* pCPU, s32 iDevice) {
     }
 }
 
+#if IS_SM64
+static bool cpuMapAddress(Cpu* pCPU, s32* piDevice, u32 nVirtual, u32 nPhysical, s32 nSize) {
+    s32 iDeviceTarget;
+    s32 iDeviceSource;
+    u32 nAddressVirtual0;
+    u32 nAddressVirtual1;
+
+    for (iDeviceSource = 0; iDeviceSource < ARRAY_COUNT(pCPU->apDevice); iDeviceSource++) {
+        if (iDeviceSource != pCPU->iDeviceDefault && pCPU->apDevice[iDeviceSource] != NULL &&
+            pCPU->apDevice[iDeviceSource]->nAddressPhysical0 <= nPhysical &&
+            nPhysical <= pCPU->apDevice[iDeviceSource]->nAddressPhysical1) {
+            break;
+        }
+    }
+
+    if (iDeviceSource == ARRAY_COUNT(pCPU->apDevice)) {
+        iDeviceSource = pCPU->iDeviceDefault;
+    }
+
+    if (!cpuMakeDevice(pCPU, &iDeviceTarget, pCPU->apDevice[iDeviceSource]->pObject, nPhysical - nVirtual,
+                       pCPU->apDevice[iDeviceSource]->nAddressPhysical0,
+                       pCPU->apDevice[iDeviceSource]->nAddressPhysical1, pCPU->apDevice[iDeviceSource]->nType)) {
+        return false;
+    }
+
+    nAddressVirtual0 = nVirtual;
+    nAddressVirtual1 = nVirtual + nSize - 1;
+    while (nAddressVirtual0 < nAddressVirtual1) {
+        pCPU->aiDevice[nAddressVirtual0 >> 16] = iDeviceTarget;
+        nAddressVirtual0 += 0x10000;
+    }
+
+    if (piDevice != NULL) {
+        *piDevice = iDeviceTarget;
+    }
+
+    return true;
+}
+
+static bool cpuSetTLB(Cpu* pCPU, s32 iEntry) {
+    s32 iDevice;
+    u32 nMask;
+    u32 nVirtual;
+    u32 nPhysical;
+
+    if ((pCPU->anCP0[10] & 0xFFFFE000) == 0x80000000) {
+        pCPU->aTLB[iEntry][0] &= ~2;
+        ;
+        if ((iDevice = pCPU->aTLB[iEntry][4]) != -1) {
+            if (!cpuFreeDevice(pCPU, iDevice)) {
+                return false;
+            }
+            pCPU->aTLB[iEntry][4] = -1;
+        }
+
+        return true;
+    }
+
+    if ((iDevice = pCPU->aTLB[iEntry][4]) != -1) {
+        if (!cpuFreeDevice(pCPU, iDevice)) {
+            return false;
+        }
+    }
+
+    pCPU->aTLB[iEntry][0] = pCPU->anCP0[2] | 2;
+    pCPU->aTLB[iEntry][1] = pCPU->anCP0[3];
+    pCPU->aTLB[iEntry][2] = pCPU->anCP0[10];
+    pCPU->aTLB[iEntry][3] = pCPU->anCP0[5];
+
+    nMask = pCPU->aTLB[iEntry][3] | 0x1FFF;
+    nVirtual = pCPU->aTLB[iEntry][2] & 0xFFFFE000;
+    nPhysical = ((s32)(pCPU->aTLB[iEntry][0] & 0xFFFFFFC0) << 6) + (nVirtual & nMask);
+
+    if (nVirtual < 0x80000000 || 0xC0000000 <= nVirtual) {
+        if (!cpuMapAddress(pCPU, &iDevice, nVirtual, nPhysical, nMask + 1)) {
+            return false;
+        }
+        if (nVirtual == 0x70000000 && nPhysical == 0 && nMask == 0x007FFFFF) {
+            if (!cpuMapAddress(pCPU, NULL, 0x7F000000, 0x10034B30, 0x01000000)) {
+                return false;
+            }
+        }
+    } else {
+        iDevice = -1;
+    }
+
+    pCPU->aTLB[iEntry][4] = iDevice;
+    return true;
+}
+#else
 static bool cpuMapAddress(Cpu* pCPU, s32* piDevice, u32 nVirtual, u32 nPhysical, s32 nSize) {
     s32 iDeviceTarget;
     s32 iDeviceSource;
@@ -1103,6 +1296,7 @@ static bool cpuSetTLB(Cpu* pCPU, s32 iEntry) {
 
     return true;
 }
+#endif
 
 /**
  * @brief Gets the operating mode of the VR4300
@@ -1204,6 +1398,64 @@ static bool cpuSetCP0_Status(Cpu* pCPU, u64 nStatus, u32 unknown) NO_INLINE {
     return true;
 }
 
+#if IS_SM64
+bool cpuSetRegisterCP0(Cpu* pCPU, s32 iRegister, s64 nData) {
+    s32 pad;
+    s32 bFlag = false;
+
+    switch (iRegister) {
+        case 1:
+        case 7:
+        case 8:
+            break;
+        case 9:
+            bFlag = true;
+            break;
+        case 11:
+            bFlag = true;
+            xlObjectEvent(gpSystem, 0x1001, (void*)3);
+            if (pCPU->nMode & 1 || (nData & ganMaskSetCP0[iRegister]) == 0) {
+                pCPU->nMode &= ~1;
+            } else {
+                pCPU->nMode |= 1;
+            }
+            break;
+        case 12:
+            cpuSetCP0_Status(pCPU, nData & ganMaskSetCP0[iRegister], 0);
+            break;
+        case 13:
+            xlObjectEvent(gpSystem, (nData & 0x100) ? 0x1000 : 0x1001, (void*)0);
+            xlObjectEvent(gpSystem, (nData & 0x200) ? 0x1000 : 0x1001, (void*)1);
+            bFlag = true;
+            break;
+        case 14:
+            bFlag = true;
+            break;
+        case 15:
+            break;
+        case 16:
+            pCPU->anCP0[16] = (u32)(nData & ganMaskSetCP0[iRegister]);
+            break;
+        case 21:
+        case 22:
+        case 23:
+        case 24:
+        case 25:
+        case 27:
+        case 31:
+            break;
+        default:
+            bFlag = true;
+            break;
+    }
+
+    if (bFlag) {
+        pCPU->anCP0[iRegister] = nData & ganMaskSetCP0[iRegister];
+    }
+
+    return true;
+}
+#else
 // matches but data doesn't
 bool cpuSetRegisterCP0(Cpu* pCPU, s32 iRegister, s64 nData) {
     s32 pad;
@@ -1264,6 +1516,7 @@ bool cpuSetRegisterCP0(Cpu* pCPU, s32 iRegister, s64 nData) {
 
     return true;
 }
+#endif
 
 // matches but data doesn't
 bool cpuGetRegisterCP0(Cpu* pCPU, s32 iRegister, s64* pnData) {
@@ -1502,7 +1755,9 @@ static void cpuCompileNOP(s32* anCode, s32* iCode, s32 number) {
     }
 }
 
+#if VERSION >= MK64_J
 #pragma optimization_level 1
+#endif
 
 #define EMIT_PPC(i, instruction)         \
     do {                                 \
@@ -1564,6 +1819,11 @@ static bool fn_8000E81C(Cpu* pCPU, s32 nOpcode, s32 nOpcodePrev, s32 nOpcodeNext
 
     return true;
 }
+
+//! TODO: fake
+#if IS_SM64
+#pragma optimization_level 1
+#endif
 
 /**
  * @brief The main MIPS->PPC Dynamic recompiler.
@@ -7454,6 +7714,7 @@ static bool cpuMakeFunction(Cpu* pCPU, CpuFunction** ppFunction, s32 nAddressN64
         return false;
     }
 
+#if VERSION >= MK64_J
     if (fn_80031D4C(pCPU, pFunction, 1)) {
         if (ppFunction != NULL) {
             *ppFunction = pFunction;
@@ -7461,6 +7722,7 @@ static bool cpuMakeFunction(Cpu* pCPU, CpuFunction** ppFunction, s32 nAddressN64
 
         return true;
     }
+#endif
 
     if (pFunction->pfCode == NULL) {
         libraryTestFunction(SYSTEM_LIBRARY(gpSystem), pFunction);
@@ -7567,7 +7829,10 @@ static bool cpuMakeFunction(Cpu* pCPU, CpuFunction** ppFunction, s32 nAddressN64
 
         pFunction->memory_size = memory_used;
         pCPU->gTree->total_memory += memory_used;
+
+#if VERSION >= MK64_J
         if (fn_80031D4C(pCPU, pFunction, 0)) {}
+#endif
     }
 
     if (ppFunction != NULL) {
@@ -9059,14 +9324,20 @@ static s32 cpuExecuteOpcode(Cpu* pCPU, s32 nCount0, s32 nAddressN64, s32 nAddres
         pCPU->nMode &= ~8;
     }
 
+#if VERSION >= MK64_J
     cpuUnknownMarioKartFrameSet(gpSystem->eTypeROM, SYSTEM_FRAME(gpSystem), nAddressN64);
+#endif
 
     aiDevice = pCPU->aiDevice;
     apDevice = pCPU->apDevice;
 
+#if IS_SM64
+    ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&opcode, nAddressN64, NULL);
+#else
     if (!cpuGetAddressBuffer(pCPU, (void**)&opcode, nAddressN64)) {
         return false;
     }
+#endif
 
     nOpcode = *opcode;
     pCPU->nPC = nAddressN64 + 4;
@@ -10663,9 +10934,13 @@ static s32 cpuExecuteLoadStore(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAddr
     interpret = 0;
     check2 = 0x90C30000 + OFFSETOF(pCPU, nWaitPC);
 
+#if IS_SM64
+    ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&opcode, nAddressN64, NULL);
+#else
     if (!cpuGetAddressBuffer(pCPU, (void**)&opcode, nAddressN64)) {
         return false;
     }
+#endif
 
     address = pCPU->aGPR[MIPS_RS(*opcode)].s32 + MIPS_IMM_S16(*opcode);
     device = pCPU->aiDevice[(u32)(address) >> DEVICE_ADDRESS_OFFSET_BITS];
@@ -10946,9 +11221,13 @@ static s32 cpuExecuteLoadStoreF(Cpu* pCPU, s32 nCount, s32 nAddressN64, s32 nAdd
     interpret = 0;
     check2 = 0x90C30000 + OFFSETOF(pCPU, nWaitPC);
 
+#if IS_SM64
+    ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&opcode, nAddressN64, NULL);
+#else
     if (!cpuGetAddressBuffer(pCPU, (void**)&opcode, nAddressN64)) {
         return false;
     }
+#endif
 
     address = pCPU->aGPR[MIPS_RS(*opcode)].s32 + MIPS_IMM_S16(*opcode);
     device = pCPU->aiDevice[(u32)(address) >> DEVICE_ADDRESS_OFFSET_BITS];
@@ -11454,6 +11733,57 @@ bool cpuExecute(Cpu* pCPU, s32 nCount, u64 nAddressBreak) {
  * @param nType An argument which will be passed back to the device on creation.
  * @return bool true on success, false otherwise.
  */
+#if IS_SM64
+bool cpuMapObject(Cpu* pCPU, void* pObject, u32 nAddress0, u32 nAddress1, s32 nType) {
+    s32 iDevice;
+    s32 iAddress;
+    u32 nAddressVirtual0;
+    u32 nAddressVirtual1;
+
+    if (nAddress0 == 0 && nAddress1 == 0xFFFFFFFF) {
+        if (!cpuMakeDevice(pCPU, &iDevice, pObject, 0, nAddress0, nAddress1, nType)) {
+            return false;
+        }
+
+        pCPU->iDeviceDefault = iDevice;
+        for (iAddress = 0; iAddress < ARRAY_COUNT(pCPU->aiDevice); iAddress++) {
+            pCPU->aiDevice[iAddress] = iDevice;
+        }
+    } else {
+        //! @bug: nAddress0 should not be added to nOffset (0x80000000) here. The start address
+        //! is computed as nAddress0 + nOffset, so essentially the address gets added twice.
+        if (!cpuMakeDevice(pCPU, &iDevice, pObject, nAddress0 + 0x80000000, nAddress0, nAddress1, nType)) {
+            return false;
+        }
+
+        nAddressVirtual0 = nAddress0 | 0x80000000;
+        nAddressVirtual1 = nAddress1 | 0x80000000;
+        iAddress = nAddressVirtual0 >> 16;
+        while (nAddressVirtual0 < nAddressVirtual1) {
+            pCPU->aiDevice[iAddress] = iDevice;
+            nAddressVirtual0 += 0x10000;
+            iAddress++;
+        }
+
+        //! @bug: nAddress0 should not be added to nOffset (0x60000000) here. The start address
+        //! is computed as nAddress0 + nOffset, so essentially the address gets added twice.
+        if (!cpuMakeDevice(pCPU, &iDevice, pObject, nAddress0 + 0x60000000, nAddress0, nAddress1, nType)) {
+            return false;
+        }
+
+        nAddressVirtual0 = nAddress0 | 0xA0000000;
+        nAddressVirtual1 = nAddress1 | 0xA0000000;
+        iAddress = nAddressVirtual0 >> 16;
+        while (nAddressVirtual0 < nAddressVirtual1) {
+            pCPU->aiDevice[iAddress] = iDevice;
+            nAddressVirtual0 += 0x10000;
+            iAddress++;
+        }
+    }
+
+    return true;
+}
+#else
 bool cpuMapObject(Cpu* pCPU, void* pObject, u32 nAddress0, u32 nAddress1, s32 nType) {
     u32 nSize;
     s32 iDevice;
@@ -11478,6 +11808,7 @@ bool cpuMapObject(Cpu* pCPU, void* pObject, u32 nAddress0, u32 nAddress1, s32 nT
 
     return true;
 }
+#endif
 
 bool cpuGetBlock(Cpu* pCPU, CpuBlock* pBlock) {
     u32 nAddress;
@@ -11502,11 +11833,13 @@ bool cpuGetBlock(Cpu* pCPU, CpuBlock* pBlock) {
         }
     }
 
+#if VERSION >= MK64_J
     pDevice = pCPU->apDevice[pCPU->iDeviceDefault];
 
     if (pDevice != NULL && pDevice->pfGetBlock != NULL) {
         return pDevice->pfGetBlock(pDevice->pObject, pBlock);
     }
+#endif
 
     return false;
 }
@@ -11724,6 +12057,22 @@ static inline bool cpuInitAllDevices(Cpu* pCPU) {
     return true;
 }
 
+static inline bool cpuFreeAllDevices(Cpu* pCPU) {
+    s32 i;
+
+    for (i = 0; i < ARRAY_COUNT(pCPU->apDevice); i++) {
+        if (pCPU->apDevice[i] != NULL) {
+            if (!cpuFreeDevice(pCPU, i)) {
+                return false;
+            }
+        } else {
+            pCPU->apDevice[i] = NULL;
+        }
+    }
+
+    return true;
+}
+
 bool cpuEvent(Cpu* pCPU, s32 nEvent, void* pArgument) {
     s32 i;
 
@@ -11745,6 +12094,11 @@ bool cpuEvent(Cpu* pCPU, s32 nEvent, void* pArgument) {
             }
             break;
         case 3:
+#if IS_SM64
+            if (!cpuFreeAllDevices(pCPU)) {
+                return false;
+            }
+#else
             // using `cpuFreeAllDevices` doesn't work
             for (i = 0; i < ARRAY_COUNT(pCPU->apDevice); i++) {
                 if (pCPU->apDevice[i] != NULL) {
@@ -11753,6 +12107,7 @@ bool cpuEvent(Cpu* pCPU, s32 nEvent, void* pArgument) {
                     }
                 }
             }
+#endif
             break;
         case 0:
         case 0x1003:
@@ -11787,6 +12142,23 @@ bool cpuGetAddressOffset(Cpu* pCPU, s32* pnOffset, u32 nAddress) {
 bool cpuGetAddressBuffer(Cpu* pCPU, void** ppBuffer, u32 nAddress) {
     CpuDevice* pDevice = pCPU->apDevice[pCPU->aiDevice[nAddress >> DEVICE_ADDRESS_OFFSET_BITS]];
 
+#if IS_SM64
+    if ((Ram*)pDevice->pObject == SYSTEM_RAM(gpSystem)) {
+        if (!ramGetBuffer(SYSTEM_RAM(gpSystem), ppBuffer, nAddress + pDevice->nOffsetAddress, NULL)) {
+            return false;
+        }
+
+        return true;
+    } else if (SYSTEM_ROM(gpSystem) == (Rom*)pDevice->pObject) {
+        if (!romGetBuffer(pDevice->pObject, ppBuffer, nAddress + pDevice->nOffsetAddress, NULL)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    return false;
+#else
     if ((Ram*)pDevice->pObject == SYSTEM_RAM(gpSystem)) {
         if (!ramGetBuffer(pDevice->pObject, ppBuffer, nAddress + pDevice->nOffsetAddress, NULL)) {
             return false;
@@ -11804,6 +12176,7 @@ bool cpuGetAddressBuffer(Cpu* pCPU, void** ppBuffer, u32 nAddress) {
     }
 
     return true;
+#endif
 }
 
 bool cpuGetOffsetAddress(Cpu* pCPU, u32* anAddress, s32* pnCount, u32 nOffset, u32 nSize) {
@@ -11871,6 +12244,41 @@ bool cpuInvalidateCache(Cpu* pCPU, s32 nAddress0, s32 nAddress1) {
     return true;
 }
 
+#if IS_SM64
+bool cpuGetFunctionChecksum(Cpu* pCPU, u32* pnChecksum, CpuFunction* pFunction) {
+    s32 nSize;
+    u32* pnBuffer;
+    u32 nChecksum;
+    u32 nData;
+    u32 pad;
+
+    if (pFunction->nChecksum != 0) {
+        *pnChecksum = pFunction->nChecksum;
+        return true;
+    }
+
+    if (!cpuGetAddressBuffer(pCPU, (void**)&pnBuffer, pFunction->nAddress0)) {
+        return false;
+    }
+
+    nChecksum = 0;
+    nSize = ((pFunction->nAddress1 - pFunction->nAddress0) >> 2) + 1;
+
+    while (nSize > 0) {
+        nSize--;
+        nData = *pnBuffer;
+        nData = nData >> 0x1A;
+        nData = nData << ((nSize % 5) * 6);
+        nChecksum += nData;
+        pnBuffer++;
+    }
+
+    *pnChecksum = nChecksum;
+    pFunction->nChecksum = nChecksum;
+
+    return true;
+}
+#else
 bool cpuGetFunctionChecksum(Cpu* pCPU, u32* pnChecksum, CpuFunction* pFunction) {
     s32 nSize;
     u32* pnBuffer;
@@ -11904,6 +12312,7 @@ bool cpuGetFunctionChecksum(Cpu* pCPU, u32* pnChecksum, CpuFunction* pFunction) 
 
     return false;
 }
+#endif
 
 bool cpuHeapTake(void* heap, Cpu* pCPU, CpuFunction* pFunction, int memory_size) {
     s32 done;
@@ -12401,6 +12810,7 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
                 current_address += 4;
             }
 
+#if VERSION >= MK64_J
             if (check == 1) {
                 if (gpSystem->eTypeROM == NM8E) {
                     if (anAddr[2] == 0x802F1FF0) {
@@ -12422,6 +12832,7 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
                     }
                 }
             }
+#endif
 
             if (!treeInsert(pCPU, anAddr[0], anAddr[2])) {
                 return false;
@@ -12704,12 +13115,19 @@ static bool treeKillNodes(Cpu* pCPU, CpuFunction* tree) {
                 kill = current;
                 current = current->prev;
 
+#if IS_SM64
+                treeCallerKill(pCPU, kill);
+                if (kill->pfCode != NULL) {
+                    cpuHeapFree(pCPU, kill);
+                }
+#else
                 if (!fn_80031D4C(pCPU, kill, 2)) {
                     treeCallerKill(pCPU, kill);
                     if (kill->pfCode != NULL) {
                         cpuHeapFree(pCPU, kill);
                     }
                 }
+#endif
 
                 // TODO: regalloc hacks
                 (void)kill->treeheapWhere;
@@ -12728,12 +13146,19 @@ static bool treeKillNodes(Cpu* pCPU, CpuFunction* tree) {
             kill = current;
             current = current->prev;
 
+#if IS_SM64
+            treeCallerKill(pCPU, kill);
+            if (kill->pfCode != NULL) {
+                cpuHeapFree(pCPU, kill);
+            }
+#else
             if (!fn_80031D4C(pCPU, kill, 2)) {
                 treeCallerKill(pCPU, kill);
                 if (kill->pfCode != NULL) {
                     cpuHeapFree(pCPU, kill);
                 }
             }
+#endif
 
             // TODO: regalloc hacks
             (void)kill->treeheapWhere;
@@ -12851,12 +13276,19 @@ static bool treeDeleteNode(Cpu* pCPU, CpuFunction** top, CpuFunction* kill) {
         }
     }
 
+#if IS_SM64
+    treeCallerKill(pCPU, kill);
+    if (kill->pfCode != NULL) {
+        cpuHeapFree(pCPU, kill);
+    }
+#else
     if (!fn_80031D4C(pCPU, kill, 2)) {
         treeCallerKill(pCPU, kill);
         if (kill->pfCode != NULL) {
             cpuHeapFree(pCPU, kill);
         }
     }
+#endif
 
     // TODO: regalloc hacks
     (void)kill->treeheapWhere;
@@ -13253,12 +13685,19 @@ static bool treeKillRange(Cpu* pCPU, CpuFunction* tree, s32 start, s32 end) {
 
         count += treeKillNodes(pCPU, node1);
 
+#if IS_SM64
+        treeCallerKill(pCPU, node1);
+        if (node1->pfCode != NULL) {
+            cpuHeapFree(pCPU, node1);
+        }
+#else
         if (!fn_80031D4C(pCPU, node1, 2)) {
             treeCallerKill(pCPU, node1);
             if (node1->pfCode != NULL) {
                 cpuHeapFree(pCPU, node1);
             }
         }
+#endif
 
         if (!cpuTreeFree(node1)) {
             return false;
@@ -13364,12 +13803,19 @@ static bool treeKillRange(Cpu* pCPU, CpuFunction* tree, s32 start, s32 end) {
 
         count += treeKillNodes(pCPU, node2);
 
+#if IS_SM64
+        treeCallerKill(pCPU, node2);
+        if (node2->pfCode != NULL) {
+            cpuHeapFree(pCPU, node2);
+        }
+#else
         if (!fn_80031D4C(pCPU, node2, 2)) {
             treeCallerKill(pCPU, node2);
             if (node2->pfCode != NULL) {
                 cpuHeapFree(pCPU, node2);
             }
         }
+#endif
 
         if (!cpuTreeFree(node2)) {
             return false;

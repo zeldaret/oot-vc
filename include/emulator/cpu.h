@@ -179,8 +179,10 @@ typedef struct CpuDevice {
     /* 0x24 */ Put32Func pfPut32;
     /* 0x28 */ Put64Func pfPut64;
     /* 0x2C */ GetBlockFunc pfGetBlock;
+#if VERSION >= MK64_J
     /* 0x30 */ u32 nAddressVirtual0;
     /* 0x34 */ u32 nAddressVirtual1;
+#endif
     /* 0x38 */ u32 nAddressPhysical0;
     /* 0x3C */ u32 nAddressPhysical1;
 } CpuDevice; // size = 0x40
