@@ -601,7 +601,7 @@ static bool pifGet64(Pif* pPIF, u32 nAddress, s64* pData) {
     return true;
 }
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
 bool pifSetData(Pif* pPIF, u8* acData) {
     if (!xlHeapCopy(pPIF->pRAM, acData, 0x40)) {
         return false;

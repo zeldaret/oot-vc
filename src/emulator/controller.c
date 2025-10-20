@@ -167,7 +167,7 @@ static inline bool controllerValidateIndex(s32 index) {
 static bool fn_800622B8(Controller* pController) {
     s32 i;
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     pController->unk_220 = 1;
     pController->iString = ERROR_NONE;
 
@@ -671,7 +671,7 @@ bool fn_800631B8(Controller* pController, s32 arg1) {
 
     pController->unk_224 = arg1;
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     if (arg1 != 0) {
         for (var_r31 = 0; var_r31 < 8; var_r31++) {
             VIWaitForRetrace();

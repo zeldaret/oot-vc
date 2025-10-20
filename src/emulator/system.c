@@ -332,7 +332,7 @@ u32 lbl_8016E268[] = {
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
 };
-#elif VERSION >= OOT_J
+#elif VERSION > MK64_E
 // used by Diddy Kong Racing and Paper Mario in systemSetupGameALL
 u32 lbl_8016FEA0[] = {
     0x3C1A8007, 0x275ACEC0, 0x03400008, 0x00000000, 0x3C010010, 0x012A4824, 0x01214823, 0x3C01A460, 0xAC290000,
@@ -649,7 +649,7 @@ static bool systemSetupGameALL(System* pSystem) {
             storageDevice = SOT_FLASH;
             systemSetControllerConfiguration(&gSystemRomConfigurationList, 0x03030303, 0x83838383, true, false);
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             if (pSystem->eTypeROM == NKTJ) {
                 if (!cpuSetCodeHack(pCPU, 0x802A4118, 0x3C068015, -1)) {
                     return false;
@@ -884,7 +884,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NBCJ:
         case NBCP:
         case NBCE:
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
             gSystemRomConfigurationList.storageDevice = SOT_RSP;
             pArgument = 0x1000;
             storageDevice = SOT_FLASH;
@@ -914,7 +914,7 @@ static bool systemSetupGameALL(System* pSystem) {
 #endif
             pArgument = 0x1000;
             storageDevice = SOT_FLASH;
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
             if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pBuffer2, 0x300, NULL)) {
                 return false;
             }
@@ -930,7 +930,7 @@ static bool systemSetupGameALL(System* pSystem) {
                 return false;
             }
             break;
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
         case NDYE:
         case NDYP:
         case NDYJ:
@@ -996,7 +996,7 @@ static bool systemSetupGameALL(System* pSystem) {
             storageDevice = SOT_FLASH;
             pCPU->nCompileFlag |= 0x10;
             break;
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
         case NSIJ:
             pArgument = 0x8000;
             gSystemRomConfigurationList.storageDevice = SOT_PIF;
@@ -1068,7 +1068,7 @@ static bool systemSetupGameALL(System* pSystem) {
                 return false;
             }
             gSystemRomConfigurationList.storageDevice = SOT_AI;
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
             pArgument = 0x4000;
 #endif
             storageDevice = SOT_FLASH;
@@ -1083,12 +1083,12 @@ static bool systemSetupGameALL(System* pSystem) {
         case NMWP:
         case NMWE:
         case NMWJ:
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
             gSystemRomConfigurationList.storageDevice = SOT_RSP;
 #endif
             pArgument = 0x1000;
             storageDevice = SOT_FLASH;
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
             if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pBuffer2, 0x300, NULL)) {
                 return false;
             }
@@ -1099,7 +1099,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NMVP:
         case NMVE:
             gSystemRomConfigurationList.storageDevice = SOT_AI;
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
             pArgument = 0x4000;
 #endif
             storageDevice = SOT_FLASH;
@@ -1108,7 +1108,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NRIE:
         case NRIJ:
             gSystemRomConfigurationList.storageDevice = SOT_AI;
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
             pArgument = 0x4000;
 #endif
             storageDevice = SOT_FLASH;
@@ -1118,7 +1118,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NMQE:
             gSystemRomConfigurationList.storageDevice = SOT_RAM;
             storageDevice = SOT_FLASH;
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
             pArgument = 0x20000;
             if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pBuffer, 0, NULL)) {
                 return false;
@@ -1179,7 +1179,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NGUJ:
         case NGUP:
         case NGUE:
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
             gSystemRomConfigurationList.storageDevice = SOT_RSP;
             pArgument = 0x1000;
             storageDevice = SOT_FLASH;
@@ -1192,7 +1192,7 @@ static bool systemSetupGameALL(System* pSystem) {
                 return false;
             }
             break;
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
         case NSQP:
         case NSQJ:
         case NSQE:
@@ -1225,7 +1225,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NALP:
         case NALE:
             gSystemRomConfigurationList.storageDevice = SOT_AI;
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
             pArgument = 0x4000;
 #endif
             storageDevice = SOT_FLASH;
@@ -1285,7 +1285,7 @@ static bool systemSetupGameALL(System* pSystem) {
             pBuffer[0] = -1;
 #endif
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             if (!cpuSetCodeHack(pCPU, 0x8000017C, 0x14E80006, 0)) {
                 return false;
             }
@@ -1335,11 +1335,11 @@ static bool systemSetupGameALL(System* pSystem) {
         case NYSP:
         case NYSE:
             gSystemRomConfigurationList.storageDevice = SOT_AI;
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
             pArgument = 0x4000;
 #endif
             storageDevice = SOT_FLASH;
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
             if (!ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pBuffer2, 0x300, NULL)) {
                 return false;
             }
@@ -1363,7 +1363,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NBNE:
         case NBNJ:
             gSystemRomConfigurationList.storageDevice = SOT_AI;
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
             pArgument = 0x4000;
 #endif
             storageDevice = SOT_FLASH;
@@ -1377,7 +1377,7 @@ static bool systemSetupGameALL(System* pSystem) {
         case NRBJ:
         case NRBP:
         case NRBE:
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
             gSystemRomConfigurationList.storageDevice = SOT_AI;
             pArgument = 0x4000;
 #endif
@@ -1393,7 +1393,7 @@ static bool systemSetupGameALL(System* pSystem) {
         return false;
     }
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     if (!fn_8005329C(SYSTEM_FRAME(gpSystem), var_r28, var_r27, var_r26)) {
         return false;
     }
@@ -1582,7 +1582,7 @@ static bool systemGetBlock(System* pSystem, CpuBlock* pBlock) {
     return false;
 #else
 
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
     if (pBlock->nAddress1 < 0x04000000) {
         if (!ramGetBuffer(SYSTEM_RAM(gpSystem), &pBuffer, pBlock->nAddress1, &pBlock->nSize)) {
             return false;

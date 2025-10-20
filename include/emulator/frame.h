@@ -281,13 +281,13 @@ typedef struct Frame {
     /* 0x0002C */ s32 unk_2C;
     /* 0x00030 */ s32 unk_30;
     /* 0x00034 */ s32 unk_34;
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     /* 0x00038 */ s32 unk_38;
     /* 0x0003C */ s32 unk_3C;
     /* 0x00040 */ s32 unk_40;
     /* 0x00044 */ s32 unk_44;
 #endif
-#if VERSION >= SM64_E
+#if VERSION > SM64_U
     /* 0x00048 */ u32 unk_48;
 #endif
     /* 0x0004C */ u32 unk_4C;
@@ -312,7 +312,7 @@ typedef struct Frame {
     /* 0x00098 */ u32 nFlag;
     /* 0x0009C */ f32 rScaleX;
     /* 0x000A0 */ f32 rScaleY;
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     /* 0x000A4 */ f32 unk_A4;
     /* 0x000A8 */ f32 unk_A8;
 #endif
@@ -371,7 +371,7 @@ typedef struct Frame {
     /* 0x3E7D0 */ Mtx44 matrixProjection;
     /* 0x3E810 */ Mtx44 matrixProjectionExtra;
     /* 0x3E850 */ MatrixHint aMatrixHint[64];
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     /* 0x3F150 */ Mtx44 unk_3F150;
     /* 0x3F190 */ Mtx44 unk_3F190;
     /* 0x3F1D0 */ Mtx44 unk_3F1D0;

@@ -11,52 +11,52 @@ static bool ramPutControl16(Ram* pRAM, u32 nAddress, s16* pData) { return false;
 static bool ramPutControl32(Ram* pRAM, u32 nAddress, s32* pData) {
     switch (nAddress & 0x3F) {
         case RDRAM_CONFIG:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pRAM->RDRAM_CONFIG_REG = *pData;
 #endif
             break;
         case RDRAM_DEVICE_ID:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pRAM->RDRAM_DEVICE_ID_REG = *pData;
 #endif
             break;
         case RDRAM_DELAY:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pRAM->RDRAM_DELAY_REG = *pData;
 #endif
             break;
         case RDRAM_MODE:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pRAM->RDRAM_MODE_REG = *pData;
 #endif
             break;
         case RDRAM_REF_INTERVAL:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pRAM->RDRAM_REF_INTERVAL_REG = *pData;
 #endif
             break;
         case RDRAM_REF_NOW:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pRAM->RDRAM_REF_ROW_REG = *pData;
 #endif
             break;
         case RDRAM_RAS_INTERVAL:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pRAM->RDRAM_RAS_INTERVAL_REG = *pData;
 #endif
             break;
         case RDRAM_MIN_INTERVAL:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pRAM->RDRAM_MIN_INTERVAL_REG = *pData;
 #endif
             break;
         case RDRAM_ADDR_SELECT:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pRAM->RDRAM_ADDR_SELECT_REG = *pData;
 #endif
             break;
         case RDRAM_DEVICE_MANUF:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pRAM->RDRAM_DEVICE_MANUF_REG = *pData;
 #endif
             break;
@@ -78,58 +78,58 @@ static bool ramGetControl8(Ram* pRAM, u32 nAddress, s8* pData) { return false; }
 static bool ramGetControl16(Ram* pRAM, u32 nAddress, s16* pData) { return false; }
 
 static bool ramGetControl32(Ram* pRAM, u32 nAddress, s32* pData) {
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     *pData = 0;
 #endif
 
     switch (nAddress & 0x3F) {
         case RDRAM_CONFIG:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = pRAM->RDRAM_CONFIG_REG;
 #endif
             break;
         case RDRAM_DEVICE_ID:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = pRAM->RDRAM_DEVICE_ID_REG;
 #endif
             break;
         case RDRAM_DELAY:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = pRAM->RDRAM_DELAY_REG;
 #endif
             break;
         case RDRAM_MODE:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = pRAM->RDRAM_MODE_REG;
 #endif
             break;
         case RDRAM_REF_INTERVAL:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = pRAM->RDRAM_REF_INTERVAL_REG;
 #endif
             break;
         case RDRAM_REF_NOW:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = pRAM->RDRAM_REF_ROW_REG;
 #endif
             break;
         case RDRAM_RAS_INTERVAL:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = pRAM->RDRAM_RAS_INTERVAL_REG;
 #endif
             break;
         case RDRAM_MIN_INTERVAL:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = pRAM->RDRAM_MIN_INTERVAL_REG;
 #endif
             break;
         case RDRAM_ADDR_SELECT:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = pRAM->RDRAM_ADDR_SELECT_REG;
 #endif
             break;
         case RDRAM_DEVICE_MANUF:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = pRAM->RDRAM_DEVICE_MANUF_REG;
 #endif
             break;
@@ -153,12 +153,12 @@ static bool ramPutRI16(Ram* pRAM, u32 nAddress, s16* pData) { return false; }
 static bool ramPutRI32(Ram* pRAM, u32 nAddress, s32* pData) {
     switch (nAddress & 0x1F) {
         case RI_MODE:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pRAM->RI_MODE_REG = *pData & 0xF;
 #endif
             break;
         case RI_CONFIG:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pRAM->RI_CONFIG_REG = *pData & 0x7F;
 #endif
         case RI_CURRENT_LOAD:
@@ -166,17 +166,17 @@ static bool ramPutRI32(Ram* pRAM, u32 nAddress, s32* pData) {
         case RI_WERROR:
             break;
         case RI_SELECT:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pRAM->RI_SELECT_REG = *pData & 0x7;
 #endif
             break;
         case RI_REFRESH:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pRAM->RI_REFRESH_REG = *pData;
 #endif
             break;
         case RI_LATENCY:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pRAM->RI_LATENCY_REG = *pData & 0xF;
 #endif
             break;
@@ -200,12 +200,12 @@ static bool ramGetRI16(Ram* pRAM, u32 nAddress, s16* pData) { return false; }
 static bool ramGetRI32(Ram* pRAM, u32 nAddress, s32* pData) {
     switch (nAddress & 0x1F) {
         case RI_MODE:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = pRAM->RI_MODE_REG & 0xF;
 #endif
             break;
         case RI_CONFIG:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = pRAM->RI_CONFIG_REG & 0x7F;
 #endif
             break;
@@ -213,22 +213,22 @@ static bool ramGetRI32(Ram* pRAM, u32 nAddress, s32* pData) {
         case RI_WERROR:
             break;
         case RI_SELECT:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = pRAM->RI_SELECT_REG & 7;
 #endif
             break;
         case RI_REFRESH:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = pRAM->RI_REFRESH_REG;
 #endif
             break;
         case RI_LATENCY:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = pRAM->RI_LATENCY_REG & 0xF;
 #endif
             break;
         case RI_RERROR:
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             *pData = 0;
 #endif
             break;

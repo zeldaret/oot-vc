@@ -757,7 +757,7 @@ static inline void fn_8004A314_inline(Mtx44 mtx, f32 a[4], f32 d) {
     a[3] /= length;
 }
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
 void fn_8004A314(Frame* pFrame) {
     Mtx44 sp28;
     f32 sp18[4];
@@ -1116,7 +1116,7 @@ bool frameDrawSetupFog_StarFox(Frame* pFrame) {
     rMultiplier = (s16)(pFrame->aMode[0] >> 16);
     rOffset = (s16)(pFrame->aMode[0] & 0xFFFF);
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     rFar = pFrame->unk_3F210;
     rNear = pFrame->unk_3F214;
 #endif
@@ -1132,7 +1132,7 @@ bool frameDrawSetupFog_StarFox(Frame* pFrame) {
     var_f6 = -rOffset;
     var_f9 = var_f6 / rMultiplier;
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     rStart = pFrame->unk_3F150[3][2] / (var_f9 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
 #endif
 
@@ -1157,7 +1157,7 @@ bool frameDrawSetupFog_StarFox(Frame* pFrame) {
             var_f6 = 1.0f;
         }
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
         rEnd = pFrame->unk_3F150[3][2] / (var_f6 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
 #endif
 
@@ -1986,7 +1986,7 @@ static inline void frameSetZMode(Frame* pFrame) {
                 GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
             }
         } else {
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             switch (gpSystem->eTypeROM) {
                 case CZLJ:
                 case CZLE:
@@ -2335,7 +2335,7 @@ static bool frameDrawSetupDP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 ver
                     if (!frameDrawSetupFog_StarFox(pFrame)) {
                         return false;
                     }
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
                 case CZLJ:
                 case CZLE:
                 case NZLP:
@@ -3456,7 +3456,7 @@ bool frameBegin(Frame* pFrame, s32 nCountVertex) {
             OSReport(lbl_80172948);
         }
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
         if (pFrame->aBuffer[FBT_DEPTH].pData != NULL) {
             if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
                 fn_8004BDF4(pFrame->aBuffer[FBT_DEPTH].pData);
@@ -3471,7 +3471,7 @@ bool frameBegin(Frame* pFrame, s32 nCountVertex) {
         xlCoreBeforeRender();
         pFrame->nMode &= ~0x180000;
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
         fn_80052174(pFrame);
 #endif
 
@@ -3530,7 +3530,7 @@ bool frameEnd(Frame* pFrame) {
     pCPU = SYSTEM_CPU(gpSystem);
 
     if (gbFrameBegin) {
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
         return true;
 #endif
     }
@@ -3590,7 +3590,7 @@ bool frameEnd(Frame* pFrame) {
         if (pFrame->unk_30 != 0 && lbl_8025D168 >= 2) {
             frameEnd_UnknownInline(pFrame, 93);
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
         } else if (pFrame->unk_38 != 0 && lbl_8025D168 == 3 && gpSystem->eTypeROM == NKTP) {
             frameEnd_UnknownInline(pFrame, 73);
         } else if (pFrame->unk_3C && lbl_8025D168 == 3 && (gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTJ)) {
@@ -3616,7 +3616,7 @@ bool frameEnd(Frame* pFrame) {
 
         fn_8004B940(pFrame, pCPU);
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     } else if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
         s32 var_r29;
 
@@ -3673,7 +3673,7 @@ bool frameEnd(Frame* pFrame) {
 
 #if VERSION < MK64_J
     GXCopyDisp(DemoCurrentBuffer, GX_TRUE);
-#elif VERSION >= MK64_J
+#elif VERSION > SM64_E
     fn_8004BF58(pFrame);
     GXCopyDisp(DemoCurrentBuffer, GX_FALSE);
 #endif
@@ -3915,7 +3915,7 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
             pFrame->rScaleX = (f32)pFrame->anSizeX[FS_TARGET] / (f32)N64_FRAME_WIDTH;
             pFrame->rScaleY = (f32)pFrame->anSizeY[FS_TARGET] / (f32)N64_FRAME_HEIGHT;
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pFrame->unk_A4 = pFrame->unk_A8 = 0.0f;
 #endif
 
@@ -3926,7 +3926,7 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
                 pFrame->rScaleX = GC_FRAME_WIDTH / (f32)pFrame->anSizeX[FS_SOURCE];
                 pFrame->rScaleY = temp_r7 / (f32)pFrame->anSizeY[FS_SOURCE];
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
                 pFrame->unk_A4 = pFrame->unk_A8 = 0.0f;
 #endif
             }
@@ -3939,14 +3939,14 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
             pFrame->unk_30 = 0;
             pFrame->unk_34 = 0;
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pFrame->unk_38 = 0;
             pFrame->unk_3C = 0;
             pFrame->unk_40 = 0;
             pFrame->unk_44 = 0;
 #endif
 
-#if VERSION >= SM64_E
+#if VERSION > SM64_U
             pFrame->unk_48 = 0;
 #endif
 
@@ -4063,13 +4063,13 @@ bool frameSetSize(Frame* pFrame, FrameSize eSize, s32 nSizeX, s32 nSizeY) {
         if (eSize == FS_SOURCE) {
             pFrame->rScaleX = (f32)pFrame->anSizeX[FS_TARGET] / nSizeX;
             pFrame->rScaleY = (f32)pFrame->anSizeY[FS_TARGET] / nSizeY;
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pFrame->unk_A4 = pFrame->unk_A8 = 0.0f;
 #endif
         } else if (eSize == FS_TARGET) {
             pFrame->rScaleX = (f32)nSizeX / pFrame->anSizeX[FS_SOURCE];
             pFrame->rScaleY = (f32)nSizeY / pFrame->anSizeY[FS_SOURCE];
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
             pFrame->unk_A4 = pFrame->unk_A8 = 0.0f;
 #endif
         }

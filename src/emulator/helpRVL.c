@@ -1082,7 +1082,7 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
 
 #if VERSION == SM64_J || VERSION == SM64_U
             C_MTXOrtho(matrix44_4, 228.0f, -237.12f, -304.0f, 310.08f, 0.0f, 500.0f);
-#elif VERSION >= SM64_E && VERSION < OOT_J
+#elif VERSION > SM64_U && VERSION < OOT_J
             if (fn_8007FC84()) {
                 C_MTXOrtho(matrix44_4, 224.0f, -227.58401f, -304.0f, 304.0f, 0.0f, 500.0f);
             } else {

@@ -46,7 +46,7 @@ typedef enum ErrorIndex {
     ERROR_REMOTE_BATTERY,
     // "Communications with the Wii Remote have been interrupted."
     ERROR_REMOTE_COMMUNICATION,
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
     // ""
     ERROR_BLANK,
 #endif

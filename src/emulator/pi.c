@@ -28,7 +28,7 @@ bool piDMA_Complete(CpuBlock* pBlock, bool bUnknown) {
             return false;
         }
     } else {
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
         return false;
 #endif
     }
@@ -82,7 +82,7 @@ bool piPut32(PI* pPI, u32 nAddress, s32* pData) {
         case 0x08:
             pPI->nSizeGet = *pData & 0xFFFFFF;
 
-#if VERSION >= SM64_E
+#if VERSION > SM64_U
             nSize = (pPI->nSizeGet + 1) & ~1;
 #endif
 
@@ -107,7 +107,7 @@ bool piPut32(PI* pPI, u32 nAddress, s32* pData) {
         case 0x0C:
             pPI->nSizePut = *pData & 0xFFFFFF;
 
-#if VERSION >= SM64_E
+#if VERSION > SM64_U
             nSize = (pPI->nSizePut + 1) & ~1;
 #endif
 

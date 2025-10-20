@@ -1065,7 +1065,7 @@ void guOrthoF(Cpu* pCPU) {
     data.f32 = 1.0f;
     mf[3 * 4 + 3] = data.u32;
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, pCPU->aGPR[4].u32, 0, n, f, 0.0f, 0.0f, scale,
                        (void*)mf);
 #endif
@@ -1143,7 +1143,7 @@ void guOrtho(Cpu* pCPU) {
     mf[3][2] = -(f + n) / (f - n);
     mf[3][3] = 1.0f;
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_ORTHOGRAPHIC, 0, pCPU->aGPR[4].u32, n, f, 0.0f, 0.0f, scale,
                        (void*)mf);
 #endif
@@ -1233,7 +1233,7 @@ void guPerspectiveF(Cpu* pCPU) {
     data.f32 = 0.0f;
     mf[3 * 4 + 3] = data.u32;
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, pCPU->aGPR[4].u32, 0, rNear, rFar, fovy, aspect, scale,
                        (void*)mf);
 #endif
@@ -1306,7 +1306,7 @@ void guPerspective(Cpu* pCPU) {
     mf[3][2] = 2 * rNear * rFar / (rNear - rFar);
     mf[3][3] = 0.0f;
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     frameSetMatrixHint(SYSTEM_FRAME(gpSystem), FMP_PERSPECTIVE, 0, pCPU->aGPR[4].u32, rNear, rFar, fovy, aspect, scale,
                        (void*)mf);
 #endif
@@ -3309,7 +3309,7 @@ LibraryFunc gaFunction[] = {
 #endif
     },
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     {
         NULL,
         (LibraryFuncImpl)fn_8005B6D8,
@@ -3344,14 +3344,14 @@ LibraryFunc gaFunction[] = {
     },
 #endif // VERSION > MK64_E
 
-#endif // VERSION >= MK64_J
+#endif // VERSION > SM64_E
 
     {
         NULL,
         (LibraryFuncImpl)GenPerspective_1080,
         {0x0000002F, 0x3879CA27},
     },
-#if VERSION >= SM64_E
+#if VERSION > SM64_U
     {
         NULL,
         (LibraryFuncImpl)fn_8005B708,
@@ -3364,7 +3364,7 @@ LibraryFunc gaFunction[] = {
         {0x00000057, 0x426B0B1F, 0x00000067, 0x325CC939},
     },
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
     {
         NULL,
         (LibraryFuncImpl)fn_8005B710,
@@ -3379,7 +3379,7 @@ LibraryFunc gaFunction[] = {
     },
 #endif // VERSION > MK64_E
 
-#endif // VERSION >= MK64_J
+#endif // VERSION > SM64_E
 };
 
 static bool libraryFindException(Library* pLibrary, bool bException) {
@@ -3802,7 +3802,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                     }
                 }
 
-#if VERSION >= SM64_E
+#if VERSION > SM64_U
             } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B708) {
 
 #if VERSION < OOT_J
@@ -3827,7 +3827,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                     pFrame->unk_4C++;
                     treeCleanUpCheck(SYSTEM_CPU(gpSystem), NULL);
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
                 } else if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
                     bDone = true;
                     bFlag = false;
@@ -3901,7 +3901,7 @@ bool libraryTestFunction(Library* pLibrary, CpuFunction* pFunction) {
                         pFrame->unk_40 = 0;
 #endif
 
-#if VERSION >= MK64_J
+#if VERSION > SM64_E
                     } else if (gaFunction[iFunction].pfLibrary == (LibraryFuncImpl)fn_8005B6D8) {
                         pFrame->unk_30 = 0;
                         bDone = true;

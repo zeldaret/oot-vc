@@ -27,7 +27,7 @@
 static s32 fn_80063680(EDString* pEDString);
 static s32 errorDisplayReturnToMenu(EDString* pEDString);
 
-#if VERSION >= SM64_E
+#if VERSION > SM64_U
 static EDStringInfo sStringBase[] = {
     {SID_ERROR_INS_SPACE, 0, NULL, 0x00000000, 0x00000000},
     {SID_ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU, 0, NULL, 0x00000000, 0x00000000},
@@ -41,7 +41,7 @@ static EDStringInfo sStringBase[] = {
     {SID_ERROR_REMOTE_BATTERY, 0, NULL, 0x00000000, 0x00000000},
     {SID_ERROR_REMOTE_COMMUNICATION, 0, NULL, 0x00000000, 0x00000000},
     {SID_ERROR_BLANK, 0, NULL, 0x00000000, 0x00000000},
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
     {SID_NONE, 0, NULL, 0x00000000, 0x00000000},
 #endif
 };
@@ -377,7 +377,7 @@ ErrorDisplay sStringDraw[] = {
         0,
         0,
     },
-#if VERSION >= OOT_J
+#if VERSION > MK64_E
     {
         {&sStringBase[ERROR_BLANK], FLAG_RESET_FADE_TIMER, 0, 0},
         {
@@ -601,7 +601,7 @@ static void fn_80063764(EDStringInfo* pStringInfo) {
 }
 
 static void fn_80063910(ErrorDisplay* pErrorDisplay) {
-#if VERSION >= SM64_E
+#if VERSION > SM64_U
     s32 i;
 
     pErrorDisplay->unk3C = 0;
@@ -775,7 +775,7 @@ void errorDisplayInit(void) {
     xlFileLoad(pDisplayFiles->szSaveCommentsFilename, (void**)&sBufferSaveCommentStrings);
     sFontHeader = DEMOInitROMFont();
 
-#if VERSION >= SM64_E
+#if VERSION > SM64_U
     pStringInfo = &sStringBase[ERROR_INS_SPACE];
     for (iInfo = 0; iInfo < ARRAY_COUNT(sStringBase); iInfo++) {
         fn_80063764(pStringInfo);
