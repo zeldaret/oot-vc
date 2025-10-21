@@ -761,7 +761,7 @@ static bool rspGeometryMode(Rsp* pRSP, s32 nSet, s32 nClr) {
 
 static bool rspParseGBI_F3DEX2(Rsp* pRSP, u64** ppnGBI, bool* pbDone) {
     s32 iVertex;
-    bool bDone = false;
+    bool bDone;
     Mtx44 matrix;
     Primitive primitive;
     u64* pnGBI;
@@ -771,10 +771,10 @@ static bool rspParseGBI_F3DEX2(Rsp* pRSP, u64** ppnGBI, bool* pbDone) {
 
     pnGBI = *ppnGBI;
     pFrame = SYSTEM_FRAME(gpSystem);
-    nCommandHi = GBI_COMMAND_HI(pnGBI);
     nCommandLo = GBI_COMMAND_LO(pnGBI);
+    nCommandHi = GBI_COMMAND_HI(pnGBI);
 
-    bDone = 0;
+    bDone = false;
 
     *ppnGBI = ++pnGBI;
     pFrame->pnGBI = pnGBI;
@@ -1189,11 +1189,11 @@ static bool rspParseGBI_F3DEX2(Rsp* pRSP, u64** ppnGBI, bool* pbDone) {
                         u32 iVtxIndex;
                         s16 vertex[3];
                         zVtxDest destVtx;
-                        s32 i;
+                        s32 i = 0;
 
-                        for (i = 0; i < 3; i++) {
-                            vertex[i] = ((s16*)pRSP->pDMEM)[nSrcAdrs / 2 + i];
-                        }
+                        vertex[0] = ((s16*)pRSP->pDMEM)[nSrcAdrs / 2 + i];
+                        vertex[1] = ((s16*)pRSP->pDMEM)[nSrcAdrs / 2 + ++i];
+                        vertex[2] = ((s16*)pRSP->pDMEM)[nSrcAdrs / 2 + ++i];
 
                         bFound = false;
                         for (iVtxIndex = 0; iVtxIndex < pRSP->nNumZSortVertices; iVtxIndex++) {
@@ -1235,6 +1235,8 @@ static bool rspParseGBI_F3DEX2(Rsp* pRSP, u64** ppnGBI, bool* pbDone) {
         case 0xD5:
             break;
         case 0xD4:
+            //! TODO: remove hack
+            asm { b end }
             break;
         case 0xD3:
             if (pRSP->eTypeUCode == RUT_ZSORT && pRSP->nVersionUCode == 3) { // ZSORT: G_ZS_LIGHTING_L
@@ -1242,6 +1244,8 @@ static bool rspParseGBI_F3DEX2(Rsp* pRSP, u64** ppnGBI, bool* pbDone) {
                     return false;
                 }
             }
+            //! TODO: remove hack
+            asm { b end }
             break;
         case 0xD2:
             break;
@@ -1583,5 +1587,6 @@ static bool rspParseGBI_F3DEX2(Rsp* pRSP, u64** ppnGBI, bool* pbDone) {
             return false;
     }
 
+end:
     return true;
 }
