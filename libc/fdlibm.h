@@ -45,7 +45,6 @@ double fmod(double x, double y);
 double pow(double x, double y);
 double sqrt(double x);
 double log(double x);
-float tanf(float x);
 float log10f(float x);
 
 // In reality, these are "weak" functions which all have C++ names (except scalbn).

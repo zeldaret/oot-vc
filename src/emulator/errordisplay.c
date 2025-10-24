@@ -22,10 +22,12 @@
 #include "revolution/nand.h"
 #include "revolution/os.h"
 #include "revolution/vi.h"
+#include "versions.h"
 
 static s32 fn_80063680(EDString* pEDString);
 static s32 errorDisplayReturnToMenu(EDString* pEDString);
 
+#if VERSION >= SM64_E
 static EDStringInfo sStringBase[] = {
     {SID_ERROR_INS_SPACE, 0, NULL, 0x00000000, 0x00000000},
     {SID_ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU, 0, NULL, 0x00000000, 0x00000000},
@@ -39,9 +41,175 @@ static EDStringInfo sStringBase[] = {
     {SID_ERROR_REMOTE_BATTERY, 0, NULL, 0x00000000, 0x00000000},
     {SID_ERROR_REMOTE_COMMUNICATION, 0, NULL, 0x00000000, 0x00000000},
     {SID_ERROR_BLANK, 0, NULL, 0x00000000, 0x00000000},
+#if VERSION >= OOT_J
     {SID_NONE, 0, NULL, 0x00000000, 0x00000000},
+#endif
 };
+#endif
 
+#if VERSION == SM64_J || VERSION == SM64_U
+ErrorDisplay sStringDraw[] = {
+    {
+        {SID_ERROR_INS_SPACE, 0, 0, 0},
+        {
+            {
+                {SID_ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU, FLAG_COLOR_WHITE, 0, 0, 0},
+                0,
+                0,
+                errorDisplayReturnToMenu,
+            },
+        },
+        1,
+        NULL,
+        0,
+        0,
+        0,
+        0,
+    },
+    {
+        {SID_ERROR_INS_INNODE, 0, 0, 0},
+        {
+            {
+                {SID_ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU, FLAG_COLOR_WHITE, 0, 0, 0},
+                0,
+                0,
+                errorDisplayReturnToMenu,
+            },
+        },
+        1,
+        NULL,
+        0,
+        0,
+        0,
+        0,
+    },
+    {
+        {SID_ERROR_SYS_CORRUPT, 0, 0, 0},
+        {0},
+        0,
+        NULL,
+        0,
+        0,
+        0,
+        0,
+    },
+    {
+        {SID_ERROR_DATA_CORRUPT, 0, 0, 0},
+        {
+            {
+                {SID_ERROR_CHOICE_PRESS_A_TO_RETURN_TO_MENU, FLAG_COLOR_WHITE, 0, 0, 0},
+                0x0000,
+                0x00000000,
+                errorDisplayReturnToMenu,
+            },
+        },
+        1,
+        NULL,
+        0,
+        0,
+        0,
+        0,
+    },
+    {
+        {SID_ERROR_MAX_BLOCKS, 0, 0, 0},
+        {0},
+        0,
+        NULL,
+        0,
+        0,
+        0,
+        0,
+    },
+    {
+        {SID_ERROR_MAX_FILES, 0, 0, 0},
+        {0},
+        0,
+        NULL,
+        0,
+        0,
+        0,
+        0,
+    },
+    {
+        {SID_ERROR_SYS_CORRUPT, 0, 0, 0},
+        {0},
+        0,
+        NULL,
+        0,
+        0,
+        0,
+        0,
+    },
+    {
+        {SID_ERROR_NO_CONTROLLER, FLAG_RESET_FADE_TIMER, 0, 0},
+        {
+            {
+                {SID_ERROR_BLANK, FLAG_COLOR_WHITE, 0, 0, 0},
+                0,
+                0,
+                fn_80063680,
+            },
+        },
+        0,
+        fn_80042E30,
+        120,
+        0,
+        0,
+        0,
+    },
+    {
+        {SID_ERROR_NO_CONTROLLER, 0, 0, 0},
+        {
+            {
+                {SID_ERROR_NEED_CLASSIC, FLAG_RESET_FADE_TIMER | FLAG_COLOR_YELLOW, 0, 0, 0},
+                0,
+                0,
+                fn_80063680,
+            },
+        },
+        1,
+        fn_80062028,
+        120,
+        0,
+        0,
+        0,
+    },
+    {
+        {SID_ERROR_REMOTE_BATTERY, 0, 0, 0},
+        {
+            {
+                {SID_ERROR_BLANK, FLAG_COLOR_WHITE, 0, 0, 0},
+                0,
+                0,
+                fn_80063680,
+            },
+        },
+        1,
+        fn_80062028,
+        0,
+        0,
+        0,
+        0,
+    },
+    {
+        {SID_ERROR_REMOTE_COMMUNICATION, FLAG_COLOR_WHITE, 0, 0},
+        {
+            {
+                {SID_ERROR_BLANK, FLAG_COLOR_WHITE, 0, 0, 0},
+                0,
+                0,
+                fn_80063680,
+            },
+        },
+        1,
+        fn_80062028,
+        0,
+        0,
+        0,
+        0,
+    },
+};
+#else
 ErrorDisplay sStringDraw[] = {
     {
         {&sStringBase[ERROR_INS_SPACE], FLAG_COLOR_WHITE, 0, 0},
@@ -209,6 +377,7 @@ ErrorDisplay sStringDraw[] = {
         0,
         0,
     },
+#if VERSION >= OOT_J
     {
         {&sStringBase[ERROR_BLANK], FLAG_RESET_FADE_TIMER, 0, 0},
         {
@@ -227,7 +396,9 @@ ErrorDisplay sStringDraw[] = {
         0,
         0,
     },
+#endif
 };
+#endif
 
 struct_80174988 lbl_80174988[] = {
     {NAND_RESULT_ACCESS, ERROR_NULL},
@@ -250,13 +421,13 @@ struct_80174988 lbl_80174988[] = {
 };
 
 static DisplayFiles sSTFiles[] = {
-#if VERSION == OOT_J
+#if REGION_JP
     {SC_LANG_JP, "Errors_VC64ErrorStrings_jp.bin", "saveComments_saveComments_jp.bin"},
-#elif VERSION == OOT_U
+#elif REGION_US
     {SC_LANG_EN, "Errors_VC64ErrorStrings_en.bin", "saveComments_saveComments_en.bin"},
     {SC_LANG_FR, "Errors_VC64ErrorStrings_fr.bin", "saveComments_saveComments_fr.bin"},
     {SC_LANG_SP, "Errors_VC64ErrorStrings_es.bin", "saveComments_saveComments_es.bin"},
-#elif VERSION == OOT_E
+#elif REGION_EU
     {SC_LANG_EN, "Errors_VC64ErrorStrings_en.bin", "saveComments_saveComments_en.bin"},
     {SC_LANG_FR, "Errors_VC64ErrorStrings_fr.bin", "saveComments_saveComments_fr.bin"},
     {SC_LANG_SP, "Errors_VC64ErrorStrings_es.bin", "saveComments_saveComments_es.bin"},
@@ -430,6 +601,7 @@ static void fn_80063764(EDStringInfo* pStringInfo) {
 }
 
 static void fn_80063910(ErrorDisplay* pErrorDisplay) {
+#if VERSION >= SM64_E
     s32 i;
 
     pErrorDisplay->unk3C = 0;
@@ -455,6 +627,7 @@ static void fn_80063910(ErrorDisplay* pErrorDisplay) {
 
         pErrorDisplay->unk3C += pErrorDisplay->action[i].message.nShiftY;
     }
+#endif
 }
 
 /**
@@ -519,7 +692,12 @@ static void errorDisplayPrint(EDString* pEDString) {
     }
 
     errorDisplayPrintMessage(&pErrorDisplay->message, nHeight, pErrorDisplay->unk38, WHITE);
+
+#if VERSION == SM64_J || VERSION == SM64_U
+    nHeight += pErrorDisplay->nShiftY;
+#else
     nHeight += pErrorDisplay->message.nShiftY;
+#endif
 
     i = 0;
     while (i < pErrorDisplay->nAction) {
@@ -597,11 +775,13 @@ void errorDisplayInit(void) {
     xlFileLoad(pDisplayFiles->szSaveCommentsFilename, (void**)&sBufferSaveCommentStrings);
     sFontHeader = DEMOInitROMFont();
 
+#if VERSION >= SM64_E
     pStringInfo = &sStringBase[ERROR_INS_SPACE];
     for (iInfo = 0; iInfo < ARRAY_COUNT(sStringBase); iInfo++) {
         fn_80063764(pStringInfo);
         pStringInfo++;
     }
+#endif
 
     pErrorDisplay = &sStringDraw[0];
     for (iError = 0; iError < ARRAY_COUNT(sStringDraw); iError++) {

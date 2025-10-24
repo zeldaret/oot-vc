@@ -6,6 +6,7 @@
 #include "macros.h"
 #include "revolution/os.h"
 #include "revolution/types.h"
+#include "versions.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -178,8 +179,10 @@ typedef struct CpuDevice {
     /* 0x24 */ Put32Func pfPut32;
     /* 0x28 */ Put64Func pfPut64;
     /* 0x2C */ GetBlockFunc pfGetBlock;
+#if VERSION >= MK64_J
     /* 0x30 */ u32 nAddressVirtual0;
     /* 0x34 */ u32 nAddressVirtual1;
+#endif
     /* 0x38 */ u32 nAddressPhysical0;
     /* 0x3C */ u32 nAddressPhysical1;
 } CpuDevice; // size = 0x40
@@ -297,6 +300,9 @@ struct Cpu {
     /* 0x00B5C */ CpuExecuteFunc pfRamF;
     /* 0x00B60 */ CpuDevice* apDevice[256];
     /* 0x00F60 */ u8 aiDevice[1 << DEVICE_ADDRESS_INDEX_BITS];
+#if VERSION == MK64_J || VERSION == MK64_U || VERSION == MK64_E
+    u8 pad1[0x100];
+#endif
     /* 0x10F60 */ void* gHeap1;
     /* 0x10F64 */ void* gHeap2;
     /* 0x10F68 */ u32 aHeap1Flag[192];
@@ -310,10 +316,12 @@ struct Cpu {
     /* 0x1221C */ u32 nFlagRAM;
     /* 0x12220 */ u32 nFlagCODE;
     /* 0x12224 */ u32 nCompileFlag;
+#if VERSION >= MK64_J
     /* 0x12228 */ s32 unk_12228[18];
+#endif
     /* 0x12270 */ CpuOptimize nOptimize;
     /* 0x12298 */ s64 nTimeRetrace;
-    /* 0x122A0 */ u8 pad[0x30];
+    /* 0x122A0 */ u8 pad2[0x30];
 }; // size = 0x122D0
 
 #define CPU_DEVICE(apDevice, aiDevice, nAddress) (apDevice[aiDevice[(u32)(nAddress) >> DEVICE_ADDRESS_OFFSET_BITS]])

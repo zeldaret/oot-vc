@@ -3,6 +3,7 @@
 #include "revolution/hbm/homebutton/HBMController.hpp"
 
 #include "string.h"
+#include "versions.h"
 
 namespace homebutton {
 
@@ -70,9 +71,15 @@ void RemoteSpk::UpdateSpeaker(OSAlarm*, OSContext*) {
             } else {
                 pinfo->cannotSendCnt++;
 
+#if HBM_REVISION == 1
+                if (pinfo->cannotSendCnt > 300) {
+                    pinfo->in_pcm = nullptr;
+                }
+#else
                 if (pinfo->cannotSendCnt > 60) {
                     pinfo->in_pcm = nullptr;
                 }
+#endif
             }
 
             OSRestoreInterrupts(intrStatus);
@@ -107,14 +114,26 @@ RemoteSpk::RemoteSpk(void* spkSeBuf) {
 }
 
 RemoteSpk::~RemoteSpk(void) {
+#if HBM_REVISION > 1
     SetInstance(nullptr);
+#endif
+
     available = false;
 
     OSCancelAlarm(&speakerAlarm);
 
     for (int i = 0; i < WPAD_MAX_CONTROLLERS; i++) {
+
+#if HBM_REVISION == 1
+        WPADControlSpeaker(i, WPAD_SPEAKER_OFF, nullptr);
+#endif
+
         OSCancelAlarm(&info[i].alarm);
     }
+
+#if HBM_REVISION == 1
+    SetInstance(nullptr);
+#endif
 }
 
 void RemoteSpk::Start(void) {

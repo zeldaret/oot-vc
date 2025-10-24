@@ -9,6 +9,7 @@
 #include "mem_funcs.h"
 #include "revolution/nand.h"
 #include "revolution/os.h"
+#include "versions.h"
 
 #define STORE_OBJ (*(Store**)ppObject)
 
@@ -118,6 +119,7 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
             return true;
         }
 
+#if VERSION >= OOT_J
         if (arg2 == 0) {
             DCInvalidateRange(arg1, arg3);
 
@@ -128,6 +130,7 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
 
             break;
         }
+#endif
 
         var_r29 = arg2 / 32;
         if (NANDSeek(&pStore->nandFileInfo, var_r29 * 32, NAND_SEEK_BEG) < 0) {
@@ -135,10 +138,12 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
             continue;
         }
 
-        var_r28 = var_r29 * 32;
         var_r27 = arg2;
         var_r26 = arg3;
+
         while (var_r26 > 0) {
+            var_r28 = var_r29 * 32;
+
             DCInvalidateRange(pStore->unk_9C, 0x20);
 
             if (NANDRead(&pStore->nandFileInfo, pStore->unk_9C, 0x20) < 0) {
@@ -159,7 +164,7 @@ static bool fn_800618D4(Store* pStore, void* arg1, s32 arg2, s32 arg3) {
             var_r26 -= var_r5;
             var_r27 += var_r5;
             var_r26 -= var_r5; // again?
-            var_r28 += 0x20;
+            var_r29++;
         }
 
         if (var_r26 <= 0) {
@@ -251,6 +256,12 @@ static inline void fn_80061DB8_Inline(Store* pStore) {
     }
 }
 
+#if VERSION < OOT_J
+#define IS_PSTORE_NULL(pStore) true
+#else
+#define IS_PSTORE_NULL(pStore) pStore != NULL
+#endif
+
 bool fn_80061DB8(void) {
     Flash* pFlash;
     Sram* pSram;
@@ -264,7 +275,10 @@ bool fn_80061DB8(void) {
     pFlash = SYSTEM_FLASH(gpSystem);
 
     if (pFlash != NULL) {
-        if (pFlash->pStore != NULL) {
+        if (IS_PSTORE_NULL(pFlash->pStore)) {
+#if VERSION < OOT_J
+            fn_80061DB8_Inline(pFlash->pStore);
+#else
             pStore = pFlash->pStore;
 
             interrupts = OSDisableInterrupts();
@@ -278,18 +292,19 @@ bool fn_80061DB8(void) {
             if (pStore->unk_B8 != 0 && unk_B9 == 1) {
                 fn_80061CAC(pStore);
             }
+#endif
         }
     }
 
     if (pSram != NULL) {
-        if (pSram->pStore != NULL) {
+        if (IS_PSTORE_NULL(pSram->pStore)) {
             fn_80061DB8_Inline(pSram->pStore);
         }
     }
 
     if (pPak != NULL) {
         //! TODO: possible bug? it's using `pSram` instead of `pEEPROM` there
-        if (pSram->pStore != NULL) {
+        if (IS_PSTORE_NULL(pSram->pStore)) {
             fn_80061DB8_Inline(pSram->pStore);
         }
     }

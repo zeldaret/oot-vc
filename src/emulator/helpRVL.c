@@ -22,6 +22,7 @@
 #include "revolution/tpl.h"
 #include "revolution/vi.h"
 #include "string.h"
+#include "versions.h"
 
 //! TODO: move to the proper headers when documented properly
 extern char* VCMVRun(void*, char*, u8);
@@ -29,6 +30,12 @@ extern s32 fn_8008882C(void**, u32, MEMAllocator*, MEMAllocator*);
 extern void* fn_80083140(void);
 extern void fn_800888DC(void**);
 extern HBMControllerData lbl_801CA670;
+
+#if VERSION < OOT_J
+#define UNK1C_HEAP_SIZE 0x01B00000
+#else
+#define UNK1C_HEAP_SIZE 0x02900000
+#endif
 
 static void helpMenuResetCallback(void);
 static void helpMenuPowerCallback(void);
@@ -75,7 +82,7 @@ s32 lbl_8025D0C0;
 char* lbl_8025D0BC;
 u8 lbl_8025D0B8;
 
-GXColor lbl_8025C850[] = {255, 255, 255, 255};
+GXColor helpMenu_lbl_8025C850[] = {255, 255, 255, 255};
 
 static s32 helpMenuReadNAND(CNTHandleNAND* pHandle, char* szPath, void** ppBuffer, MEMAllocator* arg3, void* arg4) {
     CNTFileInfoNAND fileInfo;
@@ -208,12 +215,31 @@ void helpMenuSetupRender(GXTexObj* pTexObj) {
     f32 y0 = 0.0f;
     f32 x0 = 0.0f;
 
+#if VERSION >= SM64_E && VERSION < OOT_J
+    rect.x1 = lbl_8025D0DC / 2;
+    rect.y1 = lbl_8025D0D8 / 2;
+#elif VERSION >= OOT_J
     rect.x1 = sRenderMode->fbWidth / 2;
     rect.y1 = sRenderMode->xfbHeight / 2;
+#endif
 
     GXInvalidateVtxCache();
     GXInvalidateTexAll();
 
+#if VERSION < SM64_E
+    fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
+    fHeight = ((sRenderMode->viHeight - 480) * 240) / 960.0f;
+#elif VERSION >= SM64_E && VERSION < OOT_J
+    if (fn_8007FC84()) {
+        fWidth = ((sRenderMode->viWidth - 640) * 320) / 1280.0f;
+        fHeight = ((sRenderMode->viHeight - 528) * 264) / 1056.0f;
+        C_MTXOrtho(matrix44, -fHeight, fHeight + 264.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
+    } else {
+        fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
+        fHeight = ((sRenderMode->viHeight - 480) * 240) / 960.0f;
+        C_MTXOrtho(matrix44, -fHeight, fHeight + 240.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
+    }
+#else
     if (fn_8007FC84()) {
         fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
         fHeight = ((sRenderMode->viHeight - 574) * 287) / 1148.0f;
@@ -223,11 +249,17 @@ void helpMenuSetupRender(GXTexObj* pTexObj) {
         fHeight = ((sRenderMode->viHeight - 480) * 240) / 960.0f;
         C_MTXOrtho(matrix44, -fHeight, fHeight + 240.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
     }
+#endif
 
     GXSetViewport(0.0f, 0.0f, sRenderMode->fbWidth, sRenderMode->efbHeight, 0.0f, 1.0f);
+
+#if VERSION < SM64_E
+    C_MTXOrtho(matrix44, -fHeight, fHeight + 240.0f, -fWidth, fWidth + 320.0f, 0.0f, -1.0f);
+#endif
+
     GXSetProjection(matrix44, GX_ORTHOGRAPHIC);
 
-    GXSetFog(GX_FOG_NONE, lbl_8025C850[0], 0.0f, 0.0f, 0.0f, 1000.0f);
+    GXSetFog(GX_FOG_NONE, helpMenu_lbl_8025C850[0], 0.0f, 0.0f, 0.0f, 1000.0f);
     GXFlush();
 
     color.a = color.r = color.g = color.b = 0xFF;
@@ -265,6 +297,8 @@ static void helpMenu_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4
         rectPAL = lbl_8016A7D0;
 
         GXGetViewportv(view);
+
+#if VERSION >= SM64_E
         helpMenuSetupColoredQuad(local_54);
 
         if (fn_8007FC84()) {
@@ -290,7 +324,9 @@ static void helpMenu_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4
             GXPosition3f32(x1, y0, 0.0f);
             GXColor1u32(0xFFFFFFFF);
             GXEnd();
-        } else {
+        } else
+#endif
+        {
             f32 x1;
             f32 y1;
             f32 y0;
@@ -320,11 +356,14 @@ static void helpMenu_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4
 
     GXSetDispCopySrc(0, 0, param_3, param_4);
 
+#if VERSION >= SM64_E
     if (fn_8007FC84()) {
         GXSetDispCopyDst(0x260, 0x210);
         pBuffer = (void*)((s32)lbl_8025D100[lbl_8025D0FC ^ 1] + ((param_1 + param_2 * 0x260) * 2));
         GXCopyDisp(pBuffer, GX_TRUE);
-    } else {
+    } else
+#endif
+    {
         GXSetDispCopyDst(0x260, 0x1C8);
         pBuffer = (void*)((s32)lbl_8025D100[lbl_8025D0FC ^ 1] + ((param_1 + param_2 * 0x260) * 2));
         GXCopyDisp(pBuffer, GX_TRUE);
@@ -344,6 +383,12 @@ bool helpMenuUpdate_UnknownInline(void) {
     return helpMenuAllocateFile(SYSTEM_HELP(gpSystem), "html.arc", &lbl_8025D0F8, &sMemAllocator2);
 }
 
+#if VERSION < OOT_J
+#define VI_X_ORIGIN 25
+#else
+#define VI_X_ORIGIN (720 - sp8.viWidth) / 2
+#endif
+
 static void helpMenuRunManualViewer(void) {
     GXRenderModeObj sp8;
     s32 var_r31;
@@ -355,6 +400,14 @@ static void helpMenuRunManualViewer(void) {
     }
 
     sp8 = *sRenderMode;
+
+#if VERSION == SM64_J || VERSION == SM64_U
+    sp8.fbWidth = 0x260;
+    sp8.efbHeight = 0x1C8;
+    sp8.xfbHeight = 0x1C8;
+    sp8.viWidth = 0x29E;
+    sp8.viHeight = 0x1C8;
+#else
     sp8.viWidth = 0x29E;
 
     if (fn_8007FC84()) {
@@ -363,6 +416,11 @@ static void helpMenuRunManualViewer(void) {
         sp8.xfbHeight = 0x210;
         sp8.efbHeight = 0x210;
     } else {
+
+#if VERSION >= SM64_E && VERSION < OOT_J
+        sp8 = *sRenderMode;
+#endif
+
         sp8.fbWidth = 0x260;
         sp8.viHeight = 0x1C8;
         sp8.xfbHeight = 0x1C8;
@@ -370,20 +428,28 @@ static void helpMenuRunManualViewer(void) {
     }
 
     if (fn_8007FC84()) {
-        sp8.viXOrigin = (720 - sp8.viWidth) / 2;
+        sp8.viXOrigin = VI_X_ORIGIN;
         sp8.viYOrigin = 23;
-    } else {
+    } else
+#endif
+    {
         switch (VIGetTvFormat()) {
             case VI_TV_FMT_NTSC:
-                sp8.viXOrigin = (720 - sp8.viWidth) / 2;
+                sp8.viXOrigin = VI_X_ORIGIN;
                 sp8.viYOrigin = 12;
                 break;
+#if VERSION < SM64_E
+            case VI_TV_FMT_PAL:
+                sp8.viXOrigin = VI_X_ORIGIN;
+                sp8.viYOrigin = 59;
+                break;
+#endif
             case VI_TV_FMT_MPAL:
-                sp8.viXOrigin = (720 - sp8.viWidth) / 2;
+                sp8.viXOrigin = VI_X_ORIGIN;
                 sp8.viYOrigin = 12;
                 break;
             case VI_TV_FMT_EURGB60:
-                sp8.viXOrigin = (720 - sp8.viWidth) / 2;
+                sp8.viXOrigin = VI_X_ORIGIN;
                 sp8.viYOrigin = 12;
                 break;
             default:
@@ -393,14 +459,21 @@ static void helpMenuRunManualViewer(void) {
 
     VIConfigure(&sp8);
     VIFlush();
+
+#if VERSION >= OOT_J
     GXSetDispCopyYScale((f32)sp8.xfbHeight / (f32)sp8.efbHeight);
+#endif
+
     VIWaitForRetrace();
     VIWaitForRetrace();
 
+#if VERSION >= SM64_E
     if (fn_8007FC84()) {
         fn_80088668(0x260, 0x210);
         fn_8008866C(0x260, 0x210);
-    } else {
+    } else
+#endif
+    {
         fn_80088668(0x260, 0x1C8);
         fn_8008866C(0x260, 0x1C8);
     }
@@ -414,7 +487,7 @@ static void helpMenuRunManualViewer(void) {
     }
 
     if (var_r31 <= 0) {
-        OSPanic("helpRVL.c", 938, ".");
+        OSPanic("helpRVL.c", VERSION >= OOT_J ? 938 : 936, ".");
     }
 
     fn_800887CC(sWebsitePath);
@@ -422,7 +495,11 @@ static void helpMenuRunManualViewer(void) {
 
     VIConfigure(sRenderMode);
     VIFlush();
+
+#if VERSION >= OOT_J
     GXSetDispCopyYScale((f32)sRenderMode->xfbHeight / (f32)sRenderMode->efbHeight);
+#endif
+
     VIWaitForRetrace();
     VIWaitForRetrace();
 }
@@ -563,7 +640,7 @@ static void helpMenuInit(HelpMenu* pHelpMenu) {
     strcpy(sWebsitePath, "arc:/html/");
     lbl_8025D0F4 = sWebsitePath + strlen(sWebsitePath);
 
-#if VERSION == OOT_J
+#if REGION_JP
     hbmInfo.region = SC_LANG_JP;
     strcpy(temp_r16, "LZ77_homeBtn.arc");
     strcpy(lbl_8025D0F4, "index/index_Frameset.html");
@@ -572,7 +649,7 @@ static void helpMenuInit(HelpMenu* pHelpMenu) {
     hbmInfo.region = language;
 
     switch (language) {
-#if VERSION == OOT_E
+#if REGION_EU
         case SC_LANG_DE:
             strcpy(temp_r16, "LZ77_homeBtn_GER.arc");
             strcpy(lbl_8025D0F4, "startup_noe.html");
@@ -586,7 +663,7 @@ static void helpMenuInit(HelpMenu* pHelpMenu) {
             strcpy(temp_r16, "LZ77_homeBtn_SPA.arc");
             strcpy(lbl_8025D0F4, "startup_esp.html");
             break;
-#if VERSION == OOT_E
+#if REGION_EU
         case SC_LANG_IT:
             strcpy(temp_r16, "LZ77_homeBtn_ITA.arc");
             strcpy(lbl_8025D0F4, "startup_ita.html");
@@ -738,7 +815,7 @@ static inline bool helpSetupAllocator(HelpMenu* pHelpMenu) {
     }
     MEMInitAllocatorForExpHeap(&sMemAllocator1, lbl_8025D0E4, 0x20);
 
-    lbl_8025D0E0 = MEMCreateExpHeapEx(pHelpMenu->unk1C, 0x2900000, 0x0);
+    lbl_8025D0E0 = MEMCreateExpHeapEx(pHelpMenu->unk1C, UNK1C_HEAP_SIZE, 0x0);
     if (lbl_8025D0E0 == NULL) {
         return false;
     }
@@ -783,6 +860,21 @@ static inline void helpCopyScreen() {
     s32 iVar9;
     void* pCurrentFrameBuffer;
 
+#if VERSION == SM64_J || VERSION == SM64_U
+    if (lbl_8025D0C8 == NULL) {
+        lbl_8025D0C8 = MEMAllocFromAllocator(&sMemAllocator2, 0x25800);
+    }
+
+    GXSetTexCopySrc(0, 0, GC_FRAME_WIDTH, GC_FRAME_HEIGHT);
+    GXSetTexCopyDst(GC_FRAME_WIDTH / 2, GC_FRAME_HEIGHT / 2, GX_TF_RGB565, GX_ENABLE);
+    GXCopyTex(lbl_8025D0C8, 0);
+    GXDrawDone();
+
+    DCInvalidateRange(lbl_8025D0C8, 0x25800);
+    GXInitTexObj(&sTexObj, lbl_8025D0C8, GC_FRAME_WIDTH / 2, GC_FRAME_HEIGHT / 2, GX_TF_RGB565, GX_CLAMP, GX_CLAMP,
+                 GX_DISABLE);
+    GXInitTexObjLOD(&sTexObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+#else
     lbl_8025D0DC = rmode->fbWidth;
     lbl_8025D0D8 = rmode->efbHeight;
 
@@ -801,6 +893,7 @@ static inline void helpCopyScreen() {
     GXInitTexObj(&sTexObj, lbl_8025D0C8, lbl_8025D0DC / 2, lbl_8025D0D8 / 2, GX_TF_RGB565, GX_CLAMP, GX_CLAMP,
                  GX_DISABLE);
     GXInitTexObjLOD(&sTexObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+#endif
 
     lbl_8025D100[0] = DemoFrameBuffer1;
     lbl_8025D100[1] = DemoFrameBuffer2;
@@ -996,11 +1089,21 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
                 helpMenuSetupRender(&sTexObj);
             }
 
+#if VERSION == SM64_J || VERSION == SM64_U
+            C_MTXOrtho(matrix44_4, 228.0f, -237.12f, -304.0f, 310.08f, 0.0f, 500.0f);
+#elif VERSION >= SM64_E && VERSION < OOT_J
+            if (fn_8007FC84()) {
+                C_MTXOrtho(matrix44_4, 224.0f, -227.58401f, -304.0f, 304.0f, 0.0f, 500.0f);
+            } else {
+                C_MTXOrtho(matrix44_4, 228.0f, -237.12f, -304.0f, 310.08f, 0.0f, 500.0f);
+            }
+#else
             if (fn_8007FC84()) {
                 C_MTXOrtho(matrix44_4, 240.0f, -243.84001f, -320.0f, 320.0f, 0.0f, 500.0f);
             } else {
                 C_MTXOrtho(matrix44_4, 240.0f, -240.0f, -320.0f, 320.0f, 0.0f, 500.0f);
             }
+#endif
 
             GXSetProjection(matrix44_4, GX_ORTHOGRAPHIC);
             GXSetCullMode(GX_CULL_NONE);
@@ -1047,23 +1150,32 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
             return false;
         }
 
-        if (!xlCoreInitGX()) {
-            return false;
+#if VERSION < OOT_J
+        if (!sResetBtnPressed && !sPowerBtnPressed)
+#endif
+        {
+            if (!xlCoreInitGX()) {
+                return false;
+            }
+
+            frameDrawReset(SYSTEM_FRAME(gpSystem), 0x5FFED);
+
+            if (!helpMenuDestroyHeap(pHelpMenu)) {
+                return false;
+            }
+
+            lbl_8025D0D0 = OSGetTime();
         }
-
-        frameDrawReset(SYSTEM_FRAME(gpSystem), 0x5FFED);
-
-        if (!helpMenuDestroyHeap(pHelpMenu)) {
-            return false;
-        }
-
-        lbl_8025D0D0 = OSGetTime();
     }
 
     if (sPowerBtnPressed) {
         VISetBlack(true);
         VIFlush();
+
+#if VERSION >= OOT_J
         VIWaitForRetrace();
+#endif
+
         fn_8000A830(gpSystem, 0x1004, NULL);
         OSShutdownSystem();
     }
@@ -1071,7 +1183,10 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
     if (sResetBtnPressed) {
         VISetBlack(true);
         VIFlush();
+
+#if VERSION >= OOT_J
         VIWaitForRetrace();
+#endif
 
         if (!fn_8000A8A8(gpSystem)) {
             return false;
@@ -1083,7 +1198,11 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
 
 bool helpMenu_800607B0(HelpMenu* pHelpMenu, bool arg1) {
     pHelpMenu->unk0C = arg1;
+
+#if VERSION >= OOT_J
     pHelpMenu->unk08 = false;
+#endif
+
     return true;
 }
 
@@ -1109,13 +1228,13 @@ static inline bool helpMenuHeapTake(HelpMenu* pHelpMenu) {
         return false;
     }
 
-    if (!xlHeapTake((void**)&pHelpMenu->unk1C, 0x2900000 | 0x70000000)) {
+    if (!xlHeapTake((void**)&pHelpMenu->unk1C, UNK1C_HEAP_SIZE | 0x70000000)) {
         return false;
     }
 
     pHelpMenu->unk00 = 0x00700000;
     pHelpMenu->unk18 = (s32)pHelpMenu->unk14;
-    pHelpMenu->unk04 = 0x02900000;
+    pHelpMenu->unk04 = UNK1C_HEAP_SIZE;
     pHelpMenu->unk20 = (s32)pHelpMenu->unk1C;
 
     return true;

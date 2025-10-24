@@ -10,6 +10,7 @@
 #include "revolution/mem.h"
 #include "revolution/vi.h"
 #include "revolution/wpad.h"
+#include "versions.h"
 
 static void* fn_80061FB0(u32 nSize);
 static bool fn_80061FF8(Controller* pController);
@@ -45,7 +46,11 @@ _XL_OBJECTTYPE gClassController = {
 };
 
 MEMAllocator gControllerAllocator;
+
+#if VERSION >= OOT_J
 struct_801C7DC8 lbl_801C7DC8;
+#endif
+
 ControllerThread gControllerThread;
 static void* sControllerHeap;
 static VIRetraceCallback sControllerVICallback;
@@ -162,6 +167,7 @@ static inline bool controllerValidateIndex(s32 index) {
 static bool fn_800622B8(Controller* pController) {
     s32 i;
 
+#if VERSION >= MK64_J
     pController->unk_220 = 1;
     pController->iString = ERROR_NONE;
 
@@ -170,6 +176,7 @@ static bool fn_800622B8(Controller* pController) {
         pController->stickLeft[i][AXIS_X] = pController->stickLeft[i][AXIS_Y] = 0;
         pController->stickRight[i][AXIS_X] = pController->stickRight[i][AXIS_Y] = 0;
     }
+#endif
 
     for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
         if (!controllerValidateIndex(i)) {
@@ -190,7 +197,13 @@ static inline s32 fn_800623F4_UnknownInline(f32 value) {
     }
 }
 
+extern bool fn_800CAFB8(s32, struct_801C7DC8*, s32);
+
 static bool fn_800623F4(Controller* pController) {
+#if VERSION < OOT_J
+    struct_801C7DC8 lbl_801C7DC8;
+#endif
+
     PADStatus status[PAD_MAX_CONTROLLERS];
     s32 i;
     s32 var_r26;
@@ -203,8 +216,6 @@ static bool fn_800623F4(Controller* pController) {
     s32 var_r19;
     s32 var_r18;
     s32 var_r17;
-    s32 var_r16;
-    s32 var_r15;
     s32 sp98;
     s32 sp94;
     s32 sp90;
@@ -213,6 +224,8 @@ static bool fn_800623F4(Controller* pController) {
     s32 sp84;
     s32 sp80;
     s32 var_r14;
+    s32 var_r16;
+    s32 var_r15;
     s32 var_r3;
     s32 var_r4;
     s32 var_r5;
@@ -286,8 +299,14 @@ static bool fn_800623F4(Controller* pController) {
                 }
             }
         }
+
+#if VERSION < OOT_J
+        if (fn_800CAFB8(i, &lbl_801C7DC8, 10) && lbl_801C7DC8.status[0].wpad_err == 0)
+#else
         fn_800CAFB8(i, &lbl_801C7DC8, 10);
-        if (lbl_801C7DC8.status[0].wpad_err == 0) {
+        if (lbl_801C7DC8.status[0].wpad_err == 0)
+#endif
+        {
             value4 |= 2;
             if (lbl_801C7DC8.status[0].hold & 0x8000) {
                 value3 |= 0x10;
@@ -425,8 +444,12 @@ static bool fn_800623F4(Controller* pController) {
                 var_r18 = sp80;
                 var_r17 = var_r14;
             }
+
+#if VERSION >= OOT_J
             var_r20 = fn_800623F4_UnknownInline(var_r20);
             var_r19 = fn_800623F4_UnknownInline(var_r19);
+#endif
+
             if (var_r20 < -0x3F) {
                 value3 |= 0x800;
             }
@@ -648,11 +671,13 @@ bool fn_800631B8(Controller* pController, s32 arg1) {
 
     pController->unk_224 = arg1;
 
+#if VERSION >= MK64_J
     if (arg1 != 0) {
         for (var_r31 = 0; var_r31 < 8; var_r31++) {
             VIWaitForRetrace();
         }
     }
+#endif
 
     return true;
 }

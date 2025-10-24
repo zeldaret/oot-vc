@@ -13,6 +13,7 @@
 #include "macros.h"
 #include "mem_funcs.h"
 #include "revolution/tpl.h"
+#include "versions.h"
 
 static u8 lbl_8025C888[] = {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
 static u8 lbl_8025C890[] = {0x01, 0x01, 0x01, 0x02, 0x03, 0x04, 0x04, 0x04};
@@ -246,6 +247,15 @@ static inline void bannerSetString(char* src, wchar_t* dest, s32 max) {
 
     nSize = 0;
 
+#if VERSION < OOT_J
+    while (src[0] != 0x00 && nSize < max) {
+        ((char*)dest)[1] = *src++;
+        ((char*)dest)[0] = *src++;
+
+        dest++;
+        nSize++;
+    }
+#else
     for (i = 0; i < max; i++) {
         if (src[0] == 0x00 && src[1] == (char)0xBB) {
             break;
@@ -257,6 +267,7 @@ static inline void bannerSetString(char* src, wchar_t* dest, s32 max) {
         dest++;
         nSize++;
     }
+#endif
 
     if (nSize == 0) {
         *dest++ = ' ';

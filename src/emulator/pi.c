@@ -28,7 +28,9 @@ bool piDMA_Complete(CpuBlock* pBlock, bool bUnknown) {
             return false;
         }
     } else {
+#if VERSION >= MK64_J
         return false;
+#endif
     }
 
     return true;
@@ -64,20 +66,36 @@ bool piPut32(PI* pPI, u32 nAddress, s32* pData) {
 
     switch (nAddress & 0x3F) {
         case 0x00:
-            pPI->nAddressRAM = *pData & ~0xFF800007;
+#if VERSION < MK64_J
+            pPI->nAddressRAM = *pData & 0xFFFFFF;
+#else
+            pPI->nAddressRAM = *pData & 0x7FFFF8;
+#endif
             break;
         case 0x04:
+#if VERSION < MK64_J
+            pPI->nAddressROM = *pData;
+#else
             pPI->nAddressROM = *pData & ~0x1;
+#endif
             break;
         case 0x08:
             pPI->nSizeGet = *pData & 0xFFFFFF;
+
+#if VERSION >= SM64_E
             nSize = (pPI->nSizeGet + 1) & ~1;
+#endif
 
             if (!piGetNewBlock(pPI, &pNewBlock)) {
                 return false;
             }
 
+#if VERSION < MK64_J
+            pNewBlock->nSize = pPI->nSizeGet + 1;
+#else
             pNewBlock->nSize = nSize;
+#endif
+
             pNewBlock->pfUnknown = piDMA_Complete;
             pNewBlock->nAddress0 = pPI->nAddressRAM;
             pNewBlock->nAddress1 = pPI->nAddressROM;
@@ -88,13 +106,21 @@ bool piPut32(PI* pPI, u32 nAddress, s32* pData) {
             break;
         case 0x0C:
             pPI->nSizePut = *pData & 0xFFFFFF;
+
+#if VERSION >= SM64_E
             nSize = (pPI->nSizePut + 1) & ~1;
+#endif
 
             if (!piGetNewBlock(pPI, &pNewBlock)) {
                 return false;
             }
 
+#if VERSION < MK64_J
+            pNewBlock->nSize = pPI->nSizePut + 1;
+#else
             pNewBlock->nSize = nSize;
+#endif
+
             pNewBlock->pfUnknown = piDMA_Complete;
             pNewBlock->nAddress0 = pPI->nAddressROM;
             pNewBlock->nAddress1 = pPI->nAddressRAM;

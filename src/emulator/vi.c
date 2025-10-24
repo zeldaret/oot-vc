@@ -5,6 +5,8 @@
 #include "emulator/vc64_RVL.h"
 #include "emulator/xlCoreRVL.h"
 
+#include "versions.h"
+
 // Note: video.c in oot-gc
 
 bool viPut8(VI* pVI, u32 nAddress, s8* pData) { return false; }
@@ -96,9 +98,13 @@ bool viPut32(VI* pVI, u32 nAddress, s32* pData) {
             break;
         case 0x34:
             pVI->nScaleY = *pData & 0xFFF;
+
+#if VERSION >= MK64_J
             if (fn_8007FC84() && (pVI->nScaleY == 0x354 || pVI->nScaleY == 0x361)) {
                 pVI->nScaleY = 0x400;
             }
+#endif
+
             if (!frameSetSize(SYSTEM_FRAME(gpSystem), FS_SOURCE, (s32)(pVI->nScaleX * N64_FRAME_WIDTH) / 512,
                               (s32)(pVI->nScaleY * N64_FRAME_HEIGHT) / 1024)) {
                 return false;

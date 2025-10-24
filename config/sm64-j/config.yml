@@ -1,0 +1,119 @@
+# See config.example.yml for documentation.
+name: wii-vc
+object: orig/sm64-j/content1.app
+hash: 0e59d95268ecdf213807f7126d7c7a24875cfb1b
+symbols: config/sm64-j/symbols.txt
+splits: config/sm64-j/splits.txt
+
+# Change this to match the linker verison.
+# See config.example.yml for a list.
+mw_comment_version: 14
+
+extract:
+# DSPCode.c
+- symbol: axDspSlave
+  header: axDspSlave.inc
+# AXComp.c
+- symbol: __AXCompressorTable
+  header: __AXCompressorTable.inc
+
+force_active:
+- lbl_801E3380
+- DemoAllocator2
+- TRKAccessFile
+- TRKOpenFile
+- TRKCloseFile
+- TRKPositionFile
+- sSetInfoAsync__Q210homebutton10Controller
+- lbl_8025DBBC__Q210homebutton10Controller
+
+block_relocations:
+# system.c
+- source: 0x8000B15C
+- source: 0x8000B16C
+- source: 0x8000B188
+- source: 0x8000B190
+- source: 0x8000B1B4
+- source: 0x8000B1D8
+- source: 0x8000B200
+- source: 0x8000B210
+- source: 0x8000B22C
+- source: 0x8000B234
+- source: 0x8000B258
+- source: 0x8000B27C
+- source: 0x8000B2A8
+- source: 0x8000B2B8
+- source: 0x8000B2D4
+- source: 0x8000B2DC
+- source: 0x8000B304
+- source: 0x8000B328
+- source: 0x8000B668
+- source: 0x8000B670
+- source: 0x8000B698
+- source: 0x8000B6A0
+- source: 0x8000B6C0
+- source: 0x8000B6C8
+- source: 0x8000B7E4
+- source: 0x8000B7EC
+- source: 0x8000B85C
+- source: 0x8000B86C
+- source: 0x8000B888
+- source: 0x8000B898
+- source: 0x8000B8B8
+- source: 0x8000B8D0
+- source: 0x8000B8F8
+- source: 0x8000B908
+- source: 0x8000B928
+- source: 0x8000B9B4
+- source: 0x8000B9BC
+- source: 0x8000B9E0
+- source: 0x8000BA04
+- source: 0x8000BA28
+- source: 0x8000BA30
+- source: 0x8000BA54
+- source: 0x8000BA78
+- source: 0x8000BAC8
+- source: 0x8000BAE0
+- source: 0x8000BB10
+- source: 0x8000BB38
+- source: 0x8000BB58
+- source: 0x8000BB68
+- source: 0x8000BB88
+- source: 0x8000BBB4
+- source: 0x8000B630
+- source: 0x8000B638
+- source: 0x8000B7B4
+- source: 0x8000B7BC
+- source: 0x8000BBD8
+- source: 0x8000BBF0
+- source: 0x8000BC1C
+- source: 0x8000BC3C
+- source: 0x8000BC4C
+- source: 0x8000BC88
+- source: 0x8000BC98
+- source: 0x8000BCBC
+- source: 0x8000BD7C
+- source: 0x8000BD8C
+- source: 0x8000BDB0
+- source: 0x8000BDD8
+- source: 0x8000BDFC
+- source: 0x8000BE28
+- source: 0x8000BE44
+- source: 0x8000BE54
+- source: 0x8000BEB0
+- source: 0x8000BEC0
+- source: 0x8000BEDC
+- source: 0x8000BEFC
+- source: 0x8000BF0C
+- source: 0x8000BF2C
+- source: 0x8000C000
+- source: 0x8000C010
+- source: 0x8000C048
+- source: 0x8000C060
+- source: 0x8000C098
+- source: 0x8000C0A0
+- source: 0x8000C0C0
+- source: 0x8000C0D0
+- source: 0x8000C0F4
+- source: 0x8000C1AC
+- source: 0x8000C1BC

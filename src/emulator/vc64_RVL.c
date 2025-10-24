@@ -10,6 +10,7 @@
 #include "revolution/gx.h"
 #include "revolution/vi.h"
 #include "string.h"
+#include "versions.h"
 
 static char* gaszArgument[12];
 System* gpSystem;
@@ -136,6 +137,12 @@ static inline bool simulatorRun(SystemMode* peMode) {
     return true;
 }
 
+#if VERSION < OOT_J
+#define LN(mk64, oot) mk64
+#else
+#define LN(mk64, oot) oot
+#endif
+
 bool xlMain(void) {
     SystemMode eMode;
     s32 nSize0;
@@ -151,7 +158,8 @@ bool xlMain(void) {
 
     if (nSize0 > 0x01800000) {
         OSReport("\n\nERROR: This program MUST be run on a system with 24MB (or less) memory!\n");
-        OSPanic("vc64_RVL.c", 1352, "       Please reduce memory-size to 24MB (using 'setsmemsize 0x1800000')\n\n");
+        OSPanic("vc64_RVL.c", LN(1346, 1352),
+                "       Please reduce memory-size to 24MB (using 'setsmemsize 0x1800000')\n\n");
     }
 
 #ifdef __MWERKS__

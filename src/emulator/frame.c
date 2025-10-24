@@ -191,13 +191,12 @@ s32 anRenderModeDatabaseCycle1[] = {
 
 // .sbss
 static bool gbFrameValid;
-static bool gbFrameBegin;
+static volatile bool gbFrameBegin;
 static volatile bool sCopyFrameSyncReceived;
 static u32 snScissorXOrig;
 static u32 snScissorYOrig;
 static u32 snScissorWidth;
 static u32 snScissorHeight;
-bool lbl_8025D098;
 s32 nCopyFrame;
 s32 gnCountMapHack;
 static u32 sDestinationBuffer;
@@ -236,97 +235,10 @@ static u16 tempLine[ZELDA_PAUSE_EQUIP_PLAYER_WIDTH / 4][4][4];
 Mtx gTextureMatrix[8];
 FrameTexture* gpTexture[8];
 
-// .sdata2
-const f32 D_80135E00 = 0.0f;
-const f32 D_80135E04 = 0.25f;
-const f32 D_80135E08 = 2.0f;
-const f64 D_80135E10 = 4503601774854144.0;
-const f32 D_80135E18 = 0.0625f;
-const f32 D_80135E1C = 0.0078125f;
-const f32 D_80135E20 = 4096.0f;
-const f32 D_80135E24 = 4194304.0f;
-const f64 D_80135E28 = 4503599627370496.0;
-const f32 D_80135E30 = 0.5f;
-const f32 D_80135E34 = 3.0f;
-const f32 D_80135E38 = 1.0f;
-const f64 D_80135E40 = 0.5;
-const f64 D_80135E48 = 3.0;
-const f32 D_80135E50 = 0.2267303466796875f;
-const f32 D_80135E54 = 0.3183135986328125f;
-const f32 D_80135E58 = 0.00624f;
-const f32 D_80135E5C = 0.006242f;
-const f32 D_80135E60 = 640.0f;
-const f32 D_80135E64 = 480.0f;
-const f32 D_80135E68 = 320.0f;
-const f32 D_80135E6C = 240.0f;
-const f64 D_80135E70 = 262143.0;
-const f64 D_80135E78 = 43.52;
-const f32 D_80135E80 = 80.0f;
-const f32 D_80135E84 = 31.0f;
-const f32 D_80135E88 = 0.015625f;
-const f32 D_80135E8C = 143.0f;
-const f32 D_80135E90 = 0.859375f;
-const f32 D_80135E94 = 0.95f;
-const f32 D_80135E98 = 0.9f;
-const f32 D_80135E9C = 0.85f;
-const f32 D_80135EA0 = 0.8f;
-const f32 D_80135EA4 = -1.0;
-const f32 D_80135EA8 = 319.0f;
-const f32 D_80135EAC = 239.0f;
-const f32 D_80135EB0 = -1001.0;
-const f32 D_80135EB4 = -53.0;
-const f32 D_80135EB8 = -3080.0;
-const f32 D_80135EBC = 6067.0f;
-const f32 D_80135EC0 = -31.0;
-const f32 D_80135EC4 = 1669.0f;
-const f32 D_80135EC8 = 1000.0f;
-const f32 D_80135ECC = 32000.0f;
-const f32 D_80135ED0 = 30.0f;
-const f32 D_80135ED4 = 1.3333334f;
-const f32 D_80135ED8 = 0.1f;
-const f32 D_80135EDC = 0.0015f;
-const f32 D_80135EE0 = 65536.0f;
-const f32 D_80135EE4 = 1001.0f;
-const f32 D_80135EE8 = 500.0f;
-const f32 D_80135EEC = 970.0f;
-const f32 D_80135EF0 = 59.0f;
-const f32 D_80135EF4 = 990.0f;
-const f32 D_80135EF8 = 0.21f;
-const f32 D_80135EFC = 0.35f;
-const f32 D_80135F00 = 12800.0f;
-const f32 D_80135F04 = 0.6f;
-const f32 D_80135F08 = 0.7f;
-const f32 D_80135F0C = 44.0f;
-const f32 D_80135F10 = 0.13f;
-const f32 D_80135F14 = 45.0f;
-const f32 D_80135F18 = 15.0f;
-const f32 D_80135F1C = 0.38f;
-const f32 D_80135F20 = 900.0f;
-const f32 D_80135F24 = 350.0f;
-const f32 D_80135F28 = 10.0f;
-const f32 D_80135F2C = 200.0f;
-const f32 D_80135F30 = 128000.0f;
-const f32 D_80135F34 = -25344.0;
-const f32 D_80135F38 = 25600.0f;
-const f32 D_80135F3C = 2200.0f;
-const f32 D_80135F40 = 0.575f;
-const f32 D_80135F44 = 0.75f;
-const f32 D_80135F48 = -21077.0;
-const f32 D_80135F4C = 21333.0f;
-const f32 D_80135F50 = -90.0;
-const f32 D_80135F54 = 258.0f;
-const f32 D_80135F58 = 0.45f;
-const f32 D_80135F5C = -667.0;
-const f32 D_80135F60 = 688.0f;
-const f32 D_80135F64 = 0.00390625f;
-const f32 D_80135F68 = 860.0f;
-const f32 D_80135F6C = 0.15f;
-const f32 D_80135F70 = 140.0f;
-const f32 D_80135F74 = 0.28f;
-const f32 D_80135F78 = 0.72f;
-const f32 D_80135F7C = 0.26f;
-const f32 D_80135F80 = 8.44f;
-const f64 D_80135F88 = 8.44;
+GXProjectionType gRealProjectionType;
+f32 gNearVal;
+f32 gFarVal;
+Mtx44 gRealProjectionMtx;
 
 static inline bool frameSetProjection(Frame* pFrame, s32 iHint) {
     MatrixHint* pHint = &pFrame->aMatrixHint[iHint];
@@ -360,6 +272,26 @@ static inline bool frameGetMatrixHint(Frame* pFrame, u32 nAddress, s32* piHint) 
     }
 
     return false;
+}
+
+bool frameScaleMatrix(Mtx44 matrixResult, Mtx44 matrix, f32 rScale) {
+    matrixResult[0][0] = matrix[0][0] * rScale;
+    matrixResult[0][1] = matrix[0][1] * rScale;
+    matrixResult[0][2] = matrix[0][2] * rScale;
+    matrixResult[0][3] = matrix[0][3] * rScale;
+    matrixResult[1][0] = matrix[1][0] * rScale;
+    matrixResult[1][1] = matrix[1][1] * rScale;
+    matrixResult[1][2] = matrix[1][2] * rScale;
+    matrixResult[1][3] = matrix[1][3] * rScale;
+    matrixResult[2][0] = matrix[2][0] * rScale;
+    matrixResult[2][1] = matrix[2][1] * rScale;
+    matrixResult[2][2] = matrix[2][2] * rScale;
+    matrixResult[2][3] = matrix[2][3] * rScale;
+    matrixResult[3][0] = matrix[3][0] * rScale;
+    matrixResult[3][1] = matrix[3][1] * rScale;
+    matrixResult[3][2] = matrix[3][2] * rScale;
+    matrixResult[3][3] = matrix[3][3] * rScale;
+    return true;
 }
 
 static bool frameConvertYUVtoRGB(u32* YUV, u32* RGB) {
@@ -825,6 +757,7 @@ static inline void fn_8004A314_inline(Mtx44 mtx, f32 a[4], f32 d) {
     a[3] /= length;
 }
 
+#if VERSION >= MK64_J
 void fn_8004A314(Frame* pFrame) {
     Mtx44 sp28;
     f32 sp18[4];
@@ -895,76 +828,205 @@ void fn_8004A314(Frame* pFrame) {
         pFrame->eTypeProjection = FMP_ORTHOGRAPHIC;
     }
 }
+#endif
+
+#if VERSION < MK64_J
+bool frameDrawSetupFog_Default(Frame* pFrame) {
+    GXColor color;
+    GXFogType nFogType;
+    f32 rNear;
+    f32 rFar;
+    u32 nMode;
+    u32 iHint;
+    f32 rFogNear;
+    f32 rFogFar;
+    f32 rFogMin;
+    f32 rFogMax;
+    f32 rMultiplier;
+    f32 rOffset;
+    f32 rMinimum;
+    f32 rMaximum;
+
+    nMode = pFrame->aMode[0];
+    iHint = pFrame->iHintProjection;
+    rMultiplier = (s16)(nMode >> 16);
+    rOffset = rMinimum = (s16)(nMode & 0xFFFF);
+    color = pFrame->aColor[0];
+
+    if (iHint != -1) {
+        rFar = pFrame->aMatrixHint[pFrame->iHintProjection].rClipFar;
+        rNear = pFrame->aMatrixHint[pFrame->iHintProjection].rClipNear;
+    } else {
+        rFar = 32000.0f;
+        rNear = 1.0f;
+    }
+
+    if (rMultiplier == 0.0f) {
+        GXSetFog(GX_FOG_NONE, color, 0.0f, 0.0f, 0.0f, 1000.0f);
+    } else {
+        if (rOffset == rMultiplier) {
+            rFogNear = 500.0f;
+            rFogFar = 1000.0f;
+            rFogMin = rFogNear * (1.0f - (rOffset / rMultiplier));
+            rFogMax = (128000.0f / rMultiplier) + rFogMin;
+            nFogType = GX_FOG_NONE;
+        } else {
+            f32 dminmax;
+            f32 rDMinMax;
+            f32 val1;
+            f32 dplane;
+            f32 rNearScale;
+
+            dplane = rFar - rNear;
+
+            nFogType = GX_FOG_LIN;
+            rMultiplier = 128000.0f / rMultiplier;
+            rFogNear = gNearVal = rNear;
+            rFogFar = gFarVal = rFar;
+            rNearScale = -((rOffset * rMultiplier * 0.00390625f) - 500.0f);
+            rDMinMax = rNearScale + rMultiplier;
+            dminmax = rDMinMax - rNearScale;
+
+            if (gRealProjectionType == GX_PERSPECTIVE) {
+                rMinimum = -gRealProjectionMtx[4][3] / (((rNearScale - 1000.0f) / 1064.0f) + gRealProjectionMtx[4][2]);
+            } else {
+                rMinimum = (((rNearScale - 1000.0f) / 1064.0f) - gRealProjectionMtx[4][3]) / gRealProjectionMtx[4][2];
+            }
+
+            rOffset = dminmax / 1000.0f;
+            val1 = rOffset;
+
+            if (rOffset > 0.19f) {
+                val1 = 0.19f;
+            } else if (val1 < 0.15f) {
+                val1 = 0.15f;
+            }
+
+            rNearScale = -((dminmax * val1) - rDMinMax);
+            if (rNearScale > 1000.0f) {
+                rNearScale = 1000.0f;
+            }
+
+            if (gRealProjectionType == GX_PERSPECTIVE) {
+                rMaximum = -gRealProjectionMtx[4][3] / (((rNearScale - 1000.0f) / 1064.0f) + gRealProjectionMtx[4][2]);
+            } else {
+                rMaximum = (((rNearScale - 1000.0f) / 1064.0f) - gRealProjectionMtx[4][3]) / gRealProjectionMtx[4][2];
+            }
+
+            rFogMin = (((-rMinimum - rNear) / dplane) * dplane) + rNear;
+            rFogMax = (((-rMaximum - rNear) / dplane) * dplane) + rNear;
+        }
+
+        nMode = pFrame->aMode[FMT_OTHER0];
+        rFogNear *= 0.1f;
+        if (((nMode >> 26) & 3) == 1 || (nMode >> 30) == 3 || ((nMode >> 22) & 3) == 3) {
+            GXSetFog(nFogType, color, rFogMin, rFogMax, rFogNear, rFogFar);
+        } else {
+            GXSetFog(GX_FOG_NONE, color, 0.0f, 0.0f, 0.0f, 1000.0f);
+        }
+    }
+
+    return true;
+}
 
 bool frameDrawSetupFog_StarFox(Frame* pFrame) {
     GXColor color;
     GXFogType nFogType;
     f32 rNear;
     f32 rFar;
+    u32 nMode;
+    u32 iHint;
+    f32 rFogNear;
+    f32 rFogFar;
+    f32 rFogMin;
+    f32 rFogMax;
     f32 rMultiplier;
     f32 rOffset;
-    f32 rStart;
-    f32 rEnd;
-    f32 var_f5;
-    f32 var_f6;
-    f32 var_f9;
+    f32 rMinimum;
+    f32 rMaximum;
 
-    rMultiplier = (s16)(pFrame->aMode[0] >> 16);
-    rOffset = (s16)(pFrame->aMode[0] & 0xFFFF);
+    nMode = pFrame->aMode[0];
+    iHint = pFrame->iHintProjection;
+    rMultiplier = (s16)(nMode >> 16);
+    rOffset = rMinimum = (s16)(nMode & 0xFFFF);
+    color = pFrame->aColor[0];
 
-    rFar = pFrame->unk_3F210;
-    rNear = pFrame->unk_3F214;
-    color = pFrame->aColor[FCT_FOG];
-    nFogType = GX_FOG_EXP;
-
-    if (rOffset == rMultiplier && rOffset == 0.0f) {
-        GXSetFog(GX_FOG_NONE, color, 0.0f, 0.0f, 0.0f, 1000.0f);
-        return true;
-    }
-
-    var_f6 = -rOffset;
-    var_f9 = var_f6 / rMultiplier;
-    rStart = pFrame->unk_3F150[3][2] / (var_f9 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
-
-    var_f5 = 253.0f;
-    var_f6 = var_f5 + var_f6;
-    var_f6 = (var_f6) / rMultiplier;
-
-    if (rStart < rNear) {
-        rStart = rNear;
-    }
-    if (rStart > rFar) {
-        rStart = rFar;
-    }
-    if (var_f6 > 1.2f) {
-        nFogType = GX_FOG_EXP;
-        rStart = -rOffset / rMultiplier;
-        rEnd = (rMultiplier + rOffset) / 256.0f;
-        rEnd = 1.0f - rEnd;
-        rEnd = rEnd * (rFar - rNear) + rNear;
+    if (iHint != -1) {
+        rFar = pFrame->aMatrixHint[pFrame->iHintProjection].rClipFar;
+        rNear = pFrame->aMatrixHint[pFrame->iHintProjection].rClipNear;
     } else {
-        if (var_f6 > 1.0f) {
-            var_f6 = 1.0f;
+        rFar = 32000.0f;
+        rNear = 1.0f;
+    }
+
+    if (rMultiplier == 0.0f) {
+        GXSetFog(GX_FOG_NONE, color, 0.0f, 0.0f, 0.0f, 1000.0f);
+    } else {
+        if (rOffset == rMultiplier) {
+            rFogNear = 500.0f;
+            rFogFar = 1000.0f;
+            rFogMin = rFogNear * (1.0f - (rOffset / rMultiplier));
+            rFogMax = (128000.0f / rMultiplier) + rFogMin;
+            nFogType = GX_FOG_NONE;
+        } else {
+            f32 dminmax;
+            f32 rDMinMax;
+            f32 val1;
+            f32 dplane;
+            f32 rNearScale;
+
+            dplane = rFar - rNear;
+
+            nFogType = GX_FOG_LIN;
+            rMultiplier = 128000.0f / rMultiplier;
+            rFogNear = gNearVal = rNear;
+            rFogFar = gFarVal = rFar;
+            rNearScale = -((rOffset * rMultiplier * 0.00390625f) - 500.0f);
+            rDMinMax = rNearScale + rMultiplier;
+            dminmax = rDMinMax - rNearScale;
+
+            if (gRealProjectionType == GX_PERSPECTIVE) {
+                rMinimum = -gRealProjectionMtx[4][3] / (((rNearScale - 1000.0f) / 1064.0f) + gRealProjectionMtx[4][2]);
+            } else {
+                rMinimum = (((rNearScale - 1000.0f) / 1064.0f) - gRealProjectionMtx[4][3]) / gRealProjectionMtx[4][2];
+            }
+
+            rOffset = dminmax / 1000.0f;
+            val1 = rOffset;
+
+            if (rOffset > 0.19f) {
+                val1 = 0.19f;
+            } else if (val1 < 0.15f) {
+                val1 = 0.15f;
+            }
+
+            rNearScale = -((dminmax * val1) - rDMinMax);
+            if (rNearScale > 1000.0f) {
+                rNearScale = 1000.0f;
+            }
+
+            if (gRealProjectionType == GX_PERSPECTIVE) {
+                rMaximum = -gRealProjectionMtx[4][3] / (((rNearScale - 1000.0f) / 1064.0f) + gRealProjectionMtx[4][2]);
+            } else {
+                rMaximum = (((rNearScale - 1000.0f) / 1064.0f) - gRealProjectionMtx[4][3]) / gRealProjectionMtx[4][2];
+            }
+
+            rFogMin = (((-rMinimum - rNear) / dplane) * dplane) + rNear;
+            rFogMax = (((-rMaximum - rNear) / dplane) * dplane) + rNear;
         }
-        rEnd = pFrame->unk_3F150[3][2] / (var_f6 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
-        if (rEnd < rNear) {
-            rEnd = rNear;
-        }
-        if (rEnd > rFar) {
-            rEnd = rFar;
+
+        nMode = pFrame->aMode[FMT_OTHER0];
+        rFogNear *= 0.1f;
+        if (((nMode >> 26) & 3) == 1 || (nMode >> 30) == 3 || ((nMode >> 22) & 3) == 3) {
+            GXSetFog(nFogType, color, rFogMin, rFogMax, rFogNear, rFogFar);
+        } else {
+            GXSetFog(GX_FOG_NONE, color, 0.0f, 0.0f, 0.0f, 1000.0f);
         }
     }
 
-    rNear *= 0.1f;
-    if (((pFrame->aMode[FMT_OTHER0] >> 26) & 3) == 1 || (pFrame->aMode[FMT_OTHER0] >> 30) == 3 ||
-        ((pFrame->aMode[FMT_OTHER0] >> 22) & 3) == 3) {
-        GXSetFog(nFogType, color, rStart, rEnd, rNear, rFar);
-    } else {
-        GXSetFog(GX_FOG_NONE, color, 0.0f, 0.0f, 0.0f, 1000.0f);
-    }
     return true;
 }
-
+#else
 bool frameDrawSetupFog_Default(Frame* pFrame) {
     GXColor color;
     s32 nFogType;
@@ -983,6 +1045,7 @@ bool frameDrawSetupFog_Default(Frame* pFrame) {
 
     rFar = pFrame->unk_3F210;
     rNear = pFrame->unk_3F214;
+
     color = pFrame->aColor[FCT_FOG];
     nFogType = GX_FOG_EXP;
 
@@ -993,6 +1056,7 @@ bool frameDrawSetupFog_Default(Frame* pFrame) {
 
     var_f6 = -rOffset;
     var_f9 = var_f6 / rMultiplier;
+
     rStart = pFrame->unk_3F150[3][2] / (var_f9 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
 
     var_f5 = 249.0f;
@@ -1015,7 +1079,9 @@ bool frameDrawSetupFog_Default(Frame* pFrame) {
         if (var_f6 > 1.0f) {
             var_f6 = 1.0f;
         }
+
         rEnd = pFrame->unk_3F150[3][2] / (var_f6 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
+
         if (rEnd < rNear) {
             rEnd = rNear;
         }
@@ -1033,6 +1099,86 @@ bool frameDrawSetupFog_Default(Frame* pFrame) {
     }
     return true;
 }
+
+bool frameDrawSetupFog_StarFox(Frame* pFrame) {
+    GXColor color;
+    GXFogType nFogType;
+    f32 rNear;
+    f32 rFar;
+    f32 rMultiplier;
+    f32 rOffset;
+    f32 rStart;
+    f32 rEnd;
+    f32 var_f5;
+    f32 var_f6;
+    f32 var_f9;
+
+    rMultiplier = (s16)(pFrame->aMode[0] >> 16);
+    rOffset = (s16)(pFrame->aMode[0] & 0xFFFF);
+
+#if VERSION >= MK64_J
+    rFar = pFrame->unk_3F210;
+    rNear = pFrame->unk_3F214;
+#endif
+
+    color = pFrame->aColor[FCT_FOG];
+    nFogType = GX_FOG_EXP;
+
+    if (rOffset == rMultiplier && rOffset == 0.0f) {
+        GXSetFog(GX_FOG_NONE, color, 0.0f, 0.0f, 0.0f, 1000.0f);
+        return true;
+    }
+
+    var_f6 = -rOffset;
+    var_f9 = var_f6 / rMultiplier;
+
+#if VERSION >= MK64_J
+    rStart = pFrame->unk_3F150[3][2] / (var_f9 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
+#endif
+
+    var_f5 = 253.0f;
+    var_f6 = var_f5 + var_f6;
+    var_f6 = (var_f6) / rMultiplier;
+
+    if (rStart < rNear) {
+        rStart = rNear;
+    }
+    if (rStart > rFar) {
+        rStart = rFar;
+    }
+    if (var_f6 > 1.2f) {
+        nFogType = GX_FOG_EXP;
+        rStart = -rOffset / rMultiplier;
+        rEnd = (rMultiplier + rOffset) / 256.0f;
+        rEnd = 1.0f - rEnd;
+        rEnd = rEnd * (rFar - rNear) + rNear;
+    } else {
+        if (var_f6 > 1.0f) {
+            var_f6 = 1.0f;
+        }
+
+#if VERSION >= MK64_J
+        rEnd = pFrame->unk_3F150[3][2] / (var_f6 - (pFrame->unk_3F150[2][2] / pFrame->unk_3F150[2][3]));
+#endif
+
+        if (rEnd < rNear) {
+            rEnd = rNear;
+        }
+        if (rEnd > rFar) {
+            rEnd = rFar;
+        }
+    }
+
+    rNear *= 0.1f;
+    if (((pFrame->aMode[FMT_OTHER0] >> 26) & 3) == 1 || (pFrame->aMode[FMT_OTHER0] >> 30) == 3 ||
+        ((pFrame->aMode[FMT_OTHER0] >> 22) & 3) == 3) {
+        GXSetFog(nFogType, color, rStart, rEnd, rNear, rFar);
+    } else {
+        GXSetFog(GX_FOG_NONE, color, 0.0f, 0.0f, 0.0f, 1000.0f);
+    }
+    return true;
+}
+#endif
 
 //! TODO: make sFrameObj a static variable in the function
 void ZeldaDrawFrame(Frame* pFrame, u16* pData) {
@@ -1363,7 +1509,13 @@ bool fn_8004B940(Frame* pFrame, Cpu* pCPU) {
 
     if (pFrame->unk_34 != 0) {
         pFrame->unk_34++;
-        switch (pFrame->unk_34 & 0xFF) {
+
+#if VERSION < MK64_J
+        switch (pFrame->unk_34)
+#else
+        switch (pFrame->unk_34 & 0xFF)
+#endif
+        {
             case 0x02:
                 fn_8009C5B0(VI_GM_0_8);
                 break;
@@ -1415,6 +1567,19 @@ bool fn_8004B940(Frame* pFrame, Cpu* pCPU) {
             case 0x12:
                 fn_8009C5B0(VI_GM_0_8);
                 break;
+#if VERSION < MK64_J
+            default:
+                fn_8009C5B0(VI_GM_1_0);
+
+                if (cpuFindFunction(pCPU, 0x802B2EBC, &pFunction)) {
+                    if (!fn_8003F330(pCPU, pFunction)) {
+                        return false;
+                    }
+                }
+
+                pFrame->unk_34 = 0;
+                break;
+#else
             case 0x13:
                 fn_8009C5B0(VI_GM_1_0);
                 break;
@@ -1440,6 +1605,7 @@ bool fn_8004B940(Frame* pFrame, Cpu* pCPU) {
                 }
                 pFrame->unk_34 &= ~0xFF;
                 break;
+#endif
         }
     }
 
@@ -1820,6 +1986,7 @@ static inline void frameSetZMode(Frame* pFrame) {
                 GXSetZMode(GX_TRUE, GX_LEQUAL, GX_FALSE);
             }
         } else {
+#if VERSION >= MK64_J
             switch (gpSystem->eTypeROM) {
                 case CZLJ:
                 case CZLE:
@@ -1833,6 +2000,7 @@ static inline void frameSetZMode(Frame* pFrame) {
                 default:
                     break;
             }
+#endif
         }
     } else {
         GXSetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
@@ -1862,7 +2030,10 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
     f32 scale;
     s32 nCount;
     s32 iIndex;
-    s32 pad;
+
+#if VERSION < MK64_J
+    Mtx44* pMtx = &gRealProjectionMtx;
+#endif
 
     nColors = 0;
     bTextureGen = (pFrame->aMode[FMT_GEOMETRY] & 0xA0) == 0xA0;
@@ -1914,21 +2085,100 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
         pFrame->nMode &= ~0x40000000;
     }
 
+#if VERSION < MK64_J
+    if ((pFrame->nFlag & 0x40000) && (pFrame->nMode & 0x04000000)) {
+        pFrame->nFlag &= ~0x40000;
+        if (pFrame->nMode & 0x20000000) {
+            eTypeProjection = pFrame->eTypeProjection == FMP_PERSPECTIVE ? GX_PERSPECTIVE : GX_ORTHOGRAPHIC;
+            if ((pFrame->aMode[FMT_OTHER0] & 0xC00) == 0xC00 && eTypeProjection == GX_PERSPECTIVE) {
+                GXSetProjection(pFrame->matrixProjection, eTypeProjection);
+            } else {
+                GXSetProjection(pFrame->matrixProjection, eTypeProjection);
+            }
+        } else {
+            frameTransposeMatrix(matrix44, pFrame->matrixProjection);
+
+            iHint = pFrame->iHintProjection;
+            if (iHint != -1) {
+                if (pFrame->aMatrixHint[iHint].eProjection == FMP_PERSPECTIVE) {
+                    eTypeProjection = GX_PERSPECTIVE;
+                } else {
+                    eTypeProjection = GX_ORTHOGRAPHIC;
+                }
+                rNear = pFrame->aMatrixHint[iHint].rClipNear;
+                rFar = pFrame->aMatrixHint[iHint].rClipFar;
+            } else if (pFrame->matrixProjection[3][3] == 1.0f) {
+                rNear = 0.0f;
+                rFar = 32000.0f;
+                eTypeProjection = GX_ORTHOGRAPHIC;
+            } else {
+                rNear = 1.0f;
+                rFar = 32000.0f;
+                eTypeProjection = GX_PERSPECTIVE;
+            }
+
+            if (gpSystem->eTypeROM == NSMJ || gpSystem->eTypeROM == NSME || gpSystem->eTypeROM == NSMP) {
+                if (pFrame->unk_4C > 1) {
+                    rNear *= 10.0;
+                }
+            }
+
+            if (eTypeProjection == GX_PERSPECTIVE) {
+                C_MTXPerspective(matrixProjection, 30.0f, 4.0f / 3.0f, 0.1f * rNear, rFar);
+            } else {
+                rNear = -rFar;
+                C_MTXOrtho(matrixProjection, (f32)pFrame->anSizeY[0] / 2.0, -(f32)pFrame->anSizeY[0] / 2.0,
+                           -(f32)pFrame->anSizeX[0] / 2.0, (f32)pFrame->anSizeX[0] / 2.0, rNear, rFar);
+            }
+
+            rValue23 = matrixProjection[2][3];
+            if ((pFrame->aMode[FMT_OTHER0] & 0xC00) == 0xC00 && eTypeProjection == GX_PERSPECTIVE) {
+                rValue23 = -((rNear * 1669.0f * 1000.0f) - rValue23);
+            }
+
+            if (eTypeProjection == GX_PERSPECTIVE) {
+                gNearVal = matrix44[2][3] * ((matrix44[2][2] + 1.0f) / (matrix44[2][2] - 1.0f) - 1.0f) / 2.0f;
+                gFarVal = gNearVal * ((matrix44[2][2] - 1.0f) / (matrix44[2][2] + 1.0f) + 1.0f);
+            } else {
+                gNearVal = (matrix44[2][3] + 1.0f) / matrix44[2][2];
+                gFarVal = (matrix44[2][3] - 1.0f) / matrix44[2][2];
+                matrix44[2][2] = matrixProjection[2][2];
+                matrix44[2][3] = rValue23;
+            }
+
+            matrix44[2][2] = matrixProjection[2][2];
+            matrix44[2][3] = rValue23;
+
+            memcpy(pMtx, matrix44, sizeof(Mtx44));
+            C_MTXPerspective(matrixProjection, 30.0f, 4.0f / 3.0f, rNear, rFar);
+            pMtx[0][2][2] = matrixProjection[2][2];
+            pMtx[0][2][3] = matrixProjection[2][3];
+            gRealProjectionType = eTypeProjection;
+
+            GXSetProjection(matrix44, eTypeProjection);
+        }
+
+        pFrame->nMode &= ~0x40000000;
+    }
+#else
     if ((pFrame->nFlag & 0x40000) && (pFrame->nMode & 0x04000000)) {
         pFrame->nFlag &= ~0x40000;
         memcpy(matrix44, pFrame->matrixProjection, sizeof(Mtx44));
         if (pFrame->eTypeProjection == FMP_PERSPECTIVE) {
             eTypeProjection = GX_PERSPECTIVE;
+
             if ((pFrame->aMode[FMT_OTHER0] & 0xC00) == 0xC00) {
                 matrix44[2][3] = -((0.1f * (0.015f * pFrame->unk_3F214)) - matrix44[2][3]);
             }
+
         } else {
             eTypeProjection = GX_ORTHOGRAPHIC;
         }
-        lbl_8025D098 = eTypeProjection;
+        gRealProjectionType = eTypeProjection;
         GXSetProjection(matrix44, eTypeProjection);
         pFrame->nMode &= ~0x40000000;
     }
+#endif
 
     if (pFrame->aMode[FMT_TEXTURE2] & 1) {
         bFlag = true;
@@ -1938,6 +2188,46 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
                  (((s32)((pFrame->aMode[FMT_TEXTURE2] >> 8) & 7) < 7 && pFrame->aTile[iTile + 1].nSizeX != 0) ? 1 : 0);
 
         if (pFrame->nFlag & 1) {
+#if VERSION < MK64_J
+            for (iIndex = 0; iTile <= nCount; iTile++, iIndex++) {
+                if (frameLoadTile(pFrame, &gpTexture[iTile], iTile | (iIndex << 4))) {
+                    if (bTextureGen) {
+                        rSlideS = (pFrame->aTile[iTile].nX0 / 4.0f) / gpTexture[iTile]->nSizeX;
+                        rSlideT = (pFrame->aTile[iTile].nY0 / 4.0f) / gpTexture[iTile]->nSizeY;
+
+                        rScaleS = 65536.0f * ((pFrame->aMode[FMT_TEXTURE1] >> 16) / 65536.0f);
+                        rScaleS = rScaleS / (gpTexture[iTile]->nSizeX << 6);
+                        rScaleT = 65536.0f * ((pFrame->aMode[FMT_TEXTURE1] & 0xFFFF) / 65536.0f);
+                        rScaleT = rScaleT / (gpTexture[iTile]->nSizeY << 6);
+                    } else {
+                        rSlideS = ((pFrame->aTile[iTile].nX0 / 4.0f) - 0.5f) / gpTexture[iTile]->nSizeX;
+                        rSlideT = ((pFrame->aTile[iTile].nY0 / 4.0f) - 0.5f) / gpTexture[iTile]->nSizeY;
+
+                        rScaleS = (pFrame->aMode[FMT_TEXTURE1] >> 16) / 65536.0f;
+                        rScaleS = rScaleS / gpTexture[iTile]->nSizeX;
+                        rScaleT = (pFrame->aMode[FMT_TEXTURE1] & 0xFFFF) / 65536.0f;
+                        rScaleT = rScaleT / gpTexture[iTile]->nSizeY;
+                    }
+
+                    if (pFrame->aTile[iTile].nShiftS < 11) {
+                        rScaleS /= (1 << pFrame->aTile[iTile].nShiftS);
+                    } else {
+                        rScaleS *= (1 << (16 - pFrame->aTile[iTile].nShiftS));
+                    }
+
+                    if (pFrame->aTile[iTile].nShiftT < 11) {
+                        rScaleT /= (1 << pFrame->aTile[iTile].nShiftT);
+                    } else {
+                        rScaleT *= (1 << (16 - pFrame->aTile[iTile].nShiftT));
+                    }
+
+                    PSMTXTrans(matrixA, -rSlideS, -rSlideT, 0.0f);
+                    PSMTXScale(matrixB, rScaleS * scale, rScaleT * scale, 0.0f);
+                    PSMTXConcat(matrixA, matrixB, gTextureMatrix[iIndex]);
+                    GXLoadTexMtxImm(gTextureMatrix[iIndex], ganNameTexMtx[iIndex], GX_MTX2x4);
+                }
+            }
+#else
             for (iIndex = 0; iTile <= nCount; iTile++, iIndex++) {
                 if (frameLoadTile(pFrame, &pTexture[iTile], iTile | (iIndex << 4))) {
                     if (bTextureGen) {
@@ -1976,6 +2266,7 @@ static bool frameDrawSetupSP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 nVe
                     GXLoadTexMtxImm(matrix, ganNameTexMtx[iIndex], GX_MTX2x4);
                 }
             }
+#endif
         }
     } else {
         bFlag = false;
@@ -2044,6 +2335,7 @@ static bool frameDrawSetupDP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 ver
                     if (!frameDrawSetupFog_StarFox(pFrame)) {
                         return false;
                     }
+#if VERSION >= MK64_J
                 case CZLJ:
                 case CZLE:
                 case NZLP:
@@ -2051,6 +2343,7 @@ static bool frameDrawSetupDP(Frame* pFrame, s32* pnColors, bool* pbFlag, s32 ver
                         return false;
                     }
                     break;
+#endif
                 default:
                     if (!frameDrawSetupFog_Default(pFrame)) {
                         return false;
@@ -2312,7 +2605,6 @@ static inline void frameWriteVertex(Vertex* pVertex) {
 }
 
 static bool frameCheckTriangleDivide(Frame* pFrame, Primitive* pPrimitive) {
-    s32 pad1[3];
     Vertex* v0;
     Vertex* v1;
     Vertex* v2;
@@ -2330,11 +2622,12 @@ static bool frameCheckTriangleDivide(Frame* pFrame, Primitive* pPrimitive) {
     iData = 0;
     anData = pPrimitive->anData;
     while (iData < pPrimitive->nCount) {
+        nNewVertCount = 0;
+        bInFront = false;
+        bBehind = false;
         aSide[0] = 3;
         aSide[1] = 3;
         aSide[2] = 3;
-        bInFront = false;
-        bBehind = false;
 
         v0 = &pFrame->aVertex[anData[iData + 0]];
         if (v0->vec.z < 0.0f) {
@@ -2371,7 +2664,6 @@ static bool frameCheckTriangleDivide(Frame* pFrame, Primitive* pPrimitive) {
             GXEnd();
             iData += 3;
         } else {
-            nNewVertCount = 0;
             aNewVertArray[nNewVertCount++] = *v0;
             if ((aSide[0] == 0 && aSide[1] == 1) || (aSide[0] == 1 && aSide[1] == 0)) {
                 fInterp = -v0->vec.z / (v1->vec.z - v0->vec.z);
@@ -3049,10 +3341,17 @@ bool frameSetScissor(Frame* pFrame, Rectangle* pScissor) {
     s32 nX1;
     s32 nY1;
 
+#if VERSION < MK64_J
+    nX0 = (s32)(pScissor->nX0 / 4.0f * pFrame->rScaleX);
+    nY0 = (s32)(pScissor->nY0 / 4.0f * pFrame->rScaleY);
+    nX1 = (s32)(pScissor->nX1 / 4.0f * pFrame->rScaleX);
+    nY1 = (s32)(pScissor->nY1 / 4.0f * pFrame->rScaleY);
+#else
     nX0 = pFrame->unk_A4 + (s32)(pScissor->nX0 / 4.0f * pFrame->rScaleX);
     nY0 = pFrame->unk_A8 + (s32)(pScissor->nY0 / 4.0f * pFrame->rScaleY);
     nX1 = pFrame->unk_A4 + (s32)(pScissor->nX1 / 4.0f * pFrame->rScaleX);
     nY1 = pFrame->unk_A8 + (s32)(pScissor->nY1 / 4.0f * pFrame->rScaleY);
+#endif
 
     if (nX1 < nX0) {
         nTemp = nX1;
@@ -3157,11 +3456,13 @@ bool frameBegin(Frame* pFrame, s32 nCountVertex) {
             OSReport(lbl_80172948);
         }
 
+#if VERSION >= MK64_J
         if (pFrame->aBuffer[FBT_DEPTH].pData != NULL) {
             if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
                 fn_8004BDF4(pFrame->aBuffer[FBT_DEPTH].pData);
             }
         }
+#endif
 
         if (!frameUpdateCache(pFrame)) {
             return false;
@@ -3170,7 +3471,9 @@ bool frameBegin(Frame* pFrame, s32 nCountVertex) {
         xlCoreBeforeRender();
         pFrame->nMode &= ~0x180000;
 
+#if VERSION >= MK64_J
         fn_80052174(pFrame);
+#endif
 
         GXSetMisc(GX_MT_XF_FLUSH, 8);
         PSMTXIdentity(matrix);
@@ -3227,7 +3530,9 @@ bool frameEnd(Frame* pFrame) {
     pCPU = SYSTEM_CPU(gpSystem);
 
     if (gbFrameBegin) {
+#if VERSION >= MK64_J
         return true;
+#endif
     }
 
     gbFrameBegin = true;
@@ -3259,6 +3564,13 @@ bool frameEnd(Frame* pFrame) {
     pFrame->unk_28 = 0;
     pFrame->unk_2C = 0;
 
+#if VERSION == SM64_J || VERSION == SM64_U
+    if (gpSystem->eTypeROM == NSMJ || gpSystem->eTypeROM == NSME || gpSystem->eTypeROM == NSMP) {
+        if (pFrame->unk_4C > 12900) {
+            frameEnd_UnknownInline(pFrame, 73);
+        }
+    }
+#else
     if (gpSystem->eTypeROM == NSMJ || gpSystem->eTypeROM == NSME) {
         if (pFrame->unk_4C > 12900) {
             frameEnd_UnknownInline(pFrame, 73);
@@ -3271,29 +3583,40 @@ bool frameEnd(Frame* pFrame) {
                 pFrame->unk_48 = 0;
             }
         }
-    } else if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
+    }
+#endif
+
+    else if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTP) {
         if (pFrame->unk_30 != 0 && lbl_8025D168 >= 2) {
             frameEnd_UnknownInline(pFrame, 93);
+
+#if VERSION >= MK64_J
         } else if (pFrame->unk_38 != 0 && lbl_8025D168 == 3 && gpSystem->eTypeROM == NKTP) {
             frameEnd_UnknownInline(pFrame, 73);
         } else if (pFrame->unk_3C && lbl_8025D168 == 3 && (gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTJ)) {
             frameEnd_UnknownInline(pFrame, 73);
         } else if (pFrame->unk_40 && lbl_8025D168 == 3 && (gpSystem->eTypeROM == NKTE || gpSystem->eTypeROM == NKTJ)) {
             frameEnd_UnknownInline(pFrame, 80);
+
         } else if (pFrame->unk_4C != 0) {
             if (gpSystem->eTypeROM == NKTJ || gpSystem->eTypeROM == NKTE) {
                 frameEnd_UnknownInline(pFrame, 66);
             } else {
                 frameEnd_UnknownInline(pFrame, 79);
             }
+
         } else if (pFrame->unk_44 != 0) {
             if (lbl_8025D168 >= 4) {
                 frameEnd_UnknownInline(pFrame, 80);
             } else {
                 frameEnd_UnknownInline(pFrame, 25);
             }
+#endif
         }
+
         fn_8004B940(pFrame, pCPU);
+
+#if VERSION >= MK64_J
     } else if (gpSystem->eTypeROM == CZLJ || gpSystem->eTypeROM == CZLE || gpSystem->eTypeROM == NZLP) {
         s32 var_r29;
 
@@ -3303,6 +3626,7 @@ bool frameEnd(Frame* pFrame) {
                 pFrame->unk_38 = 0;
             }
         }
+
         if (pFrame->unk_4C != 0) {
             pFrame->unk_4C++;
             if (gpSystem->eTypeROM == NZLP) {
@@ -3324,6 +3648,7 @@ bool frameEnd(Frame* pFrame) {
             }
             frameEnd_UnknownInline(pFrame, var_r29);
         }
+#endif
     }
 
     if (pFrame->aBuffer[FBT_DEPTH].nAddress != 0) {
@@ -3345,8 +3670,14 @@ bool frameEnd(Frame* pFrame) {
 
     GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
     GXSetColorUpdate(GX_TRUE);
+
+#if VERSION < MK64_J
+    GXCopyDisp(DemoCurrentBuffer, GX_TRUE);
+#elif VERSION >= MK64_J
     fn_8004BF58(pFrame);
     GXCopyDisp(DemoCurrentBuffer, GX_FALSE);
+#endif
+
     GXSetDrawDone();
     GXFlush();
     VISetBlack(false);
@@ -3571,14 +3902,22 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
             pFrame->viewport.rX = 0.0f;
             pFrame->viewport.rY = 0.0f;
 
+#if VERSION < MK64_J
+            var_r30 = (u32)VIGetTvFormat() == VI_TV_FMT_PAL ? GC_FRAME_HEIGHT_PAL : GC_FRAME_HEIGHT;
+#else
             var_r30 = rmode->efbHeight;
+#endif
+
             pFrame->viewport.rSizeX = GC_FRAME_WIDTH;
             pFrame->viewport.rSizeY = var_r30;
             pFrame->anSizeX[FS_SOURCE] = N64_FRAME_WIDTH;
             pFrame->anSizeY[FS_SOURCE] = N64_FRAME_HEIGHT;
             pFrame->rScaleX = (f32)pFrame->anSizeX[FS_TARGET] / (f32)N64_FRAME_WIDTH;
             pFrame->rScaleY = (f32)pFrame->anSizeY[FS_TARGET] / (f32)N64_FRAME_HEIGHT;
+
+#if VERSION >= MK64_J
             pFrame->unk_A4 = pFrame->unk_A8 = 0.0f;
+#endif
 
             temp_r7 = var_r30 >> (xlCoreHiResolution() ? 0 : 1);
             if (temp_r7 > 0) {
@@ -3586,7 +3925,10 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
                 pFrame->anSizeY[FS_TARGET] = temp_r7;
                 pFrame->rScaleX = GC_FRAME_WIDTH / (f32)pFrame->anSizeX[FS_SOURCE];
                 pFrame->rScaleY = temp_r7 / (f32)pFrame->anSizeY[FS_SOURCE];
+
+#if VERSION >= MK64_J
                 pFrame->unk_A4 = pFrame->unk_A8 = 0.0f;
+#endif
             }
             GXSetDrawDoneCallback(&frameDrawDone);
 
@@ -3596,11 +3938,18 @@ bool frameEvent(Frame* pFrame, s32 nEvent, void* pArgument) {
             pFrame->unk_2C = 0;
             pFrame->unk_30 = 0;
             pFrame->unk_34 = 0;
+
+#if VERSION >= MK64_J
             pFrame->unk_38 = 0;
             pFrame->unk_3C = 0;
             pFrame->unk_40 = 0;
             pFrame->unk_44 = 0;
+#endif
+
+#if VERSION >= SM64_E
             pFrame->unk_48 = 0;
+#endif
+
             pFrame->unk_4C = 0;
             pFrame->nHackCount = 0;
             pFrame->bBlurOn = false;
@@ -3714,11 +4063,15 @@ bool frameSetSize(Frame* pFrame, FrameSize eSize, s32 nSizeX, s32 nSizeY) {
         if (eSize == FS_SOURCE) {
             pFrame->rScaleX = (f32)pFrame->anSizeX[FS_TARGET] / nSizeX;
             pFrame->rScaleY = (f32)pFrame->anSizeY[FS_TARGET] / nSizeY;
+#if VERSION >= MK64_J
             pFrame->unk_A4 = pFrame->unk_A8 = 0.0f;
+#endif
         } else if (eSize == FS_TARGET) {
             pFrame->rScaleX = (f32)nSizeX / pFrame->anSizeX[FS_SOURCE];
             pFrame->rScaleY = (f32)nSizeY / pFrame->anSizeY[FS_SOURCE];
+#if VERSION >= MK64_J
             pFrame->unk_A4 = pFrame->unk_A8 = 0.0f;
+#endif
         }
     }
 
@@ -3848,6 +4201,43 @@ bool frameSetMatrix(Frame* pFrame, Mtx44 matrix, FrameMatrixType eType, bool bLo
         case FMT_PROJECTION:
             pFrame->nMode &= ~0x20000000;
 
+#if VERSION < MK64_J
+            if (gpSystem->eTypeROM == NTEJ || gpSystem->eTypeROM == NTEA || gpSystem->eTypeROM == NTEP) {
+                if (matrix[0][0] < 0.006240f || matrix[0][0] > 0.006242f) {
+                    if (!frameSetProjection(pFrame, pFrame->iHintHack)) {
+                        return false;
+                    }
+                    bLoad = false;
+                }
+            }
+
+            if (bLoad || !(pFrame->nMode & 0x4000000) || (pFrame->nMode & 0x10000000)) {
+                if (matrix[0][0] == 1.0f && matrix[0][1] == 0.0f && matrix[0][2] == 0.0f && matrix[0][3] == 0.0f &&
+                    matrix[1][0] == 0.0f && matrix[1][1] == 1.0f && matrix[1][2] == 0.0f && matrix[1][3] == 0.0f &&
+                    matrix[2][0] == 0.0f && matrix[2][1] == 0.0f && matrix[2][2] == 1.0f && matrix[2][3] == 0.0f &&
+                    matrix[3][0] == 0.0f && matrix[3][1] == 0.0f && matrix[3][2] == 0.0f && matrix[3][3] == 1.0f) {
+                    pFrame->nMode |= 0x10000000;
+                } else {
+                    pFrame->nMode &= ~0x10000000;
+                }
+
+                matrixTarget = pFrame->matrixProjection;
+                frameCopyMatrix(matrixTarget, matrix);
+
+                pFrame->nMode |= 0x4000000;
+                pFrame->nMode &= ~0x8000000;
+
+                if (!frameGetMatrixHint(pFrame, nAddressN64 | 0x80000000, &pFrame->iHintProjection)) {
+                    pFrame->iHintProjection = -1;
+                }
+            } else if (pFrame->nMode & 0x8000000) {
+                PSMTX44Concat(matrix, pFrame->matrixProjectionExtra, pFrame->matrixProjectionExtra);
+            } else {
+                pFrame->nMode |= 0x8000000;
+                matrixTarget = pFrame->matrixProjectionExtra;
+                frameCopyMatrix(matrixTarget, matrix);
+            }
+#else
             if (bLoad) {
                 memcpy(pFrame->matrixProjection, matrix, sizeof(Mtx44));
             } else {
@@ -3857,6 +4247,8 @@ bool frameSetMatrix(Frame* pFrame, Mtx44 matrix, FrameMatrixType eType, bool bLo
             pFrame->nMode |= 0x04000000;
             pFrame->nMode &= ~0x8000000;
             pFrame->iHintProjection = -1;
+#endif
+
             pFrame->nMode &= ~0x400000;
             frameDrawReset(pFrame, 0x40000);
             break;
@@ -3998,16 +4390,43 @@ bool frameLoadVertex(Frame* pFrame, void* pBuffer, s32 iVertex0, s32 nCount) {
     }
 
     matrixModel = pFrame->aMatrixModel[pFrame->iMatrixModel];
+
+#if VERSION < MK64_J
+    if (pFrame->nMode & 0x08000000) {
+        if (!(pFrame->nMode & 0x400000)) {
+            PSMTX44Concat(matrixModel, pFrame->matrixProjectionExtra, pFrame->matrixView);
+            pFrame->nMode |= 0x400000;
+            if (pFrame->iHintProjection != -1) {
+                if (!frameScaleMatrix(pFrame->matrixView, pFrame->matrixView,
+                                      pFrame->aMatrixHint[pFrame->iHintProjection].rScale)) {
+                    return false;
+                }
+            }
+        }
+        matrixView = pFrame->matrixView;
+    } else if (!(pFrame->nMode & 0x400000) && pFrame->iHintProjection != -1) {
+        if (!frameScaleMatrix(pFrame->matrixView, matrixModel, pFrame->aMatrixHint[pFrame->iHintProjection].rScale)) {
+            return false;
+        }
+        pFrame->nMode |= 0x400000;
+        matrixView = pFrame->matrixView;
+    } else {
+        matrixView = matrixModel;
+    }
+#else
     if (!(pFrame->nMode & 0x400000)) {
         if (!(pFrame->nMode & 0x08000000)) {
             fn_8004A314(pFrame);
             pFrame->nMode |= 0x08000000;
         }
+
         PSMTX44Concat(matrixModel, pFrame->unk_3F190, pFrame->matrixView);
+
         pFrame->nMode |= 0x400000;
     }
 
     matrixView = pFrame->matrixView;
+#endif
 
     if (pFrame->aMode[FMT_GEOMETRY] & 0x20) {
         nLight = pFrame->nCountLight;
@@ -4237,7 +4656,12 @@ bool frameCullDL(Frame* pFrame, s32 nVertexStart, s32 nVertexEnd) {
     s32 nCode;
     s32 nCodeFull;
 
+#if VERSION < MK64_J
+    matrix = pFrame->matrixProjection;
+#else
     matrix = pFrame->unk_3F150;
+#endif
+
     vtxP = &pFrame->aVertex[nVertexStart];
     endVtxP = &pFrame->aVertex[nVertexEnd];
     nCodeFull = 0xFF;
@@ -4306,9 +4730,266 @@ bool frameLoadTLUT(Frame* pFrame, s32 nCount, s32 iTile) {
     return true;
 }
 
-// fn_80054BFC
+u64* fn_80054BFC(Frame* pFrame, s32, s32, s32, s32);
 
-// frameLoadTMEM
+bool frameLoadTMEM(Frame* pFrame, FrameLoadType eType, s32 iTile) {
+    s32 i;
+    bool bFlip;
+    s32 iTMEM;
+    s32 var_r0;
+    s32 nSize;
+    s32 nStep;
+    s32 nDelta;
+    s32 iScan;
+    s32 nOffset;
+    Tile* pTile;
+    u8 nData8;
+    u16 nData16;
+    u32 nData32;
+    u32 nData64[2];
+    u32 nSum;
+    u64* pSource;
+    s32 nCount;
+    s32 nScanFull;
+    int nScanPart;
+    u8* pSource8;
+    u16* pSource16;
+    u32* pSource32;
+
+    s32 temp_r10;
+    s32 temp_r3;
+    s32 temp_r6;
+    s32 pad[3];
+
+    frameDrawReset(pFrame, 1);
+
+    pSource = (u64*)((u32)pFrame->aBuffer[FBT_IMAGE].pData & ~3);
+    pFrame->iTileLoad = iTile;
+    pTile = &pFrame->aTile[iTile];
+    iTMEM = pTile->nTMEM & 0x1FF;
+    if (eType == FLT_BLOCK) {
+        var_r0 = 0;
+    } else {
+        var_r0 = 2;
+    }
+
+    switch (pFrame->aBuffer[FBT_IMAGE].nSize) {
+        case G_IM_SIZ_4b:
+            nSize = (pTile->nX1 + 1) >> 4;
+            nOffset =
+                ((pTile->nX0 >> var_r0) >> 1) + ((pFrame->aBuffer[FBT_IMAGE].nWidth + 1) >> 1) * (pTile->nY0 >> var_r0);
+            break;
+        case G_IM_SIZ_8b:
+            nSize = (pTile->nX1 + 1) >> 3;
+            nOffset = (pTile->nX0 >> var_r0) + pFrame->aBuffer[FBT_IMAGE].nWidth * (pTile->nY0 >> var_r0);
+            break;
+        case G_IM_SIZ_16b:
+            nSize = (pTile->nX1 + 1) >> 2;
+            nOffset = ((pTile->nX0 >> var_r0) << 1) + (pFrame->aBuffer[FBT_IMAGE].nWidth << 1) * (pTile->nY0 >> var_r0);
+            break;
+        case G_IM_SIZ_32b:
+            nSize = (pTile->nX1 + 1) >> 1;
+            nOffset = ((pTile->nX0 >> var_r0) << 2) + (pFrame->aBuffer[FBT_IMAGE].nWidth << 2) * (pTile->nY0 >> var_r0);
+            break;
+        default:
+            return false;
+    }
+
+    pSource = (u64*)((u8*)pSource + nOffset);
+    if (gpSystem->eTypeROM == NSMJ && pTile->nFormat != G_IM_FMT_IA &&
+        (pFrame->aBuffer[FBT_IMAGE].nAddress == 0x0020EAF0 || pFrame->aBuffer[FBT_IMAGE].nAddress == 0x0021B340)) {
+        pSource = fn_80054BFC(pFrame, 40, 40, 2, 2);
+        if (pSource == NULL) {
+            return true;
+        }
+    }
+
+    pFrame->nAddressLoad = (pFrame->aBuffer[FBT_IMAGE].nAddress & 0x7FFFFF) + nOffset;
+    nSum = 0;
+    if (eType == FLT_BLOCK) {
+        nDelta = pTile->nY1;
+        if (nDelta == 0) {
+            while (nSize-- != 0) {
+                nData64[0] = ((u32*)pSource)[0];
+                nData64[1] = ((u32*)pSource)[1];
+                pSource++;
+
+                nSum += nData64[0];
+                nSum += nData64[1];
+                nSum ^= iTMEM;
+
+                pFrame->TMEM.data.u32[2 * iTMEM + 0] = nData64[0];
+                pFrame->TMEM.data.u32[2 * iTMEM + 1] = nData64[1];
+
+                iTMEM = (iTMEM + 1) & 0x1FF;
+            }
+        } else {
+            nStep = 0;
+            while (nSize != 0) {
+                while (nSize != 0 && (nStep & 0x800) == 0) {
+                    nData64[0] = ((u32*)pSource)[0];
+                    nData64[1] = ((u32*)pSource)[1];
+                    pSource++;
+
+                    nSum += nData64[0];
+                    nSum += nData64[1];
+                    nSum ^= iTMEM;
+
+                    pFrame->TMEM.data.u32[2 * iTMEM + 0] = nData64[0];
+                    pFrame->TMEM.data.u32[2 * iTMEM + 1] = nData64[1];
+
+                    iTMEM = (iTMEM + 1) & 0x1FF;
+                    nStep += nDelta;
+                    nSize--;
+                }
+                nStep -= 0x800;
+                if (pFrame->aBuffer[FBT_IMAGE].nSize == 3) {
+                    bFlip = 0;
+                    while (nSize != 0 && (nStep & 0x800) == 0) {
+                        nData64[0] = ((u32*)pSource)[0];
+                        nData64[1] = ((u32*)pSource)[1];
+                        pSource++;
+
+                        nSum += nData64[0];
+                        nSum += nData64[1];
+                        nSum ^= iTMEM;
+
+                        temp_r3 = iTMEM + (bFlip ? -1 : 1);
+                        pFrame->TMEM.data.u32[2 * temp_r3 + 0] = nData64[0];
+                        pFrame->TMEM.data.u32[2 * temp_r3 + 1] = nData64[1];
+
+                        iTMEM = (iTMEM + 1) & 0x1FF;
+                        nStep += nDelta;
+                        nSize--;
+                        bFlip ^= 1;
+                    }
+                } else {
+                    while (nSize != 0 && (nStep & 0x800) == 0) {
+                        nData64[0] = ((u32*)pSource)[0];
+                        nData64[1] = ((u32*)pSource)[1];
+                        pSource++;
+
+                        nSum += nData64[0];
+                        nSum += nData64[1];
+                        nSum ^= iTMEM;
+
+                        pFrame->TMEM.data.u32[2 * iTMEM + 0] = nData64[1];
+                        pFrame->TMEM.data.u32[2 * iTMEM + 1] = nData64[0];
+
+                        iTMEM = (iTMEM + 1) & 0x1FF;
+                        nStep += nDelta;
+                        nSize--;
+                    }
+                }
+                nStep -= 0x800;
+            }
+        }
+    } else {
+        nCount = ((pTile->nY1 - pTile->nY0) + 4) >> 2;
+        nScanFull = pFrame->aBuffer[FBT_IMAGE].nWidth;
+        nScanPart = ((pTile->nX1 - pTile->nX0) + 4) >> 2;
+        switch (pFrame->aBuffer[FBT_IMAGE].nSize) {
+            case G_IM_SIZ_4b:
+            case G_IM_SIZ_8b:
+                if (nScanPart >= pTile->nSizeX * 8) {
+                    nScanPart = pTile->nSizeX * 8;
+                }
+                iTMEM <<= 3;
+                for (iScan = 0; iScan < nCount; iScan++) {
+                    i = nScanPart;
+                    pSource8 = (u8*)pSource;
+                    while (i--) {
+                        if (iScan & 1) {
+                            temp_r10 = iTMEM ^ 4;
+                        } else {
+                            temp_r10 = iTMEM;
+                        }
+                        nData8 = *pSource8;
+                        nSum += nData8;
+                        nSum ^= iTMEM;
+                        pFrame->TMEM.data.u8[temp_r10] = nData8;
+                        pSource8++;
+                        iTMEM = (iTMEM + 1) & 0xFFF;
+                    }
+                    pSource = (u64*)((u8*)pSource + nScanFull);
+                    iTMEM += (pTile->nSizeX * 8) - nScanPart;
+                    iTMEM &= 0xFFF;
+                }
+                break;
+            case G_IM_SIZ_16b:
+                if (nScanPart >= pTile->nSizeX * 4) {
+                    nScanPart = pTile->nSizeX * 4;
+                }
+                iTMEM <<= 2;
+                for (i = 0; i < nCount; i++) {
+                    iScan = nScanPart;
+                    pSource16 = (u16*)pSource;
+                    while (iScan--) {
+                        if (i & 1) {
+                            temp_r10 = iTMEM ^ 2;
+                        } else {
+                            temp_r10 = iTMEM;
+                        }
+                        nData16 = *pSource16;
+                        nSum += nData16;
+                        nSum ^= iTMEM;
+                        pFrame->TMEM.data.u16[temp_r10] = nData16;
+                        pSource16++;
+                        iTMEM = (iTMEM + 1) & 0x7FF;
+                    }
+                    pSource = (u64*)((u16*)pSource + nScanFull);
+                    iTMEM = (iTMEM + ((pTile->nSizeX * 4) - nScanPart));
+                    iTMEM &= 0x7FF;
+                }
+                break;
+            case G_IM_SIZ_32b:
+                if (nScanPart >= pTile->nSizeX * 4) {
+                    nScanPart = pTile->nSizeX * 4;
+                }
+                iTMEM <<= 1;
+                for (i = 0; i < nCount; i++) {
+                    iScan = nScanPart;
+                    pSource32 = (u32*)pSource;
+                    while (iScan--) {
+                        if (i & 1) {
+                            temp_r10 = iTMEM ^ 2;
+                        } else {
+                            temp_r10 = iTMEM;
+                        }
+                        nData32 = *pSource32;
+                        nSum += nData32;
+                        nSum ^= iTMEM;
+                        pFrame->TMEM.data.u32[temp_r10] = nData32;
+                        pSource32++;
+                        iTMEM = (iTMEM + 1) & 0x3FF;
+                    }
+                    pSource = (u64*)((u32*)pSource + nScanFull);
+                    iTMEM += (pTile->nSizeX * 4) - nScanPart;
+                    iTMEM &= 0x3FF;
+                }
+                break;
+            default:
+                return false;
+        }
+    }
+
+    pFrame->unk_2228 = nSum;
+
+    temp_r6 = 0;
+    pSource16 = &pFrame->TMEM.data.u16[0];
+
+    {
+        u32 var_r5_2 = 0x800;
+
+        while (var_r5_2 -= 0x10, var_r5_2 != 0) {
+            temp_r6 += *pSource16;
+            pSource16 += 0x10;
+        }
+    }
+
+    pFrame->nCodePixel = temp_r6;
+    return true;
+}
 
 bool frameSetLightCount(Frame* pFrame, s32 nCount) {
     pFrame->nCountLight = nCount;
@@ -4394,8 +5075,13 @@ bool frameSetViewport(Frame* pFrame, s16* pData) {
     rSizeX = (arScale[0] * 2.0f) * pFrame->rScaleX;
     rSizeY = (arScale[1] * 2.0f) * pFrame->rScaleY;
 
+#if VERSION < MK64_J
+    rX = (center[0] - arScale[0]) * pFrame->rScaleX;
+    rY = (center[1] - arScale[1]) * pFrame->rScaleY;
+#else
     rX = pFrame->unk_A4 + (center[0] - arScale[0]) * pFrame->rScaleX;
     rY = pFrame->unk_A8 + (center[1] - arScale[1]) * pFrame->rScaleY;
+#endif
 
     pFrame->viewport.rX = rX;
     pFrame->viewport.rY = rY;
@@ -4435,8 +5121,37 @@ bool frameSetBuffer(Frame* pFrame, FrameBufferType eType) {
     return true;
 }
 
+bool frameFixMatrixHint(Frame* pFrame, s32 nAddressFloat, s32 nAddressFixed) {
+    s32 iHint;
+    s32 iHintTest;
+
+    for (iHint = 0; iHint < pFrame->iHintMatrix; iHint++) {
+        if (pFrame->aMatrixHint[iHint].nAddressFloat == nAddressFloat && pFrame->aMatrixHint[iHint].nCount >= 0) {
+            pFrame->aMatrixHint[iHint].nAddressFloat = 0;
+            pFrame->aMatrixHint[iHint].nAddressFixed = nAddressFixed;
+
+            for (iHintTest = 0; iHintTest < pFrame->iHintMatrix; iHintTest++) {
+                if (iHintTest != iHint && pFrame->aMatrixHint[iHintTest].nAddressFixed == nAddressFixed) {
+                    pFrame->aMatrixHint[iHintTest].nAddressFloat = 0;
+                    pFrame->aMatrixHint[iHintTest].nAddressFixed = 0;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+#if VERSION < MK64_J
 bool frameSetMatrixHint(Frame* pFrame, FrameMatrixProjection eProjection, s32 nAddressFloat, s32 nAddressFixed,
-                        f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale, void* mf) {
+                        f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale)
+#else
+bool frameSetMatrixHint(Frame* pFrame, FrameMatrixProjection eProjection, s32 nAddressFloat, s32 nAddressFixed,
+                        f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale, void* mf)
+#endif
+{
     s32 iHint;
 
     if (nAddressFloat != 0) {

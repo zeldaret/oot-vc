@@ -15,6 +15,42 @@ _XL_OBJECTTYPE gClassPIF = {
 };
 
 // this function is a copy-paste of `__osContDataCrc`
+#if VERSION < MK64_J
+static u8 pifContDataCrc(Pif* pPIF, u8* data) {
+    u32 temp = 0;
+    u32 i;
+    u32 j;
+
+    for (i = PIF_DATA_CRC_MESSAGE_BYTES; i != 0; data++, i--) {
+        // Loop over each bit in the byte starting with most significant
+        for (j = (1 << (PIF_DATA_CRC_LENGTH - 1)); j != 0; j >>= 1) {
+            temp <<= 1;
+            if (*data & j) {
+                if (temp & (1 << PIF_DATA_CRC_LENGTH)) {
+                    // Same as ret++; ret ^= 0x85 since last bit always 0 after the shift
+                    temp ^= PIF_DATA_CRC_GENERATOR - 1;
+                } else {
+                    temp++;
+                }
+            } else if (temp & (1 << PIF_DATA_CRC_LENGTH)) {
+                temp ^= PIF_DATA_CRC_GENERATOR;
+            }
+        }
+    }
+
+    // Act like a byte of zeros is appended to data
+    do {
+        temp <<= 1;
+        if (temp & (1 << PIF_DATA_CRC_LENGTH)) {
+            temp ^= PIF_DATA_CRC_GENERATOR;
+        }
+        i++;
+    } while (i < PIF_DATA_CRC_LENGTH);
+
+    // Discarding the excess is done automatically by the return type
+    return temp;
+}
+#else
 static u8 pifContDataCrc(u8* data) {
     u32 i;
     u32 j;
@@ -49,6 +85,7 @@ static u8 pifContDataCrc(u8* data) {
     // Discarding the excess is done automatically by the return type
     return temp;
 }
+#endif
 
 static bool fn_80040BF4(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
     *prx &= 0x3F;
@@ -103,9 +140,15 @@ static inline bool pifReadController(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s3
 bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
     switch (*buffer) {
         case 0x00:
+#if VERSION < MK64_J
+            if (!fn_80040BF4(pPIF, buffer, ptx, prx, channel)) {
+                return false;
+            }
+#else
             if (!fn_80040BF4(pPIF, buffer, ptx, prx, channel % 4)) {
                 return false;
             }
+#endif
             break;
         case 0xFF:
             if (!fn_80040BF4(pPIF, buffer, ptx, prx, channel)) {
@@ -124,7 +167,38 @@ bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
             u16 nAddress = (buffer[1] << 3) | (buffer[2] >> 5);
             u8* pBuffer = buffer + 3;
             int i;
+            u8* p;
 
+#if VERSION < MK64_J
+            switch (pPIF->eControllerType[channel]) {
+                case CT_CONTROLLER_W_RPAK:
+                    p = pBuffer;
+
+                    for (i = 0; i < 32; i++) {
+                        *p++ = 0;
+                    }
+
+                    switch (nAddress) {
+                        case 0x400:
+                            p = pBuffer;
+                            for (i = 0; i < 32; i++) {
+                                *p++ = 0x80;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+
+                    break;
+                case CT_CONTROLLER_W_PAK:
+                    fn_80044708(SYSTEM_PAK(gpSystem), channel, nAddress, (void*)pBuffer);
+                    break;
+                default:
+                    break;
+            }
+
+            buffer[0x23] = pifContDataCrc(pPIF, buffer + 3);
+#else
             switch (pPIF->eControllerType[channel]) {
                 case CT_CONTROLLER_W_RPAK:
                     for (i = 0; i < 32U; i++) {
@@ -139,6 +213,7 @@ bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
             }
 
             buffer[0x23] = pifContDataCrc(buffer + 3);
+#endif
             break;
         }
         case 0x03: {
@@ -147,9 +222,23 @@ bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
 
             switch (pPIF->eControllerType[channel]) {
                 case CT_CONTROLLER_W_RPAK:
+#if VERSION < MK64_J
+                    switch (nAddress) {
+                        case 0x600:
+                            if (*pBuffer == 1) {
+                                fn_80062CE4(SYSTEM_CONTROLLER(gpSystem), channel, true);
+                            } else if (*pBuffer == 0) {
+                                fn_80062CE4(SYSTEM_CONTROLLER(gpSystem), channel, false);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+#else
                     if (nAddress == 0x600) {
                         fn_80062CE4(SYSTEM_CONTROLLER(gpSystem), channel, *pBuffer ? true : false);
                     }
+#endif
                     break;
                 case CT_CONTROLLER_W_PAK:
                     fn_8004477C(SYSTEM_PAK(gpSystem), channel, nAddress, (void*)pBuffer);
@@ -158,7 +247,11 @@ bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
                     break;
             }
 
+#if VERSION < MK64_J
+            buffer[0x23] = pifContDataCrc(pPIF, buffer + 3);
+#else
             buffer[0x23] = pifContDataCrc(buffer + 3);
+#endif
             break;
         }
         case 0x04:
@@ -343,6 +436,32 @@ bool pifProcessOutputData(Pif* pPIF) {
     return true;
 }
 
+#if VERSION < MK64_J
+bool pifSetData(Pif* pPIF, u8* acData) {
+    if (!xlHeapCopy(pPIF->pRAM, acData, 0x40)) {
+        return false;
+    }
+
+    if (!pifProcessInputData(pPIF)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool pifGetData(Pif* pPIF, u8* acData) {
+    if (!pifProcessOutputData(pPIF)) {
+        return false;
+    }
+
+    if (!xlHeapCopy(acData, pPIF->pRAM, 0x40)) {
+        return false;
+    }
+
+    return true;
+}
+#endif
+
 static bool pifPut8(Pif* pPIF, u32 nAddress, s8* pData) {
     nAddress &= 0x7FF;
 
@@ -425,6 +544,7 @@ static bool pifGet64(Pif* pPIF, u32 nAddress, s64* pData) {
     return true;
 }
 
+#if VERSION >= MK64_J
 bool pifSetData(Pif* pPIF, u8* acData) {
     if (!xlHeapCopy(pPIF->pRAM, acData, 0x40)) {
         return false;
@@ -448,6 +568,7 @@ bool pifGetData(Pif* pPIF, u8* acData) {
 
     return true;
 }
+#endif
 
 bool pifSetControllerType(Pif* pPIF, s32 channel, ControllerType type) {
     if (!simulatorDetectController(SYSTEM_CONTROLLER(gpSystem), channel)) {

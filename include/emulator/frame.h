@@ -8,6 +8,8 @@
 #include "revolution/mtx.h"
 #include "revolution/types.h"
 
+#include "versions.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -201,12 +203,23 @@ struct FrameTexture {
     /* 0x12 */ s16 nSizeY;
     /* 0x14 */ u32 nAddress;
     /* 0x18 */ FrameTexture* pTextureNext;
+
+#if VERSION < MK64_J
+    /* 0x1C */ u32 nData0;
+    /* 0x20 */ u32 nData1;
+    /* 0x24 */ u32 nData2;
+    /* 0x28 */ u32 nData3;
+    /* 0x2C */ u32 nCodePixel;
+    /* 0x30 */ u32 nCodeColor;
+#else
     /* 0x1C */ u32 nCodePixel;
     /* 0x20 */ u32 nCodeColor;
     /* 0x24 */ u32 nData0;
     /* 0x28 */ u32 nData1;
     /* 0x2C */ u32 nData2;
     /* 0x30 */ u32 nData3;
+#endif
+
     /* 0x34 */ u32 unk_34;
     /* 0x38 */ GXTexFmt eFormat;
     /* 0x3C */ GXTlutObj objectTLUT;
@@ -216,11 +229,11 @@ struct FrameTexture {
 }; // size = 0x70
 
 typedef struct Tile {
-    /* 0x00 */ s32 nSize;
-    /* 0x04 */ s32 nTMEM;
-    /* 0x08 */ s32 iTLUT;
-    /* 0x0C */ s32 nSizeX;
-    /* 0x10 */ s32 nFormat;
+    /* 0x00 */ int nSize;
+    /* 0x04 */ int nTMEM;
+    /* 0x08 */ int iTLUT;
+    /* 0x0C */ int nSizeX;
+    /* 0x10 */ int nFormat;
     /* 0x14 */ s16 nMaskS;
     /* 0x16 */ s16 nMaskT;
     /* 0x18 */ s16 nModeS;
@@ -268,11 +281,15 @@ typedef struct Frame {
     /* 0x0002C */ s32 unk_2C;
     /* 0x00030 */ s32 unk_30;
     /* 0x00034 */ s32 unk_34;
+#if VERSION >= MK64_J
     /* 0x00038 */ s32 unk_38;
     /* 0x0003C */ s32 unk_3C;
     /* 0x00040 */ s32 unk_40;
     /* 0x00044 */ s32 unk_44;
+#endif
+#if VERSION >= SM64_E
     /* 0x00048 */ u32 unk_48;
+#endif
     /* 0x0004C */ u32 unk_4C;
     /* 0x00050 */ bool bBlurOn;
     /* 0x00054 */ bool bHackPause;
@@ -295,8 +312,10 @@ typedef struct Frame {
     /* 0x00098 */ u32 nFlag;
     /* 0x0009C */ f32 rScaleX;
     /* 0x000A0 */ f32 rScaleY;
+#if VERSION >= MK64_J
     /* 0x000A4 */ f32 unk_A4;
     /* 0x000A8 */ f32 unk_A8;
+#endif
     /* 0x000AC */ u32 nCountFrames;
     /* 0x000B0 */ volatile u32 nMode;
     /* 0x000B4 */ u32 aMode[FMT_COUNT];
@@ -352,11 +371,13 @@ typedef struct Frame {
     /* 0x3E7D0 */ Mtx44 matrixProjection;
     /* 0x3E810 */ Mtx44 matrixProjectionExtra;
     /* 0x3E850 */ MatrixHint aMatrixHint[64];
+#if VERSION >= MK64_J
     /* 0x3F150 */ Mtx44 unk_3F150;
     /* 0x3F190 */ Mtx44 unk_3F190;
     /* 0x3F1D0 */ Mtx44 unk_3F1D0;
     /* 0x3F210 */ f32 unk_3F210; // rNear
     /* 0x3F214 */ f32 unk_3F214; // rFar
+#endif
     /* 0x3F218 */ u8 primLODmin;
     /* 0x3F219 */ u8 primLODfrac;
     /* 0x3F21A */ u8 lastTile;
@@ -415,8 +436,15 @@ bool frameSetViewport(Frame* pFrame, s16* pData);
 bool frameResetUCode(Frame* pFrame, FrameResetType eType);
 bool frameSetBuffer(Frame* pFrame, FrameBufferType eType);
 bool frameFixMatrixHint(Frame* pFrame, s32 nAddressFloat, s32 nAddressFixed);
+
+#if VERSION < MK64_J
+bool frameSetMatrixHint(Frame* pFrame, FrameMatrixProjection eProjection, s32 nAddressFloat, s32 nAddressFixed,
+                        f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale);
+#else
 bool frameSetMatrixHint(Frame* pFrame, FrameMatrixProjection eProjection, s32 nAddressFloat, s32 nAddressFixed,
                         f32 rNear, f32 rFar, f32 rFOVY, f32 rAspect, f32 rScale, void* mf);
+#endif
+
 bool frameInvalidateCache(Frame* pFrame, s32 nOffset0, s32 nOffset1);
 
 //! TODO: document this
