@@ -1695,7 +1695,7 @@ static void cpuCompileNOP(s32* anCode, s32* iCode, s32 number) {
     }
 }
 
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
 #pragma optimization_level 1
 #endif
 
@@ -7654,7 +7654,7 @@ static bool cpuMakeFunction(Cpu* pCPU, CpuFunction** ppFunction, s32 nAddressN64
         return false;
     }
 
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
     if (fn_80031D4C(pCPU, pFunction, 1)) {
         if (ppFunction != NULL) {
             *ppFunction = pFunction;
@@ -7770,7 +7770,7 @@ static bool cpuMakeFunction(Cpu* pCPU, CpuFunction** ppFunction, s32 nAddressN64
         pFunction->memory_size = memory_used;
         pCPU->gTree->total_memory += memory_used;
 
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
         if (fn_80031D4C(pCPU, pFunction, 0)) {}
 #endif
     }
@@ -9264,7 +9264,7 @@ static s32 cpuExecuteOpcode(Cpu* pCPU, s32 nCount0, s32 nAddressN64, s32 nAddres
         pCPU->nMode &= ~8;
     }
 
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
     cpuUnknownMarioKartFrameSet(gpSystem->eTypeROM, SYSTEM_FRAME(gpSystem), nAddressN64);
 #endif
 
@@ -11773,7 +11773,7 @@ bool cpuGetBlock(Cpu* pCPU, CpuBlock* pBlock) {
         }
     }
 
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
     pDevice = pCPU->apDevice[pCPU->iDeviceDefault];
 
     if (pDevice != NULL && pDevice->pfGetBlock != NULL) {
@@ -11930,7 +11930,7 @@ bool cpuReset(Cpu* pCPU) {
 
     pCPU->nCompileFlag = 1;
 
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
     pCPU->unk_12228[0] = 0;
     pCPU->unk_12228[1] = 0;
     pCPU->unk_12228[2] = 0;
@@ -12750,7 +12750,7 @@ bool cpuFindFunction(Cpu* pCPU, s32 theAddress, CpuFunction** tree_node) {
                 current_address += 4;
             }
 
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
             if (check == 1) {
                 if (gpSystem->eTypeROM == NM8E) {
                     if (anAddr[2] == 0x802F1FF0) {

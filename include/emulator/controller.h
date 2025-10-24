@@ -31,7 +31,7 @@ typedef struct struct_801C7DC8 {
 
 typedef struct ControllerThread {
     /* 0x000 */ OSThread thread;
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
     /* 0x318 */ u8 unk_318[0xA];
 #endif
 } ControllerThread; // size = 0x328 ; 0x318

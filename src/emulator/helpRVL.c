@@ -215,10 +215,10 @@ void helpMenuSetupRender(GXTexObj* pTexObj) {
     f32 y0 = 0.0f;
     f32 x0 = 0.0f;
 
-#if VERSION > SM64_U && VERSION < OOT_J
+#if VERSION >= SM64_E && VERSION < OOT_J
     rect.x1 = lbl_8025D0DC / 2;
     rect.y1 = lbl_8025D0D8 / 2;
-#elif VERSION > MK64_E
+#elif VERSION >= OOT_J
     rect.x1 = sRenderMode->fbWidth / 2;
     rect.y1 = sRenderMode->xfbHeight / 2;
 #endif
@@ -229,7 +229,7 @@ void helpMenuSetupRender(GXTexObj* pTexObj) {
 #if VERSION < SM64_E
     fWidth = ((sRenderMode->viWidth - 704) * 320) / 1408.0f;
     fHeight = ((sRenderMode->viHeight - 480) * 240) / 960.0f;
-#elif VERSION > SM64_U && VERSION < OOT_J
+#elif VERSION >= SM64_E && VERSION < OOT_J
     if (fn_8007FC84()) {
         fWidth = ((sRenderMode->viWidth - 640) * 320) / 1280.0f;
         fHeight = ((sRenderMode->viHeight - 528) * 264) / 1056.0f;
@@ -298,7 +298,7 @@ static void helpMenu_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4
 
         GXGetViewportv(view);
 
-#if VERSION > SM64_U
+#if VERSION >= SM64_E
         helpMenuSetupColoredQuad(local_54);
 
         if (fn_8007FC84()) {
@@ -356,7 +356,7 @@ static void helpMenu_8005E800(s32 param_1, s32 param_2, u16 param_3, u16 param_4
 
     GXSetDispCopySrc(0, 0, param_3, param_4);
 
-#if VERSION > SM64_U
+#if VERSION >= SM64_E
     if (fn_8007FC84()) {
         GXSetDispCopyDst(0x260, 0x210);
         pBuffer = (void*)((s32)lbl_8025D100[lbl_8025D0FC ^ 1] + ((param_1 + param_2 * 0x260) * 2));
@@ -417,7 +417,7 @@ static void helpMenu_8005EAFC(void) {
         sp8.efbHeight = 0x210;
     } else {
 
-#if VERSION > SM64_U && VERSION < OOT_J
+#if VERSION >= SM64_E && VERSION < OOT_J
         sp8 = *sRenderMode;
 #endif
 
@@ -460,14 +460,14 @@ static void helpMenu_8005EAFC(void) {
     VIConfigure(&sp8);
     VIFlush();
 
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
     GXSetDispCopyYScale((f32)sp8.xfbHeight / (f32)sp8.efbHeight);
 #endif
 
     VIWaitForRetrace();
     VIWaitForRetrace();
 
-#if VERSION > SM64_U
+#if VERSION >= SM64_E
     if (fn_8007FC84()) {
         fn_80088668(0x260, 0x210);
         fn_8008866C(0x260, 0x210);
@@ -487,7 +487,7 @@ static void helpMenu_8005EAFC(void) {
     }
 
     if (var_r31 <= 0) {
-        OSPanic("helpRVL.c", VERSION > MK64_E ? 938 : 936, ".");
+        OSPanic("helpRVL.c", VERSION >= OOT_J ? 938 : 936, ".");
     }
 
     fn_800887CC(sWebsitePath);
@@ -496,7 +496,7 @@ static void helpMenu_8005EAFC(void) {
     VIConfigure(sRenderMode);
     VIFlush();
 
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
     GXSetDispCopyYScale((f32)sRenderMode->xfbHeight / (f32)sRenderMode->efbHeight);
 #endif
 
@@ -1082,7 +1082,7 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
 
 #if VERSION == SM64_J || VERSION == SM64_U
             C_MTXOrtho(matrix44_4, 228.0f, -237.12f, -304.0f, 310.08f, 0.0f, 500.0f);
-#elif VERSION > SM64_U && VERSION < OOT_J
+#elif VERSION >= SM64_E && VERSION < OOT_J
             if (fn_8007FC84()) {
                 C_MTXOrtho(matrix44_4, 224.0f, -227.58401f, -304.0f, 304.0f, 0.0f, 500.0f);
             } else {
@@ -1163,7 +1163,7 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
         VISetBlack(true);
         VIFlush();
 
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
         VIWaitForRetrace();
 #endif
 
@@ -1175,7 +1175,7 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
         VISetBlack(true);
         VIFlush();
 
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
         VIWaitForRetrace();
 #endif
 
@@ -1190,7 +1190,7 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
 bool helpMenu_800607B0(HelpMenu* pHelpMenu, bool arg1) {
     pHelpMenu->unk0C = arg1;
 
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
     pHelpMenu->unk08 = false;
 #endif
 

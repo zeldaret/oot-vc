@@ -35,7 +35,7 @@ typedef struct Ram {
     /* 0x00 */ void* pHost;
     /* 0x04 */ u8* pBuffer; // void* makes ramPut8 not matching...
     /* 0x08 */ u32 nSize;
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
     /* 0x0C */ u32 RDRAM_CONFIG_REG;
     /* 0x10 */ u32 RDRAM_DEVICE_ID_REG;
     /* 0x14 */ u32 RDRAM_DELAY_REG;

@@ -179,7 +179,7 @@ typedef struct CpuDevice {
     /* 0x24 */ Put32Func pfPut32;
     /* 0x28 */ Put64Func pfPut64;
     /* 0x2C */ GetBlockFunc pfGetBlock;
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
     /* 0x30 */ u32 nAddressVirtual0;
     /* 0x34 */ u32 nAddressVirtual1;
 #endif
@@ -316,7 +316,7 @@ struct Cpu {
     /* 0x1221C */ u32 nFlagRAM;
     /* 0x12220 */ u32 nFlagCODE;
     /* 0x12224 */ u32 nCompileFlag;
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
     /* 0x12228 */ s32 unk_12228[18];
 #endif
     /* 0x12270 */ CpuOptimize nOptimize;

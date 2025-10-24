@@ -419,7 +419,7 @@ static bool fn_80042C98(Rom* pROM) {
     u32* pBuffer;
     u32 nBuffer;
 
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
     pCacheRAM = pROM->pCacheRAM;
     pROM->pBuffer = pCacheRAM;
 #endif
@@ -581,7 +581,7 @@ bool romGetPC(Rom* pROM, u64* pnPC) {
             case 0x57C85244:
                 nOffset = 0;
                 break;
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
             case 0x027FDF31:
                 nOffset = -0x80;
                 break;
@@ -956,7 +956,7 @@ bool romEvent(Rom* pROM, s32 nEvent, void* pArgument) {
             pROM->bFlip = false;
             pROM->acNameFile[0] = '\0';
             pROM->eModeLoad = RLM_NONE;
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
             pROM->unk_C = 1;
 #endif
             pROM->pBuffer = NULL;

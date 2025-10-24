@@ -19,7 +19,7 @@ typedef struct Flash {
     /* 0x04 - 0x08 - 0x08 */ struct Store* pStore;
     /* 0x08 - 0x0C - 0x0C */ s32 flashStatus;
     /* 0x0C - 0x10 - 0x10 */ s32 flashCommand;
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
     /* 0x10 -  N/A - N/A */ s32 nOffsetRAM;
     /* 0x14 -  N/A - N/A */ s32 unk_14;
     /* 0x18 -  N/A - N/A */ s32 unk_18;

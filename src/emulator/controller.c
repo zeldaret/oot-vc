@@ -47,7 +47,7 @@ _XL_OBJECTTYPE gClassController = {
 
 MEMAllocator gControllerAllocator;
 
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
 struct_801C7DC8 lbl_801C7DC8;
 #endif
 
@@ -167,7 +167,7 @@ static inline bool controllerValidateIndex(s32 index) {
 static bool fn_800622B8(Controller* pController) {
     s32 i;
 
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
     pController->unk_220 = 1;
     pController->iString = ERROR_NONE;
 
@@ -445,7 +445,7 @@ static bool fn_800623F4(Controller* pController) {
                 var_r17 = var_r14;
             }
 
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
             var_r20 = fn_800623F4_UnknownInline(var_r20);
             var_r19 = fn_800623F4_UnknownInline(var_r19);
 #endif
@@ -671,7 +671,7 @@ bool fn_800631B8(Controller* pController, s32 arg1) {
 
     pController->unk_224 = arg1;
 
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
     if (arg1 != 0) {
         for (var_r31 = 0; var_r31 < 8; var_r31++) {
             VIWaitForRetrace();

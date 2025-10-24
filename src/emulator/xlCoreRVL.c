@@ -88,7 +88,7 @@ static void xlCoreInitRenderMode(GXRenderModeObj* mode) {
             break;
     }
 
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
     rmode->efbHeight = 480;
 #endif
 
@@ -225,7 +225,7 @@ int main(int nCount, char** aszArgument) {
     xlHeapTake(&DemoFrameBuffer1, nSize | 0x70000000);
     xlHeapTake(&DemoFrameBuffer2, nSize | 0x70000000);
 
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
     xlHeapFill32(DemoFrameBuffer1, nSize, 0);
     xlHeapFill32(DemoFrameBuffer2, nSize, 0);
     DCStoreRange(DemoFrameBuffer1, nSize);

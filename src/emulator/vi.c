@@ -99,7 +99,7 @@ bool viPut32(VI* pVI, u32 nAddress, s32* pData) {
         case 0x34:
             pVI->nScaleY = *pData & 0xFFF;
 
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
             if (fn_8007FC84() && (pVI->nScaleY == 0x354 || pVI->nScaleY == 0x361)) {
                 pVI->nScaleY = 0x400;
             }

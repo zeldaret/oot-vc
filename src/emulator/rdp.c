@@ -265,7 +265,7 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
             break;
         case 0xF8: // G_SETFOGCOLOR
 
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
             if (gpSystem->eTypeROM == 'CZLJ' || gpSystem->eTypeROM == 'CZLE' || gpSystem->eTypeROM == 'NZLP') {
                 if (pFrame->unk_30 != 0 && nCommandLo == 0xFF0000FF) {
                     nCommandLo = 0x3C0000FF;
@@ -714,7 +714,7 @@ bool rdpParseGBI(Rdp* pRDP, u64** ppnGBI, RspUCodeType eTypeUCode) {
                     primitive.nY1 = 0;
                 }
 
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
             } else if ((gpSystem->eTypeROM == 'CZLJ' || gpSystem->eTypeROM == 'CZLE' || gpSystem->eTypeROM == 'NZLP') &&
                        pFrame->unk_24 != 0 && primitive.nX0 == (204 << 2) && primitive.nX1 == (300 << 2) &&
                        primitive.nY0 == (140 << 2) && primitive.nY1 == (225 << 2)) {

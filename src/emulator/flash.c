@@ -18,7 +18,7 @@ static bool flashPut32(Flash* pFLASH, u32 nAddress, s32* pData) {
     s32 i;
     s32 flashCommand;
 
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
     if (*pData == 0) {
         pFLASH->flashStatus = 0;
     }
@@ -26,7 +26,7 @@ static bool flashPut32(Flash* pFLASH, u32 nAddress, s32* pData) {
 
     switch (*pData & 0xFF000000) {
         case 0xD2000000:
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
             if (pFLASH->unk_18 == 3) {
                 if (!ramGetBuffer(SYSTEM_RAM(gpSystem), &pRAM, pFLASH->nOffsetRAM, &nSize)) {
                     return false;
@@ -56,18 +56,18 @@ static bool flashPut32(Flash* pFLASH, u32 nAddress, s32* pData) {
         case 0x00000000:
             break;
         case 0xE1000000:
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
             pFLASH->unk_18 = 1;
 #endif
             pFLASH->flashStatus = 0x11118001;
             break;
         case 0x3C000000:
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
             pFLASH->unk_14 = -1;
 #endif
             break;
         case 0x4B000000:
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
             pFLASH->unk_14 = (*pData << 7) & 0x7FFFFF80;
 #endif
             break;
@@ -99,7 +99,7 @@ static bool flashPut32(Flash* pFLASH, u32 nAddress, s32* pData) {
 #endif
             break;
         case 0xB4000000:
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
             pFLASH->unk_18 = 3;
 #endif
             break;
@@ -117,7 +117,7 @@ static bool flashPut32(Flash* pFLASH, u32 nAddress, s32* pData) {
             break;
         case 0xF0000000:
             pFLASH->flashStatus = 0x11118004;
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
             pFLASH->unk_18 = 2;
 #endif
             break;
@@ -166,7 +166,7 @@ static bool flashGet32(Flash* pFLASH, u32 nAddress, s32* pData) {
 static bool flashGet64(Flash* pFLASH, u32 nAddress, s64* pData) { return true; }
 
 static bool flashGetBlock(Flash* pFLASH, CpuBlock* pBlock) {
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
     void* pRAM;
 
     if ((pBlock->nAddress0 & 0xFF000000) == 0x08000000) {
@@ -255,7 +255,7 @@ bool flashEvent(Flash* pFLASH, s32 nEvent, void* pArgument) {
                 return false;
             }
 
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
             pFLASH->unk_18 = 0;
             pFLASH->nOffsetRAM = -1;
 #endif

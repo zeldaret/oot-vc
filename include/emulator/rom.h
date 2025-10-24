@@ -64,12 +64,12 @@ typedef struct Rom {
     /* 0x00000 - 0x00000 - 0x00000 */ void* pBuffer;
     /* 0x00004 - 0x00004 - 0x00004 */ bool bFlip;
     /* 0x00008 - 0x00008 - 0x00008 */ bool bLoad;
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
     /*   N/A   - 0x0000C - 0x0000C */ s32 unk_C;
 #endif
     /* 0x00010 - 0x0000C - 0x00010 */ char acNameFile[513];
     /* 0x00214 - 0x00210 - 0x00214 */ u32 nSize;
-#if VERSION > MK64_E
+#if VERSION >= OOT_J
     /* 0x00218 */ s32 unk_218;
 #endif
     /* 0x0021C - 0x00214 - 0x00218 */ RomModeLoad eModeLoad;

@@ -946,7 +946,7 @@ static bool rspObjSprite(Rsp* pRSP, Frame* pFrame, s32 nAddress) {
     objSprite.s.imageH += nTexTrim5;
     pFrame->nLastX1 += nTexTrim2;
 
-#if VERSION > SM64_E
+#if VERSION >= MK64_J
     if (pTile->nSize != 0 && objSprite.s.imageSiz == G_IM_SIZ_4b) {
         pTile->nSize = 0;
     }
