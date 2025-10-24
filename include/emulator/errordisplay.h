@@ -78,19 +78,19 @@ typedef struct EDStringInfo {
 
 #if VERSION == SM64_J || VERSION == SM64_U
 typedef struct EDMessage {
-    /* 0x00 */ StringID eStringID;
-    /* 0x14 */ s16 nFlags; // bitfield
-    /* 0x06 */ s16 nFadeInTimer;
-    /* 0x08 */ s32 nShiftY; // Y position relative to nStartY
+    StringID eStringID;
+    s16 nFlags; // bitfield
+    s16 nFadeInTimer;
+    s32 nShiftY; // Y position relative to nStartY
     EDStringInfo* pStringInfo;
-} EDMessage; // size = 0xC
+} EDMessage;
 
 typedef struct EDAction {
-    /* 0x00 */ EDMessage message;
+    EDMessage message;
     s32 unk_04;
     s32 unk_05;
-    /* 0x0C */ ErrorCallback callback;
-} EDAction; // size = 0x10
+    ErrorCallback callback;
+} EDAction;
 
 typedef struct ErrorDisplay {
     struct {
@@ -105,7 +105,7 @@ typedef struct ErrorDisplay {
     s16 unk36; // unused?
     s32 unk38;
     s32 unk3C;
-} ErrorDisplay; // size = 0x64
+} ErrorDisplay;
 #else
 typedef struct EDMessage {
     /* 0x00 */ EDStringInfo* pStringInfo;

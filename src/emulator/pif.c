@@ -166,81 +166,24 @@ bool pifExecuteCommand(Pif* pPIF, u8* buffer, u8* ptx, u8* prx, s32 channel) {
         case 0x02: {
             u16 nAddress = (buffer[1] << 3) | (buffer[2] >> 5);
             u8* pBuffer = buffer + 3;
-            int i = 0;
+            int i;
+            u8* p;
 
 #if VERSION < MK64_J
             switch (pPIF->eControllerType[channel]) {
                 case CT_CONTROLLER_W_RPAK:
-                    //! TODO: fake match?
-                    pBuffer[i++] = 0;
-                    pBuffer[1] = 0;
-                    pBuffer[2] = 0;
-                    pBuffer[3] = 0;
-                    pBuffer[4] = 0;
-                    pBuffer[5] = 0;
-                    pBuffer[6] = 0;
-                    pBuffer[7] = 0;
-                    pBuffer[8] = 0;
-                    pBuffer[9] = 0;
-                    pBuffer[10] = 0;
-                    pBuffer[11] = 0;
-                    pBuffer[11] = 0;
-                    pBuffer[12] = 0;
-                    pBuffer[13] = 0;
-                    pBuffer[14] = 0;
-                    pBuffer[15] = 0;
-                    pBuffer[16] = 0;
-                    pBuffer[17] = 0;
-                    pBuffer[18] = 0;
-                    pBuffer[19] = 0;
-                    pBuffer[20] = 0;
-                    pBuffer[21] = 0;
-                    pBuffer[22] = 0;
-                    pBuffer[23] = 0;
-                    pBuffer[24] = 0;
-                    pBuffer[25] = 0;
-                    pBuffer[26] = 0;
-                    pBuffer[27] = 0;
-                    pBuffer[28] = 0;
-                    pBuffer[29] = 0;
-                    pBuffer[30] = 0;
-                    pBuffer[31] = 0;
+                    p = pBuffer;
+
+                    for (i = 0; i < 32; i++) {
+                        *p++ = 0;
+                    }
 
                     switch (nAddress) {
                         case 0x400:
-                            pBuffer[0] = 0x80;
-                            pBuffer[1] = 0x80;
-                            pBuffer[2] = 0x80;
-                            pBuffer[3] = 0x80;
-                            pBuffer[4] = 0x80;
-                            pBuffer[5] = 0x80;
-                            pBuffer[6] = 0x80;
-                            pBuffer[7] = 0x80;
-                            pBuffer[8] = 0x80;
-                            pBuffer[9] = 0x80;
-                            pBuffer[10] = 0x80;
-                            pBuffer[11] = 0x80;
-                            pBuffer[11] = 0x80;
-                            pBuffer[12] = 0x80;
-                            pBuffer[13] = 0x80;
-                            pBuffer[14] = 0x80;
-                            pBuffer[15] = 0x80;
-                            pBuffer[16] = 0x80;
-                            pBuffer[17] = 0x80;
-                            pBuffer[18] = 0x80;
-                            pBuffer[19] = 0x80;
-                            pBuffer[20] = 0x80;
-                            pBuffer[21] = 0x80;
-                            pBuffer[22] = 0x80;
-                            pBuffer[23] = 0x80;
-                            pBuffer[24] = 0x80;
-                            pBuffer[25] = 0x80;
-                            pBuffer[26] = 0x80;
-                            pBuffer[27] = 0x80;
-                            pBuffer[28] = 0x80;
-                            pBuffer[29] = 0x80;
-                            pBuffer[30] = 0x80;
-                            pBuffer[31] = 0x80;
+                            p = pBuffer;
+                            for (i = 0; i < 32; i++) {
+                                *p++ = 0x80;
+                            }
                             break;
                         default:
                             break;

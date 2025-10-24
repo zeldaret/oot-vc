@@ -672,84 +672,25 @@ static inline bool treeForceCleanUp(Cpu* pCPU, CpuFunction* tree, s32 kill_limit
     return true;
 }
 
-#if VERSION < MK64_J
 static bool cpuHackHandler(Cpu* pCPU) {
-    u32 nSize;
-    u32* pnCode;
     s32 iCode;
     s32 iSave1;
     s32 iSave2;
     s32 iLoad;
+
+#if VERSION < MK64_J
+    u32 nSize;
+    u32* pnCode;
+#else
+    u32* pnCode;
+    s32 nSize;
+#endif
 
     iSave1 = iSave2 = iLoad = 0;
 
     if (xlObjectTest(SYSTEM_RAM(gpSystem), &gClassRAM) &&
         ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pnCode, 0, NULL)) {
         if (!ramGetSize(SYSTEM_RAM(gpSystem), (s32*)&nSize)) {
-            return false;
-        }
-
-        for (iCode = 0; iCode < (nSize >> 2) && (iSave1 != -1 || iSave2 != -1 || iLoad != -1); iCode++) {
-            if (iSave1 != -1) {
-                if (pnCode[iCode] == ganOpcodeSaveFP1[iSave1]) {
-                    iSave1 += 1;
-                    if (iSave1 == 5U) {
-                        pnCode[iCode - 3] = 0;
-                        iSave1 = -1;
-                    }
-                } else {
-                    iSave1 = 0;
-                }
-            }
-
-            if (iSave2 != -1) {
-                if (pnCode[iCode] == ganOpcodeSaveFP2_0[iSave2]) {
-                    iSave2 += 1;
-                    if (iSave2 == 5U) {
-                        pnCode[iCode - 3] = 0;
-                        iSave2 = -1;
-                    }
-                } else if (pnCode[iCode] == ganOpcodeSaveFP2_1[iSave2]) {
-                    iSave2 += 1;
-                    if (iSave2 == 3U) {
-                        pnCode[iCode - 2] = 0;
-                        iSave2 = -1;
-                    }
-                } else {
-                    iSave2 = 0;
-                }
-            }
-
-            if (iLoad != -1) {
-                if (pnCode[iCode] == ganOpcodeLoadFP[iLoad]) {
-                    iLoad += 1;
-                    if (iLoad == 5U) {
-                        pnCode[iCode - 3] = 0;
-                        iLoad = -1;
-                    }
-                } else {
-                    iLoad = 0;
-                }
-            }
-        }
-    }
-
-    return (iSave1 == -1 && iSave2 == -1 && iLoad == -1) ? true : false;
-}
-#else
-static bool cpuHackHandler(Cpu* pCPU) {
-    s32 iSave1;
-    s32 iSave2;
-    s32 iLoad;
-    u32* pnCode;
-    s32 nSize;
-    s32 iCode;
-
-    iSave1 = iSave2 = iLoad = 0;
-
-    if (xlObjectTest(SYSTEM_RAM(gpSystem), &gClassRAM) &&
-        ramGetBuffer(SYSTEM_RAM(gpSystem), (void**)&pnCode, 0, NULL)) {
-        if (!ramGetSize(SYSTEM_RAM(gpSystem), &nSize)) {
             return false;
         }
 
@@ -800,7 +741,6 @@ static bool cpuHackHandler(Cpu* pCPU) {
 
     return (iSave1 == -1 && iSave2 == -1 && iLoad == -1) ? true : false;
 }
-#endif
 
 static inline bool cpuMakeCachedAddress(Cpu* pCPU, s32 nAddressN64, s32 nAddressHost, CpuFunction* pFunction) {
     s32 iAddress;
