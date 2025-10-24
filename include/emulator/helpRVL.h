@@ -10,6 +10,20 @@
 extern "C" {
 #endif
 
+typedef enum HbmVcmvState {
+    /* 0 */ E_Unknown_00,
+    /* 1 */ E_InGamePlusBanIcon,
+    /* 2 */ E_GameToHbmTransition1,
+    /* 3 */ E_GameToHbmTransition2,
+    /* 4 */ E_Unknown_04,
+    /* 5 */ E_HbmToGameTransition,
+    /* 6 */ E_ManualViewerInit,
+    /* 7 */ E_ManualViewerRunning,
+    /* 8 */ E_ManualViewerStopped,
+    /* 9 */ E_BlackOutTransition,
+    /* 10 */ E_Unknown_10,
+} HbmVcmvState;
+
 typedef bool (*HelpMenuCallback)(void);
 
 typedef struct struct_801C7D28 {
