@@ -872,7 +872,7 @@ static inline void helpCopyScreen() {
 
     DCInvalidateRange(lbl_8025D0C8, 0x25800);
     GXInitTexObj(&sTexObj, lbl_8025D0C8, GC_FRAME_WIDTH / 2, GC_FRAME_HEIGHT / 2, GX_TF_RGB565, GX_CLAMP, GX_CLAMP,
-                    GX_DISABLE);
+                 GX_DISABLE);
     GXInitTexObjLOD(&sTexObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
 #else
     lbl_8025D0DC = rmode->fbWidth;
