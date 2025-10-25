@@ -8,6 +8,7 @@ tools/elf2dol/elf2dol
 build/
 build.ninja
 objdiff.json
+compile_commands.json
 .ninja_*
 *.o
 *.obj

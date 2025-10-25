@@ -27,6 +27,33 @@ from tools.project import (
     is_windows,
 )
 
+
+### Supported versions
+
+SM64 = [
+    "sm64-j",
+    "sm64-u",
+    "sm64-e",
+]
+
+MK64 = [
+    "mk64-j",
+    "mk64-u",
+    "mk64-e",
+]
+
+OOT = [
+    "oot-j",
+    "oot-u",
+    "oot-e",
+]
+
+ALL_VERSIONS = [
+    *OOT,
+    *SM64,
+    *MK64,
+]
+
 ### Script's arguments
 
 parser = argparse.ArgumentParser()
@@ -43,9 +70,12 @@ parser.add_argument(
     help="create non-matching build for modding",
 )
 parser.add_argument(
-    "--no-asm-processor",
-    action="store_true",
-    help="disable asm_processor for progress calculation",
+    "-v",
+    "--version",
+    choices=ALL_VERSIONS,
+    type=str.lower,
+    required=False,
+    help="specific version to build",
 )
 parser.add_argument(
     "--build-dir",
@@ -120,47 +150,27 @@ def version_exists(version: str) -> bool:
     return glob.glob(str(Path("orig") / version / "*")) != []
 
 
-SM64 = [
-    "sm64-j",
-    "sm64-u",
-    "sm64-e",
-]
-
-MK64 = [
-    "mk64-j",
-    "mk64-u",
-    "mk64-e",
-]
-
-OOT = [
-    "oot-j",
-    "oot-u",
-    "oot-e",
-]
-
-ALL_VERSIONS = [
-    *OOT,
-    *SM64,
-    *MK64,
-]
-config.versions = [
-    version
-    for version in ALL_VERSIONS
-    if version_exists(version)
-]
-
-if not config.versions:
-    sys.exit("Error: no orig files found for any version")
-
-if "oot-j" in config.versions:
-    config.default_version = "oot-j"
+if args.version is not None:
+    config.default_version = args.version
+    config.versions = [config.default_version]
 else:
-    # Use the earliest version as default
-    config.default_version = config.versions[0]
+    config.versions = [
+        version
+        for version in ALL_VERSIONS
+        if version_exists(version)
+    ]
+
+    if not config.versions:
+        sys.exit("Error: no orig files found for any version")
+
+    if "oot-j" in config.versions:
+        config.default_version = "oot-j"
+    else:
+        # Use the earliest version as default
+        config.default_version = config.versions[0]
 
 config.warn_missing_config = True
 config.warn_missing_source = False
-config.progress_all = True
 
 config.build_dir = args.build_dir
 config.dtk_path = args.dtk
@@ -170,7 +180,6 @@ config.compilers_path = args.compilers
 config.generate_map = args.map
 config.sjiswrap_path = args.sjiswrap
 config.non_matching = args.non_matching
-config.asm_processor = not args.no_asm_processor
 
 if not is_windows():
     config.wrapper = args.wrapper
@@ -181,11 +190,12 @@ if args.no_asm:
 ### Tool versions
 
 config.binutils_tag = "2.42-1"
-config.compilers_tag = "20240706"
-config.dtk_tag = "v1.4.1"
-config.objdiff_tag = "v2.7.1"
-config.sjiswrap_tag = "v1.2.0"
-config.wibo_tag = "0.6.11"
+config.compilers_tag = "20250812"
+config.dtk_tag = "v1.6.2"
+config.objdiff_tag = "v3.0.0-beta.14"
+config.sjiswrap_tag = "v1.2.1"
+config.wibo_tag = "0.7.0"
+
 config.linker_version = "GC/3.0a5"
 
 ### Flags
@@ -899,6 +909,22 @@ config.libs = [
     )
 ]
 
+# Optional callback to adjust link order. This can be used to add, remove, or reorder objects.
+# This is called once per module, with the module ID and the current link order.
+#
+# For example, this adds "dummy.c" to the end of the DOL link order if configured with --non-matching.
+# "dummy.c" *must* be configured as a Matching (or Equivalent) object in order to be linked.
+def link_order_callback(module_id: int, objects: List[str]) -> List[str]:
+    # Don't modify the link order for matching builds
+    if not config.non_matching:
+        return objects
+    if module_id == 0:  # DOL
+        return objects + ["dummy.c"]
+    return objects
+
+# Uncomment to enable the link order callback.
+# config.link_order_callback = link_order_callback
+
 # Optional extra categories for progress tracking
 # Adjust as desired for your project
 config.progress_categories = [
@@ -908,6 +934,15 @@ config.progress_categories = [
     ProgressCategory("libc", "Libc"),
     ProgressCategory("runtime", "Runtime"),
     ProgressCategory("metrotrk", "MetroTRK"),
+]
+
+config.print_progress_categories = ["emulator"]
+
+# Optional extra arguments to `objdiff-cli report generate`
+config.progress_report_args = [
+    # Marks relocations as mismatching if the target value is different
+    # Default is "functionRelocDiffs=none", which is most lenient
+    # "--config functionRelocDiffs=data_value",
 ]
 
 ### Execute mode
