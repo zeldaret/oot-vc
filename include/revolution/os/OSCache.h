@@ -10,7 +10,7 @@ extern "C" {
 #define OS_CACHE_BASE 0xE0000000
 
 // Forward declarations
-typedef struct OSContext;
+struct OSContext;
 
 void DCEnable(void);
 void DCInvalidateRange(const void* buf, u32 len);
@@ -36,7 +36,7 @@ void L2Enable(void);
 void L2Disable(void);
 void L2GlobalInvalidate(void);
 
-void DMAErrorHandler(u8 error, OSContext* ctx, u32 dsisr, u32 dar, ...);
+void DMAErrorHandler(u8 error, struct OSContext* ctx, u32 dsisr, u32 dar, ...);
 
 void __OSCacheInit(void);
 

@@ -96,6 +96,7 @@ bool ARCChangeDir(ARCHandle* info, const char* path);
 bool ARCOpenDir(ARCHandle* info, const char* path, ARCDir* dir);
 bool ARCReadDir(ARCDir* dir, ARCEntry* entry);
 bool ARCCloseDir(ARCDir* dir);
+u32 ARCEntrynumIsDir(ARCHandle* handle, u32 entrynum);
 
 #ifdef __cplusplus
 }

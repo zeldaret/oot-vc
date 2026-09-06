@@ -17,6 +17,11 @@ int strncmp(const char* s1, const char* s2, size_t n);
 char* strchr(const char*, int);
 char* strstr(const char* str, const char* substr);
 size_t strlen(const char* str);
+size_t strspn(const char* str, const char* set);
+size_t strcspn(const char* str, const char* set);
+char* strrchr(const char* str, int chr);
+char* strpbrk(const char* str, const char* str2);
+int strnicmp(const char* pStr1, const char* pStr2, int n);
 
 void* __memrchr(const void* src, int val, size_t n);
 void* memmove(void*, const void*, size_t);

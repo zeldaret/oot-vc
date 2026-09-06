@@ -24,13 +24,6 @@
 #include "string.h"
 #include "versions.h"
 
-//! TODO: move to the proper headers when documented properly
-extern char* VCMVRun(void*, char*, u8);
-extern s32 fn_8008882C(void**, u32, MEMAllocator*, MEMAllocator*);
-extern void* fn_80083140(void);
-extern void fn_800888DC(void**);
-extern HBMControllerData lbl_801CA670;
-
 #if VERSION < OOT_J
 #define UNK1C_HEAP_SIZE 0x01B00000
 #else
@@ -39,13 +32,6 @@ extern HBMControllerData lbl_801CA670;
 
 static void helpMenuResetCallback(void);
 static void helpMenuPowerCallback(void);
-
-typedef struct Rect {
-    /* 0x0 */ f32 x0;
-    /* 0x4 */ f32 y0;
-    /* 0x8 */ f32 x1;
-    /* 0xC */ f32 y1;
-} Rect; // size = 0x10
 
 static MEMAllocator sMemAllocator1 = {0};
 static MEMAllocator sMemAllocator2 = {0}; // MyAllocMem2?
@@ -108,12 +94,12 @@ static s32 helpMenuReadNAND(CNTHandleNAND* pHandle, char* szPath, void** ppBuffe
 
     if (var_r29 != 0) {
         pNANDBuffer = 0;
-        fn_8008882C(&pNANDBuffer, temp_r30, arg3, arg4);
+        VCMV_8008882C(&pNANDBuffer, temp_r30, arg3, arg4);
 
         if (pNANDBuffer != NULL) {
             contentReadNAND(&fileInfo, pNANDBuffer, temp_r30, 0);
             var_r31 = fn_800B17A8(pNANDBuffer);
-            fn_8008882C(ppBuffer, ALIGN(var_r31, 0x1F), arg3, arg4);
+            VCMV_8008882C(ppBuffer, ALIGN(var_r31, 0x1F), arg3, arg4);
 
             if (*ppBuffer != NULL) {
                 if (var_r29 == 0x10) {
@@ -125,12 +111,12 @@ static s32 helpMenuReadNAND(CNTHandleNAND* pHandle, char* szPath, void** ppBuffe
                 var_r31 = 0;
             }
 
-            fn_800888DC(&pNANDBuffer);
+            VCMV_800888DC(&pNANDBuffer);
         } else {
             var_r31 = 0;
         }
     } else {
-        fn_8008882C(ppBuffer, temp_r30, arg3, arg4);
+        VCMV_8008882C(ppBuffer, temp_r30, arg3, arg4);
 
         if (*ppBuffer != 0) {
             contentReadNAND(&fileInfo, *ppBuffer, temp_r30, 0);
@@ -469,19 +455,19 @@ static void helpMenuRunManualViewer(void) {
 
 #if VERSION >= SM64_E
     if (fn_8007FC84()) {
-        fn_80088668(0x260, 0x210);
-        fn_8008866C(0x260, 0x210);
+        VCMV_80088668(0x260, 0x210);
+        VCMV_8008866C(0x260, 0x210);
     } else
 #endif
     {
-        fn_80088668(0x260, 0x1C8);
-        fn_8008866C(0x260, 0x1C8);
+        VCMV_80088668(0x260, 0x1C8);
+        VCMV_8008866C(0x260, 0x1C8);
     }
 
-    fn_80088670(0xC);
+    VCMV_80088670(0xC);
 
     for (; var_r31 > 0; var_r31 -= MB(1)) {
-        if (fn_80088678(var_r31) != 0) {
+        if (VCMV_80088678(var_r31)) {
             break;
         }
     }
@@ -490,7 +476,7 @@ static void helpMenuRunManualViewer(void) {
         OSPanic("helpRVL.c", VERSION >= OOT_J ? 938 : 936, ".");
     }
 
-    fn_800887CC(sWebsitePath);
+    VCMV_800887CC(sWebsitePath);
     lbl_8025D0BC = VCMVRun(helpMenu_8005E800, lbl_8025D0BC, lbl_8025D0B8);
 
     VIConfigure(sRenderMode);
@@ -581,7 +567,7 @@ static void helpMenuPowerCallback(void) {
     sPowerBtnPressed = true;
 
     if (nHbmVcmvState == E_ManualViewerRunning) {
-        fn_800887D4(0x1E);
+        VCMV_800887D4(0x1E);
         lbl_8025D110 = 0;
     }
 }
@@ -591,7 +577,7 @@ static void helpMenuResetCallback(void) {
     sResetBtnPressed = true;
 
     if (nHbmVcmvState == E_ManualViewerRunning) {
-        fn_800887D4(0x1E);
+        VCMV_800887D4(0x1E);
         lbl_8025D110 = 0;
     }
 }
@@ -604,7 +590,7 @@ void helpMenuInit_UnknownInline1(NANDFileInfo* pFileInfo, void** ppBuffer, char*
     NANDOpen("/tmp/HBMSE.brsar", pFileInfo, 2);
     NANDWrite(pFileInfo, *ppBuffer, nLength);
     NANDClose(pFileInfo);
-    fn_800888DC(ppBuffer);
+    VCMV_800888DC(ppBuffer);
 }
 
 void helpMenuInit_UnknownInline2(NANDFileInfo* pFileInfo, void** ppBuffer, char* szPath) {
@@ -613,10 +599,10 @@ void helpMenuInit_UnknownInline2(NANDFileInfo* pFileInfo, void** ppBuffer, char*
     NANDOpen("/tmp/opera.arc", pFileInfo, 2);
     NANDWrite(pFileInfo, *ppBuffer, nLength);
     NANDClose(pFileInfo);
-    fn_800888DC(ppBuffer);
+    VCMV_800888DC(ppBuffer);
 }
 
-static void helpMenuInit(HelpMenu* pHelpMenu) {
+static void helpMenuInit() {
     NANDFileInfo sp30;
     void* sp8;
     char* temp_r16;
@@ -705,13 +691,13 @@ static void helpMenuInit(HelpMenu* pHelpMenu) {
     TPLBind(lbl_801C7D28.pTPLPalette);
 
     hbmInfo.memSize = 0x80000;
-    fn_8008882C(&hbmInfo.mem, 0x80000, &sMemAllocator2, &sMemAllocator1);
+    VCMV_8008882C(&hbmInfo.mem, 0x80000, &sMemAllocator2, &sMemAllocator1);
 
     hbmInfo.pAllocator = NULL;
-    fn_80088994(&hbmInfo);
+    VCMV_80088994(&hbmInfo.layoutBuf);
     HBMCreate(&hbmInfo);
 
-    fn_8008882C(&lbl_8025D0C4, 0xA0000, &sMemAllocator2, &sMemAllocator1);
+    VCMV_8008882C(&lbl_8025D0C4, 0xA0000, &sMemAllocator2, &sMemAllocator1);
     HBMCreateSound("/tmp/HBMSE.brsar", lbl_8025D0C4, 0xA0000);
 
     HBMInit();
@@ -949,14 +935,15 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
         VISetNextFrameBuffer(lbl_8025D100[lbl_8025D0FC]);
         VIFlush();
         VIWaitForRetrace();
-        fn_80088654(&sMemAllocator1, &sMemAllocator2);
+        VCMV_80088654(&sMemAllocator1, &sMemAllocator2);
         AIStopDMA();
         lbl_8025D108 = AIRegisterDMACallback(NULL);
         AXInit();
         fn_800B1AB8();
         AXSetMode(0);
         fn_800B1B84(1);
-        helpMenuInit(fn_80083140());
+        VCMV_80083140();
+        helpMenuInit();
         HBMSetAdjustFlag(false);
 
         for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
@@ -967,7 +954,7 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
         nHbmVcmvState = E_GameToHbmTransition1;
 
         while (!bVar8) {
-            fn_80088934();
+            VCMV_80088934();
 
             if (sResetBtnPressed || sPowerBtnPressed) {
                 switch (nHbmVcmvState) {
@@ -1034,19 +1021,19 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
                             goto case_9;
                         case HBM_SELECT_BTN3:
                             nHbmVcmvState = E_ManualViewerInit;
-                            fn_80088660();
+                            VCMV_80088660();
                             helpMenuUpdate_UnknownInline();
-                            fn_800887C4(lbl_8025D0F8);
+                            VCMV_800887C4(lbl_8025D0F8);
 
                             OSDisableInterrupts();
                             if (!sResetBtnPressed && !sPowerBtnPressed) {
                                 nHbmVcmvState = E_ManualViewerRunning;
                                 helpMenuRunManualViewer();
                             }
-                            fn_80088674();
-                            fn_8008876C();
-                            fn_800888DC((void**)&lbl_8025D0F8);
-                            fn_80088664();
+                            VCMV_80088674();
+                            VCMV_8008876C();
+                            VCMV_800888DC((void**)&lbl_8025D0F8);
+                            VCMV_80088664();
                             OSEnableInterrupts();
                             if (sResetBtnPressed || sPowerBtnPressed) {
                                 goto case_9;
@@ -1138,12 +1125,12 @@ s32 helpMenuUpdate(HelpMenu* pHelpMenu) {
 
         HBMDeleteSound();
         HBMDelete();
-        fn_80083154();
+        VCMV_80083154();
         AXQuit();
         fn_800B1B80();
         AIStopDMA();
         AIRegisterDMACallback(lbl_8025D108);
-        fn_800888DC(&hbmInfo.mem);
+        VCMV_800888DC(&hbmInfo.mem);
         contentReleaseHandleNAND(&sHandleNAND);
 
         if (!fn_800631B8(SYSTEM_CONTROLLER(gpSystem), 1)) {

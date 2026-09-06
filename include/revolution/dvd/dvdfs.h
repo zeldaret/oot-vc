@@ -21,6 +21,9 @@ bool DVDClose(DVDFileInfo* info);
 bool DVDGetCurrentDir(char* buffer, u32 maxlen);
 bool DVDReadAsyncPrio(DVDFileInfo* info, void* dst, s32 size, s32 offset, DVDAsyncCallback callback, s32 prio);
 s32 DVDReadPrio(DVDFileInfo* info, void* dst, s32 size, s32 offset, s32 prio);
+bool DVDCloseDir(DVDDir* dir);
+bool DVDOpenDir(const char* dirName, DVDDir* dir);
+bool DVDReadDir(DVDDir* dir, DVDDirEntry* dirent);
 
 #ifdef __cplusplus
 }

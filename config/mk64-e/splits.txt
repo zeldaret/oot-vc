@@ -238,11 +238,63 @@ revolution/NdevExi2AD/DebuggerDriver.c:
 revolution/NdevExi2AD/exi2.c:
 	.text       start:0x80080CF8 end:0x80081484
 
-revolution/vcmv/code_80083070.cpp:
-	extab       start:0x800064E0 end:0x80006688
-	extabindex  start:0x800069A0 end:0x80006C1C
-	.text       start:0x80081484 end:0x800877B8
+revolution/hbm/vcmv/vcmv_cursor.cpp:
+	extab       start:0x800064E0 end:0x800064F0
+	extabindex  start:0x800069A0 end:0x800069B8
+	.text       start:0x80081484 end:0x80081CD4
+	.rodata     start:0x80168BC0 end:0x80168C00
+	.data       start:0x80173738 end:0x80173798
+	.sbss       start:0x8025B198 end:0x8025B1A8
+	.sdata2     start:0x8025BFC8 end:0x8025BFE0
+
+revolution/hbm/vcmv/code_800838C0.cpp:
+	extab       start:0x800064F0 end:0x80006570
+	extabindex  start:0x800069B8 end:0x80006A78
+	.text       start:0x80081CD4 end:0x80084BF0
 	.ctors      start:0x80168AA4 end:0x80168AA8
+	.rodata     start:0x80168C00 end:0x80168C68
+	.data       start:0x80173798 end:0x801738EC
+	.bss        start:0x801C8160 end:0x801C85E8
+	.sdata      start:0x8025A868 end:0x8025A878
+	.sbss       start:0x8025B1A8 end:0x8025B218
+	.sdata2     start:0x8025BFE0 end:0x8025C030
+
+revolution/hbm/vcmv/vcmv_javascript.cpp:
+	extab       start:0x80006570 end:0x800065B0
+	extabindex  start:0x80006A78 end:0x80006AD8
+	.text       start:0x80084BF0 end:0x8008524C
+	.rodata     start:0x80168C68 end:0x80168CD8
+	.bss        start:0x801C85E8 end:0x801C8608
+	.sdata      start:0x8025A878 end:0x8025A880
+	.sbss       start:0x8025B218 end:0x8025B238
+
+revolution/hbm/vcmv/vcmv_main.cpp:
+	extab       start:0x800065B0 end:0x80006650
+	extabindex  start:0x80006AD8 end:0x80006BC8
+	.text       start:0x8008524C end:0x80086DEC
+	.rodata     start:0x80168CD8 end:0x80168DA8
+	.bss        start:0x801C8608 end:0x801C9FF0
+	.sdata      start:0x8025A880 end:0x8025A888
+	.sbss       start:0x8025B238 end:0x8025B2C0
+	.sdata2     start:0x8025C030 end:0x8025C070
+
+revolution/hbm/vcmv/code_800889E8.cpp:
+	extab       start:0x80006650 end:0x80006680
+	extabindex  start:0x80006BC8 end:0x80006C10
+	.text       start:0x80086DEC end:0x8008771C
+	.rodata     start:0x80168DA8 end:0x80169750
+	.data       start:0x80173900 end:0x80174B80
+	.bss        start:0x801C9FF0 end:0x801CA0C0
+	.sdata      start:0x8025A888 end:0x8025A898
+	.sbss       start:0x8025B2C0 end:0x8025B488
+	.sdata2     start:0x8025C070 end:0x8025C088
+
+revolution/hbm/vcmv/code_80089308.cpp:
+	extab       start:0x80006680 end:0x80006688
+	extabindex  start:0x80006C10 end:0x80006C1C
+	.text       start:0x8008771C end:0x800877B8
+	.rodata     start:0x80169750 end:0x8016A080
+	.sdata2     start:0x8025C088 end:0x8025C268
 
 revolution/base/PPCArch.c:
 	.text       start:0x800877B8 end:0x8008791C

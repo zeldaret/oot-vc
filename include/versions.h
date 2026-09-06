@@ -18,8 +18,10 @@
 
 #if VERSION == SM64_J || VERSION == SM64_U
 #define HBM_REVISION 1
+#define VCMV_REVISION 1
 #else
 #define HBM_REVISION 2
+#define VCMV_REVISION 2
 #endif
 
 #endif

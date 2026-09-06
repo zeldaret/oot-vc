@@ -46,6 +46,7 @@ double pow(double x, double y);
 double sqrt(double x);
 double log(double x);
 float log10f(float x);
+double exp(double x);
 
 // In reality, these are "weak" functions which all have C++ names (except scalbn).
 // We fake it by defining them as strong C functions instead.

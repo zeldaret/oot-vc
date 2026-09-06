@@ -267,6 +267,15 @@ def RevolutionHBMLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
         "objects": objects,
     }
 
+def RevolutionVCMVLib(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
+    return {
+        "lib": lib_name,
+        "mw_version": "GC/3.0a5",
+        "cflags": [*cflags_base, "-Cpp_exceptions on", "-O4,p", "-ipa file", "-enc SJIS", "-fp_contract on", "-use_lmw_stmw on", "-rostr"],
+        "progress_category": "vcmv",
+        "objects": objects,
+    }
+
 def LibC(lib_name: str, objects: List[Object]) -> Dict[str, Any]:
     return {
         "lib": lib_name,
@@ -368,12 +377,16 @@ config.libs = [
             Object(LinkedFor(*SM64, *MK64, *OOT), "revolution/NdevExi2AD/exi2.c"),
         ]
     ),
-    RevolutionLib(
+    RevolutionVCMVLib(
         "vcmv",
         [
-            Object(NotLinked, "revolution/vcmv/code_80083070.cpp"),
-        ],
-        cpp_exceptions="on"
+            Object(LinkedFor(*SM64, *MK64, *OOT), "revolution/hbm/vcmv/vcmv_cursor.cpp"),
+            Object(LinkedFor(*SM64, *MK64, *OOT), "revolution/hbm/vcmv/code_800838C0.cpp"),
+            Object(LinkedFor(*SM64, *MK64, *OOT), "revolution/hbm/vcmv/vcmv_javascript.cpp"),
+            Object(LinkedFor(*SM64, *MK64, *OOT), "revolution/hbm/vcmv/vcmv_main.cpp"),
+            Object(LinkedFor(*SM64, *MK64, *OOT), "revolution/hbm/vcmv/code_800889E8.cpp"),
+            Object(LinkedFor(*SM64, *MK64, *OOT), "revolution/hbm/vcmv/code_80089308.cpp"),
+        ]
     ),
     RevolutionLib(
         "base",
@@ -931,6 +944,7 @@ config.progress_categories = [
     ProgressCategory("emulator", "Emulator"),
     ProgressCategory("revolution", "Revolution SDK"),
     ProgressCategory("hbm", "Home Button Menu"),
+    ProgressCategory("vcmv", "VCMV"),
     ProgressCategory("libc", "Libc"),
     ProgressCategory("runtime", "Runtime"),
     ProgressCategory("metrotrk", "MetroTRK"),

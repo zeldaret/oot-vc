@@ -168,6 +168,9 @@ s32 NANDPrivateGetStatusAsync(const char* path, NANDStatus* status, NANDAsyncCal
 void NANDSetUserData(NANDCommandBlock* block, void* data);
 void* NANDGetUserData(NANDCommandBlock* block);
 
+s32 NANDCreateDir(const char* path, u8 perm, u8 attr);
+s32 NANDReadDir(const char* path, char* filesOut, u32* fileCountOut);
+
 #ifdef __cplusplus
 }
 #endif
